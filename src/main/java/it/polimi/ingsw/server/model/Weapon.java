@@ -63,7 +63,7 @@ public class Weapon {
      * This method executes the attack that is currently stored as the active attack of the weapon
      */
     public void executeActiveAttack() {
-
+        //attack execution will be implemented after weapons
     }
 
     /**
@@ -71,7 +71,8 @@ public class Weapon {
      * @param attack the attack chosen by the player
      */
     public void chooseAttack(Attack attack) {
-
+        //TODO: check if attack belongs to weapon
+        this.activeAttack = attack;
     }
 
     /**

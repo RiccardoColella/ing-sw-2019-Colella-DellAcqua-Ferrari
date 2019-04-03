@@ -43,6 +43,28 @@ public class PowerupTile implements Coin{
     }
 
     /**
+     * This method checks whether two coins are the same
+     *
+     * @param that the Coin to compare
+     * @return true if the two coins are the same, false otherwise
+     */
+    @Override
+    public boolean equalsTo(Coin that) {
+        return false;
+    }
+
+    /**
+     * This method checks whether two coins have the same value
+     *
+     * @param coin the Coin to compare
+     * @return true if the two coins have the same value, false otherwise
+     */
+    @Override
+    public boolean hasSameValueAs(Coin coin) {
+        return false;
+    }
+
+    /**
      * This method returns the name of the powerup tile
      * @return a string representing the name of the powerup
      */

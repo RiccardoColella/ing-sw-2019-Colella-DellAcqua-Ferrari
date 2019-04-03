@@ -1,7 +1,7 @@
 package it.polimi.ingsw.server.model;
 
 /**
- * This classes represents a range of admissible int values
+ * This class represents a range of admissible int values
  */
 public class Range {
     /**

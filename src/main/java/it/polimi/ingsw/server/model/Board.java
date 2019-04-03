@@ -1,7 +1,6 @@
 package it.polimi.ingsw.server.model;
 
-import com.sun.org.apache.bcel.internal.generic.BREAKPOINT;
-
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -9,14 +8,14 @@ import java.util.List;
  */
 public class Board {
 
-    private Block[][] field;
+    private final Block[][] field;
 
     /**
      * Class constructor
-     * @param block blocks matrix to be putted in the field
+     * @param field the field that will be used in the match
      */
-    public Board(Block[][] block){
-        // TODO
+    public Board(Block[][] field){
+        this.field = field;
     }
 
     /**
@@ -63,7 +62,7 @@ public class Board {
      */
     public List<Block> getVisibleBlock(Block block){
         //TODO all function
-        return null;
+        return new ArrayList<>();
     }
 
     /**
@@ -73,7 +72,7 @@ public class Board {
      */
     public List<Block> getRoom(Block block){
         //TODO all function
-        return null;
+        return new ArrayList<>();
     }
 
     /**
@@ -82,8 +81,7 @@ public class Board {
      * @return the row of the selected Block
      */
     public int getRow(Block block){
-        //TODO all function
-        return 0;
+        return block.getRow();
     }
 
     /**
@@ -92,8 +90,7 @@ public class Board {
      * @return the column of the selected Block
      */
     public int getColumn(Block block){
-        //TODO all function
-        return 0;
+        return block.getColumn();
     }
 
     /**
@@ -102,7 +99,7 @@ public class Board {
      * @param direction Direction in which to move
      */
     public void movePlayer(Player player, Direction direction){
-
+        //move player will check if the desired move is possible
     }
 
     /**
@@ -111,7 +108,7 @@ public class Board {
      * @param block Destination Block
      */
     public void teleportPlayer(Player player, Block block){
-
+        //teleport player will move the player to the desired block without checking anything
     }
 
 

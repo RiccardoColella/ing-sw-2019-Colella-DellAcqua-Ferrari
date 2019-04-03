@@ -4,6 +4,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * This interface schematizes all entities that can receive damage
+ */
 public interface Damageable {
 
     /**

@@ -1,16 +1,15 @@
 package it.polimi.ingsw.server.model;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 
 /**
- * This class implements the generic block that constitute the board
+ * This class implements the generic block that constitutes the board
  */
 public abstract class Block {
 
     /**
      * Defines the BorderType of Block's border in every Direction
      */
-    private static Map<Direction, BorderType> borders;
+    private final Map<Direction, BorderType> borders;
 
     /**
      * List of the player on the block
@@ -29,16 +28,25 @@ public abstract class Block {
 
     /**
      * Class constructor given the position in the board and every BoarderType
+     * @param row an int representing the row of the block in the board
+     * @param column an int representing the column of the block in the board
+     * @param borderNorth BorderType of the northern border
+     * @param borderEast BorderType of the eastern border
+     * @param borderSouth BorderType of the southern border
+     * @param borderWest BorderType of the western border
      */
     public Block(int row, int column, BorderType borderNorth, BorderType borderEast, BorderType borderSouth,
                  BorderType borderWest) {
         this.row = row;
         this.column = column;
         // MAPPING DIRECTIONS
+        this.borders = new EnumMap<>(Direction.class);
         this.borders.put(Direction.NORD,  borderNorth);
         this.borders.put(Direction.EAST,  borderEast);
         this.borders.put(Direction.SOUTH, borderSouth);
         this.borders.put(Direction.WEST,  borderWest);
+
+        this.players = new LinkedList<>();
     }
 
     /**

@@ -4,6 +4,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * This interface schematizes an attack, which is the effect that a weapon has on one or more targets
+ */
 public interface Attack {
 
     /**

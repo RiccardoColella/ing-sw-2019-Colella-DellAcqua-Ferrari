@@ -1,13 +1,16 @@
 package it.polimi.ingsw.server.model;
 
-public class AmmoFactory {
+/**
+ * Factory class to create ammos for the match
+ */
+public final class AmmoFactory {
 
     /**
-     * Class constructor
+     * Private empty constructor because this class should not have instances
      */
-    public AmmoFactory() {
-    }
+    private AmmoFactory() {
 
+    }
 
     /**
      * Creates a new Ammo, given the color
@@ -15,7 +18,6 @@ public class AmmoFactory {
      * @return the new Ammo
      */
     public static Ammo create(CoinColor color) {
-        Ammo ammo = new Ammo(color);
-        return ammo;
+        return new Ammo(color);
     }
 }

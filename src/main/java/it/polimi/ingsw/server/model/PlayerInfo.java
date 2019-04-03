@@ -1,7 +1,9 @@
 package it.polimi.ingsw.server.model;
 
+/**
+ * This class stores the information necessary to uniquely identify players
+ */
 public class PlayerInfo {
-
     /**
      * This property contains the nickname chosen by the player
      */

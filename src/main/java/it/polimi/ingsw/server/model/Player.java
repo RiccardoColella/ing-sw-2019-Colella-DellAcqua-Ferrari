@@ -2,9 +2,13 @@ package it.polimi.ingsw.server.model;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * This class represents the player entity, storing all info about its status during the match
+ */
 public class Player implements Damageable{
     /**
      * This property represents the reward achievable for killing the player in standard mode
@@ -60,6 +64,11 @@ public class Player implements Damageable{
      * This property stores the action that the player is currently doing, null if it is not doing anything
      */
     private CompoundAction activeAction;
+
+    /**
+     * This property stores the weapon the player is currently using
+     */
+    private Weapon activeWeapon;
 
     /**
      * This constructor creates a player from the basic info: the player will be empty and ready to start a new match
@@ -142,7 +151,7 @@ public class Player implements Damageable{
      * @return a list of BasicAction representing the actions available to the player
      */
     public List<BasicAction> getAvailableActions() {
-        return null;
+        return new ArrayList<>();
     }
 
     /**
@@ -150,7 +159,9 @@ public class Player implements Damageable{
      * @param weapon a loaded weapon owned by the player
      */
     public void chooseWeapon(Weapon weapon) {
-
+        if (this.weapons.contains(weapon) && weapon.isLoaded()) {
+            this.activeWeapon = weapon;
+        }
     }
 
     /**
@@ -158,7 +169,7 @@ public class Player implements Damageable{
      * @return the weapon currently used by the player, null if the player is not shooting
      */
     public Weapon getActiveWeapon() {
-        return null;
+        return this.activeWeapon;
     }
 
     /**
@@ -238,7 +249,7 @@ public class Player implements Damageable{
      * @param direction the Direction the player should be moved to
      */
     public void move(Direction direction) {
-
+        //TODO: implement move
     }
 
     /**
@@ -249,7 +260,7 @@ public class Player implements Damageable{
      * @param discardedWeapon the Weapon the player is giving up for the new one, if it already has the maximum number allowed
      */
     public void grabWeapon(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups, Weapon discardedWeapon) {
-
+        //TODO: implement weapon payment and acquisition
     }
 
     /**
@@ -257,7 +268,9 @@ public class Player implements Damageable{
      * @param powerup the Powerup the player is grabbing
      */
     public void grabPowerup(PowerupTile powerup) {
-
+        if (this.powerups.size() < 3) {
+            this.powerups.add(powerup);
+        } //TODO: else an exception should probably be thrown because the player should not have been allowed to grab it
     }
 
     /**
@@ -265,7 +278,19 @@ public class Player implements Damageable{
      * @param ammos a list containing the ammos the player is grabbing
      */
     public void grabAmmos(List<Ammo> ammos) {
-
+        if (ammos != null) { //if possible add @NotNull specification
+            for (Ammo newAmmo : ammos) {
+                int equalAmmos = 0;
+                for (Ammo ownedAmmo : this.ammos) {
+                    if (newAmmo.equalsTo(ownedAmmo)) {
+                        equalAmmos++;
+                    }
+                }
+                if (equalAmmos < 3) { //if there are less than 3 ammos like the one that the player wants to add, it is added
+                    this.ammos.add(newAmmo);
+                }
+            }
+        }
     }
 
     /**
@@ -275,7 +300,7 @@ public class Player implements Damageable{
      * @param powerups the cost the player is paying with powerups
      */
     public void reload(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups) {
-
+        //TODO: implement reload logic
     }
 
     /**
@@ -285,7 +310,7 @@ public class Player implements Damageable{
      * @param powerups the cost the player is paying with powerups
      */
     public void shoot(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups) {
-
+        //TODO: implement shoot logic
     }
 
 }

@@ -1,5 +1,8 @@
 package it.polimi.ingsw.server.model;
 
+/**
+ * This class represents the tokens that is received upon being damaged or marked
+ */
 public class DamageToken {
     /**
      * Player who damages
@@ -8,7 +11,7 @@ public class DamageToken {
 
     /**
      * Class constructor
-     * @param attacker
+     * @param attacker the player that inflicted the damage
      */
     public DamageToken(Player attacker){
         //TODO all function

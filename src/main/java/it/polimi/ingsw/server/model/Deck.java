@@ -10,7 +10,7 @@ public class Deck<T> {
     /**
      * List of all elements still in the deck
      */
-    private List<T> deck;
+    private List<T> cards;
 
     /**
      * List of the used element's of the deck
