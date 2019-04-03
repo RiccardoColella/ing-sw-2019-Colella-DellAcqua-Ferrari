@@ -54,7 +54,7 @@ public abstract class Block {
      * @param direction border investigated
      * @return BorderType in the direction asked
      */
-    public BorderType getBoarderType(Direction direction){
+    public BorderType getBoarderType(Direction direction) {
         return this.borders.get(direction);
     }
 
@@ -79,7 +79,7 @@ public abstract class Block {
      * Adds a new player on the Block
      * @param player to be added on the Block
      */
-    public void addPlayer(Player player){
+    public void addPlayer(Player player) {
         this.players.add(player);
     }
 
@@ -87,7 +87,7 @@ public abstract class Block {
      * Removes a player from a Block
      * @param player to be removed from the Block
      */
-    public void removePlayer(Player player){
+    public void removePlayer(Player player) {
         this.players.remove(player);
     }
 
@@ -96,7 +96,7 @@ public abstract class Block {
      * @param player to be checked
      * @return true if the player is on the Block
      */
-    public boolean containsPlayer(Player player){
+    public boolean containsPlayer(Player player) {
         return this.players.contains(player);
     }
 

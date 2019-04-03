@@ -3,7 +3,7 @@ package it.polimi.ingsw.server.model;
 /**
  * This class represents the actual powerup tile, which can be in the Deck or owned by a Player
  */
-public class PowerupTile implements Coin{
+public class PowerupTile implements Coin {
 
     /**
      * This property represents the color of the powerup tile
@@ -50,7 +50,10 @@ public class PowerupTile implements Coin{
      */
     @Override
     public boolean equalsTo(Coin that) {
-        return false;
+        return
+                that instanceof PowerupTile &&
+                this.color == that.getColor() &&
+                this.getType() == ((PowerupTile) that).getType();
     }
 
     /**

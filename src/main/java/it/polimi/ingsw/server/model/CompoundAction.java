@@ -16,13 +16,13 @@ public final class CompoundAction {
      * Class constructor
      * @param actions actions that can be selected
      */
-    public CompoundAction(List<BasicAction> actions){
+    public CompoundAction(List<BasicAction> actions) {
         //TODO all function
         this.actions = actions;
     }
 
 
-    public List<BasicAction> getActions(){
+    public List<BasicAction> getActions() {
         //TODO all function
         return actions;
     }

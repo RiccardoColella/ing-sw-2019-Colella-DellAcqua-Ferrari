@@ -24,9 +24,9 @@ public class Deck<T> {
 
     /**
      * Class constructor
-     * @param autoRecycleDiscarded
+     * @param autoRecycleDiscarded specifies whether the deck should be reinitialized automatically when it becomes empty, reshuffling the discarded cards
      */
-    public Deck(boolean autoRecycleDiscarded){
+    public Deck(boolean autoRecycleDiscarded) {
         //TODO all function
         this.autoRecycleDiscarded = autoRecycleDiscarded;
     }
@@ -36,7 +36,7 @@ public class Deck<T> {
      * @param <T> generic card type
      * @return the picked card
      */
-    public <T> T pick(){
+    public <T> T pick() {
         //TODO all function
         return null;
     }
@@ -44,7 +44,7 @@ public class Deck<T> {
     /**
      * Shuffle the Deck
      */
-    public void shuffle(){
+    public void shuffle() {
         //TODO all function
     }
 
@@ -52,7 +52,7 @@ public class Deck<T> {
      * Removes an item from the deck and add it to the discard List
      * @param item to be deleted
      */
-    public void discard(T item){
+    public void discard(T item) {
         //TODO all function
     }
 }

@@ -23,7 +23,7 @@ public class BonusTile {
      * @param ammo1 the first Ammo cube
      * @param ammo2 the second Ammo cube
      */
-    public BonusTile(Ammo ammo1, Ammo ammo2){
+    public BonusTile(Ammo ammo1, Ammo ammo2) {
         //TODO all function
         this.canPick = true;
         this.ammos = new ArrayList<>();
@@ -37,7 +37,7 @@ public class BonusTile {
      * @param ammo2 the second Ammo cube
      * @param ammo3 the third Ammo cube
      */
-    public BonusTile(Ammo ammo1, Ammo ammo2, Ammo ammo3){
+    public BonusTile(Ammo ammo1, Ammo ammo2, Ammo ammo3) {
         //TODO all function
         this.canPick = false;
         this.ammos = new ArrayList<>();
@@ -50,7 +50,7 @@ public class BonusTile {
      * Tells all the availables Ammo
      * @return the List of available Ammo
      */
-    public List<Ammo> getRewards(){
+    public List<Ammo> getRewards() {
         //TODO all function
         return this.ammos;
     }
@@ -59,7 +59,7 @@ public class BonusTile {
      * Tells if you can pick a Powerup
      * @return true if you can pick a Powerup
      */
-    public boolean canPickPowerup(){
+    public boolean canPickPowerup() {
         return canPick;
     }
 }

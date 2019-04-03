@@ -14,7 +14,7 @@ public class Board {
      * Class constructor
      * @param field the field that will be used in the match
      */
-    public Board(Block[][] field){
+    public Board(Block[][] field) {
         this.field = field;
     }
 
@@ -24,7 +24,7 @@ public class Board {
      * @param column of the requested Block
      * @return the requested Block
      */
-    public Block getBlock(int row, int column){
+    public Block getBlock(int row, int column) {
         // TODO getter with supervision
         return field[row][column];
     }
@@ -35,7 +35,7 @@ public class Board {
      * @param direction where to look
      * @return the block next to the asked in the queried direction
      */
-    public Block getBlockNeighbor(Block block, Direction direction){
+    public Block getBlockNeighbor(Block block, Direction direction) {
         //TODO getter with supervision
         Block neighbor = null;
         switch (direction) {
@@ -60,7 +60,7 @@ public class Board {
      * @param block starting Block
      * @return the List of all visible Blocks
      */
-    public List<Block> getVisibleBlock(Block block){
+    public List<Block> getVisibleBlock(Block block) {
         //TODO all function
         return new ArrayList<>();
     }
@@ -70,7 +70,7 @@ public class Board {
      * @param block starting Block
      * @return List of all Blocks in the room of the selected Block
      */
-    public List<Block> getRoom(Block block){
+    public List<Block> getRoom(Block block) {
         //TODO all function
         return new ArrayList<>();
     }
@@ -80,7 +80,7 @@ public class Board {
      * @param block selected Block
      * @return the row of the selected Block
      */
-    public int getRow(Block block){
+    public int getRow(Block block) {
         return block.getRow();
     }
 
@@ -89,7 +89,7 @@ public class Board {
      * @param block selected Block
      * @return the column of the selected Block
      */
-    public int getColumn(Block block){
+    public int getColumn(Block block) {
         return block.getColumn();
     }
 
@@ -98,7 +98,7 @@ public class Board {
      * @param player Player to be moved
      * @param direction Direction in which to move
      */
-    public void movePlayer(Player player, Direction direction){
+    public void movePlayer(Player player, Direction direction) {
         //move player will check if the desired move is possible
     }
 
@@ -107,7 +107,7 @@ public class Board {
      * @param player Player to be moved
      * @param block Destination Block
      */
-    public void teleportPlayer(Player player, Block block){
+    public void teleportPlayer(Player player, Block block) {
         //teleport player will move the player to the desired block without checking anything
     }
 

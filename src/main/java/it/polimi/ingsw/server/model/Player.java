@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * This class represents the player entity, storing all info about its status during the match
  */
-public class Player implements Damageable{
+public class Player implements Damageable {
     /**
      * This property represents the reward achievable for killing the player in standard mode
      */

@@ -14,7 +14,7 @@ public class Ammo implements Coin {
      * Class constructor given the color
      * @param color Ammo's color
      */
-    public Ammo(CoinColor color){
+    public Ammo(CoinColor color) {
         this.color = color;
     }
 
