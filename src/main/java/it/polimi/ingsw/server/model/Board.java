@@ -13,111 +13,12 @@ public class Board {
 
     private final Block[][] field;
 
-    private final Block[][] PRESET_10 = new Block[][] {
-        new Block[] {
-            new TurretBlock(0, 0, BorderType.WALL, BorderType.NONE, BorderType.DOOR, BorderType.WALL),
-            new TurretBlock(0, 1, BorderType.WALL, BorderType.NONE, BorderType.WALL, BorderType.NONE),
-            new SpawnpointBlock(0, 2, BorderType.WALL, BorderType.WALL, BorderType.DOOR, BorderType.NONE, CoinColor.BLUE, new LinkedList<>()),
-            null
-        },
-        new Block[]{
-            new SpawnpointBlock(1, 0, BorderType.DOOR, BorderType.NONE, BorderType.WALL, BorderType.WALL, CoinColor.RED, new LinkedList<>()),
-            new TurretBlock(1, 1, BorderType.WALL, BorderType.NONE, BorderType.DOOR, BorderType.NONE),
-            new TurretBlock(1, 2, BorderType.DOOR, BorderType.DOOR, BorderType.WALL, BorderType.NONE),
-            new TurretBlock(1, 3, BorderType.WALL, BorderType.WALL, BorderType.NONE, BorderType.DOOR)
-        },
-        new Block[] {
-            null,
-            new TurretBlock(2, 1, BorderType.DOOR, BorderType.NONE, BorderType.WALL, BorderType.WALL),
-            new TurretBlock(2, 2, BorderType.WALL, BorderType.DOOR, BorderType.WALL, BorderType.NONE),
-            new SpawnpointBlock(2, 3, BorderType.NONE, BorderType.WALL, BorderType.WALL, BorderType.DOOR, CoinColor.YELLOW, new LinkedList<>())
-        }
-    };
-
-    private final Block[][] PRESET_11_1 = new Block[][] {
-        new Block[] {
-            new TurretBlock(0, 0, BorderType.WALL, BorderType.NONE, BorderType.DOOR, BorderType.WALL),
-            new TurretBlock(0, 1, BorderType.WALL, BorderType.NONE, BorderType.WALL, BorderType.NONE),
-            new SpawnpointBlock(0, 2, BorderType.WALL, BorderType.DOOR, BorderType.DOOR, BorderType.NONE, CoinColor.BLUE, new LinkedList<>()),
-            new TurretBlock(0, 3, BorderType.WALL, BorderType.WALL, BorderType.DOOR, BorderType.DOOR)
-        },
-        new Block[]{
-            new SpawnpointBlock(1, 0, BorderType.DOOR, BorderType.NONE, BorderType.WALL, BorderType.WALL, CoinColor.RED, new LinkedList<>()),
-            new TurretBlock(1, 1, BorderType.WALL, BorderType.WALL, BorderType.DOOR, BorderType.NONE),
-            new TurretBlock(1, 2, BorderType.DOOR, BorderType.NONE, BorderType.NONE, BorderType.WALL),
-            new TurretBlock(1, 3, BorderType.DOOR, BorderType.WALL, BorderType.NONE, BorderType.NONE)
-        },
-        new Block[]{
-            null,
-            new TurretBlock(2, 1, BorderType.DOOR, BorderType.DOOR, BorderType.WALL, BorderType.WALL),
-            new TurretBlock(2, 2, BorderType.NONE, BorderType.NONE, BorderType.WALL, BorderType.DOOR),
-            new SpawnpointBlock(2, 3, BorderType.NONE, BorderType.WALL, BorderType.WALL, BorderType.NONE, CoinColor.YELLOW, new LinkedList<>())
-        }
-    };
-
-    private final Block[][] PRESET_11_2 = new Block[][] {
-        new Block[] {
-            new TurretBlock(0, 0, BorderType.WALL, BorderType.DOOR, BorderType.NONE, BorderType.WALL),
-            new TurretBlock(0, 1, BorderType.WALL, BorderType.NONE, BorderType.DOOR, BorderType.DOOR),
-            new SpawnpointBlock(0, 2, BorderType.WALL, BorderType.WALL, BorderType.DOOR, BorderType.NONE, CoinColor.BLUE, new LinkedList<>()),
-            null
-        },
-        new Block[] {
-            new SpawnpointBlock(1, 0, BorderType.NONE, BorderType.WALL, BorderType.DOOR, BorderType.WALL, CoinColor.RED, new LinkedList<>()),
-            new TurretBlock(1, 1, BorderType.DOOR, BorderType.NONE, BorderType.DOOR, BorderType.WALL),
-            new TurretBlock(1, 2, BorderType.DOOR, BorderType.DOOR, BorderType.WALL, BorderType.NONE),
-            new TurretBlock(1, 3, BorderType.WALL, BorderType.WALL, BorderType.NONE, BorderType.DOOR)
-        },
-        new Block[] {
-            new TurretBlock(2, 0, BorderType.DOOR, BorderType.NONE, BorderType.WALL, BorderType.WALL),
-            new TurretBlock(2, 1, BorderType.DOOR, BorderType.NONE, BorderType.WALL, BorderType.NONE),
-            new TurretBlock(2, 2, BorderType.WALL, BorderType.DOOR, BorderType.WALL, BorderType.NONE),
-            new SpawnpointBlock(2, 3, BorderType.NONE, BorderType.WALL, BorderType.WALL, BorderType.DOOR, CoinColor.YELLOW, new LinkedList<>())
-        }
-    };
-
-    private final Block[][] PRESET_12 = new Block[][] {
-        new Block[] {
-            new TurretBlock(0, 0, BorderType.WALL, BorderType.DOOR, BorderType.NONE, BorderType.WALL),
-            new TurretBlock(0, 1, BorderType.WALL, BorderType.NONE, BorderType.DOOR, BorderType.DOOR),
-            new SpawnpointBlock(0, 2, BorderType.WALL, BorderType.DOOR, BorderType.DOOR, BorderType.NONE, CoinColor.BLUE, new LinkedList<>()),
-            new TurretBlock(0, 3, BorderType.WALL, BorderType.WALL, BorderType.DOOR, BorderType.DOOR)
-        },
-        new Block[] {
-            new SpawnpointBlock(1, 0, BorderType.NONE, BorderType.WALL, BorderType.DOOR, BorderType.WALL, CoinColor.RED, new LinkedList<>()),
-            new TurretBlock(1, 1, BorderType.DOOR, BorderType.WALL, BorderType.DOOR, BorderType.WALL),
-            new TurretBlock(1, 2, BorderType.DOOR, BorderType.NONE, BorderType.NONE, BorderType.WALL),
-            new TurretBlock(1, 3, BorderType.DOOR, BorderType.WALL, BorderType.NONE, BorderType.NONE)
-        },
-        new Block[] {
-            new TurretBlock(2, 0, BorderType.DOOR, BorderType.NONE, BorderType.WALL, BorderType.WALL),
-            new TurretBlock(2, 1, BorderType.DOOR, BorderType.DOOR, BorderType.WALL, BorderType.NONE),
-            new TurretBlock(2, 2, BorderType.NONE, BorderType.NONE, BorderType.WALL, BorderType.DOOR),
-            new SpawnpointBlock(2, 3, BorderType.NONE, BorderType.WALL, BorderType.WALL, BorderType.NONE, CoinColor.YELLOW, new LinkedList<>())
-        }
-    };
-
     /**
-     * Class constructor
-     * @param preset the field preset that will be used in the match
+     *
+     * @param field the matrix containing all the blocks arranged according to the 2D representation of the board
      */
-    public Board(BoardPreset preset) throws UnknownEnumException {
-        switch (preset) {
-            case BOARD_10:
-                this.field = PRESET_10;
-                break;
-            case BOARD_11_1:
-                this.field = PRESET_11_1;
-                break;
-            case BOARD_11_2:
-                this.field = PRESET_11_2;
-                break;
-            case BOARD_12:
-                this.field = PRESET_12;
-                break;
-            default:
-                throw new UnknownEnumException("Enum value " + preset + " is not an acceptable value when building a Board");
-        }
+    public Board(Block[][] field) {
+        this.field = field;
     }
 
     /**

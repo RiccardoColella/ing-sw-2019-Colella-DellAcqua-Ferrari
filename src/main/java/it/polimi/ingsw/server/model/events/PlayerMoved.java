@@ -1,4 +1,15 @@
 package it.polimi.ingsw.server.model.events;
 
-public class PlayerMoved {
+import it.polimi.ingsw.server.model.Player;
+
+import java.util.EventObject;
+
+public class PlayerMoved extends EventObject {
+    /**
+     *
+     * @param movedPlayer the source object
+     */
+    public PlayerMoved(Player movedPlayer) {
+        super(movedPlayer);
+    }
 }

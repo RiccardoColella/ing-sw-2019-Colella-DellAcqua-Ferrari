@@ -1,4 +1,8 @@
-package it.polimi.ingsw.server.model;
+package it.polimi.ingsw.server.model.factories;
+
+import it.polimi.ingsw.server.model.CoinColor;
+import it.polimi.ingsw.server.model.PowerupTile;
+import it.polimi.ingsw.server.model.PowerupType;
 
 /**
  * This class creates all the powerup tiles needed in the game

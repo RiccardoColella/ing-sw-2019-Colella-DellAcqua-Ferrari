@@ -2,6 +2,8 @@ package it.polimi.ingsw.server.model;
 
 import it.polimi.ingsw.server.model.events.PlayerDied;
 import it.polimi.ingsw.server.model.exceptions.UnknownEnumException;
+import it.polimi.ingsw.server.model.factories.BoardFactory;
+import it.polimi.ingsw.server.model.factories.MatchFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,11 +24,7 @@ class MatchTest {
         for (int i = 0; i < 5; i++) {
             this.playerInfos.add(new PlayerInfo("Player" + i, PlayerColor.values()[i]));
         }
-        try {
-            this.match = new Match(playerInfos, BoardPreset.BOARD_10, 5, MatchMode.STANDARD);
-        } catch (UnknownEnumException e) {
-            e.printStackTrace();
-        }
+        this.match = MatchFactory.create(playerInfos, BoardFactory.Preset.BOARD_10, 5, Match.Mode.STANDARD);
     }
 
     @AfterEach
@@ -35,29 +33,54 @@ class MatchTest {
 
     @Test
     void changeTurn() {
-        match.changeTurn();
-        assert match.getActivePlayer().getNickname().equals(playerInfos.get(1).getNickname());
-        match.changeTurn();
-        assert match.getActivePlayer().getNickname().equals(playerInfos.get(2).getNickname());
-        match.changeTurn();
-        assert match.getActivePlayer().getNickname().equals(playerInfos.get(3).getNickname());
-        match.changeTurn();
-        assert match.getActivePlayer().getNickname().equals(playerInfos.get(4).getNickname());
-        match.changeTurn();
-        assert match.getActivePlayer().getNickname().equals(playerInfos.get(0).getNickname());
+
+        for (int i = 0; i < match.getPlayers().size() + 1; i++) {
+            assertSame(match.getActivePlayer(), match.getPlayers().get(i % match.getPlayers().size()), "Active player mismatch");
+            match.changeTurn();
+        }
     }
 
     @Test
     void onPlayerDied() {
-        Player victim = match.getPlayers().get(3);
-        int oldSkulls = victim.getSkulls();
-        int matchOldSkulls = match.getRemainingSkulls();
-        match.onPlayerDied(new PlayerDied(victim, match.getActivePlayer(), false));
-        assert victim.getSkulls() == oldSkulls + 1;
-        assert match.getRemainingSkulls() == matchOldSkulls - 1;
-        victim = match.getPlayers().get(4);
-        int oldMarks = match.getActivePlayer().getMarks().size();
-        match.onPlayerDied(new PlayerDied(victim, match.getActivePlayer(), true));
-        assert oldMarks + 1 == match.getActivePlayer().getMarks().size();
+        Player attacker = match.getPlayers().get(3);
+        int expectedSkulls = attacker.getSkulls();
+        int matchExpectedSkulls = match.getRemainingSkulls();
+        match.onPlayerDied(new PlayerDied(match.getActivePlayer(), attacker, false));
+        expectedSkulls++;
+        matchExpectedSkulls--;
+        assertEquals(expectedSkulls, match.getActivePlayer().getSkulls(), "Player did not receive its skull");
+        assertEquals(matchExpectedSkulls, match.getRemainingSkulls(), "Match didn't decrease the skull number");
+        attacker = match.getPlayers().get(4);
+        int expectedMarks = attacker.getMarks().size();
+
+        match.onPlayerDied(new PlayerDied(match.getActivePlayer(), attacker, true));
+        expectedMarks++;
+        matchExpectedSkulls--;
+        assertEquals(expectedMarks, attacker.getMarks().size(), "Player did not receive its mark");
+
+        match.onPlayerDied(new PlayerDied(match.getActivePlayer(), attacker, true));
+        expectedMarks++;
+        matchExpectedSkulls--;
+        assertEquals(expectedMarks, attacker.getMarks().size(), "Player did not receive its mark");
+
+        match.onPlayerDied(new PlayerDied(match.getActivePlayer(), attacker, true));
+        expectedMarks++;
+        matchExpectedSkulls--;
+        assertEquals(expectedMarks, attacker.getMarks().size(), "Player did not receive its mark");
+
+        match.onPlayerDied(new PlayerDied(match.getActivePlayer(), attacker, true));
+        // expectedMarks++; // Reached the maximum number of marks from the same player, the expected number should stop at 3
+        matchExpectedSkulls--;
+        assertEquals(expectedMarks, attacker.getMarks().size(), "Player did not receive its mark");
+
+        assertEquals(matchExpectedSkulls, match.getRemainingSkulls(), "Remaining skulls should be 0");
+        assertEquals(Match.Mode.FINAL_FRENZY, match.getMode(), "0 Skulls should imply FINAL_FRENZY mode");
+
+        match.changeTurn();
+
+        match.onPlayerDied(new PlayerDied(match.getActivePlayer(), attacker, true));
+        // Each player can give up to 3 marks, so the expected number should increase due to the fact that the active player has changed
+        expectedMarks++;
+        assertEquals(expectedMarks, attacker.getMarks().size(), "Player did not receive its mark");
     }
 }

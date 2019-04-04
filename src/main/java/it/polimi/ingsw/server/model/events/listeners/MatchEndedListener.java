@@ -2,7 +2,9 @@ package it.polimi.ingsw.server.model.events.listeners;
 
 import it.polimi.ingsw.server.model.events.MatchEnded;
 
-public interface MatchEndedListener {
+import java.util.EventListener;
+
+public interface MatchEndedListener extends EventListener {
 
     void onMatchEnded(MatchEnded event);
 }

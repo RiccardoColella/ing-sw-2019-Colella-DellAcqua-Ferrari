@@ -1,4 +1,7 @@
-package it.polimi.ingsw.server.model;
+package it.polimi.ingsw.server.model.factories;
+
+import it.polimi.ingsw.server.model.Ammo;
+import it.polimi.ingsw.server.model.CoinColor;
 
 /**
  * Factory class to create ammos for the match

@@ -5,14 +5,30 @@ import it.polimi.ingsw.server.model.events.PlayerDied;
 import it.polimi.ingsw.server.model.events.listeners.MatchEndedListener;
 import it.polimi.ingsw.server.model.exceptions.UnknownEnumException;
 import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
+import it.polimi.ingsw.server.model.factories.BoardFactory;
+import it.polimi.ingsw.server.model.factories.BonusTileFactory;
+import it.polimi.ingsw.server.model.factories.PowerupTileFactory;
+import it.polimi.ingsw.server.model.factories.WeaponFactory;
 
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This class represents the match, which is the core of the model and contains all the information relative to the game status
  */
 public class Match implements PlayerDiedListener {
+
+    /**
+     * This enum contains the possible types of match
+     */
+    public enum Mode {
+        STANDARD,
+        FINAL_FRENZY,
+        SUDDEN_DEATH
+    }
+
 
     /**
      * This property represents the number of skulls that are still left on the board
@@ -57,26 +73,24 @@ public class Match implements PlayerDiedListener {
     /**
      * This property stores the mode of the match, which can change if final frenzy is triggered
      */
-    private MatchMode matchMode;
+    private Mode mode;
 
     private List<MatchEndedListener> matchEndedListeners;
     /**
      * This constructor creates a new match from scratch
-     * @param playersInfo the PlayerInfo storing basic info about the players
-     * @param preset the BoardPreset that was chosen for the match
+     * @param players the players who are joining this match
+     * @param board the board that was chosen for the match
      * @param skulls an int representing the number of skulls
+     * @param mode the initial match mode
      */
-    public Match(List<PlayerInfo> playersInfo, BoardPreset preset, int skulls, MatchMode matchMode) throws UnknownEnumException {
+    public Match(List<Player> players, Board board, int skulls, Mode mode) {
         this.skulls = skulls;
-        this.players = new ArrayList<>();
-        for (PlayerInfo info : playersInfo) {
-            this.players.add(new Player(info));
-        }
-        this.board = new Board(preset);
+        this.players = players;
+        this.board = board;
         this.activePlayer = this.players.get(0);
         this.killshots = new HashMap<>();
         //CREATING THE DECK OF BONUS TILES:
-        List<BonusTile> bonusCards = new LinkedList<>();
+        List<BonusTile> bonusTiles = new LinkedList<>();
         // 36 bonus card, 18 with 3 ammos, 18 2 ammos + powerup
         // 2 ammos + powerup: 2 with 2 ammos of the same color for each color (= 6 cards), 4 for every combination (= 12 cards) RY RB BY
         // 3 ammos: 3 for each combo of 2 ammos of the same color + 1 different color (YBB, YRR, BYY, BRR, RYY, RBB) (= 18 cards)
@@ -84,24 +98,26 @@ public class Match implements PlayerDiedListener {
             for (CoinColor secondColor : CoinColor.values()) {
                 if (mainColor != secondColor) {
                     for (int i = 0; i < 2; i++) {
-                        bonusCards.add(BonusTileFactory.create(mainColor, mainColor, secondColor));
-                        bonusCards.add(BonusTileFactory.create(mainColor, secondColor));
+                        bonusTiles.add(BonusTileFactory.create(mainColor, mainColor, secondColor));
+                        bonusTiles.add(BonusTileFactory.create(mainColor, secondColor));
                     }
-                    bonusCards.add(BonusTileFactory.create(mainColor, mainColor, secondColor));
+                    bonusTiles.add(BonusTileFactory.create(mainColor, mainColor, secondColor));
                 }
             }
             for (int i = 0; i < 2; i++) {
-                bonusCards.add(BonusTileFactory.create(mainColor, mainColor));
+                bonusTiles.add(BonusTileFactory.create(mainColor, mainColor));
             }
         }
-        this.bonusDeck = new Deck<>(true, bonusCards);
+        this.bonusDeck = new Deck<>(true, bonusTiles);
 
         //CREATING THE WEAPON DECK:
-        List<Weapon> weaponCards = new LinkedList<>();
-        for (WeaponName name : WeaponName.values()) {
-            weaponCards.add(WeaponFactory.create(name));
-        }
-        this.weaponDeck = new Deck<>(false, weaponCards);
+        this.weaponDeck = new Deck<>(
+                false,
+                Arrays
+                    .stream(WeaponFactory.Name.values())
+                    .map(WeaponFactory::create)
+                    .collect(Collectors.toCollection(LinkedList::new))
+        );
 
         //CREATING THE POWERUP DECK
         List<PowerupTile> powerupCards = new LinkedList<>();
@@ -113,7 +129,7 @@ public class Match implements PlayerDiedListener {
             }
         }
         this.powerupDeck = new Deck<>(true, powerupCards);
-        this.matchMode = matchMode;
+        this.mode = mode;
         this.matchEndedListeners = new ArrayList<>();
     }
 
@@ -178,10 +194,10 @@ public class Match implements PlayerDiedListener {
 
     /**
      * This method gets the current mode of the match
-     * @return a MatchMode representing the current status of the match (final frenzy or standard)
+     * @return a Mode representing the current status of the match (final frenzy or standard)
      */
-    public MatchMode getMatchMode() {
-        return this.matchMode;
+    public Mode getMode() {
+        return this.mode;
     }
 
     /**
@@ -224,10 +240,10 @@ public class Match implements PlayerDiedListener {
         }
         if (this.skulls > 0) {
             this.skulls--;
-            if (this.skulls == 0 && this.matchMode == MatchMode.STANDARD) {
-                this.matchMode = MatchMode.FINAL_FRENZY; //TODO: add MatchModeChanged event
-            } else if (this.matchMode == MatchMode.SUDDEN_DEATH) {
-                matchEnded();
+            if (this.skulls == 0 && this.mode == Mode.STANDARD) {
+                this.mode = Mode.FINAL_FRENZY; //TODO: add MatchModeChanged event
+            } else if (this.mode == Mode.SUDDEN_DEATH) {
+                notifyMatchEnded();
             }
         }
     }
@@ -235,9 +251,9 @@ public class Match implements PlayerDiedListener {
     /**
      * This method triggers the MatchEnded event and sends it to its listeners
      */
-    private void matchEnded() {
+    private void notifyMatchEnded() {
         for (MatchEndedListener listener : this.matchEndedListeners) {
-            listener.onMatchEnded(new MatchEnded(this.players));
+            listener.onMatchEnded(new MatchEnded(this, this.players));
         }
     }
 

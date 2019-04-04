@@ -1,4 +1,7 @@
-package it.polimi.ingsw.server.model;
+package it.polimi.ingsw.server.model.factories;
+
+import it.polimi.ingsw.server.model.BonusTile;
+import it.polimi.ingsw.server.model.CoinColor;
 
 public final class BonusTileFactory {
 
