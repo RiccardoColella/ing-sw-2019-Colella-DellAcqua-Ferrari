@@ -17,7 +17,6 @@ public final class CompoundAction {
      * @param actions actions that can be selected
      */
     public CompoundAction(List<BasicAction> actions) {
-        //TODO all function
         this.actions = actions;
     }
 

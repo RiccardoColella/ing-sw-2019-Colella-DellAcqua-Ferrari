@@ -24,7 +24,6 @@ public class BonusTile {
      * @param ammo2 the second Ammo cube
      */
     public BonusTile(Ammo ammo1, Ammo ammo2) {
-        //TODO all function
         this.canPick = true;
         this.ammos = new ArrayList<>();
         this.ammos.add(ammo1);
@@ -38,7 +37,6 @@ public class BonusTile {
      * @param ammo3 the third Ammo cube
      */
     public BonusTile(Ammo ammo1, Ammo ammo2, Ammo ammo3) {
-        //TODO all function
         this.canPick = false;
         this.ammos = new ArrayList<>();
         this.ammos.add(ammo1);
@@ -51,7 +49,6 @@ public class BonusTile {
      * @return the List of available Ammo
      */
     public List<Ammo> getRewards() {
-        //TODO all function
         return this.ammos;
     }
 

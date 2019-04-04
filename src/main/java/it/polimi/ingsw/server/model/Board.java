@@ -13,7 +13,7 @@ public class Board {
 
     private final Block[][] field;
 
-    private static final Block[][] PRESET_10 = new Block[][] {
+    private final Block[][] PRESET_10 = new Block[][] {
         new Block[] {
             new TurretBlock(0, 0, BorderType.WALL, BorderType.NONE, BorderType.DOOR, BorderType.WALL),
             new TurretBlock(0, 1, BorderType.WALL, BorderType.NONE, BorderType.WALL, BorderType.NONE),
@@ -34,7 +34,7 @@ public class Board {
         }
     };
 
-    private static final Block[][] PRESET_11_1 = new Block[][] {
+    private final Block[][] PRESET_11_1 = new Block[][] {
         new Block[] {
             new TurretBlock(0, 0, BorderType.WALL, BorderType.NONE, BorderType.DOOR, BorderType.WALL),
             new TurretBlock(0, 1, BorderType.WALL, BorderType.NONE, BorderType.WALL, BorderType.NONE),
@@ -55,7 +55,7 @@ public class Board {
         }
     };
 
-    private static final Block[][] PRESET_11_2 = new Block[][] {
+    private final Block[][] PRESET_11_2 = new Block[][] {
         new Block[] {
             new TurretBlock(0, 0, BorderType.WALL, BorderType.DOOR, BorderType.NONE, BorderType.WALL),
             new TurretBlock(0, 1, BorderType.WALL, BorderType.NONE, BorderType.DOOR, BorderType.DOOR),
@@ -76,7 +76,7 @@ public class Board {
         }
     };
 
-    private static final Block[][] PRESET_12 = new Block[][] {
+    private final Block[][] PRESET_12 = new Block[][] {
         new Block[] {
             new TurretBlock(0, 0, BorderType.WALL, BorderType.DOOR, BorderType.NONE, BorderType.WALL),
             new TurretBlock(0, 1, BorderType.WALL, BorderType.NONE, BorderType.DOOR, BorderType.DOOR),
@@ -153,6 +153,7 @@ public class Board {
             case WEST:
                 neighbor = field[block.getRow()][block.getColumn() - 1];
                 break;
+            default:
         }
         return neighbor;
     }

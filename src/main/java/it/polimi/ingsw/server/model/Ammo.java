@@ -25,7 +25,8 @@ public class Ammo implements Coin {
      */
     @Override
     public boolean equalsTo(Coin coin) {
-        return false;
+        //TODO check if right
+        return this == coin);
     }
 
     /**
@@ -46,6 +47,7 @@ public class Ammo implements Coin {
      */
     @Override
     public boolean hasSameValueAs(Coin coin) {
-        return false;
+        //TODO check if right
+        return this.color == coin.getColor();
     }
 }

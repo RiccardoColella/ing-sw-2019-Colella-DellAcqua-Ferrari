@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.model;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -29,7 +30,7 @@ public class Deck<T> {
     public Deck(boolean autoRecycleDiscarded, List<T> cards) {
         //TODO all function
         this.autoRecycleDiscarded = autoRecycleDiscarded;
-        this. cards = cards;
+        this.cards = cards;
     }
 
     /**
@@ -38,15 +39,22 @@ public class Deck<T> {
      * @return the picked card
      */
     public T pick() {
-        //TODO all function
-        return null;
+        //TODO control check
+        T picked = null;
+        if(cards.isEmpty()){
+        }
+        else{
+            picked = cards.get(0);
+            cards.remove(0);
+        }
+        return picked;
     }
 
     /**
      * Shuffle the Deck
      */
     public void shuffle() {
-        //TODO all function
+        Collections.shuffle(cards);
     }
 
     /**
@@ -54,6 +62,8 @@ public class Deck<T> {
      * @param item to be deleted
      */
     public void discard(T item) {
-        //TODO all function
+        T todiscarde = cards.get(0);
+        cards.remove(0);
+        discarded.add(todiscarde);
     }
 }
