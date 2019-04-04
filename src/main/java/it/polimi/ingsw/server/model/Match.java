@@ -1,6 +1,10 @@
 package it.polimi.ingsw.server.model;
 
+import it.polimi.ingsw.server.model.events.MatchEnded;
+import it.polimi.ingsw.server.model.events.PlayerDied;
+import it.polimi.ingsw.server.model.events.listeners.MatchEndedListener;
 import it.polimi.ingsw.server.model.exceptions.UnknownEnumException;
+import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
 
 import java.util.*;
 import java.util.List;
@@ -8,7 +12,7 @@ import java.util.List;
 /**
  * This class represents the match, which is the core of the model and contains all the information relative to the game status
  */
-public class Match {
+public class Match implements PlayerDiedListener {
 
     /**
      * This property represents the number of skulls that are still left on the board
@@ -55,13 +59,14 @@ public class Match {
      */
     private MatchMode matchMode;
 
+    private List<MatchEndedListener> matchEndedListeners;
     /**
      * This constructor creates a new match from scratch
      * @param playersInfo the PlayerInfo storing basic info about the players
      * @param preset the BoardPreset that was chosen for the match
      * @param skulls an int representing the number of skulls
      */
-    public Match(List<PlayerInfo> playersInfo, BoardPreset preset, int skulls) throws UnknownEnumException {
+    public Match(List<PlayerInfo> playersInfo, BoardPreset preset, int skulls, MatchMode matchMode) throws UnknownEnumException {
         this.skulls = skulls;
         this.players = new ArrayList<>();
         for (PlayerInfo info : playersInfo) {
@@ -108,7 +113,8 @@ public class Match {
             }
         }
         this.powerupDeck = new Deck<>(true, powerupCards);
-        this.matchMode = MatchMode.STANDARD;
+        this.matchMode = matchMode;
+        this.matchEndedListeners = new ArrayList<>();
     }
 
     //TODO: add second constructor to restart a saved match given the name of the file
@@ -200,5 +206,42 @@ public class Match {
     public void changeTurn() {
         int activePlayerIndex = this.players.indexOf(this.activePlayer);
         this.activePlayer = (activePlayerIndex == this.players.size() - 1) ? this.players.get(0) : this.players.get(activePlayerIndex + 1);
+    }
+
+    /**
+     * This method is called when a player dies
+     *
+     * @param event the event corresponding to the player's death
+     */
+    @Override
+    public void onPlayerDied(PlayerDied event) {
+        this.killshots.put(new DamageToken(event.getKiller()), event.wasOverkilled());
+        event.getVictim().addSkull();
+        if (event.wasOverkilled()) {
+            List<DamageToken> revengeToken = new ArrayList<>();
+            revengeToken.add(new DamageToken(event.getVictim()));
+            event.getKiller().addMarks(revengeToken);
+        }
+        if (this.skulls > 0) {
+            this.skulls--;
+            if (this.skulls == 0 && this.matchMode == MatchMode.STANDARD) {
+                this.matchMode = MatchMode.FINAL_FRENZY; //TODO: add MatchModeChanged event
+            } else if (this.matchMode == MatchMode.SUDDEN_DEATH) {
+                matchEnded();
+            }
+        }
+    }
+
+    /**
+     * This method triggers the MatchEnded event and sends it to its listeners
+     */
+    private void matchEnded() {
+        for (MatchEndedListener listener : this.matchEndedListeners) {
+            listener.onMatchEnded(new MatchEnded(this.players));
+        }
+    }
+
+    public List<Player> getPlayers() {
+        return this.players;
     }
 }

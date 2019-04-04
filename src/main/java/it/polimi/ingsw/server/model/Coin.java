@@ -20,8 +20,8 @@ public interface Coin {
 
     /**
      * This method checks whether two coins have the same value
-     * @param coin the Coin to compare
+     * @param that the Coin to compare
      * @return true if the two coins have the same value, false otherwise
      */
-    boolean hasSameValueAs(Coin coin);
+    boolean hasSameValueAs(Coin that);
 }

@@ -5,5 +5,6 @@ package it.polimi.ingsw.server.model;
  */
 public enum MatchMode {
     STANDARD,
-    FINAL_FRENZY
+    FINAL_FRENZY,
+    SUDDEN_DEATH
 }

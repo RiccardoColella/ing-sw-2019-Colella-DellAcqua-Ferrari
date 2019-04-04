@@ -20,13 +20,12 @@ public class Ammo implements Coin {
 
     /**
      * Check if the Ammo's color
-     * @param coin color to be compared
+     * @param that color to be compared
      * @return true if the color is the same
      */
     @Override
-    public boolean equalsTo(Coin coin) {
-        //TODO check if right
-        return this == coin);
+    public boolean equalsTo(Coin that) {
+        return that instanceof Ammo && this.hasSameValueAs(that);
     }
 
     /**
@@ -42,12 +41,11 @@ public class Ammo implements Coin {
     /**
      * This method checks whether two coins have the same value
      *
-     * @param coin the Coin to compare
+     * @param that the Coin to compare
      * @return true if the two coins have the same value, false otherwise
      */
     @Override
-    public boolean hasSameValueAs(Coin coin) {
-        //TODO check if right
-        return this.color == coin.getColor();
+    public boolean hasSameValueAs(Coin that) {
+        return this.color == that.getColor();
     }
 }

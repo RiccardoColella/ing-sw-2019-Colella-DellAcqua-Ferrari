@@ -278,19 +278,13 @@ public class Player implements Damageable {
      * @param ammos a list containing the ammos the player is grabbing
      */
     public void grabAmmos(List<Ammo> ammos) {
-        if (ammos != null) { //if possible add @NotNull specification
             for (Ammo newAmmo : ammos) {
-                int equalAmmos = 0;
-                for (Ammo ownedAmmo : this.ammos) {
-                    if (newAmmo.equalsTo(ownedAmmo)) {
-                        equalAmmos++;
-                    }
-                }
-                if (equalAmmos < 3) { //if there are less than 3 ammos like the one that the player wants to add, it is added
+                if (this.ammos.stream()
+                              .filter(a -> a.equalsTo(newAmmo))
+                              .count() < 3) {
                     this.ammos.add(newAmmo);
                 }
             }
-        }
     }
 
     /**
@@ -313,4 +307,17 @@ public class Player implements Damageable {
         //TODO: implement shoot logic
     }
 
+    public void addSkull() {
+        skulls++;
+    }
+
+    public void addMarks(List<DamageToken> marks) {
+        for (DamageToken mark : marks) {
+            if (this.marks.stream()
+                          .filter(t -> t.getAttacker() == mark.getAttacker())
+                          .count() < 3) {
+                this.marks.add(mark);
+            }
+        }
+    }
 }
