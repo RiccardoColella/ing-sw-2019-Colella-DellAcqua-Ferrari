@@ -1,9 +1,9 @@
 package it.polimi.ingsw.server.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import it.polimi.ingsw.server.model.exceptions.UnknownEnumException;
+
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This class represents the match, which is the core of the model and contains all the information relative to the game status
@@ -61,30 +61,53 @@ public class Match {
      * @param preset the BoardPreset that was chosen for the match
      * @param skulls an int representing the number of skulls
      */
-    public Match(List<PlayerInfo> playersInfo, BoardPreset preset, int skulls) {
+    public Match(List<PlayerInfo> playersInfo, BoardPreset preset, int skulls) throws UnknownEnumException {
         this.skulls = skulls;
         this.players = new ArrayList<>();
         for (PlayerInfo info : playersInfo) {
             this.players.add(new Player(info));
         }
-        this.board = new Board(new Block[3][4]);
-        switch (preset) {
-            case BOARD_10:
-                break;
-            case BOARD_11_1:
-                break;
-            case BOARD_11_2:
-                break;
-            case BOARD_12:
-                break;
-            //TODO: add logic for board creation
-        }
+        this.board = new Board(preset);
         this.activePlayer = this.players.get(0);
         this.killshots = new HashMap<>();
-        //TODO: fill the decks
-        this.bonusDeck = new Deck<>(true);
-        this.weaponDeck = new Deck<>(false);
-        this.powerupDeck = new Deck<>(true);
+        //CREATING THE DECK OF BONUS TILES:
+        List<BonusTile> bonusCards = new LinkedList<>();
+        // 36 bonus card, 18 with 3 ammos, 18 2 ammos + powerup
+        // 2 ammos + powerup: 2 with 2 ammos of the same color for each color (= 6 cards), 4 for every combination (= 12 cards) RY RB BY
+        // 3 ammos: 3 for each combo of 2 ammos of the same color + 1 different color (YBB, YRR, BYY, BRR, RYY, RBB) (= 18 cards)
+        for (CoinColor mainColor : CoinColor.values()) {
+            for (CoinColor secondColor : CoinColor.values()) {
+                if (mainColor != secondColor) {
+                    for (int i = 0; i < 2; i++) {
+                        bonusCards.add(BonusTileFactory.create(mainColor, mainColor, secondColor));
+                        bonusCards.add(BonusTileFactory.create(mainColor, secondColor));
+                    }
+                    bonusCards.add(BonusTileFactory.create(mainColor, mainColor, secondColor));
+                }
+            }
+            for (int i = 0; i < 2; i++) {
+                bonusCards.add(BonusTileFactory.create(mainColor, mainColor));
+            }
+        }
+        this.bonusDeck = new Deck<>(true, bonusCards);
+
+        //CREATING THE WEAPON DECK:
+        List<Weapon> weaponCards = new LinkedList<>();
+        for (WeaponName name : WeaponName.values()) {
+            weaponCards.add(WeaponFactory.create(name));
+        }
+        this.weaponDeck = new Deck<>(false, weaponCards);
+
+        //CREATING THE POWERUP DECK
+        List<PowerupTile> powerupCards = new LinkedList<>();
+        for (PowerupType type : PowerupType.values()) {
+            for (CoinColor color : CoinColor.values()) {
+                for (int i = 0; i < 2; i++) {
+                    powerupCards.add(PowerupTileFactory.create(type, color));
+                }
+            }
+        }
+        this.powerupDeck = new Deck<>(true, powerupCards);
         this.matchMode = MatchMode.STANDARD;
     }
 
@@ -169,5 +192,13 @@ public class Match {
      */
     public Board getBoard() {
         return this.board;
+    }
+
+    /**
+     * This method is used when the active player has finished its turn and a new active player needs to be set
+     */
+    public void changeTurn() {
+        int activePlayerIndex = this.players.indexOf(this.activePlayer);
+        this.activePlayer = (activePlayerIndex == this.players.size() - 1) ? this.players.get(0) : this.players.get(activePlayerIndex + 1);
     }
 }

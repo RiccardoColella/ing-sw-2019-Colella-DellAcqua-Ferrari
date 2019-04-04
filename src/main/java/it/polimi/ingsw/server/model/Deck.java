@@ -26,9 +26,10 @@ public class Deck<T> {
      * Class constructor
      * @param autoRecycleDiscarded specifies whether the deck should be reinitialized automatically when it becomes empty, reshuffling the discarded cards
      */
-    public Deck(boolean autoRecycleDiscarded) {
+    public Deck(boolean autoRecycleDiscarded, List<T> cards) {
         //TODO all function
         this.autoRecycleDiscarded = autoRecycleDiscarded;
+        this. cards = cards;
     }
 
     /**
@@ -36,7 +37,7 @@ public class Deck<T> {
      * @param <T> generic card type
      * @return the picked card
      */
-    public <T> T pick() {
+    public T pick() {
         //TODO all function
         return null;
     }
