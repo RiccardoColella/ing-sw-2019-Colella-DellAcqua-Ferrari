@@ -3,6 +3,7 @@ package it.polimi.ingsw.server.model;
 import it.polimi.ingsw.server.model.events.MatchEnded;
 import it.polimi.ingsw.server.model.events.PlayerDied;
 import it.polimi.ingsw.server.model.events.listeners.MatchEndedListener;
+import it.polimi.ingsw.server.model.events.listeners.MatchModeChangedListener;
 import it.polimi.ingsw.server.model.exceptions.UnknownEnumException;
 import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
 import it.polimi.ingsw.server.model.factories.BoardFactory;
@@ -76,6 +77,7 @@ public class Match implements PlayerDiedListener {
     private Mode mode;
 
     private List<MatchEndedListener> matchEndedListeners;
+    private List<MatchModeChangedListener> matchModeChangedListeners;
     /**
      * This constructor creates a new match from scratch
      * @param players the players who are joining this match
@@ -131,6 +133,7 @@ public class Match implements PlayerDiedListener {
         this.powerupDeck = new Deck<>(true, powerupCards);
         this.mode = mode;
         this.matchEndedListeners = new ArrayList<>();
+        this.matchModeChangedListeners = new ArrayList<>();
     }
 
     //TODO: add second constructor to restart a saved match given the name of the file
@@ -231,6 +234,7 @@ public class Match implements PlayerDiedListener {
      */
     @Override
     public void onPlayerDied(PlayerDied event) {
+        this.scorePoints();
         this.killshots.put(new DamageToken(event.getKiller()), event.wasOverkilled());
         event.getVictim().addSkull();
         if (event.wasOverkilled()) {
@@ -252,6 +256,7 @@ public class Match implements PlayerDiedListener {
      * This method triggers the MatchEnded event and sends it to its listeners
      */
     private void notifyMatchEnded() {
+        //TODO: order players based on their score
         for (MatchEndedListener listener : this.matchEndedListeners) {
             listener.onMatchEnded(new MatchEnded(this, this.players));
         }
@@ -259,5 +264,17 @@ public class Match implements PlayerDiedListener {
 
     public List<Player> getPlayers() {
         return this.players;
+    }
+
+    public void addMatchEndedListener(MatchEndedListener listener) {
+        this.matchEndedListeners.add(listener);
+    }
+
+    public void addMatchModeChangedListener(MatchModeChangedListener listener) {
+        this.matchModeChangedListeners.add(listener);
+    }
+
+    private void scorePoints() {
+        //TODO: implement score points so that points are assigned to the players that damaged the dead player
     }
 }

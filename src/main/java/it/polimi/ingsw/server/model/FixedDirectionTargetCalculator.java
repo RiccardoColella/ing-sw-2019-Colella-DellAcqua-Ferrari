@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.model;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class FixedDirectionTargetCalculator implements TargetCalculator {
      * This constructor sets the direction that shall be considered when computing the target
      * @param direction the desired Direction
      */
-    public FixedDirectionTargetCalculator(Direction direction) {
+    public FixedDirectionTargetCalculator(@Nullable Direction direction) {
         this.direction = direction;
     }
 
@@ -42,7 +43,7 @@ public class FixedDirectionTargetCalculator implements TargetCalculator {
      * This method sets the direction of the targets to a new value
      * @param direction the value of Direction that will be used when computing targets, or null if all directions should be used
      */
-    public void setDirection(Direction direction) {
+    public void setDirection(@Nullable Direction direction) {
         this.direction = direction;
     }
 }
