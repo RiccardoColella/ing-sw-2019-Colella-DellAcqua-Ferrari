@@ -17,11 +17,17 @@ public class MatchFactory {
      * @return an awesome match
      */
     public static Match create(List<PlayerInfo> playersInfo, BoardFactory.Preset preset, int skulls, Match.Mode mode) {
-        return new Match(
+        Match match = new Match(
                 playersInfo.stream().map(Player::new).collect(Collectors.toList()),
                 BoardFactory.create(preset),
                 skulls,
                 mode
         );
+        match.getPlayers().forEach(player -> {
+            player.addPlayerDiedListener(match);
+            player.setMatch(match);
+            match.addMatchModeChangedListener(player);
+        });
+        return match;
     }
 }

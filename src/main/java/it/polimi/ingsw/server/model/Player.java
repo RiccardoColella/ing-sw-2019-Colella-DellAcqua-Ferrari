@@ -1,15 +1,21 @@
 package it.polimi.ingsw.server.model;
 
-import org.jetbrains.annotations.NotNull;
+import it.polimi.ingsw.server.model.events.MatchModeChanged;
+import it.polimi.ingsw.server.model.events.PlayerDied;
+import it.polimi.ingsw.server.model.events.listeners.MatchModeChangedListener;
+import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
+import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
+import it.polimi.ingsw.server.model.exceptions.UnauthorizedGrabException;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * This class represents the player entity, storing all info about its status during the match
  */
-public class Player implements Damageable {
+public class Player implements Damageable, MatchModeChangedListener {
     /**
      * This property represents the reward achievable for killing the player in standard mode
      */
@@ -20,6 +26,7 @@ public class Player implements Damageable {
      */
     private static final int[] FINAL_FRENZY_REWARD = {2, 1, 1, 1};
 
+    private static final int MORTAL_DAMAGE = 11;
     /**
      * This property represents the marks received by the player during its current life
      */
@@ -70,6 +77,10 @@ public class Player implements Damageable {
      */
     private Weapon activeWeapon;
 
+    private List<PlayerDiedListener> playerDiedListeners;
+
+    private Match match;
+
     /**
      * This constructor creates a player from the basic info: the player will be empty and ready to start a new match
      * @param info a PlayerInfo object containing the basic info
@@ -84,6 +95,8 @@ public class Player implements Damageable {
         this.powerups = new LinkedList<>();
         this.weapons = new LinkedList<>();
         this.activeAction = null;
+        this.playerDiedListeners = new ArrayList<>();
+        this.match = null;
     }
 
     /**
@@ -126,8 +139,29 @@ public class Player implements Damageable {
      * @param damageTokens a list of DamageToken that should be given to the Damageable
      */
     @Override
-    public void addDamageTokens(@NotNull List<DamageToken> damageTokens) {
+    public void addDamageTokens(List<DamageToken> damageTokens) {
+        Player shooter = damageTokens.get(0).getAttacker();
+        List<DamageToken> extraDamage = new LinkedList<>();
 
+        this.getMarks()
+                .stream()
+                .filter(mark -> mark.getAttacker() == shooter)
+                .forEach(extraDamage::add); // if the player had marks from the attacker, they become damage
+
+        if (!extraDamage.isEmpty()) {
+            damageTokens.addAll(extraDamage); // marks are added to the new damage
+            this.getMarks().removeAll(extraDamage); // and they are removed from the mark list
+        }
+
+        if (damageTokens.size() + this.damageTokens.size() <= MORTAL_DAMAGE + 1) { // any extra damage after overkill will not be counted
+            this.damageTokens.addAll(damageTokens);
+        } else {
+            int last = damageTokens.size() + this.damageTokens.size() - (MORTAL_DAMAGE + 1);
+            this.damageTokens.addAll(damageTokens.subList(0, last));
+        }
+        if (this.damageTokens.size() >= MORTAL_DAMAGE) {
+            notifyPlayerDied(shooter);
+        }
     }
 
     /**
@@ -249,7 +283,7 @@ public class Player implements Damageable {
      * @param direction the Direction the player should be moved to
      */
     public void move(Direction direction) {
-        //TODO: implement move
+        match.getBoard().movePlayer(this, direction);
     }
 
     /**
@@ -259,18 +293,28 @@ public class Player implements Damageable {
      * @param powerups the cost the player is paying with powerups
      * @param discardedWeapon the Weapon the player is giving up for the new one, if it already has the maximum number allowed
      */
-    public void grabWeapon(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups, Weapon discardedWeapon) {
-        //TODO: implement weapon payment and acquisition
+    public void grabWeapon(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups, Optional<Weapon> discardedWeapon) throws UnauthorizedGrabException, MissingOwnershipException {
+        this.pay(ammos, powerups);
+        if (this.weapons.size() == 3 && discardedWeapon.isPresent()) {
+            discardedWeapon.get().setLoaded(false);
+            weapons.remove(discardedWeapon.get());
+        } else if (this.weapons.size() >= 3) {
+            this.ammos.addAll(ammos);
+            this.powerups.addAll(powerups);
+            throw new UnauthorizedGrabException("Player already has 3 weapons and needs to drop one in order to buy one");
+        }
+        weapon.setLoaded(true);
+        weapons.add(weapon);
     }
 
     /**
      * This method allows the player to grab a new powerup
      * @param powerup the Powerup the player is grabbing
      */
-    public void grabPowerup(PowerupTile powerup) {
+    public void grabPowerup(PowerupTile powerup) throws UnauthorizedGrabException {
         if (this.powerups.size() < 3) {
             this.powerups.add(powerup);
-        } //TODO: else an exception should probably be thrown because the player should not have been allowed to grab it
+        } else throw new UnauthorizedGrabException("Player already had 3 powerups");
     }
 
     /**
@@ -287,14 +331,21 @@ public class Player implements Damageable {
             }
     }
 
+    public void setMatch(Match match) {
+        this.match = match;
+    }
+
     /**
      * This method allows the player to reload a weapon it owns
      * @param weapon the Weapon that shall be reloaded
      * @param ammos the cost the player is paying with ammos
      * @param powerups the cost the player is paying with powerups
      */
-    public void reload(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups) {
-        //TODO: implement reload logic
+    public void reload(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups) throws MissingOwnershipException {
+        if (!weapon.isLoaded()) {
+            pay(ammos, powerups);
+            weapon.setLoaded(true);
+        }
     }
 
     /**
@@ -318,6 +369,43 @@ public class Player implements Damageable {
                           .count() < 3) {
                 this.marks.add(mark);
             }
+        }
+    }
+
+    public void addPlayerDiedListener(PlayerDiedListener listener) {
+        playerDiedListeners.add(listener);
+    }
+
+    @Override
+    public void onMatchModeChanged(MatchModeChanged event) {
+
+    }
+
+    private void notifyPlayerDied(Player killer) {
+        this.playerDiedListeners.forEach(listener -> {
+            listener.onPlayerDied(
+                    new PlayerDied(
+                            this,
+                            killer,
+                            this.damageTokens.size() > MORTAL_DAMAGE
+                    )
+            );
+        });
+    }
+
+    private void pay(List<Ammo> ammos, List<PowerupTile> powerups) throws MissingOwnershipException {
+        for (Ammo spentAmmo : ammos) {
+            Optional<Ammo> paidAmmo = this.ammos.stream().filter(ownedAmmo -> ownedAmmo.equals(spentAmmo)).findAny();
+            if (paidAmmo.isPresent()) {
+                this.ammos.remove(paidAmmo.get());
+            } else throw new MissingOwnershipException("Player can't afford this weapon, missing ammos");
+        }
+
+        for (PowerupTile spentPowerup : powerups) {
+            Optional<PowerupTile> paidPowerup = this.powerups.stream().filter(ownedAmmo -> ownedAmmo.equals(spentPowerup)).findAny();
+            if (paidPowerup.isPresent()) {
+                this.powerups.remove(paidPowerup.get());
+            } else throw new MissingOwnershipException("Player can't afford this weapon, missing powerups");
         }
     }
 }
