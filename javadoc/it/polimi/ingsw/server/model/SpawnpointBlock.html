@@ -99,10 +99,10 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li><a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">it.polimi.ingsw.server.model.Block</a></li>
+<li><a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">it.polimi.ingsw.server.model.battlefield.Block</a></li>
 <li>
 <ul class="inheritance">
-<li>it.polimi.ingsw.server.model.SpawnpointBlock</li>
+<li>it.polimi.ingsw.server.model.battlefield.SpawnpointBlock</li>
 </ul>
 </li>
 </ul>
@@ -161,7 +161,7 @@ extends <a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/SpawnpointBlock.html#SpawnpointBlock-int-int-it.polimi.ingsw.server.model.BorderType-it.polimi.ingsw.server.model.BorderType-it.polimi.ingsw.server.model.BorderType-it.polimi.ingsw.server.model.BorderType-it.polimi.ingsw.server.model.CoinColor-java.util.List-">SpawnpointBlock</a></span>(int&nbsp;row,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/SpawnpointBlock.html#SpawnpointBlock-int-int-it.polimi.ingsw.server.model.BorderType-it.polimi.ingsw.server.model.BorderType-it.polimi.ingsw.server.model.BorderType-it.polimi.ingsw.server.model.BorderType-it.polimi.ingsw.server.model.currency.CurrencyColor-java.util.List-">SpawnpointBlock</a></span>(int&nbsp;row,
                int&nbsp;column,
                <a href="../../../../../it/polimi/ingsw/server/model/BorderType.html" title="enum in it.polimi.ingsw.server.model">BorderType</a>&nbsp;borderNorth,
                <a href="../../../../../it/polimi/ingsw/server/model/BorderType.html" title="enum in it.polimi.ingsw.server.model">BorderType</a>&nbsp;borderEast,
@@ -189,7 +189,7 @@ extends <a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/SpawnpointBlock.html#dropWeapon-it.polimi.ingsw.server.model.Weapon-">dropWeapon</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;weapon)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/SpawnpointBlock.html#dropWeapon-it.polimi.ingsw.server.model.weapons.Weapon-">dropWeapon</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;weapon)</code>
 <div class="block">This method allows for a weapon to be put back in the spawnpoint</div>
 </td>
 </tr>
@@ -207,17 +207,17 @@ extends <a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/SpawnpointBlock.html#grabWeapon-it.polimi.ingsw.server.model.Weapon-">grabWeapon</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;weapon)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/SpawnpointBlock.html#grabWeapon-it.polimi.ingsw.server.model.weapons.Weapon-">grabWeapon</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;weapon)</code>
 <div class="block">This method allows for a weapon to be grabbed from the spawnpoint</div>
 </td>
 </tr>
 </table>
 <ul class="blockList">
-<li class="blockList"><a name="methods.inherited.from.class.it.polimi.ingsw.server.model.Block">
+<li class="blockList"><a name="methods.inherited.from.class.it.polimi.ingsw.server.model.battlefield.Block">
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;it.polimi.ingsw.server.model.<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a></h3>
-<code><a href="../../../../../it/polimi/ingsw/server/model/Block.html#addPlayer-it.polimi.ingsw.server.model.Player-">addPlayer</a>, <a href="../../../../../it/polimi/ingsw/server/model/Block.html#containsPlayer-it.polimi.ingsw.server.model.Player-">containsPlayer</a>, <a href="../../../../../it/polimi/ingsw/server/model/Block.html#getBoarderType-it.polimi.ingsw.server.model.Direction-">getBoarderType</a>, <a href="../../../../../it/polimi/ingsw/server/model/Block.html#getColumn--">getColumn</a>, <a href="../../../../../it/polimi/ingsw/server/model/Block.html#getPlayers--">getPlayers</a>, <a href="../../../../../it/polimi/ingsw/server/model/Block.html#getRow--">getRow</a>, <a href="../../../../../it/polimi/ingsw/server/model/Block.html#removePlayer-it.polimi.ingsw.server.model.Player-">removePlayer</a></code></li>
+<code><a href="../../../../../it/polimi/ingsw/server/model/Block.html#addPlayer-it.polimi.ingsw.server.model.player.Player-">addPlayer</a>, <a href="../../../../../it/polimi/ingsw/server/model/Block.html#containsPlayer-it.polimi.ingsw.server.model.player.Player-">containsPlayer</a>, <a href="../../../../../it/polimi/ingsw/server/model/Block.html#getBoarderType-it.polimi.ingsw.server.model.battlefield.Direction-">getBoarderType</a>, <a href="../../../../../it/polimi/ingsw/server/model/Block.html#getColumn--">getColumn</a>, <a href="../../../../../it/polimi/ingsw/server/model/Block.html#getPlayers--">getPlayers</a>, <a href="../../../../../it/polimi/ingsw/server/model/Block.html#getRow--">getRow</a>, <a href="../../../../../it/polimi/ingsw/server/model/Block.html#removePlayer-it.polimi.ingsw.server.model.player.Player-">removePlayer</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">

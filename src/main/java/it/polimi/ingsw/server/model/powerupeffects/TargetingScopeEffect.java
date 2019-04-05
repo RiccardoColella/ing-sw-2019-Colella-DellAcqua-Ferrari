@@ -1,8 +1,11 @@
 package it.polimi.ingsw.server.model.powerupeffects;
 
 import it.polimi.ingsw.server.model.*;
+import it.polimi.ingsw.server.model.currency.Coin;
+import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.TypeMismatchException;
+import it.polimi.ingsw.server.model.player.Player;
 
 public class TargetingScopeEffect extends PowerupEffect {
 
@@ -16,7 +19,7 @@ public class TargetingScopeEffect extends PowerupEffect {
      * @throws TypeMismatchException     thrown if the powerup tile does not correspond to the effect
      */
     public TargetingScopeEffect(Match match, Player sourcePlayer, PowerupTile powerupTile) throws MissingOwnershipException, TypeMismatchException {
-        super(match, sourcePlayer, powerupTile, PowerupType.TARGETING_SCOPE);
+        super(match, sourcePlayer, powerupTile, PowerupTile.Type.TARGETING_SCOPE);
     }
 
     /**

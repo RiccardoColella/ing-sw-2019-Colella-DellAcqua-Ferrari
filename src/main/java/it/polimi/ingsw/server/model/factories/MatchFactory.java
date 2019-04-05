@@ -1,13 +1,19 @@
 package it.polimi.ingsw.server.model.factories;
 
 import it.polimi.ingsw.server.model.Match;
-import it.polimi.ingsw.server.model.Player;
-import it.polimi.ingsw.server.model.PlayerInfo;
+import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.player.PlayerInfo;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MatchFactory {
+
+
+    private MatchFactory() {
+
+    }
+
     /**
      *
      * @param playersInfo the PlayerInfo storing basic info about the players
@@ -25,6 +31,7 @@ public class MatchFactory {
         );
         match.getPlayers().forEach(player -> {
             player.addPlayerDiedListener(match);
+            player.addPlayerOverkilledListener(match);
             player.setMatch(match);
             match.addMatchModeChangedListener(player);
         });

@@ -1,7 +1,5 @@
 package it.polimi.ingsw.server.model;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
 
 /**
@@ -17,8 +15,17 @@ public interface Damageable {
 
     /**
      * This method assigns damage tokens to a Damageable
+     *
      * @param damageTokens a list of DamageToken that should be given to the Damageable
      */
-    void addDamageTokens(@NotNull List<DamageToken> damageTokens);
+    void addDamageTokens(List<DamageToken> damageTokens);
+
+
+    /**
+     * This method assigns a single damage token to a Damageable
+     *
+     * @param damageToken the DamageToken that should be given to the Damageable
+     */
+    void addDamageToken(DamageToken damageToken);
 
 }

@@ -6,7 +6,7 @@ import java.util.EventObject;
 
 public class MatchModeChanged extends EventObject {
 
-    private Match.Mode mode;
+    private final Match.Mode mode;
 
     /**
      *

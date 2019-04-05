@@ -1,23 +1,34 @@
 package it.polimi.ingsw.server.model;
 
+import it.polimi.ingsw.server.model.battlefield.Board;
+import it.polimi.ingsw.server.model.collections.Deck;
+import it.polimi.ingsw.server.model.currency.BonusTile;
+import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.events.MatchEnded;
+import it.polimi.ingsw.server.model.events.MatchModeChanged;
 import it.polimi.ingsw.server.model.events.PlayerDied;
+import it.polimi.ingsw.server.model.events.PlayerOverkilled;
 import it.polimi.ingsw.server.model.events.listeners.MatchEndedListener;
 import it.polimi.ingsw.server.model.events.listeners.MatchModeChangedListener;
 import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
+import it.polimi.ingsw.server.model.events.listeners.PlayerOverkilledListener;
 import it.polimi.ingsw.server.model.factories.BonusTileFactory;
 import it.polimi.ingsw.server.model.factories.PowerupTileFactory;
 import it.polimi.ingsw.server.model.factories.WeaponFactory;
+import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.weapons.Weapon;
 
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This class represents the match, which is the core of the model and contains all the information relative to the game status
  */
-public class Match implements PlayerDiedListener {
+public class Match implements PlayerDiedListener, PlayerOverkilledListener {
+
+
 
     /**
      * This enum contains the possible types of match
@@ -52,7 +63,7 @@ public class Match implements PlayerDiedListener {
     /**
      * This property stores the killshots and whether they have overkill
      */
-    private Map<DamageToken, Boolean> killshots;
+    private List<Killshot> killshots;
 
     /**
      * This property stores the deck of bonus tiles, which will never run out during the match
@@ -89,14 +100,14 @@ public class Match implements PlayerDiedListener {
         this.players = players;
         this.board = board;
         this.activePlayer = this.players.get(0);
-        this.killshots = new HashMap<>();
+        this.killshots = new LinkedList<>();
         //CREATING THE DECK OF BONUS TILES:
         List<BonusTile> bonusTiles = new LinkedList<>();
         // 36 bonus card, 18 with 3 ammos, 18 2 ammos + powerup
         // 2 ammos + powerup: 2 with 2 ammos of the same color for each color (= 6 cards), 4 for every combination (= 12 cards) RY RB BY
         // 3 ammos: 3 for each combo of 2 ammos of the same color + 1 different color (YBB, YRR, BYY, BRR, RYY, RBB) (= 18 cards)
-        for (CoinColor mainColor : CoinColor.values()) {
-            for (CoinColor secondColor : CoinColor.values()) {
+        for (CurrencyColor mainColor : CurrencyColor.values()) {
+            for (CurrencyColor secondColor : CurrencyColor.values()) {
                 if (mainColor != secondColor) {
                     for (int i = 0; i < 2; i++) {
                         bonusTiles.add(BonusTileFactory.create(mainColor, mainColor, secondColor));
@@ -122,8 +133,8 @@ public class Match implements PlayerDiedListener {
 
         //CREATING THE POWERUP DECK
         List<PowerupTile> powerupCards = new LinkedList<>();
-        for (PowerupType type : PowerupType.values()) {
-            for (CoinColor color : CoinColor.values()) {
+        for (PowerupTile.Type type : PowerupTile.Type.values()) {
+            for (CurrencyColor color : CurrencyColor.values()) {
                 for (int i = 0; i < 2; i++) {
                     powerupCards.add(PowerupTileFactory.create(type, color));
                 }
@@ -182,17 +193,17 @@ public class Match implements PlayerDiedListener {
      * This method gets the killshots that were given and whether they have overkill
      * @return a Map of DamageToken associated with a Boolean, which is true if overkill is present
      */
-    public Map<DamageToken, Boolean> getKillshots() {
+    public List<Killshot> getKillshots() {
         return this.killshots;
     }
 
     /**
      * This method allows to add a new killshot token to the match
      * @param killshot the DamageToken representing the killshot
-     * @param hasOverkill true if overkill is present, false otherwise
+     * @param isOverkill true if overkill is present, false otherwise
      */
-    public void addKillshot(DamageToken killshot, boolean hasOverkill) {
-        killshots.put(killshot, hasOverkill);
+    public void addKillshot(DamageToken killshot, boolean isOverkill) {
+        killshots.add(new Killshot(killshot, isOverkill));
     }
 
     /**
@@ -228,38 +239,79 @@ public class Match implements PlayerDiedListener {
     }
 
     /**
+     * This method must be called by the Controller before "changeTurn" in order to score points, then it should bring the returned list of dead players back to life
+     *
+     * @return the deadPlayers list waiting for a user decision to respawn
+     */
+    public List<Player> endTurn() {
+        List<Player> deadPlayers = this.getPlayers()
+                .stream()
+                .filter(player -> !player.isAlive())
+                .collect(Collectors.toList());
+
+        // In case of multiple killshots, the active player who dealt those attacks gets an extra point
+        if (deadPlayers.size() > 1) {
+            this.activePlayer.addPoints(1);
+        }
+
+        // Now we can bring back to life those players
+        for (Player deadPlayer : deadPlayers) {
+            scorePoints(deadPlayer);
+            if (this.skulls > 0) {
+                this.skulls--;
+                deadPlayer.addSkull();
+            }
+        }
+
+        if (this.skulls == 0 && this.mode == Mode.STANDARD) {
+            this.mode = Mode.FINAL_FRENZY;
+            notifyMatchModeChanged();
+        } else if (this.mode == Mode.SUDDEN_DEATH) {
+            notifyMatchEnded();
+        }
+
+        return deadPlayers;
+    }
+
+    /**
      * This method is called when a player dies
      *
      * @param event the event corresponding to the player's death
      */
     @Override
     public void onPlayerDied(PlayerDied event) {
-        this.scorePoints(event.getVictim());
-        this.killshots.put(new DamageToken(event.getKiller()), event.wasOverkilled());
-        event.getVictim().addSkull();
-        if (event.wasOverkilled()) {
-            List<DamageToken> revengeToken = new ArrayList<>();
-            revengeToken.add(new DamageToken(event.getVictim()));
-            event.getKiller().addMarks(revengeToken);
-        }
-        if (this.skulls > 0) {
-            this.skulls--;
-            if (this.skulls == 0 && this.mode == Mode.STANDARD) {
-                this.mode = Mode.FINAL_FRENZY; //TODO: add MatchModeChanged event
-            } else if (this.mode == Mode.SUDDEN_DEATH) {
-                notifyMatchEnded();
-            }
-        }
+        this.killshots.add(new Killshot(new DamageToken(event.getKiller()), false));
+    }
+
+
+    /**
+     * This method is called when a dead player gets overkilled
+     *
+     * @param event the event corresponding to the player's overkill
+     */
+    @Override
+    public void onPlayerOverkilled(PlayerOverkilled event) {
+        // killshots.size() > 0 because an overkill implies a death and thus a killshot
+        this.killshots.get(this.killshots.size() - 1).markAsOverkill();
+        event.getKiller().addMarks(Collections.singletonList(new DamageToken(event.getVictim())));
+    }
+
+
+
+    /**
+     * This method triggers the MatchModeChanged event and sends it to its listeners
+     */
+    private void notifyMatchModeChanged() {
+        MatchModeChanged e = new MatchModeChanged(this, this.mode);
+        this.matchModeChangedListeners.forEach(l -> l.onMatchModeChanged(e));
     }
 
     /**
      * This method triggers the MatchEnded event and sends it to its listeners
      */
     private void notifyMatchEnded() {
-        //TODO: order players based on their score
-        for (MatchEndedListener listener : this.matchEndedListeners) {
-            listener.onMatchEnded(new MatchEnded(this, this.players));
-        }
+        MatchEnded e = new MatchEnded(this, this.players);
+        this.matchEndedListeners.forEach(l -> l.onMatchEnded(e));
     }
 
     public List<Player> getPlayers() {

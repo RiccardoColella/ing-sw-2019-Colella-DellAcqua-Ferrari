@@ -1,6 +1,6 @@
 package it.polimi.ingsw.server.model.factories;
 
-import it.polimi.ingsw.server.model.Weapon;
+import it.polimi.ingsw.server.model.weapons.Weapon;
 
 /**
  * This class creates all the 21 weapons of the game

@@ -1,13 +1,13 @@
 package it.polimi.ingsw.server.model.events;
 
 import it.polimi.ingsw.server.model.Match;
-import it.polimi.ingsw.server.model.Player;
+import it.polimi.ingsw.server.model.player.Player;
 
 import java.util.EventObject;
 import java.util.List;
 
 public class MatchEnded extends EventObject {
-    private List<Player> rankings;
+    private final List<Player> rankings;
 
     /**
      *

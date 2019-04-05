@@ -1,7 +1,7 @@
 package it.polimi.ingsw.server.model.factories;
 
-import it.polimi.ingsw.server.model.BonusTile;
-import it.polimi.ingsw.server.model.CoinColor;
+import it.polimi.ingsw.server.model.currency.BonusTile;
+import it.polimi.ingsw.server.model.currency.CurrencyColor;
 
 public final class BonusTileFactory {
 
@@ -12,11 +12,11 @@ public final class BonusTileFactory {
 
     }
 
-    public static BonusTile create(CoinColor firstColor, CoinColor secondColor) {
+    public static BonusTile create(CurrencyColor firstColor, CurrencyColor secondColor) {
         return new BonusTile(AmmoFactory.create(firstColor), AmmoFactory.create(secondColor));
     }
 
-    public static BonusTile create(CoinColor firstColor, CoinColor secondColor, CoinColor thirdColor) {
+    public static BonusTile create(CurrencyColor firstColor, CurrencyColor secondColor, CurrencyColor thirdColor) {
         return new BonusTile(AmmoFactory.create(firstColor), AmmoFactory.create(secondColor), AmmoFactory.create(thirdColor));
     }
 }

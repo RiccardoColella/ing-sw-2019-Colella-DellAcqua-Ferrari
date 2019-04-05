@@ -1,5 +1,7 @@
 package it.polimi.ingsw.server.model;
 
+import it.polimi.ingsw.server.model.player.Player;
+
 /**
  * This class represents the tokens that is received upon being damaged or marked
  */

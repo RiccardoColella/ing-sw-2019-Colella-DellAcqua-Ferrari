@@ -1,8 +1,11 @@
 package it.polimi.ingsw.server.model.powerupeffects;
 
 import it.polimi.ingsw.server.model.*;
+import it.polimi.ingsw.server.model.battlefield.Direction;
+import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.TypeMismatchException;
+import it.polimi.ingsw.server.model.player.Player;
 
 public class NewtonEffect extends PowerupEffect {
 
@@ -17,7 +20,7 @@ public class NewtonEffect extends PowerupEffect {
      * @throws TypeMismatchException     thrown if the powerup tile does not correspond to the effect
      */
     public NewtonEffect(Match match, Player sourcePlayer, PowerupTile powerupTile) throws MissingOwnershipException, TypeMismatchException {
-        super(match, sourcePlayer, powerupTile, PowerupType.NEWTON);
+        super(match, sourcePlayer, powerupTile, PowerupTile.Type.NEWTON);
     }
 
     /**
@@ -27,6 +30,6 @@ public class NewtonEffect extends PowerupEffect {
      * @param steps the amount of blocks in that direction
      */
     public void move(Player target, Direction direction, int steps) {
-
+        // TODO
     }
 }

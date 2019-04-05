@@ -1,8 +1,7 @@
 package it.polimi.ingsw.server.model.factories;
 
-import it.polimi.ingsw.server.model.CoinColor;
-import it.polimi.ingsw.server.model.PowerupTile;
-import it.polimi.ingsw.server.model.PowerupType;
+import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.server.model.currency.PowerupTile;
 
 /**
  * This class creates all the powerup tiles needed in the game
@@ -18,11 +17,11 @@ public final class PowerupTileFactory {
 
     /**
      * This method creates a new powerup tile given its type and its color
-     * @param type a value of the PowerupType enum
-     * @param color a value of the CoinColor enum
+     * @param type a value of the Type enum
+     * @param color a value of the CurrencyColor enum
      * @return a new powerup tile with the given characteristics
      */
-    public static PowerupTile create(PowerupType type, CoinColor color) {
+    public static PowerupTile create(PowerupTile.Type type, CurrencyColor color) {
         String name;
         switch (type) {
             case NEWTON:

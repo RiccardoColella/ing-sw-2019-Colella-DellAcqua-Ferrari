@@ -99,7 +99,7 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li>it.polimi.ingsw.server.model.Board</li>
+<li>it.polimi.ingsw.server.model.battlefield.Board</li>
 </ul>
 </li>
 </ul>
@@ -148,7 +148,7 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#Board-it.polimi.ingsw.server.model.Block:A:A-">Board</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>[][]&nbsp;field)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#Board-it.polimi.ingsw.server.model.battlefield.Block:A:A-">Board</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>[][]&nbsp;field)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -167,7 +167,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>private <a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#findPlayer-it.polimi.ingsw.server.model.Player-">findPlayer</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Player.html" title="class in it.polimi.ingsw.server.model">Player</a>&nbsp;player)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#findPlayer-it.polimi.ingsw.server.model.player.Player-">findPlayer</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Player.html" title="class in it.polimi.ingsw.server.model">Player</a>&nbsp;player)</code>
 <div class="block">This method finds the position of a Player in the board</div>
 </td>
 </tr>
@@ -180,45 +180,45 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code><a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#getBlockNeighbor-it.polimi.ingsw.server.model.Block-it.polimi.ingsw.server.model.Direction-">getBlockNeighbor</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>&nbsp;block,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#getBlockNeighbor-it.polimi.ingsw.server.model.battlefield.Block-it.polimi.ingsw.server.model.battlefield.Direction-">getBlockNeighbor</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>&nbsp;block,
                 <a href="../../../../../it/polimi/ingsw/server/model/Direction.html" title="enum in it.polimi.ingsw.server.model">Direction</a>&nbsp;direction)</code>
 <div class="block">Tells who is the neighbor of the selected block</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>int</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#getColumn-it.polimi.ingsw.server.model.Block-">getColumn</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>&nbsp;block)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#getColumn-it.polimi.ingsw.server.model.battlefield.Block-">getColumn</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>&nbsp;block)</code>
 <div class="block">Tells the column of the selected Block</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#getRoom-it.polimi.ingsw.server.model.Block-">getRoom</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>&nbsp;block)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#getRoom-it.polimi.ingsw.server.model.battlefield.Block-">getRoom</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>&nbsp;block)</code>
 <div class="block">Tells all the Blocks in the room of the selected Block</div>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>int</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#getRow-it.polimi.ingsw.server.model.Block-">getRow</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>&nbsp;block)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#getRow-it.polimi.ingsw.server.model.battlefield.Block-">getRow</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>&nbsp;block)</code>
 <div class="block">Tells the row of the selected Block</div>
 </td>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#getVisibleBlock-it.polimi.ingsw.server.model.Block-">getVisibleBlock</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>&nbsp;block)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#getVisibleBlock-it.polimi.ingsw.server.model.battlefield.Block-">getVisibleBlock</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>&nbsp;block)</code>
 <div class="block">Tells the list of all visible Blocks from one Block</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#movePlayer-it.polimi.ingsw.server.model.Player-it.polimi.ingsw.server.model.Direction-">movePlayer</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Player.html" title="class in it.polimi.ingsw.server.model">Player</a>&nbsp;player,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#movePlayer-it.polimi.ingsw.server.model.player.Player-it.polimi.ingsw.server.model.battlefield.Direction-">movePlayer</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Player.html" title="class in it.polimi.ingsw.server.model">Player</a>&nbsp;player,
           <a href="../../../../../it/polimi/ingsw/server/model/Direction.html" title="enum in it.polimi.ingsw.server.model">Direction</a>&nbsp;direction)</code>
 <div class="block">Move a Player in the selected direction</div>
 </td>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#teleportPlayer-it.polimi.ingsw.server.model.Player-it.polimi.ingsw.server.model.Block-">teleportPlayer</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Player.html" title="class in it.polimi.ingsw.server.model">Player</a>&nbsp;player,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Board.html#teleportPlayer-it.polimi.ingsw.server.model.player.Player-it.polimi.ingsw.server.model.battlefield.Block-">teleportPlayer</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Player.html" title="class in it.polimi.ingsw.server.model">Player</a>&nbsp;player,
               <a href="../../../../../it/polimi/ingsw/server/model/Block.html" title="class in it.polimi.ingsw.server.model">Block</a>&nbsp;block)</code>
 <div class="block">teleport player will move the player to the desired block without checking anything</div>
 </td>

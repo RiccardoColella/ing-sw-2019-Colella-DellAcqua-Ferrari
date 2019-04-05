@@ -1,9 +1,8 @@
 package it.polimi.ingsw.server.model.powerupeffects;
 
 import it.polimi.ingsw.server.model.Match;
-import it.polimi.ingsw.server.model.Player;
-import it.polimi.ingsw.server.model.PowerupTile;
-import it.polimi.ingsw.server.model.PowerupType;
+import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.TypeMismatchException;
 
@@ -27,7 +26,7 @@ public abstract class PowerupEffect {
      * @throws MissingOwnershipException thrown if the player didn't have the correct PowerupTile for this effect
      * @throws TypeMismatchException thrown if the powerup tile does not correspond to the effect
      */
-    public PowerupEffect(Match match, Player sourcePlayer, PowerupTile powerupTile, PowerupType powerupType) throws MissingOwnershipException, TypeMismatchException {
+    public PowerupEffect(Match match, Player sourcePlayer, PowerupTile powerupTile, PowerupTile.Type powerupType) throws MissingOwnershipException, TypeMismatchException {
 
         this.match = match;
         this.sourcePlayer = sourcePlayer;
