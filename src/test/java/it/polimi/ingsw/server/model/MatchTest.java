@@ -1,7 +1,6 @@
 package it.polimi.ingsw.server.model;
 
 import it.polimi.ingsw.server.model.events.PlayerDied;
-import it.polimi.ingsw.server.model.exceptions.UnknownEnumException;
 import it.polimi.ingsw.server.model.factories.BoardFactory;
 import it.polimi.ingsw.server.model.factories.MatchFactory;
 import org.junit.jupiter.api.AfterEach;
@@ -11,7 +10,8 @@ import org.junit.jupiter.api.Test;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 class MatchTest {
 

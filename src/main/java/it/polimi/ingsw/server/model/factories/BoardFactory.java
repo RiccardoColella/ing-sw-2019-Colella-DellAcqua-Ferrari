@@ -1,7 +1,6 @@
 package it.polimi.ingsw.server.model.factories;
 
 import it.polimi.ingsw.server.model.*;
-import it.polimi.ingsw.server.model.exceptions.UnknownEnumException;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.LinkedList;

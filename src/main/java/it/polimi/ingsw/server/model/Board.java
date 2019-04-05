@@ -1,9 +1,6 @@
 package it.polimi.ingsw.server.model;
 
-import it.polimi.ingsw.server.model.exceptions.UnknownEnumException;
-
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -65,8 +62,40 @@ public class Board {
      * @return the List of all visible Blocks
      */
     public List<Block> getVisibleBlock(Block block) {
-        //TODO all function
-        return new ArrayList<>();
+        List<Block> visibleBlocks = null;
+        if(block.getBoarderType(Direction.NORD) == BorderType.NONE ||
+                block.getBoarderType(Direction.NORD) == BorderType.DOOR){
+            Block toBeAdded = this.getBlockNeighbor(block, Direction.NORD);
+            if(!visibleBlocks.contains(toBeAdded)){
+                visibleBlocks.add(toBeAdded);
+            }
+        }
+        if(block.getBoarderType(Direction.EAST) == BorderType.NONE ||
+                block.getBoarderType(Direction.EAST) == BorderType.DOOR){
+            Block toBeAdded = this.getBlockNeighbor(block, Direction.EAST);
+            if(!visibleBlocks.contains(toBeAdded)){
+                visibleBlocks.add(toBeAdded);
+            }
+        }
+        if(block.getBoarderType(Direction.SOUTH) == BorderType.NONE ||
+                block.getBoarderType(Direction.SOUTH) == BorderType.DOOR){
+            Block toBeAdded = this.getBlockNeighbor(block, Direction.SOUTH);
+            if(!visibleBlocks.contains(toBeAdded)){
+                visibleBlocks.add(toBeAdded);
+            }
+        }
+        if(block.getBoarderType(Direction.WEST) == BorderType.NONE ||
+                block.getBoarderType(Direction.WEST) == BorderType.DOOR){
+            Block toBeAdded = this.getBlockNeighbor(block, Direction.WEST);
+            if(!visibleBlocks.contains(toBeAdded)){
+                visibleBlocks.add(toBeAdded);
+            }
+        }
+        int nextBlock = visibleBlocks.indexOf(block) + 1;
+        if(visibleBlocks.size() > nextBlock){
+            this.getVisibleBlock( visibleBlocks.get(nextBlock) );
+        }
+        return visibleBlocks;
     }
 
     /**
@@ -75,8 +104,36 @@ public class Board {
      * @return List of all Blocks in the room of the selected Block
      */
     public List<Block> getRoom(Block block) {
-        //TODO all function
-        return new ArrayList<>();
+        List<Block> roomsBlock = null;
+        if(block.getBoarderType(Direction.NORD) == BorderType.NONE){
+            Block toBeAdded = this.getBlockNeighbor(block, Direction.NORD);
+            if(!roomsBlock.contains(toBeAdded)){
+                roomsBlock.add(toBeAdded);
+            }
+        }
+        if(block.getBoarderType(Direction.EAST) == BorderType.NONE){
+            Block toBeAdded = this.getBlockNeighbor(block, Direction.EAST);
+            if(!roomsBlock.contains(toBeAdded)){
+                roomsBlock.add(toBeAdded);
+            }
+        }
+        if(block.getBoarderType(Direction.SOUTH) == BorderType.NONE){
+            Block toBeAdded = this.getBlockNeighbor(block, Direction.SOUTH);
+            if(!roomsBlock.contains(toBeAdded)){
+                roomsBlock.add(toBeAdded);
+            }
+        }
+        if(block.getBoarderType(Direction.WEST) == BorderType.NONE){
+            Block toBeAdded = this.getBlockNeighbor(block, Direction.WEST);
+            if(!roomsBlock.contains(toBeAdded)){
+                roomsBlock.add(toBeAdded);
+            }
+        }
+        int nextBlock = roomsBlock.indexOf(block) + 1;
+        if(roomsBlock.size() > nextBlock){
+            this.getVisibleBlock( roomsBlock.get(nextBlock) );
+        }
+        return roomsBlock;
     }
 
     /**
@@ -107,12 +164,31 @@ public class Board {
     }
 
     /**
-     * Moves a player in the selected Block
-     * @param player Player to be moved
-     * @param block Destination Block
+     * This method finds the position of a Player in the board
+     * @param player Is the player to be searched
+     * @return the block on which is positioned the player
+     */
+    private Block findPlayer(Player player) {
+        Block playersBlock = null;
+        for(int x = 0; x < 4; x++){
+            for(int y = 0; y < 5; y++){
+                if ((field[x][y] != null) && field[x][y].containsPlayer(player)) {
+                    playersBlock = field[x][y];
+                }
+            }
+        }
+        return playersBlock;
+    }
+
+    /**
+     * teleport player will move the player to the desired block without checking anything
+     * @param player is the player who needs to be mooved
+     * @param block is the destination block
      */
     public void teleportPlayer(Player player, Block block) {
-        //teleport player will move the player to the desired block without checking anything
+        Block startingBlock = findPlayer(player);
+        startingBlock.removePlayer(player);
+        block.addPlayer(player);
     }
 
 
