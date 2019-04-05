@@ -187,7 +187,12 @@ public class Board {
      */
     public void teleportPlayer(Player player, Block block) {
         Block startingBlock = findPlayer(player);
-        startingBlock.removePlayer(player);
+        try{
+            startingBlock.removePlayer(player);
+        }
+        catch (NullPointerException e){
+            System.out.println(e);
+        }
         block.addPlayer(player);
     }
 
