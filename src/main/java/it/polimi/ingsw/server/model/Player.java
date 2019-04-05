@@ -81,6 +81,10 @@ public class Player implements Damageable, MatchModeChangedListener {
 
     private Match match;
 
+    private int[] currentReward = STANDARD_REWARD;
+
+    private boolean firstBloodCounts;
+
     /**
      * This constructor creates a player from the basic info: the player will be empty and ready to start a new match
      * @param info a PlayerInfo object containing the basic info
@@ -97,6 +101,7 @@ public class Player implements Damageable, MatchModeChangedListener {
         this.activeAction = null;
         this.playerDiedListeners = new ArrayList<>();
         this.match = null;
+        this.firstBloodCounts = true;
     }
 
     /**
@@ -287,24 +292,40 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     /**
-     * This method allows the player to buy a new weapon
+     * This method allows the player to buy a new weapon when he already has 3, exchanging it for one of those he owns
      * @param weapon the Weapon that the player is buying
      * @param ammos the cost the player is paying with ammos
      * @param powerups the cost the player is paying with powerups
-     * @param discardedWeapon the Weapon the player is giving up for the new one, if it already has the maximum number allowed
+     * @param discardedWeapon the Weapon the player is giving up for the new one
+     * @throws UnauthorizedGrabException if something went horribly wrong when trying to remove the extra weapon
+     * @throws MissingOwnershipException if the player did not have enough money to pay for the weapon
      */
-    public void grabWeapon(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups, Optional<Weapon> discardedWeapon) throws UnauthorizedGrabException, MissingOwnershipException {
-        this.pay(ammos, powerups);
-        if (this.weapons.size() == 3 && discardedWeapon.isPresent()) {
-            discardedWeapon.get().setLoaded(false);
-            weapons.remove(discardedWeapon.get());
-        } else if (this.weapons.size() >= 3) {
-            this.ammos.addAll(ammos);
-            this.powerups.addAll(powerups);
-            throw new UnauthorizedGrabException("Player already has 3 weapons and needs to drop one in order to buy one");
+    public void grabWeapon(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups, Weapon discardedWeapon) throws UnauthorizedGrabException, MissingOwnershipException {
+        if (this.weapons.size() == 3) {
+            weapons.remove(discardedWeapon);
         }
-        weapon.setLoaded(true);
-        weapons.add(weapon);
+        try {
+            grabWeapon(weapon, ammos, powerups);
+        } catch (MissingOwnershipException ex) {
+            weapons.add(discardedWeapon);
+            throw ex;
+        }
+        discardedWeapon.setLoaded(false);
+        //TODO: put the discarded weapon back into the spawnpoint
+    }
+
+    /**
+     * This method allows the player to buy a new weapon, given that he has less than 3 weapons
+     * @param weapon the Weapon that the player is buying
+     * @param ammos the cost the player is paying with ammos
+     * @param powerups the cost the player is paying with powerups
+     */
+    public void grabWeapon(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups) throws MissingOwnershipException, UnauthorizedGrabException {
+        if (this.weapons.size() < 3) {
+            this.pay(ammos, powerups);
+            weapon.setLoaded(true);
+            weapons.add(weapon);
+        } else throw new UnauthorizedGrabException("Player already has 3 weapons and needs to drop one in order to buy one");
     }
 
     /**
@@ -407,5 +428,13 @@ public class Player implements Damageable, MatchModeChangedListener {
                 this.powerups.remove(paidPowerup.get());
             } else throw new MissingOwnershipException("Player can't afford this weapon, missing powerups");
         }
+    }
+
+    public int[] getCurrentReward() {
+        return this.currentReward;
+    }
+
+    public boolean firstBloodMatters() {
+        return firstBloodCounts;
     }
 }

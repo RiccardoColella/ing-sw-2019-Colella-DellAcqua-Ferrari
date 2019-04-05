@@ -4,17 +4,15 @@ import it.polimi.ingsw.server.model.events.MatchEnded;
 import it.polimi.ingsw.server.model.events.PlayerDied;
 import it.polimi.ingsw.server.model.events.listeners.MatchEndedListener;
 import it.polimi.ingsw.server.model.events.listeners.MatchModeChangedListener;
-import it.polimi.ingsw.server.model.exceptions.UnknownEnumException;
 import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
-import it.polimi.ingsw.server.model.factories.BoardFactory;
 import it.polimi.ingsw.server.model.factories.BonusTileFactory;
 import it.polimi.ingsw.server.model.factories.PowerupTileFactory;
 import it.polimi.ingsw.server.model.factories.WeaponFactory;
 
-import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class represents the match, which is the core of the model and contains all the information relative to the game status
@@ -76,6 +74,7 @@ public class Match implements PlayerDiedListener {
      */
     private Mode mode;
 
+    private int finalFrenzyPlayed;
     private List<MatchEndedListener> matchEndedListeners;
     private List<MatchModeChangedListener> matchModeChangedListeners;
     /**
@@ -134,6 +133,7 @@ public class Match implements PlayerDiedListener {
         this.mode = mode;
         this.matchEndedListeners = new ArrayList<>();
         this.matchModeChangedListeners = new ArrayList<>();
+        this.finalFrenzyPlayed = 0;
     }
 
     //TODO: add second constructor to restart a saved match given the name of the file
@@ -234,7 +234,7 @@ public class Match implements PlayerDiedListener {
      */
     @Override
     public void onPlayerDied(PlayerDied event) {
-        this.scorePoints();
+        this.scorePoints(event.getVictim());
         this.killshots.put(new DamageToken(event.getKiller()), event.wasOverkilled());
         event.getVictim().addSkull();
         if (event.wasOverkilled()) {
@@ -274,7 +274,44 @@ public class Match implements PlayerDiedListener {
         this.matchModeChangedListeners.add(listener);
     }
 
-    private void scorePoints() {
-        //TODO: implement score points so that points are assigned to the players that damaged the dead player
+    private void scorePoints(Player victim) {
+        if (victim.firstBloodMatters()) {
+            victim.getDamageTokens().get(0).getAttacker().addPoints(1);
+        }
+        List<Player> scoringPlayers = this.players.stream()
+                .filter(player -> player != victim && victim.getDamageTokens().stream().anyMatch(damageToken -> damageToken.getAttacker() == player))
+                .sorted((a, b) -> {
+
+                    List<DamageToken> tokensA = new LinkedList<>();
+                    List<DamageToken> tokensB = new LinkedList<>();
+                    victim.getDamageTokens().forEach(token -> {
+                        if (token.getAttacker() == a) {
+                            tokensA.add(token);
+                        } else if (token.getAttacker() == b) {
+                            tokensB.add(token);
+                        }
+                    });
+
+                    int sizeComparison = Integer.compare(tokensB.size(), tokensA.size());
+                    int timeComparison = Integer.compare(victim.getDamageTokens().indexOf(tokensA.get(0)), victim.getDamageTokens().indexOf(tokensB.get(0)));
+
+                    return sizeComparison != 0 ?
+                            sizeComparison :
+                            timeComparison;
+                })
+                .collect(Collectors.toList());
+
+        int maxIndex = victim.getCurrentReward().length;
+        int currentIndex = victim.getSkulls();
+        for (Player scoringPlayer : scoringPlayers) {
+            if (maxIndex > currentIndex) {
+                scoringPlayer.addPoints(victim.getCurrentReward()[currentIndex]);
+            } else {
+                scoringPlayer.addPoints(1); // any scoring player gets at list one point
+            }
+            currentIndex++;
+        }
     }
+
+
 }
