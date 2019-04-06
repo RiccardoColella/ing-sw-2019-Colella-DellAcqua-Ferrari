@@ -50,8 +50,9 @@ public class SpawnpointBlock extends Block {
      * @param weapon the weapon to grab
      */
     public void grabWeapon(Weapon weapon) {
-        //TODO: make sure weapon is not null or check and throw exception
-        this.weapons.remove(weapon);
+        if (this.getWeapons().contains(weapon)){
+            this.weapons.remove(weapon);
+        } else throw new IllegalArgumentException();
     }
 
     /**
@@ -59,8 +60,9 @@ public class SpawnpointBlock extends Block {
      * @param weapon the weapon to drop
      */
     public void dropWeapon(Weapon weapon) {
-        //TODO: throw exception if there are already 3 weapons
-        this.weapons.add(weapon);
+        if (this.getWeapons().size() < 3){
+            this.weapons.add(weapon);
+        } else throw new IllegalStateException();
     }
 
     /**

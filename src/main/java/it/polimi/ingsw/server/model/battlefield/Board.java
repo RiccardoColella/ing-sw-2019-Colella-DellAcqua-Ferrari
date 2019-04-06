@@ -2,8 +2,7 @@ package it.polimi.ingsw.server.model.battlefield;
 
 import it.polimi.ingsw.server.model.player.Player;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class implements the gameboard
@@ -26,9 +25,12 @@ public class Board {
      * @param column of the requested Block
      * @return the requested Block
      */
-    public Block getBlock(int row, int column) {
-        // TODO getter with supervision
-        return field[row][column];
+    public Optional<Block> getBlock(int row, int column) {
+        if (row >= 0 && row < field.length && column>= 0 && column < field[0].length){
+            return Optional.ofNullable(field[row][column]);
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -37,25 +39,55 @@ public class Board {
      * @param direction where to look
      * @return the block next to the asked in the queried direction
      */
-    public Block getBlockNeighbor(Block block, Direction direction) {
-        //TODO getter with supervision
-        Block neighbor = null;
+    public Optional<Block> getBlockNeighbor(Block block, Direction direction) {
+        int r = block.getRow();
+        int c = block.getColumn();
         switch (direction) {
             case NORTH:
-                neighbor = field[block.getRow() - 1][block.getColumn()];
+                r--;
                 break;
             case EAST:
-                neighbor = field[block.getRow()][block.getColumn() + 1];
+                c++;
                 break;
             case SOUTH:
-                neighbor = field[block.getRow() + 1][block.getColumn()];
+                r++;
                 break;
             case WEST:
-                neighbor = field[block.getRow()][block.getColumn() - 1];
+                c--;
                 break;
             default:
+                throw new IllegalArgumentException();
         }
-        return neighbor;
+        if (r >= 0 && r < field.length && c >= 0 && c < field[0].length){
+            return Optional.ofNullable(field[r][c]);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Returns true if in that direction there is a door
+     * @param direction to observe
+     * @param block starting position
+     * @return true if in that direction there is a door
+     */
+    private boolean otherRoom(Direction direction, Block block){
+        return block.getBoarderType(direction) == Block.BorderType.DOOR;
+    }
+
+    /**
+     * Returns true if the block in that direction is in the same room.
+     * @param direction to observe
+     * @param block starting position
+     * @return true if the block in that direction is in the same room.
+     */
+    private boolean sameRoom(Direction direction, Block block){
+        Block.BorderType borderType = block.getBoarderType(direction);
+        return borderType == Block.BorderType.NONE;
+    }
+
+    private boolean canMoove(Direction direction, Block block){
+        return sameRoom(direction, block) || otherRoom(direction, block);
     }
 
     /**
@@ -63,40 +95,16 @@ public class Board {
      * @param block starting Block
      * @return the List of all visible Blocks
      */
-    public List<Block> getVisibleBlock(Block block) {
-        List<Block> visibleBlocks = new LinkedList<>();
-        if(block.getBoarderType(Direction.NORTH) == Block.BorderType.NONE ||
-                block.getBoarderType(Direction.NORTH) == Block.BorderType.DOOR){
-            Block toBeAdded = this.getBlockNeighbor(block, Direction.NORTH);
-            if(!visibleBlocks.contains(toBeAdded)){
-                visibleBlocks.add(toBeAdded);
-            }
-        }
-        if(block.getBoarderType(Direction.EAST) == Block.BorderType.NONE ||
-                block.getBoarderType(Direction.EAST) == Block.BorderType.DOOR){
-            Block toBeAdded = this.getBlockNeighbor(block, Direction.EAST);
-            if(!visibleBlocks.contains(toBeAdded)){
-                visibleBlocks.add(toBeAdded);
-            }
-        }
-        if(block.getBoarderType(Direction.SOUTH) == Block.BorderType.NONE ||
-                block.getBoarderType(Direction.SOUTH) == Block.BorderType.DOOR){
-            Block toBeAdded = this.getBlockNeighbor(block, Direction.SOUTH);
-            if(!visibleBlocks.contains(toBeAdded)){
-                visibleBlocks.add(toBeAdded);
-            }
-        }
-        if(block.getBoarderType(Direction.WEST) == Block.BorderType.NONE ||
-                block.getBoarderType(Direction.WEST) == Block.BorderType.DOOR){
-            Block toBeAdded = this.getBlockNeighbor(block, Direction.WEST);
-            if(!visibleBlocks.contains(toBeAdded)){
-                visibleBlocks.add(toBeAdded);
-            }
-        }
-        int nextBlock = visibleBlocks.indexOf(block) + 1;
-        if(visibleBlocks.size() > nextBlock){
-            this.getVisibleBlock( visibleBlocks.get(nextBlock) );
-        }
+    public Set<Block> getVisibleBlocks(Block block) {
+        Set<Block> visibleBlocks = new HashSet<>(getRoom(block));
+        Arrays.stream(Direction.values())
+                .filter(direction -> otherRoom(direction, block))
+                .forEach(direction -> {
+                    Optional<Block> toAdd = getBlockNeighbor(block, direction);
+                    if (toAdd.isPresent()){
+                        visibleBlocks.addAll(getRoom(toAdd.get()));
+                    }
+                });
         return visibleBlocks;
     }
 
@@ -105,35 +113,22 @@ public class Board {
      * @param block starting Block
      * @return List of all Blocks in the room of the selected Block
      */
-    public List<Block> getRoom(Block block) {
-        List<Block> roomsBlock = null;
-        if(block.getBoarderType(Direction.NORTH) == Block.BorderType.NONE){
-            Block toBeAdded = this.getBlockNeighbor(block, Direction.NORTH);
-            if(!roomsBlock.contains(toBeAdded)){
-                roomsBlock.add(toBeAdded);
-            }
-        }
-        if(block.getBoarderType(Direction.EAST) == Block.BorderType.NONE){
-            Block toBeAdded = this.getBlockNeighbor(block, Direction.EAST);
-            if(!roomsBlock.contains(toBeAdded)){
-                roomsBlock.add(toBeAdded);
-            }
-        }
-        if(block.getBoarderType(Direction.SOUTH) == Block.BorderType.NONE){
-            Block toBeAdded = this.getBlockNeighbor(block, Direction.SOUTH);
-            if(!roomsBlock.contains(toBeAdded)){
-                roomsBlock.add(toBeAdded);
-            }
-        }
-        if(block.getBoarderType(Direction.WEST) == Block.BorderType.NONE){
-            Block toBeAdded = this.getBlockNeighbor(block, Direction.WEST);
-            if(!roomsBlock.contains(toBeAdded)){
-                roomsBlock.add(toBeAdded);
-            }
-        }
-        int nextBlock = roomsBlock.indexOf(block) + 1;
-        if(roomsBlock.size() > nextBlock){
-            this.getVisibleBlock( roomsBlock.get(nextBlock) );
+    public Set<Block> getRoom(Block block) {
+        Set<Block> roomsBlock = new HashSet<>();
+        roomsBlock.add(block);
+        Queue<Block> queue = new LinkedList<>();
+        queue.add(block);
+        while(!queue.isEmpty()){
+            Block controlledBlock = queue.remove();
+            Arrays.stream(Direction.values())
+                    .filter(direction -> sameRoom(direction, controlledBlock) && !roomsBlock.contains(getBlockNeighbor(controlledBlock, direction).get()))
+                    .forEach(direction -> {
+                        Optional<Block> toAdd = getBlockNeighbor(controlledBlock, direction);
+                        if (toAdd.isPresent() && !roomsBlock.contains(toAdd.get())){
+                            roomsBlock.add(toAdd.get());
+                            queue.add(toAdd.get());
+                        }
+                    });
         }
         return roomsBlock;
     }
@@ -163,6 +158,15 @@ public class Board {
      */
     public void movePlayer(Player player, Direction direction) {
         //move player will check if the desired move is possible
+        Optional<Block> position = findPlayer(player);
+        Optional<Block> nextPosition;
+        if (position.isPresent() && canMoove(direction, position.get())){
+            nextPosition = getBlockNeighbor(position.get(), direction);
+            if (nextPosition.isPresent()){
+                position.get().removePlayer(player);
+                nextPosition.get().addPlayer(player);
+            }
+        }
     }
 
     /**
@@ -170,16 +174,15 @@ public class Board {
      * @param player Is the player to be searched
      * @return the block on which is positioned the player
      */
-    private Block findPlayer(Player player) {
-        Block playersBlock = null;
-        for(int x = 0; x < 4; x++){
-            for(int y = 0; y < 5; y++){
-                if ((field[x][y] != null) && field[x][y].containsPlayer(player)) {
-                    playersBlock = field[x][y];
+    public Optional<Block> findPlayer(Player player) {
+        for (Block[] blocks : field) {
+            for (Block block : blocks) {
+                if ((block != null) && block.containsPlayer(player)) {
+                    return Optional.ofNullable(block);
                 }
             }
         }
-        return playersBlock;
+        return Optional.empty();
     }
 
     /**
@@ -188,13 +191,10 @@ public class Board {
      * @param block is the destination block
      */
     public void teleportPlayer(Player player, Block block) {
-        Block startingBlock = findPlayer(player);
-        try{
-            startingBlock.removePlayer(player);
-        }
-        catch (NullPointerException e){
-            System.out.println(e);
-        }
+        Optional<Block> playerBlock = findPlayer(player);
+        if (playerBlock.isPresent()){
+            playerBlock.get().removePlayer(player);
+        } else throw new NullPointerException();
         block.addPlayer(player);
     }
 
