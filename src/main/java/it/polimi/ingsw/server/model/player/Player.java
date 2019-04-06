@@ -20,6 +20,8 @@ import it.polimi.ingsw.server.model.weapons.Weapon;
 
 import java.util.*;
 
+import static it.polimi.ingsw.server.model.Match.Mode.FINAL_FRENZY;
+
 /**
  * This class represents the player entity, storing all info about its status during the match
  */
@@ -93,7 +95,7 @@ public class Player implements Damageable, MatchModeChangedListener {
 
     private int[] currentReward = STANDARD_REWARD;
 
-    private boolean firstBloodCounts = true;
+    private boolean firstBloodMatters = true;
 
     private boolean isAlive = true;
 
@@ -139,7 +141,7 @@ public class Player implements Damageable, MatchModeChangedListener {
             if (newTokens.size() + this.damageTokens.size() <= MORTAL_DAMAGE + 1) { // any extra damage after overkill will not be counted
                 this.damageTokens.addAll(newTokens);
             } else {
-                int last = newTokens.size() + this.damageTokens.size() - (MORTAL_DAMAGE + 1);
+                int last = (MORTAL_DAMAGE + 1) - this.damageTokens.size();
                 this.damageTokens.addAll(newTokens.subList(0, last));
             }
             // >= because both PlayerDied and PlayerOverkilled can be caused by the same attack
@@ -161,7 +163,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      */
     @Override
     public void addDamageToken(DamageToken damageToken) {
-        this.addDamageTokens(Collections.singletonList(damageToken));
+        this.addDamageTokens(new LinkedList<>(Collections.singletonList(damageToken)));
     }
 
     /**
@@ -199,11 +201,18 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     /**
+     * This method resets the active weapon of the player putting it back to null
+     */
+    public void putAwayActiveWeapon() {
+        this.activeWeapon = null;
+    }
+
+    /**
      * This method shows the weapon currently used by the player
      * @return the weapon currently used by the player, null if the player is not shooting
      */
-    public Weapon getActiveWeapon() {
-        return this.activeWeapon;
+    public Optional<Weapon> getActiveWeapon() {
+        return Optional.ofNullable(this.activeWeapon);
     }
 
     /**
@@ -292,10 +301,9 @@ public class Player implements Damageable, MatchModeChangedListener {
      * @param ammos the cost the player is paying with ammos
      * @param powerups the cost the player is paying with powerups
      * @param discardedWeapon the Weapon the player is giving up for the new one
-     * @throws UnauthorizedGrabException if something went horribly wrong when trying to remove the extra weapon
-     * @throws MissingOwnershipException if the player did not have enough money to pay for the weapon
+     *
      */
-    public void grabWeapon(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups, Weapon discardedWeapon) throws UnauthorizedGrabException, MissingOwnershipException {
+    public void grabWeapon(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups, Weapon discardedWeapon) {
         if (this.weapons.size() == 3) {
             weapons.remove(discardedWeapon);
         }
@@ -314,10 +322,8 @@ public class Player implements Damageable, MatchModeChangedListener {
      * @param weapon the Weapon that the player is buying
      * @param ammos the cost the player is paying with ammos
      * @param powerups the cost the player is paying with powerups
-     * @throws MissingOwnershipException thrown if the player cannot afford the cost of the weapon
-     * @throws UnauthorizedGrabException thrown if the player is trying to grab a weapon while having already the maximum allowed limit
      */
-    public void grabWeapon(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups) throws MissingOwnershipException, UnauthorizedGrabException {
+    public void grabWeapon(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups) {
         if (this.weapons.size() < 3) {
             this.pay(ammos, powerups);
             weapon.setLoaded(true);
@@ -328,9 +334,8 @@ public class Player implements Damageable, MatchModeChangedListener {
     /**
      * This method allows the player to grab a new powerup
      * @param powerup the Powerup the player is grabbing
-     * @throws UnauthorizedGrabException thrown if the player is trying to grab a powerup while having already the maximum allowed limit
      */
-    public void grabPowerup(PowerupTile powerup) throws UnauthorizedGrabException {
+    public void grabPowerup(PowerupTile powerup) {
         if (this.powerups.size() < 3) {
             this.powerups.add(powerup);
         } else throw new UnauthorizedGrabException("Player already had 3 powerups");
@@ -359,9 +364,8 @@ public class Player implements Damageable, MatchModeChangedListener {
      * @param weapon the Weapon that shall be reloaded
      * @param ammos the cost the player is paying with ammos
      * @param powerups the cost the player is paying with powerups
-     * @throws MissingOwnershipException thrown if the player cannot afford the reload cost
      */
-    public void reload(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups) throws MissingOwnershipException {
+    public void reload(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups) {
         if (!weapon.isLoaded()) {
             pay(ammos, powerups);
             weapon.setLoaded(true);
@@ -392,6 +396,10 @@ public class Player implements Damageable, MatchModeChangedListener {
         }
     }
 
+    public void addMark(DamageToken mark) {
+        this.addMarks(new LinkedList<>(Collections.singletonList(mark)));
+    }
+
     public void addPlayerDiedListener(PlayerDiedListener listener) {
         playerDiedListeners.add(listener);
     }
@@ -406,19 +414,33 @@ public class Player implements Damageable, MatchModeChangedListener {
 
     @Override
     public void onMatchModeChanged(MatchModeChanged event) {
-        // TODO
+        switch (event.getMode()) {
+            case FINAL_FRENZY:
+                if (this.damageTokens.isEmpty()) {
+                    this.currentReward = FINAL_FRENZY_REWARD;
+                    this.firstBloodMatters = false;
+                }
+                break;
+            case STANDARD:
+            case SUDDEN_DEATH:
+                this.currentReward = STANDARD_REWARD;
+                this.firstBloodMatters = true;
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
-    private void pay(List<Ammo> ammos, List<PowerupTile> powerups) throws MissingOwnershipException {
+    private void pay(List<Ammo> ammos, List<PowerupTile> powerups) {
         for (Ammo spentAmmo : ammos) {
-            Optional<Ammo> paidAmmo = this.ammos.stream().filter(ownedAmmo -> ownedAmmo.equals(spentAmmo)).findAny();
+            Optional<Ammo> paidAmmo = this.ammos.stream().filter(ownedAmmo -> ownedAmmo.equalsTo(spentAmmo)).findAny();
             if (paidAmmo.isPresent()) {
                 this.ammos.remove(paidAmmo.get());
             } else throw new MissingOwnershipException("Player can't afford this weapon, missing ammos");
         }
 
         for (PowerupTile spentPowerup : powerups) {
-            Optional<PowerupTile> paidPowerup = this.powerups.stream().filter(ownedAmmo -> ownedAmmo.equals(spentPowerup)).findAny();
+            Optional<PowerupTile> paidPowerup = this.powerups.stream().filter(ownedAmmo -> ownedAmmo.equalsTo(spentPowerup)).findAny();
             if (paidPowerup.isPresent()) {
                 this.powerups.remove(paidPowerup.get());
             } else throw new MissingOwnershipException("Player can't afford this weapon, missing powerups");
@@ -430,21 +452,21 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     public boolean firstBloodMatters() {
-        return firstBloodCounts;
+        return firstBloodMatters;
     }
 
     public boolean isAlive() {
         return isAlive;
     }
 
-    public void setAlive(boolean alive) {
-        isAlive = alive;
-    }
-
     // Called by the Controller after it has determined (asking the human player) where it should spawn, based on a Powerup selection
     public void bringBackToLife() {
         isAlive = true;
         damageTokens.clear();
+        if (match.getMode() == FINAL_FRENZY) { // when a player dies during final frenzy, he flips his board
+            this.firstBloodMatters = false;
+            this.currentReward = FINAL_FRENZY_REWARD;
+        }
         notifyPlayerBroughtBackToLife();
     }
 

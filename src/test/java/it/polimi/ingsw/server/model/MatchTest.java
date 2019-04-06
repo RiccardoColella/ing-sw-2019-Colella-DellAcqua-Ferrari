@@ -20,13 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 class MatchTest {
 
     private Match match;
-    private List<PlayerInfo> playerInfos;
 
     @BeforeEach
     void setUp() {
-        this.playerInfos = new LinkedList<>();
+        List<PlayerInfo> playerInfos = new LinkedList<>();
         for (int i = 0; i < 5; i++) {
-            this.playerInfos.add(new PlayerInfo("Player" + i, PlayerColor.values()[i]));
+            playerInfos.add(new PlayerInfo("Player" + i, PlayerColor.values()[i]));
         }
         this.match = MatchFactory.create(playerInfos, BoardFactory.Preset.BOARD_10, 5, Match.Mode.STANDARD);
     }

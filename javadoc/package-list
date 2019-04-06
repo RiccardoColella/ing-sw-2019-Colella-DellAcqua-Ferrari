@@ -10,3 +10,4 @@ it.polimi.ingsw.server.model.factories
 it.polimi.ingsw.server.model.player
 it.polimi.ingsw.server.model.powerupeffects
 it.polimi.ingsw.server.model.weapons
+it.polimi.ingsw.server.model.weapons.attackeffects

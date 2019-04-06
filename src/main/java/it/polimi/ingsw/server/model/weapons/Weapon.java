@@ -3,8 +3,6 @@ package it.polimi.ingsw.server.model.weapons;
 import it.polimi.ingsw.server.model.Damageable;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
-
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -76,9 +74,8 @@ public class Weapon {
      * This method sets the chosen attack as active
      *
      * @param attack the attack chosen by the player
-     * @throws MissingOwnershipException thrown if this weapon does not contain the attack
      */
-    public void chooseAttack(Attack attack) throws MissingOwnershipException {
+    public void chooseAttack(Attack attack) {
         if (hasAttack(attack)) {
             this.activeAttack = attack;
         } else {
@@ -137,8 +134,8 @@ public class Weapon {
     /**
      * This method verifies whether or not the attack passed as an argument belongs to this weapon
      *
-     * @param attack
-     * @return
+     * @param attack the attack
+     * @return true if the attack belongs to the weapon
      */
     protected boolean hasAttack(Attack attack) {
         return basicAttack.equals(attack);
