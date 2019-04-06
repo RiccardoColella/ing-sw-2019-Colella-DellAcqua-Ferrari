@@ -1,6 +1,6 @@
 package it.polimi.ingsw.server.model.exceptions;
 
-public class MissingOwnershipException extends Exception {
+public class MissingOwnershipException extends RuntimeException {
     /**
      * This constructor generates an Exception with only a string
      *

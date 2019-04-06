@@ -12,7 +12,7 @@ public class Deck<T> implements Collection<T> {
     /**
      * List of all elements still in the deck
      */
-    private List<T> cards;
+    private LinkedList<T> cards;
 
     /**
      * List of the used element's of the deck
@@ -31,7 +31,7 @@ public class Deck<T> implements Collection<T> {
      */
     public Deck(boolean autoRecycleDiscarded, List<T> cards) {
         this.autoRecycleDiscarded = autoRecycleDiscarded;
-        this.cards = cards;
+        this.cards = new LinkedList<>(cards);
     }
 
     /**
@@ -41,8 +41,7 @@ public class Deck<T> implements Collection<T> {
      */
     public Optional<T> pick() {
         if (cards.size() > 0) {
-            T picked = cards.get(0);
-            cards.remove(0);
+            T picked = cards.remove();
             recycleIfNeeded();
             return Optional.of(picked);
         } else {

@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server.model.weapons;
 
 import it.polimi.ingsw.server.model.currency.Coin;
+import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 
 import java.util.List;
 
@@ -21,15 +22,15 @@ public class WeaponWithAlternative extends Weapon {
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
      *
-     * @param basicAttack           the basic attack of the weapon
-     * @param alternativeAttack     the alternative attack of the weapon
      * @param name                  a string with the name of the weapon
-     * @param reloadCost            a list of coin equal to the reload cost of the weapon
+     * @param basicAttack           the basic attack of the weapon
      * @param acquisitionCost       a list of coin equal to the acquisition cost of the weapon
+     * @param reloadCost            a list of coin equal to the reload cost of the weapon
+     * @param alternativeAttack     the alternative attack of the weapon
      * @param alternativeAttackCost a list of coin equal to the cost of the alternative attack
      */
-    public WeaponWithAlternative(Attack basicAttack, Attack alternativeAttack, String name, List<Coin> reloadCost, List<Coin> acquisitionCost, List<Coin> alternativeAttackCost) {
-        super(basicAttack, name, reloadCost, acquisitionCost);
+    public WeaponWithAlternative(String name, Attack basicAttack, List<Coin> acquisitionCost, List<Coin> reloadCost, Attack alternativeAttack, List<Coin> alternativeAttackCost) {
+        super(name, basicAttack, acquisitionCost, reloadCost);
         this.alternativeAttack = alternativeAttack;
         this.alternativeAttackCost = alternativeAttackCost;
     }
@@ -50,4 +51,8 @@ public class WeaponWithAlternative extends Weapon {
         return this.alternativeAttackCost;
     }
 
+    @Override
+    protected boolean hasAttack(Attack attack) {
+        return super.hasAttack(attack) || this.alternativeAttack.equals(attack);
+    }
 }

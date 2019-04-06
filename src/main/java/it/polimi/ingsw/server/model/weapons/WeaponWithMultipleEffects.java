@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server.model.weapons;
 
 import it.polimi.ingsw.server.model.currency.Coin;
+import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,15 +25,15 @@ public class WeaponWithMultipleEffects extends Weapon {
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
      *
-     * @param basicAttack           the basic attack of the weapon
-     * @param poweredAttacks        a non-empty map of the powered attacks of the weapon with their relative cost
      * @param name                  a string with the name of the weapon
-     * @param reloadCost            a list of coin equal to the reload cost of the weapon
+     * @param basicAttack           the basic attack of the weapon
      * @param acquisitionCost       a list of coin equal to the acquisition cost of the weapon
+     * @param reloadCost            a list of coin equal to the reload cost of the weapon
+     * @param poweredAttacks        a non-empty map of the powered attacks of the weapon with their relative cost
      * @param mustExecuteInOrder    true if the effects can only be used in the given order and with basic effect first
      */
-    public WeaponWithMultipleEffects(Attack basicAttack, Map<Attack, List<Coin>> poweredAttacks, String name, List<Coin> reloadCost, List<Coin> acquisitionCost, boolean mustExecuteInOrder) {
-        super(basicAttack, name, reloadCost, acquisitionCost);
+    public WeaponWithMultipleEffects(String name, Attack basicAttack, List<Coin> acquisitionCost, List<Coin> reloadCost, Map<Attack, List<Coin>> poweredAttacks, boolean mustExecuteInOrder) {
+        super(name, basicAttack, acquisitionCost, reloadCost);
         this.poweredAttacks = poweredAttacks;
         this.mustExecuteInOrder = mustExecuteInOrder;
     }
@@ -51,7 +52,11 @@ public class WeaponWithMultipleEffects extends Weapon {
      * @return the cost of the given attack, null if the weapon does not include it
      */
     public List<Coin> getAttackCost(Attack attack) {
-        return poweredAttacks.get(attack);
+        if (hasAttack(attack)) {
+            return poweredAttacks.get(attack);
+        } else {
+            throw new MissingOwnershipException("Attack " + attack + " does not belong to this weapon");
+        }
     }
 
     /**
@@ -60,5 +65,10 @@ public class WeaponWithMultipleEffects extends Weapon {
      */
     public boolean mustExecuteInOrder() {
         return this.mustExecuteInOrder;
+    }
+
+    @Override
+    protected boolean hasAttack(Attack attack) {
+        return super.hasAttack(attack) || this.poweredAttacks.containsKey(attack);
     }
 }

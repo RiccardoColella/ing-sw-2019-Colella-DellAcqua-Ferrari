@@ -2,7 +2,9 @@ package it.polimi.ingsw.server.model.weapons;
 
 import it.polimi.ingsw.server.model.Damageable;
 import it.polimi.ingsw.server.model.currency.Coin;
+import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,12 +49,13 @@ public class Weapon {
 
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
-     * @param basicAttack the basic attack of the weapon
+     *
      * @param name a string with the name of the weapon
-     * @param reloadCost a list of coin equal to the reload cost of the weapon
+     * @param basicAttack the basic attack of the weapon
      * @param acquisitionCost a list of coin equal to the acquisition cost of the weapon
+     * @param reloadCost a list of coin equal to the reload cost of the weapon
      */
-    public Weapon(Attack basicAttack, String name, List<Coin> reloadCost, List<Coin> acquisitionCost) {
+    public Weapon(String name, Attack basicAttack, List<Coin> acquisitionCost, List<Coin> reloadCost) {
         this.basicAttack = basicAttack;
         this.name = name;
         this.isLoaded = false;
@@ -66,16 +69,21 @@ public class Weapon {
      * This method executes the attack that is currently stored as the active attack of the weapon
      */
     public void executeActiveAttack() {
-        //attack execution will be implemented after weapons
+        // TODO: attack execution will be implemented after weapons
     }
 
     /**
      * This method sets the chosen attack as active
+     *
      * @param attack the attack chosen by the player
+     * @throws MissingOwnershipException thrown if this weapon does not contain the attack
      */
-    public void chooseAttack(Attack attack) {
-        //TODO: check if attack belongs to weapon
-        this.activeAttack = attack;
+    public void chooseAttack(Attack attack) throws MissingOwnershipException {
+        if (hasAttack(attack)) {
+            this.activeAttack = attack;
+        } else {
+            throw new MissingOwnershipException("Selected attack does not belong to this weapon");
+        }
     }
 
     /**
@@ -126,4 +134,13 @@ public class Weapon {
         this.isLoaded = isLoaded;
     }
 
+    /**
+     * This method verifies whether or not the attack passed as an argument belongs to this weapon
+     *
+     * @param attack
+     * @return
+     */
+    protected boolean hasAttack(Attack attack) {
+        return basicAttack.equals(attack);
+    }
 }

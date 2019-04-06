@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server.model.factories;
 
 import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.model.weapons.WeaponWithMultipleEffects;
 
 /**
  * This class creates all the 21 weapons of the game
@@ -11,27 +12,43 @@ public final class WeaponFactory {
      * This enum cathegorizes the 21 different weapons
      */
     public enum Name {
-        LOCK_RIFLE,
-        ELECTROSCYTHE,
-        MACHINE_GUN,
-        TRACTOR_BEAM,
-        THOR,
-        VORTEX_CANNON,
-        FURNACE,
-        PLASMA_GUN,
-        HEATSEEKER,
-        WHISPER,
-        HELLION,
-        FLAMETHROWER,
-        TWO_X_TWO,
-        GRENADE_LAUNCHER,
-        SHOTGUN,
-        ROCKET_LAUNCHER,
-        POWER_GLOVE,
-        RAILGUN,
-        SHOCKWAVE,
-        CYBERBLADE,
-        SLEDGEHAMMER
+        LOCK_RIFLE("Lock Rifle"),
+        ELECTROSCYTHE("Electroscythe"),
+        MACHINE_GUN("Machine Gun"),
+        TRACTOR_BEAM("Tractor Beam"),
+        THOR("T.H.O.R."),
+        VORTEX_CANNON("Vortex Cannon"),
+        FURNACE("Furnace"),
+        PLASMA_GUN("Plasma Gun"),
+        HEATSEEKER("Heatseeker"),
+        WHISPER("Whisper"),
+        HELLION("Hellion"),
+        FLAMETHROWER("Flamethrower"),
+        TWO_X_TWO("2x-2"),
+        GRENADE_LAUNCHER("Grenade Launcher"),
+        SHOTGUN("Shotgun"),
+        ROCKET_LAUNCHER("Rocket Launcher"),
+        POWER_GLOVE("Power Glove"),
+        RAILGUN("Railgun"),
+        SHOCKWAVE("Shockwave"),
+        CYBERBLADE("Cyberblade"),
+        SLEDGEHAMMER("Sledgehammer");
+
+        private String humanReadableName;
+
+        /**
+         * Constructs the enum associated with a human readable name
+         *
+         * @param humanReadableName
+         */
+        Name(String humanReadableName) {
+            this.humanReadableName = humanReadableName;
+        }
+
+        @Override
+        public String toString() {
+            return humanReadableName;
+        }
     }
 
 
