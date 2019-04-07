@@ -24,6 +24,7 @@ public interface Attack {
     /**
      * This method returns a list of list of Damageable that the attack can target in one shot
      *
+     * @param type the type of target which is to be attacked
      * @return a list of the groups of targets that can be attacked, which will be empty if none are available
      */
     List<List<Damageable>> getTargets(TargetType type);
@@ -45,6 +46,7 @@ public interface Attack {
     /**
      * This method strikes the attack and returns the damageables this attack was dealt on
      *
+     * @param attacker the player who is executing the attack
      * @param targets a Map associating target types to a list of damageable needed to determine the effect
      * @return the list of Damageable affected by this attack, the list will be empty if no one was affected
      */

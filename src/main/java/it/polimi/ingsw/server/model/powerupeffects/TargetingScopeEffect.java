@@ -7,6 +7,8 @@ import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.TypeMismatchException;
 import it.polimi.ingsw.server.model.player.Player;
 
+import java.util.Collections;
+
 public class TargetingScopeEffect extends PowerupEffect {
 
     /**
@@ -25,10 +27,13 @@ public class TargetingScopeEffect extends PowerupEffect {
     /**
      * Activates the effect making the sourcePlayer pay for it
      * @param coin the cost of this effect the player must pay
-     * @throws MissingOwnershipException thrown if the player cannot afford this effect
      */
-    public void activate(Coin coin) throws MissingOwnershipException {
-        // TODO: determine the concrete type of "coin" to remove it from the associated list in the player
-        throw new MissingOwnershipException("The player " + sourcePlayer + " cannot afford this effect " + this);
+    public void activate(Coin coin) {
+
+        try {
+            sourcePlayer.pay(Collections.singletonList(coin));
+        } catch (MissingOwnershipException e) {
+            throw new MissingOwnershipException("The player " + sourcePlayer + " cannot afford this effect " + this);
+        }
     }
 }

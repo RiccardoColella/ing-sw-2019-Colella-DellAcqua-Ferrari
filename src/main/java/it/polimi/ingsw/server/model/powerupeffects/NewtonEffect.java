@@ -30,6 +30,8 @@ public class NewtonEffect extends PowerupEffect {
      * @param steps the amount of blocks in that direction
      */
     public void move(Player target, Direction direction, int steps) {
-        // TODO
+        for (int i = 0; i < steps; i++) {
+            match.getBoard().movePlayer(target, direction);
+        }
     }
 }

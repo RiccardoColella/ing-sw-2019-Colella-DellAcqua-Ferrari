@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.model.powerupeffects;
 
+import it.polimi.ingsw.server.model.DamageToken;
 import it.polimi.ingsw.server.model.Match;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
@@ -25,6 +26,6 @@ public class TagbackGrenadeEffect extends PowerupEffect {
      * Activates the powerup assigning a mark DamageToken to the current active player
      */
     public void activate() {
-        // TODO
+        match.getActivePlayer().addMark(new DamageToken(sourcePlayer));
     }
 }

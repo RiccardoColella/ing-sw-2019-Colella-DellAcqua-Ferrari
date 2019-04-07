@@ -5,6 +5,7 @@ import it.polimi.ingsw.server.model.Damageable;
 import it.polimi.ingsw.server.model.Match;
 import it.polimi.ingsw.server.model.battlefield.Direction;
 import it.polimi.ingsw.server.model.currency.Ammo;
+import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.events.MatchModeChanged;
 import it.polimi.ingsw.server.model.events.PlayerDied;
@@ -19,6 +20,7 @@ import it.polimi.ingsw.server.model.exceptions.UnauthorizedGrabException;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static it.polimi.ingsw.server.model.Match.Mode.FINAL_FRENZY;
 
@@ -445,6 +447,19 @@ public class Player implements Damageable, MatchModeChangedListener {
                 this.powerups.remove(paidPowerup.get());
             } else throw new MissingOwnershipException("Player can't afford this weapon, missing powerups");
         }
+    }
+
+    public void pay(List<Coin> coins) {
+        this.pay(
+                coins.stream()
+                        .filter(coin -> coin instanceof Ammo)
+                        .map(coin -> (Ammo) coin)
+                        .collect(Collectors.toList()),
+                coins.stream()
+                        .filter(coin -> coin instanceof PowerupTile)
+                        .map(coin -> (PowerupTile) coin)
+                        .collect(Collectors.toList())
+                );
     }
 
     public int[] getCurrentReward() {

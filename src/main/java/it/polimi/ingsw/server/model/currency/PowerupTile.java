@@ -40,8 +40,7 @@ public class PowerupTile implements Coin {
     /**
      * This constructor creates a powerup tile given its color, name and type
      * @param color a value of CurrencyColor representing the color
-     * @param name a string representing the name
-     * @param type a value of Name representing the type
+     * @param type a value representing the type
      */
     public PowerupTile(CurrencyColor color, Type type) {
         this.color = color;

@@ -41,7 +41,7 @@ public class Deck<T> implements Collection<T> {
     /**
      * This constructor creates a deck from a list of cards that acts like a Queue
      *
-     * @param cards
+     * @param cards the initial cards in the deck
      */
     public Deck(List<T> cards) {
         this(cards, false);

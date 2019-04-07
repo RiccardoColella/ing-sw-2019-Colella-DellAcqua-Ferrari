@@ -42,7 +42,7 @@ public class Weapon {
         /**
          * Constructs the enum associated with a human readable name
          *
-         * @param humanReadableName
+         * @param humanReadableName a human readable name for the weapon
          */
         Name(String humanReadableName) {
             this.humanReadableName = humanReadableName;

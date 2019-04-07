@@ -35,6 +35,7 @@ public abstract class PowerupEffect {
             throw new TypeMismatchException("The powerup tile " + powerupTile + " cannot activate this effect " + this);
         }
 
+        // Removes the activated powerup from the list in the player and re-inserts it into the deck
         Optional<PowerupTile> playerTile = sourcePlayer
                 .getPowerups()
                 .stream()
@@ -43,8 +44,9 @@ public abstract class PowerupEffect {
 
         if (playerTile.isPresent()) {
             sourcePlayer.getPowerups().remove(playerTile.get());
+            match.getPowerupDeck().discard(playerTile.get());
         } else {
-            throw new MissingOwnershipException("PowerupTile " + powerupTile + "does not belong to player " +  sourcePlayer);
+            throw new MissingOwnershipException("PowerupTile " + powerupTile + " does not belong to player " +  sourcePlayer);
         }
     }
 }

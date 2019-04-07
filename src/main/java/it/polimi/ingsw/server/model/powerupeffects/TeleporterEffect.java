@@ -26,6 +26,6 @@ public class TeleporterEffect extends PowerupEffect {
      * @param destination the destination block in the board to teleport the player to
      */
     public void teleport(Block destination) {
-        // TODO: make the board teleport the sourcePlayer
+        this.match.getBoard().teleportPlayer(sourcePlayer, destination);
     }
 }
