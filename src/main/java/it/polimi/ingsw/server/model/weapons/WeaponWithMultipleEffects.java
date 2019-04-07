@@ -25,14 +25,14 @@ public class WeaponWithMultipleEffects extends Weapon {
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
      *
-     * @param name                  a string with the name of the weapon
+     * @param name                  the name of the weapon
      * @param basicAttack           the basic attack of the weapon
      * @param acquisitionCost       a list of coin equal to the acquisition cost of the weapon
      * @param reloadCost            a list of coin equal to the reload cost of the weapon
      * @param poweredAttacks        a non-empty map of the powered attacks of the weapon with their relative cost
      * @param mustExecuteInOrder    true if the effects can only be used in the given order and with basic effect first
      */
-    public WeaponWithMultipleEffects(String name, Attack basicAttack, List<Coin> acquisitionCost, List<Coin> reloadCost, Map<Attack, List<Coin>> poweredAttacks, boolean mustExecuteInOrder) {
+    public WeaponWithMultipleEffects(Name name, Attack basicAttack, List<Coin> acquisitionCost, List<Coin> reloadCost, Map<Attack, List<Coin>> poweredAttacks, boolean mustExecuteInOrder) {
         super(name, basicAttack, acquisitionCost, reloadCost);
         this.poweredAttacks = poweredAttacks;
         this.mustExecuteInOrder = mustExecuteInOrder;

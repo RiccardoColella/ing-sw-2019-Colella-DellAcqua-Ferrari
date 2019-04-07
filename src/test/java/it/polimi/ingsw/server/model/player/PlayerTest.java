@@ -61,9 +61,9 @@ class PlayerTest {
         }
     };
 
-    private Weapon prototypeFreeWeapon = new Weapon("PrototypeWeapon", prototypeAttack, new ArrayList<>(), new ArrayList<>());
+    private Weapon prototypeFreeWeapon = new Weapon(Weapon.Name.CYBERBLADE, prototypeAttack, new ArrayList<>(), new ArrayList<>());
     private Weapon prototypeCostlyWeapon = new Weapon(
-            "ExpensivePrototypeWeapon",
+            Weapon.Name.CYBERBLADE,
             prototypeAttack,
             new ArrayList<>(Collections.singleton(AmmoFactory.create(CurrencyColor.RED))),
             reloadCost

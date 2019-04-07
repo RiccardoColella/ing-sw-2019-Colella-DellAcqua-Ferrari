@@ -7,9 +7,53 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * This class represents the most basic type of weapon of the game, which only has a basic attack
+ * This class represents the most basic name of weapon of the game, which only has a basic attack
  */
 public class Weapon {
+
+    /**
+     * This enum cathegorizes the 21 different weapons
+     */
+    public enum Name {
+        LOCK_RIFLE("Lock Rifle"),
+        ELECTROSCYTHE("Electroscythe"),
+        MACHINE_GUN("Machine Gun"),
+        TRACTOR_BEAM("Tractor Beam"),
+        THOR("T.H.O.R."),
+        VORTEX_CANNON("Vortex Cannon"),
+        FURNACE("Furnace"),
+        PLASMA_GUN("Plasma Gun"),
+        HEATSEEKER("Heatseeker"),
+        WHISPER("Whisper"),
+        HELLION("Hellion"),
+        FLAMETHROWER("Flamethrower"),
+        TWO_X_TWO("2x-2"),
+        GRENADE_LAUNCHER("Grenade Launcher"),
+        SHOTGUN("Shotgun"),
+        ROCKET_LAUNCHER("Rocket Launcher"),
+        POWER_GLOVE("Power Glove"),
+        RAILGUN("Railgun"),
+        SHOCKWAVE("Shockwave"),
+        CYBERBLADE("Cyberblade"),
+        SLEDGEHAMMER("Sledgehammer");
+
+        private String humanReadableName;
+
+        /**
+         * Constructs the enum associated with a human readable name
+         *
+         * @param humanReadableName
+         */
+        Name(String humanReadableName) {
+            this.humanReadableName = humanReadableName;
+        }
+
+        @Override
+        public String toString() {
+            return humanReadableName;
+        }
+    }
+
     /**
      * This property represents the Basic Attack, which is something all weapons have
      */
@@ -23,7 +67,7 @@ public class Weapon {
     /**
      * This property represents the weapon's name as a String
      */
-    private final String name;
+    private final Name name;
 
     /**
      * This property stores whether the weapon is loaded, and can therefore be used
@@ -48,12 +92,12 @@ public class Weapon {
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
      *
-     * @param name a string with the name of the weapon
+     * @param name the name of the weapon
      * @param basicAttack the basic attack of the weapon
      * @param acquisitionCost a list of coin equal to the acquisition cost of the weapon
      * @param reloadCost a list of coin equal to the reload cost of the weapon
      */
-    public Weapon(String name, Attack basicAttack, List<Coin> acquisitionCost, List<Coin> reloadCost) {
+    public Weapon(Name name, Attack basicAttack, List<Coin> acquisitionCost, List<Coin> reloadCost) {
         this.basicAttack = basicAttack;
         this.name = name;
         this.isLoaded = false;
@@ -111,7 +155,7 @@ public class Weapon {
      * This method gets the name of the weapon
      * @return the name of the weapon as a String
      */
-    public String getName() {
+    public Name getName() {
         return this.name;
     }
 

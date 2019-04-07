@@ -22,14 +22,14 @@ public class WeaponWithAlternative extends Weapon {
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
      *
-     * @param name                  a string with the name of the weapon
+     * @param name                  the name of the weapon
      * @param basicAttack           the basic attack of the weapon
      * @param acquisitionCost       a list of coin equal to the acquisition cost of the weapon
      * @param reloadCost            a list of coin equal to the reload cost of the weapon
      * @param alternativeAttack     the alternative attack of the weapon
      * @param alternativeAttackCost a list of coin equal to the cost of the alternative attack
      */
-    public WeaponWithAlternative(String name, Attack basicAttack, List<Coin> acquisitionCost, List<Coin> reloadCost, Attack alternativeAttack, List<Coin> alternativeAttackCost) {
+    public WeaponWithAlternative(Name name, Attack basicAttack, List<Coin> acquisitionCost, List<Coin> reloadCost, Attack alternativeAttack, List<Coin> alternativeAttackCost) {
         super(name, basicAttack, acquisitionCost, reloadCost);
         this.alternativeAttack = alternativeAttack;
         this.alternativeAttackCost = alternativeAttackCost;

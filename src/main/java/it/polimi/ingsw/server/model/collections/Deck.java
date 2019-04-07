@@ -25,13 +25,26 @@ public class Deck<T> implements Collection<T> {
     private boolean autoRecycleDiscarded;
 
     /**
+     * This constructor creates a deck from a list of cards that acts like a Queue.
+     * If autoRecycle is enabled, when the Queue is empty previously discarded cards
+     * are shuffled and re-inserted into the Queue
      *
-     * @param autoRecycleDiscarded specifies whether the deck should be reinitialized automatically when it becomes empty, reshuffling the discarded cards
      * @param cards the initial cards in the deck
+     * @param autoRecycleDiscarded specifies whether the deck should be reinitialized automatically
+     *                             when it becomes empty, reshuffling the discarded cards
      */
-    public Deck(boolean autoRecycleDiscarded, List<T> cards) {
-        this.autoRecycleDiscarded = autoRecycleDiscarded;
+    public Deck(List<T> cards, boolean autoRecycleDiscarded) {
         this.cards = new LinkedList<>(cards);
+        this.autoRecycleDiscarded = autoRecycleDiscarded;
+    }
+
+    /**
+     * This constructor creates a deck from a list of cards that acts like a Queue
+     *
+     * @param cards
+     */
+    public Deck(List<T> cards) {
+        this(cards, false);
     }
 
     /**

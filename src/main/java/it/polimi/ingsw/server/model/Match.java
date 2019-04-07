@@ -101,46 +101,9 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
         this.board = board;
         this.activePlayer = this.players.get(0);
         this.killshots = new LinkedList<>();
-        //CREATING THE DECK OF BONUS TILES:
-        List<BonusTile> bonusTiles = new LinkedList<>();
-        // 36 bonus card, 18 with 3 ammos, 18 2 ammos + powerup
-        // 2 ammos + powerup: 2 with 2 ammos of the same color for each color (= 6 cards), 4 for every combination (= 12 cards) RY RB BY
-        // 3 ammos: 3 for each combo of 2 ammos of the same color + 1 different color (YBB, YRR, BYY, BRR, RYY, RBB) (= 18 cards)
-        for (CurrencyColor mainColor : CurrencyColor.values()) {
-            for (CurrencyColor secondColor : CurrencyColor.values()) {
-                if (mainColor != secondColor) {
-                    for (int i = 0; i < 2; i++) {
-                        bonusTiles.add(BonusTileFactory.create(mainColor, mainColor, secondColor));
-                        bonusTiles.add(BonusTileFactory.create(mainColor, secondColor));
-                    }
-                    bonusTiles.add(BonusTileFactory.create(mainColor, mainColor, secondColor));
-                }
-            }
-            for (int i = 0; i < 2; i++) {
-                bonusTiles.add(BonusTileFactory.create(mainColor, mainColor));
-            }
-        }
-        this.bonusDeck = new Deck<>(true, bonusTiles);
-
-        //CREATING THE WEAPON DECK:
-        this.weaponDeck = new Deck<>(
-                false,
-                Arrays
-                    .stream(WeaponFactory.Name.values())
-                    .map(WeaponFactory::create)
-                    .collect(Collectors.toCollection(LinkedList::new))
-        );
-
-        //CREATING THE POWERUP DECK
-        List<PowerupTile> powerupCards = new LinkedList<>();
-        for (PowerupTile.Type type : PowerupTile.Type.values()) {
-            for (CurrencyColor color : CurrencyColor.values()) {
-                for (int i = 0; i < 2; i++) {
-                    powerupCards.add(PowerupTileFactory.create(type, color));
-                }
-            }
-        }
-        this.powerupDeck = new Deck<>(true, powerupCards);
+        this.bonusDeck = BonusTileFactory.createDeck();
+        this.weaponDeck = WeaponFactory.createDeck();
+        this.powerupDeck = PowerupTileFactory.createDeck();
         this.mode = mode;
         this.matchEndedListeners = new ArrayList<>();
         this.matchModeChangedListeners = new ArrayList<>();

@@ -9,10 +9,21 @@ public class PowerupTile implements Coin {
      * This enum differentiates the 4 possible powerup options
      */
     public enum Type {
-        NEWTON,
-        TAGBACK_GRENADE,
-        TARGETING_SCOPE,
-        TELEPORTER
+        NEWTON("Newton"),
+        TAGBACK_GRENADE("Tagback Grenade"),
+        TARGETING_SCOPE("Targeting Scope"),
+        TELEPORTER("Teleporter");
+
+        private String name;
+
+        Type(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
 
@@ -20,11 +31,6 @@ public class PowerupTile implements Coin {
      * This property represents the color of the powerup tile
      */
     private final CurrencyColor color;
-
-    /**
-     * This property represents the name of the powerup tile
-     */
-    private final String name;
 
     /**
      * This property represents the type of the powerup tile
@@ -35,11 +41,10 @@ public class PowerupTile implements Coin {
      * This constructor creates a powerup tile given its color, name and type
      * @param color a value of CurrencyColor representing the color
      * @param name a string representing the name
-     * @param type a value of Type representing the type
+     * @param type a value of Name representing the type
      */
-    public PowerupTile(CurrencyColor color, String name, Type type) {
+    public PowerupTile(CurrencyColor color, Type type) {
         this.color = color;
-        this.name = name;
         this.type = type;
     }
 
@@ -76,14 +81,6 @@ public class PowerupTile implements Coin {
     @Override
     public boolean hasSameValueAs(Coin coin) {
         return false;
-    }
-
-    /**
-     * This method returns the name of the powerup tile
-     * @return a string representing the name of the powerup
-     */
-    public String getName() {
-        return this.name;
     }
 
     /**
