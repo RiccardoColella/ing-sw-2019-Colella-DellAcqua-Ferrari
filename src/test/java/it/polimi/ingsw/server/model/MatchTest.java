@@ -2,6 +2,7 @@ package it.polimi.ingsw.server.model;
 
 import it.polimi.ingsw.server.model.factories.BoardFactory;
 import it.polimi.ingsw.server.model.factories.MatchFactory;
+import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
 import org.junit.jupiter.api.AfterEach;
@@ -15,8 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MatchTest {
 
@@ -44,10 +44,36 @@ class MatchTest {
         }
     }
 
+
+    @Test
+    void endTurn() {
+        match.getPlayers().forEach(player -> player
+                .addDamageTokens(IntStream.range(0, 10)
+                        .boxed()
+                        .map(x -> new DamageToken(match.getPlayers().get(1)))
+                        .collect(Collectors.toList()))
+        );
+
+        match.getPlayers().forEach(player -> player.addDamageToken(new DamageToken(match.getPlayers().get(1))));
+        List<Player> deadPlayers = match.endTurn();
+        assertEquals(match.getPlayers().size(), deadPlayers.size(), "endTurn didn't provide the correct amount of dead players");
+        deadPlayers.forEach(player -> player.bringBackToLife());
+
+
+        match.getPlayers().get(1).addDamageTokens(
+                IntStream.range(0, 10)
+                        .boxed()
+                        .map(x -> new DamageToken(match.getPlayers().get(1)))
+                        .collect(Collectors.toList())
+        );
+        match.getPlayers().get(1).addDamageToken(new DamageToken(match.getPlayers().get(1)));
+        deadPlayers = match.endTurn();
+        assertEquals(1, deadPlayers.size(), "endTurn didn't provide the correct amount of dead players");
+        deadPlayers.forEach(player -> player.bringBackToLife());
+    }
+
     @Test
     void onPlayerDied() {
-        // TODO: Reimplement to support the implemented life cycle of the events
-
         match.getPlayers().forEach(player -> player
                 .addDamageTokens(IntStream.range(0, 10)
                 .boxed()
