@@ -5,10 +5,8 @@ import it.polimi.ingsw.server.model.factories.BoardFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Optional;
-import java.util.Set;
+import javax.swing.*;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -91,6 +89,50 @@ class BoardTest {
         Set<Block> actual = board11a.getRoom(block_11a_1_2.get());
         assertEquals(roomYellow11a, actual, "4. Error in getting yellow room in BOARD_11_1.");
 
+    }
+
+    @Test
+    void getRow() {
+        Optional<Block> block_10_0_0 = board10.getBlock(0,0);
+        Optional<Block> block_10_0_1 = board10.getBlock(0,1);
+        Optional<Block> block_10_0_2 = board10.getBlock(0,2);
+        List<Block> row_10_0 = new ArrayList<>();
+        row_10_0.add(block_10_0_0.get());
+        row_10_0.add(block_10_0_1.get());
+        row_10_0.add(block_10_0_2.get());
+        assertEquals(row_10_0, board10.getRow(block_10_0_0.get()));
+        assertEquals(row_10_0, board10.getRow(block_10_0_1.get()));
+
+        Optional<Block> block_10_1_0 = board10.getBlock(1,0);
+        Optional<Block> block_10_1_1 = board10.getBlock(1,1);
+        Optional<Block> block_10_1_2 = board10.getBlock(1,2);
+        Optional<Block> block_10_1_3 = board10.getBlock(1,3);
+        List<Block> row_10_1 = new ArrayList<>();
+        row_10_1.add(block_10_1_0.get());
+        row_10_1.add(block_10_1_1.get());
+        row_10_1.add(block_10_1_2.get());
+        row_10_1.add(block_10_1_3.get());
+        assertEquals(row_10_1, board10.getRow(block_10_1_2.get()));
+    }
+
+    @Test
+    void getColumn() {
+        Optional<Block> block_10_0_0 = board10.getBlock(0,0);
+        Optional<Block> block_10_1_0 = board10.getBlock(1,0);
+        List<Block> column_10_0 = new ArrayList<>();
+        column_10_0.add(block_10_0_0.get());
+        column_10_0.add(block_10_1_0.get());
+        assertEquals(column_10_0, board10.getColumn(block_10_0_0.get()));
+        assertEquals(column_10_0, board10.getColumn(block_10_1_0.get()));
+
+        Optional<Block> block_10_0_1 = board10.getBlock(0,1);
+        Optional<Block> block_10_1_1 = board10.getBlock(1,1);
+        Optional<Block> block_10_2_1 = board10.getBlock(2,1);
+        List<Block> column_10_1 = new ArrayList<>();
+        column_10_1.add(block_10_0_1.get());
+        column_10_1.add(block_10_1_1.get());
+        column_10_1.add(block_10_2_1.get());
+        assertEquals(column_10_1, board10.getColumn(block_10_2_1.get()));
     }
 
     @Test

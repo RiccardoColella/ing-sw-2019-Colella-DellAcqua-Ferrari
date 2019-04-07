@@ -134,12 +134,21 @@ public class Board {
     }
 
     /**
-     * Tells the row of the selected Block
+     * Returns the list of all blocks on the same row of the selected block
      * @param block selected Block
-     * @return the row of the selected Block
+     * @return the list of all blocks on the same row of the selected block
      */
-    public int getRow(Block block) {
-        return block.getRow();
+    public List<Block> getRow(Block block) {
+        List<Block> row = new ArrayList<>();
+        int r = block.getRow();
+        if (r < field[r].length){
+            for (Block blockInSameRow : field[r]){
+                if (blockInSameRow != null){
+                    row.add(blockInSameRow);
+                }
+            }
+        } else throw new IllegalStateException();
+        return row;
     }
 
     /**
@@ -147,8 +156,16 @@ public class Board {
      * @param block selected Block
      * @return the column of the selected Block
      */
-    public int getColumn(Block block) {
-        return block.getColumn();
+    public List<Block> getColumn(Block block) {
+        List<Block> column = new ArrayList<>();
+        int c = block.getColumn();
+        for (int r = 0; r < field.length; r++){
+            Block toAdd = field[r][c];
+            if (toAdd != null){
+                column.add(toAdd);
+            }
+        }
+        return column;
     }
 
     /**
