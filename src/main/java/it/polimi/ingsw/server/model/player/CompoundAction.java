@@ -1,5 +1,7 @@
 package it.polimi.ingsw.server.model.player;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -16,13 +18,12 @@ public final class CompoundAction {
      * Class constructor
      * @param actions actions that can be selected
      */
-    public CompoundAction(List<BasicAction> actions) {
-        this.actions = actions;
+    public CompoundAction(BasicAction... actions) {
+        this.actions = Collections.unmodifiableList(Arrays.asList(actions));
     }
 
 
     public List<BasicAction> getActions() {
-        //TODO all function
         return actions;
     }
 }
