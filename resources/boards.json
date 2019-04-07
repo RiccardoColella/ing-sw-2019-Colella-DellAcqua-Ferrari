@@ -1,0 +1,342 @@
+[
+  [
+    [{
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "NONE",
+        "SOUTH": "DOOR",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "NONE",
+        "SOUTH": "WALL",
+        "WEST": "NONE"
+      }
+    }, {
+      "color": "BLUE",
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "WALL",
+        "SOUTH": "DOOR",
+        "WEST": "NONE"
+      }
+    }, null],
+    [{
+      "color": "RED",
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "NONE",
+        "SOUTH": "WALL",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "NONE",
+        "SOUTH": "DOOR",
+        "WEST": "NONE"
+      }
+    }, {
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "DOOR",
+        "SOUTH": "WALL",
+        "WEST": "NONE"
+      }
+    }, {
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "WALL",
+        "SOUTH": "NONE",
+        "WEST": "DOOR"
+      }
+    }],
+    [null, {
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "NONE",
+        "SOUTH": "WALL",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "DOOR",
+        "SOUTH": "WALL",
+        "WEST": "NONE"
+      }
+    }, {
+      "color": "YELLOW",
+      "borders": {
+        "NORTH": "NONE",
+        "EAST": "WALL",
+        "SOUTH": "WALL",
+        "WEST": "DOOR"
+      }
+    }]
+  ],
+  [
+    [{
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "NONE",
+        "SOUTH": "DOOR",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "NONE",
+        "SOUTH": "WALL",
+        "WEST": "NONE"
+      }
+    }, {
+      "color": "BLUE",
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "DOOR",
+        "SOUTH": "DOOR",
+        "WEST": "NONE"
+      }
+    }, {
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "WALL",
+        "SOUTH": "DOOR",
+        "WEST": "DOOR"
+      }
+    }],
+    [{
+      "color": "RED",
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "NONE",
+        "SOUTH": "WALL",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "WALL",
+        "SOUTH": "DOOR",
+        "WEST": "NONE"
+      }
+    }, {
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "NONE",
+        "SOUTH": "NONE",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "WALL",
+        "SOUTH": "NONE",
+        "WEST": "NONE"
+      }
+    }],
+    [null, {
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "DOOR",
+        "SOUTH": "WALL",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "NONE",
+        "EAST": "NONE",
+        "SOUTH": "WALL",
+        "WEST": "DOOR"
+      }
+    }, {
+      "color": "YELLOW",
+      "borders": {
+        "NORTH": "NONE",
+        "EAST": "WALL",
+        "SOUTH": "WALL",
+        "WEST": "NONE"
+      }
+    }]
+  ],
+  [
+    [{
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "DOOR",
+        "SOUTH": "NONE",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "NONE",
+        "SOUTH": "DOOR",
+        "WEST": "DOOR"
+      }
+    }, {
+      "color": "BLUE",
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "WALL",
+        "SOUTH": "DOOR",
+        "WEST": "NONE"
+      }
+    }, null],
+    [{
+      "color": "RED",
+      "borders": {
+        "NORTH": "NONE",
+        "EAST": "WALL",
+        "SOUTH": "DOOR",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "NONE",
+        "SOUTH": "DOOR",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "DOOR",
+        "SOUTH": "WALL",
+        "WEST": "NONE"
+      }
+    }, {
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "WALL",
+        "SOUTH": "NONE",
+        "WEST": "DOOR"
+      }
+    }],
+    [{
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "NONE",
+        "SOUTH": "WALL",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "NONE",
+        "SOUTH": "WALL",
+        "WEST": "NONE"
+      }
+    }, {
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "DOOR",
+        "SOUTH": "WALL",
+        "WEST": "NONE"
+      }
+    }, {
+      "color": "YELLOW",
+      "borders": {
+        "NORTH": "NONE",
+        "EAST": "WALL",
+        "SOUTH": "WALL",
+        "WEST": "DOOR"
+      }
+    }]
+  ],
+  [
+    [{
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "DOOR",
+        "SOUTH": "NONE",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "NONE",
+        "SOUTH": "DOOR",
+        "WEST": "DOOR"
+      }
+    }, {
+      "color": "BLUE",
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "DOOR",
+        "SOUTH": "DOOR",
+        "WEST": "NONE"
+      }
+    }, {
+      "borders": {
+        "NORTH": "WALL",
+        "EAST": "WALL",
+        "SOUTH": "DOOR",
+        "WEST": "DOOR"
+      }
+    }],
+    [{
+      "color": "RED",
+      "borders": {
+        "NORTH": "NONE",
+        "EAST": "WALL",
+        "SOUTH": "DOOR",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "WALL",
+        "SOUTH": "DOOR",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "NONE",
+        "SOUTH": "NONE",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "WALL",
+        "SOUTH": "NONE",
+        "WEST": "NONE"
+      }
+    }],
+    [{
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "NONE",
+        "SOUTH": "WALL",
+        "WEST": "WALL"
+      }
+    }, {
+      "borders": {
+        "NORTH": "DOOR",
+        "EAST": "DOOR",
+        "SOUTH": "WALL",
+        "WEST": "NONE"
+      }
+    }, {
+      "borders": {
+        "NORTH": "NONE",
+        "EAST": "NONE",
+        "SOUTH": "WALL",
+        "WEST": "DOOR"
+      }
+    }, {
+      "color": "YELLOW",
+      "borders": {
+        "NORTH": "NONE",
+        "EAST": "WALL",
+        "SOUTH": "WALL",
+        "WEST": "NONE"
+      }
+    }]
+  ]
+]

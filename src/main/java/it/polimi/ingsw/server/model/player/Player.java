@@ -17,6 +17,7 @@ import it.polimi.ingsw.server.model.events.listeners.PlayerOverkilledListener;
 import it.polimi.ingsw.server.model.events.listeners.PlayerRebornListener;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedGrabException;
+import it.polimi.ingsw.server.model.factories.ActionTileFactory;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 
 import java.util.*;
@@ -457,135 +458,30 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     /**
-     * This method determines which set of macro action can be executed by a player at a given time, based on:
+     * This method determines the status of a player at a given time, based on:
      * - player's health
      * - current match mode
      * - final frenzy turns
+     * Then the ActionTileFactory is called to return the correspondent set of macro actions
      *
-     * @return the list of macro actions that can be executed by the player
+     * @return the action tile representing the available macro actions the player can do
      */
-    public List<List<CompoundAction>> getAvailableMacroActions() {
+    public ActionTile getAvailableMacroActions() {
 
         if (match.getMode() != FINAL_FRENZY) {
 
             if (this.damageTokens.size() > 5) {
-
-                return Arrays.asList(
-                        Arrays.asList(
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE
-                                ),
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB
-                                ),
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.SHOOT
-                                )
-                        ),
-                        Arrays.asList(
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE, BasicAction.RELOAD
-                                ),
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB, BasicAction.RELOAD
-                                ),
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.SHOOT, BasicAction.RELOAD
-                                )
-                        )
-                );
+                return ActionTileFactory.create(ActionTile.Type.ADRENALINE_2);
             } else if (this.damageTokens.size() > 2) {
-
-                return Arrays.asList(
-                        Arrays.asList(
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE
-                                ),
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB
-                                ),
-                                new CompoundAction(
-                                        BasicAction.SHOOT
-                                )
-                        ),
-                        Arrays.asList(
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE, BasicAction.RELOAD
-                                ),
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB, BasicAction.RELOAD
-                                ),
-                                new CompoundAction(
-                                        BasicAction.SHOOT, BasicAction.RELOAD
-                                )
-                        )
-                );
+                return ActionTileFactory.create(ActionTile.Type.ADRENALINE_1);
             } else {
-
-                return Arrays.asList(
-                        Arrays.asList(
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE
-                                ),
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.GRAB
-                                ),
-                                new CompoundAction(
-                                        BasicAction.SHOOT
-                                )
-                        ),
-                        Arrays.asList(
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE, BasicAction.RELOAD
-                                ),
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.GRAB, BasicAction.RELOAD
-                                ),
-                                new CompoundAction(
-                                        BasicAction.SHOOT, BasicAction.RELOAD
-                                )
-                        )
-                );
+                return ActionTileFactory.create(ActionTile.Type.STANDARD);
             }
         } else {
             if (match.getPlayers().get(0) == this || match.getPlayersWhoDidFinalFrenzyTurn().contains(match.getPlayers().get(0))) {
-
-                return Arrays.asList(
-                        Arrays.asList(
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.RELOAD, BasicAction.SHOOT
-                                ),
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB
-                                )
-                        )
-                );
+                return ActionTileFactory.create(ActionTile.Type.FINAL_FRENZY_SINGLE_MODE);
             } else {
-
-                return Arrays.asList(
-                        Arrays.asList(
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.RELOAD, BasicAction.SHOOT
-                                ),
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE
-                                ),
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB
-                                )
-                        ),
-                        Arrays.asList(
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.RELOAD, BasicAction.SHOOT
-                                ),
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE
-                                ),
-                                new CompoundAction(
-                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB
-                                )
-                        )
-                );
+                return ActionTileFactory.create(ActionTile.Type.FINAL_FRENZY_DOUBLE_MODE);
             }
         }
     }

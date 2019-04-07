@@ -1,118 +1,108 @@
 package it.polimi.ingsw.server.model.factories;
 
-import it.polimi.ingsw.server.model.battlefield.Block;
-import it.polimi.ingsw.server.model.battlefield.Board;
-import it.polimi.ingsw.server.model.battlefield.SpawnpointBlock;
-import it.polimi.ingsw.server.model.battlefield.TurretBlock;
+import com.google.gson.*;
+import it.polimi.ingsw.server.model.battlefield.*;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 
+import java.io.*;
+import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.EnumMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class BoardFactory {
+
+    private static final String BOARD_JSON_FILENAME = "./resources/boards.json";
+    private static Map<Preset, Block[][]> boardMap;
+
 
     /**
      * This enum represents the possible configurations the board can have
      */
     public enum Preset {
-        BOARD_10,
-        BOARD_11_1,
-        BOARD_11_2,
-        BOARD_12
+        BOARD_1,
+        BOARD_2,
+        BOARD_3,
+        BOARD_4
     }
 
+
+    /**
+     * This method is used to create a board based on the chosen preset
+     *
+     * @param preset the enum corresponding to the desired preset
+     * @return the board
+     */
     public static Board create(Preset preset) {
-        return new Board(presetGenerator(preset));
-    }
 
-    private static Block[][] presetGenerator(Preset preset) {
-        switch (preset) {
-            case BOARD_10:
-                return new Block[][]{
-                        new Block[]{
-                                new TurretBlock(0, 0, Block.BorderType.WALL, Block.BorderType.NONE, Block.BorderType.DOOR, Block.BorderType.WALL),
-                                new TurretBlock(0, 1, Block.BorderType.WALL, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.NONE),
-                                new SpawnpointBlock(0, 2, Block.BorderType.WALL, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.NONE, CurrencyColor.BLUE, new LinkedList<>()),
-                                null
-                        },
-                        new Block[]{
-                                new SpawnpointBlock(1, 0, Block.BorderType.DOOR, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.WALL, CurrencyColor.RED, new LinkedList<>()),
-                                new TurretBlock(1, 1, Block.BorderType.WALL, Block.BorderType.NONE, Block.BorderType.DOOR, Block.BorderType.NONE),
-                                new TurretBlock(1, 2, Block.BorderType.DOOR, Block.BorderType.DOOR, Block.BorderType.WALL, Block.BorderType.NONE),
-                                new TurretBlock(1, 3, Block.BorderType.WALL, Block.BorderType.WALL, Block.BorderType.NONE, Block.BorderType.DOOR)
-                        },
-                        new Block[]{
-                                null,
-                                new TurretBlock(2, 1, Block.BorderType.DOOR, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.WALL),
-                                new TurretBlock(2, 2, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.WALL, Block.BorderType.NONE),
-                                new SpawnpointBlock(2, 3, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.WALL, Block.BorderType.DOOR, CurrencyColor.YELLOW, new LinkedList<>())
-                        }
-                };
-            case BOARD_11_1:
-                return new Block[][]{
-                        new Block[]{
-                                new TurretBlock(0, 0, Block.BorderType.WALL, Block.BorderType.NONE, Block.BorderType.DOOR, Block.BorderType.WALL),
-                                new TurretBlock(0, 1, Block.BorderType.WALL, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.NONE),
-                                new SpawnpointBlock(0, 2, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.DOOR, Block.BorderType.NONE, CurrencyColor.BLUE, new LinkedList<>()),
-                                new TurretBlock(0, 3, Block.BorderType.WALL, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.DOOR)
-                        },
-                        new Block[]{
-                                new SpawnpointBlock(1, 0, Block.BorderType.DOOR, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.WALL, CurrencyColor.RED, new LinkedList<>()),
-                                new TurretBlock(1, 1, Block.BorderType.WALL, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.NONE),
-                                new TurretBlock(1, 2, Block.BorderType.DOOR, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.WALL),
-                                new TurretBlock(1, 3, Block.BorderType.DOOR, Block.BorderType.WALL, Block.BorderType.NONE, Block.BorderType.NONE)
-                        },
-                        new Block[]{
-                                null,
-                                new TurretBlock(2, 1, Block.BorderType.DOOR, Block.BorderType.DOOR, Block.BorderType.WALL, Block.BorderType.WALL),
-                                new TurretBlock(2, 2, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.DOOR),
-                                new SpawnpointBlock(2, 3, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.WALL, Block.BorderType.NONE, CurrencyColor.YELLOW, new LinkedList<>())
-                        }
-                };
-            case BOARD_11_2:
-                return new Block[][]{
-                        new Block[]{
-                                new TurretBlock(0, 0, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.NONE, Block.BorderType.WALL),
-                                new TurretBlock(0, 1, Block.BorderType.WALL, Block.BorderType.NONE, Block.BorderType.DOOR, Block.BorderType.DOOR),
-                                new SpawnpointBlock(0, 2, Block.BorderType.WALL, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.NONE, CurrencyColor.BLUE, new LinkedList<>()),
-                                null
-                        },
-                        new Block[]{
-                                new SpawnpointBlock(1, 0, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.WALL, CurrencyColor.RED, new LinkedList<>()),
-                                new TurretBlock(1, 1, Block.BorderType.DOOR, Block.BorderType.NONE, Block.BorderType.DOOR, Block.BorderType.WALL),
-                                new TurretBlock(1, 2, Block.BorderType.DOOR, Block.BorderType.DOOR, Block.BorderType.WALL, Block.BorderType.NONE),
-                                new TurretBlock(1, 3, Block.BorderType.WALL, Block.BorderType.WALL, Block.BorderType.NONE, Block.BorderType.DOOR)
-                        },
-                        new Block[]{
-                                new TurretBlock(2, 0, Block.BorderType.DOOR, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.WALL),
-                                new TurretBlock(2, 1, Block.BorderType.DOOR, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.NONE),
-                                new TurretBlock(2, 2, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.WALL, Block.BorderType.NONE),
-                                new SpawnpointBlock(2, 3, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.WALL, Block.BorderType.DOOR, CurrencyColor.YELLOW, new LinkedList<>())
-                        }
-                };
+        if (boardMap == null) {
+            boardMap = new EnumMap<>(Preset.class);
+            JsonElement jsonElement;
+            try {
+                jsonElement = new JsonParser().parse(new FileReader(new File(BOARD_JSON_FILENAME)));
+            } catch (IOException e) {
+                throw new MissingConfigurationFileException("Unable to read Board configuration file");
+            }
 
-            case BOARD_12:
-                return new Block[][]{
-                        new Block[]{
-                                new TurretBlock(0, 0, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.NONE, Block.BorderType.WALL),
-                                new TurretBlock(0, 1, Block.BorderType.WALL, Block.BorderType.NONE, Block.BorderType.DOOR, Block.BorderType.DOOR),
-                                new SpawnpointBlock(0, 2, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.DOOR, Block.BorderType.NONE, CurrencyColor.BLUE, new LinkedList<>()),
-                                new TurretBlock(0, 3, Block.BorderType.WALL, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.DOOR)
-                        },
-                        new Block[]{
-                                new SpawnpointBlock(1, 0, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.WALL, CurrencyColor.RED, new LinkedList<>()),
-                                new TurretBlock(1, 1, Block.BorderType.DOOR, Block.BorderType.WALL, Block.BorderType.DOOR, Block.BorderType.WALL),
-                                new TurretBlock(1, 2, Block.BorderType.DOOR, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.WALL),
-                                new TurretBlock(1, 3, Block.BorderType.DOOR, Block.BorderType.WALL, Block.BorderType.NONE, Block.BorderType.NONE)
-                        },
-                        new Block[]{
-                                new TurretBlock(2, 0, Block.BorderType.DOOR, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.WALL),
-                                new TurretBlock(2, 1, Block.BorderType.DOOR, Block.BorderType.DOOR, Block.BorderType.WALL, Block.BorderType.NONE),
-                                new TurretBlock(2, 2, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.DOOR),
-                                new SpawnpointBlock(2, 3, Block.BorderType.NONE, Block.BorderType.WALL, Block.BorderType.WALL, Block.BorderType.NONE, CurrencyColor.YELLOW, new LinkedList<>())
+
+
+            for (int i = 0; i < Preset.values().length; i++) {
+
+                JsonArray fieldJson = jsonElement.getAsJsonArray().get(i).getAsJsonArray();
+
+                List<Block[]> field = new LinkedList<>();
+
+                for (int r = 0; r < fieldJson.size(); r++) {
+
+                    List<Block> blockRow = new LinkedList<>();
+
+                    JsonArray row = fieldJson.get(r).getAsJsonArray();
+                    for (int c = 0; c < row.size(); c++) {
+                        if (row.get(c).equals(JsonNull.INSTANCE)) {
+                            blockRow.add(null);
+                        } else {
+                            JsonObject borders = row.get(c).getAsJsonObject().get("borders").getAsJsonObject();
+
+                            if (row.get(c).getAsJsonObject().get("color") == null) {
+                                // TURRET
+
+                                blockRow.add(new TurretBlock(
+                                                r,
+                                                c,
+                                                Block.BorderType.findByString(borders.get(Direction.NORTH.toString()).getAsString()),
+                                                Block.BorderType.findByString(borders.get(Direction.EAST.toString()).getAsString()),
+                                                Block.BorderType.findByString(borders.get(Direction.SOUTH.toString()).getAsString()),
+                                                Block.BorderType.findByString(borders.get(Direction.WEST.toString()).getAsString())
+                                        )
+                                );
+                            } else {
+                                // SPAWNPOINT
+
+                                blockRow.add(new SpawnpointBlock(
+                                                r,
+                                                c,
+                                                Block.BorderType.findByString(borders.get(Direction.NORTH.toString()).getAsString()),
+                                                Block.BorderType.findByString(borders.get(Direction.EAST.toString()).getAsString()),
+                                                Block.BorderType.findByString(borders.get(Direction.SOUTH.toString()).getAsString()),
+                                                Block.BorderType.findByString(borders.get(Direction.WEST.toString()).getAsString()),
+                                                CurrencyColor.findByString(row.get(c).getAsJsonObject().get("color").getAsString())
+                                        )
+                                );
+                            }
                         }
-                };
-            default:
-                throw new UnsupportedOperationException();
+                    }
+                    field.add(blockRow.toArray(new Block[]{}));
+                }
+
+                boardMap.put(Preset.values()[i], field.toArray(new Block[][]{}));
+            }
         }
+
+
+        return new Board(boardMap.get(preset));
     }
 }
