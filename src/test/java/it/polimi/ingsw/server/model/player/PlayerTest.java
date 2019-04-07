@@ -6,11 +6,10 @@ import it.polimi.ingsw.server.model.Match;
 import it.polimi.ingsw.server.model.currency.Ammo;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedGrabException;
-import it.polimi.ingsw.server.model.factories.AmmoFactory;
-import it.polimi.ingsw.server.model.factories.BoardFactory;
-import it.polimi.ingsw.server.model.factories.MatchFactory;
+import it.polimi.ingsw.server.model.factories.*;
 import it.polimi.ingsw.server.controller.weapons.Attack;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,56 +22,25 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PlayerTest {
-
-    private static List<Ammo> reloadCost;
-    private static List<Ammo> reloadCost1;
-    private static List<Ammo> reloadCost2;
-    private static List<Ammo> acquisitionCost;
-    private static List<Ammo> acquisitionCost1;
-    private static List<Ammo> acquisitionCost2;
-
+    private static Weapon electroscythe;
+    private static Weapon furnace;
+    private static Weapon flamethrower;
+    private static Weapon heatseeker;
     static {
-        reloadCost = new LinkedList<>();
-        acquisitionCost = new LinkedList<>();
-        acquisitionCost.add(AmmoFactory.create(CurrencyColor.RED));
-        reloadCost.add(AmmoFactory.create(CurrencyColor.BLUE));
-        reloadCost.add(AmmoFactory.create(CurrencyColor.RED));
-
-        reloadCost1 = new LinkedList<>();
-        acquisitionCost1 = new LinkedList<>();
-        acquisitionCost1.add(AmmoFactory.create(CurrencyColor.RED));
-        acquisitionCost1.add(AmmoFactory.create(CurrencyColor.YELLOW));
-        reloadCost1.add(AmmoFactory.create(CurrencyColor.RED));
-        reloadCost1.add(AmmoFactory.create(CurrencyColor.YELLOW));
-        reloadCost1.add(AmmoFactory.create(CurrencyColor.YELLOW));
-
-        reloadCost2 = new LinkedList<>();
-        acquisitionCost2 = new LinkedList<>();
-        acquisitionCost2.add(AmmoFactory.create(CurrencyColor.BLUE));
-        reloadCost2.add(AmmoFactory.create(CurrencyColor.BLUE));
-        reloadCost2.add(AmmoFactory.create(CurrencyColor.YELLOW));
+        try {
+            electroscythe = WeaponFactory.create(Weapon.Name.ELECTROSCYTHE);
+            furnace = WeaponFactory.create(Weapon.Name.FURNACE);
+            heatseeker = WeaponFactory.create(Weapon.Name.HEATSEEKER);
+            flamethrower = WeaponFactory.create(Weapon.Name.FLAMETHROWER);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private Match match;
     private Player player;
-    private Weapon prototypeFreeWeapon = new Weapon(Weapon.Name.CYBERBLADE, new ArrayList<>(), new ArrayList<>());
-    private Weapon prototypeCostlyWeapon = new Weapon(
-            Weapon.Name.ELECTROSCYTHE,
-            acquisitionCost,
-            reloadCost
-    );
 
-    private Weapon prototypeCostlyWeapon1 = new Weapon(
-            Weapon.Name.FLAMETHROWER,
-            acquisitionCost1,
-            reloadCost1
-    );
 
-    private Weapon prototypeCostlyWeapon2 = new Weapon(
-            Weapon.Name.FURNACE,
-            acquisitionCost2,
-            reloadCost2
-    );
 
     @BeforeEach
     void setUp() throws FileNotFoundException {
@@ -105,10 +73,12 @@ class PlayerTest {
 
         assertEquals(expectedTokens, player.getDamageTokens().size());
 
+        match.endTurn();
         match.changeTurn();
 
         player.addMark(new DamageToken(match.getActivePlayer()));
 
+        match.endTurn();
         match.changeTurn();
 
         player.addDamageToken(new DamageToken(match.getActivePlayer()));
@@ -128,6 +98,7 @@ class PlayerTest {
         assertTrue(player.isAlive());
         assertEquals(expectedTokens, player.getDamageTokens().size());
 
+        match.endTurn();
         match.changeTurn();
 
         player.addDamageToken(new DamageToken(match.getActivePlayer()));
@@ -147,118 +118,209 @@ class PlayerTest {
 
         assertFalse(player.isAlive());
         assertEquals(expectedTokens, player.getDamageTokens().size());
+        List<Player> dead = match.endTurn();
+        assertEquals(dead.get(0), player);
 
     }
 
     @Test
     void chooseWeapon() {
         player = match.getActivePlayer();
-        player.grabWeapon(prototypeFreeWeapon, new ArrayList<>(), new ArrayList<>());
+        player.grabAmmos(electroscythe.getAcquisitionCost());
+        player.grabWeapon(electroscythe, electroscythe.getAcquisitionCost(), new ArrayList<>());
 
         //CHOOSING A WEAPON
-        player.chooseWeapon(prototypeFreeWeapon);
-        assertEquals(prototypeFreeWeapon, player.getActiveWeapon().orElse(null));
+        player.chooseWeapon(electroscythe);
+        assertEquals(electroscythe, player.getActiveWeapon().orElse(null));
         player.putAwayActiveWeapon();
 
         //CHOOSING AN UNLOADED WEAPON
-        prototypeFreeWeapon.setLoaded(false);
-        player.chooseWeapon(prototypeFreeWeapon);
+        electroscythe.setLoaded(false);
+        player.chooseWeapon(electroscythe);
         assertNull(player.getActiveWeapon().orElse(null)); // the weapon can't be active because it is not loaded
 
         //CHOOSING A WEAPON THAT DOES NOT BELONG TO THE PLAYER
-        player.chooseWeapon(prototypeCostlyWeapon);
+        player.chooseWeapon(heatseeker);
         assertNull(player.getActiveWeapon().orElse(null)); // the weapon can't be active because it is not owned by the player
     }
 
     @Test
     void grabWeapon() {
         // FILLING UP THE WALLET SO THAT THE PLAYER CAN BUY A WEAPON
-        player.grabAmmos(reloadCost.stream().map(coin -> (Ammo) coin).collect(Collectors.toList()));
-        assertTrue(player.getAmmos().stream().anyMatch(a -> a.getColor() == CurrencyColor.RED));
-        assertTrue(player.getAmmos().stream().anyMatch(a -> a.getColor() == CurrencyColor.BLUE));
-        assertEquals(2, player.getAmmos().size());
+        player.grabAmmos(electroscythe.getAcquisitionCost());
         int playerAmmos = player.getAmmos().size();
 
         //BUYING AN AFFORDABLE WEAPON WHILE HAVING LESS THAN 3 WEAPONS
         player.grabWeapon(
-                prototypeCostlyWeapon,
-                prototypeCostlyWeapon.getAcquisitionCost().stream().map(c -> (Ammo) c).collect(Collectors.toList()),
+                electroscythe,
+                electroscythe.getAcquisitionCost(),
                 new LinkedList<>()
         );
-        playerAmmos -= prototypeCostlyWeapon.getAcquisitionCost().size();
+        playerAmmos -= electroscythe.getAcquisitionCost().size();
         assertEquals(playerAmmos, player.getAmmos().size());
-        assertTrue(player.getWeapons().contains(prototypeCostlyWeapon));
-        assertTrue(player.getAmmos().stream().anyMatch(a -> a.getColor() == CurrencyColor.BLUE));
+        assertTrue(player.getWeapons().contains(electroscythe));
 
         //BUYING A FREE WEAPON
-        player.grabWeapon(prototypeFreeWeapon, new LinkedList<>(), new LinkedList<>());
-        assertTrue(player.getWeapons().contains(prototypeFreeWeapon));
+        player.grabAmmos(flamethrower.getAcquisitionCost());
+        playerAmmos += flamethrower.getAcquisitionCost().size();
+        player.grabWeapon(flamethrower, flamethrower.getAcquisitionCost(), new LinkedList<>());
+        playerAmmos -= flamethrower.getAcquisitionCost().size();
+        assertTrue(player.getWeapons().contains(flamethrower));
         assertEquals(playerAmmos, player.getAmmos().size());
 
         //TRYING TO BUY A WEAPON THE PLAYER CAN'T AFFORD
         assertThrows(MissingOwnershipException.class,
                 () -> player.grabWeapon(
-                prototypeCostlyWeapon1,
-                prototypeCostlyWeapon1.getAcquisitionCost().stream().map(coin -> (Ammo) coin).collect(Collectors.toList()),
+                heatseeker,
+                heatseeker.getAcquisitionCost(),
                 new LinkedList<>()
         ));
-        assertFalse(player.getWeapons().contains(prototypeCostlyWeapon1));
+        assertFalse(player.getWeapons().contains(heatseeker));
         assertEquals(playerAmmos, player.getAmmos().size());
 
         //FILLING UP THE WALLET TO BUY MORE WEAPONS
-        player.grabAmmos(acquisitionCost1.stream().map(coin -> (Ammo) coin).collect(Collectors.toList()));
-        assertTrue(player.getAmmos().containsAll(acquisitionCost1));
-        playerAmmos += acquisitionCost1.size();
+        player.grabAmmos(heatseeker.getAcquisitionCost());
+        assertTrue(player.getAmmos().containsAll(heatseeker.getAcquisitionCost()));
+        playerAmmos += heatseeker.getAcquisitionCost().size();
 
         //BUYING THE THIRD WEAPON
         player.grabWeapon(
-                prototypeCostlyWeapon1,
-                prototypeCostlyWeapon1.getAcquisitionCost().stream().map(coin -> (Ammo) coin).collect(Collectors.toList()),
+                heatseeker,
+                heatseeker.getAcquisitionCost(),
                 new LinkedList<>()
         );
 
-        playerAmmos -= prototypeCostlyWeapon1.getAcquisitionCost().size();
-        assertTrue(player.getWeapons().contains(prototypeCostlyWeapon1));
+        playerAmmos -= heatseeker.getAcquisitionCost().size();
+        assertTrue(player.getWeapons().contains(heatseeker));
         assertEquals(playerAmmos, player.getAmmos().size());
 
         //FILLING UP THE WALLET TO BUY THE FOURTH WEAPON
-        player.grabAmmos(acquisitionCost2.stream().map(coin -> (Ammo) coin).collect(Collectors.toList()));
-        assertTrue(player.getAmmos().containsAll(acquisitionCost2));
-        playerAmmos += acquisitionCost2.size();
+        player.grabAmmos(furnace.getAcquisitionCost());
+        assertTrue(player.getAmmos().containsAll(furnace.getAcquisitionCost()));
+        playerAmmos += furnace.getAcquisitionCost().size();
 
         //BUYING THE FOURTH WEAPON DISCARDING A WEAPON
         player.grabWeapon(
-                prototypeCostlyWeapon2,
-                prototypeCostlyWeapon2.getAcquisitionCost().stream().map(coin -> (Ammo) coin).collect(Collectors.toList()),
+                furnace,
+                furnace.getAcquisitionCost(),
                 new LinkedList<>(),
-                prototypeFreeWeapon
+                electroscythe
         );
 
-        playerAmmos -= prototypeCostlyWeapon2.getAcquisitionCost().size();
+        playerAmmos -= furnace.getAcquisitionCost().size();
         assertEquals(playerAmmos, player.getAmmos().size());
-        assertTrue(player.getWeapons().contains(prototypeCostlyWeapon2));
-        assertFalse(player.getWeapons().contains(prototypeFreeWeapon)); // the discarded weapon does not belong to the player anymore
+        assertTrue(player.getWeapons().contains(furnace));
+        assertFalse(player.getWeapons().contains(electroscythe)); // the discarded weapon does not belong to the player anymore
+
+        //REFILLING THE WALLET
+        player.grabAmmos(electroscythe.getAcquisitionCost());
+        playerAmmos += electroscythe.getAcquisitionCost().size();
 
         //TRYING TO BUY A FOURTH WEAPON WITHOUT DISCARDING ONE
-        assertThrows(UnauthorizedGrabException.class, () -> player.grabWeapon(prototypeFreeWeapon, new LinkedList<>(), new LinkedList<>()));
-        assertFalse(player.getWeapons().contains(prototypeFreeWeapon));
+        assertThrows(UnauthorizedGrabException.class, () -> player.grabWeapon(electroscythe, new LinkedList<>(), new LinkedList<>()));
+        assertFalse(player.getWeapons().contains(electroscythe));
         assertEquals(playerAmmos, player.getAmmos().size());
     }
 
     @Test
     void grabPowerup() {
+        this.player = match.getActivePlayer();
+
+        //GRABBING THE THREE ALLOWED POWERUPS
+        this.player.grabPowerup(PowerupTileFactory.create(PowerupTile.Type.TELEPORTER, CurrencyColor.RED));
+        this.player.grabPowerup(PowerupTileFactory.create(PowerupTile.Type.NEWTON, CurrencyColor.YELLOW));
+        this.player.grabPowerup(PowerupTileFactory.create(PowerupTile.Type.TELEPORTER, CurrencyColor.BLUE));
+
+        //NOW PLAYER HAS 3 POWERUPS
+        assertEquals(3, player.getPowerups().size());
+
+        //GRABBING A FOURTH POWERUPS IS NOT ALLOWED
+        assertThrows(UnauthorizedGrabException.class, () -> this.player.grabPowerup(PowerupTileFactory.create(PowerupTile.Type.TAGBACK_GRENADE, CurrencyColor.BLUE)));
+
+        //PLAYER STILL HAS 3 POWERUPS
+        assertEquals(3, player.getPowerups().size());
     }
 
     @Test
     void grabAmmos() {
+        this.player = match.getActivePlayer();
+        List<Ammo> redAmmos = new LinkedList<>();
+        List<Ammo> blueAmmos = new LinkedList<>();
+        List<Ammo> yellowAmmos = new LinkedList<>();
+
+        for (int i = 0; i < 3; i++) {
+            redAmmos.add(AmmoFactory.create(CurrencyColor.RED));
+            blueAmmos.add(AmmoFactory.create(CurrencyColor.BLUE));
+            yellowAmmos.add(AmmoFactory.create(CurrencyColor.YELLOW));
+        }
+
+        //PLAYER GRABS 3 RED AMMOS AND 3 BLUE AMMOS
+        this.player.grabAmmos(redAmmos);
+        assertEquals(redAmmos.size(), player.getAmmos().size());
+        this.player.grabAmmos(blueAmmos);
+        assertEquals(blueAmmos.size() + redAmmos.size(), player.getAmmos().size());
+
+        //PLAYER ALREADY HAS 3 RED AMMOS
+        this.player.grabAmmos(redAmmos);
+        assertEquals(blueAmmos.size() + redAmmos.size(), player.getAmmos().size());
+
+        //PLAYER GRABS 3 YELLOW AMMOS
+        this.player.grabAmmos(yellowAmmos);
+        assertEquals(redAmmos.size() + blueAmmos.size() + yellowAmmos.size(), player.getAmmos().size());
+
+        //PLAYER CAN'T GRAB ANYTHING ANYMORE
+        this.player.grabAmmos(yellowAmmos);
+        this.player.grabAmmos(blueAmmos);
+        assertEquals(redAmmos.size() + blueAmmos.size() + yellowAmmos.size(), player.getAmmos().size());
     }
 
     @Test
     void reload() {
-    }
+        player.grabAmmos(furnace.getAcquisitionCost());
+        player.grabWeapon(furnace, furnace.getAcquisitionCost(), new LinkedList<>());
+        furnace.setLoaded(false);
+        player.grabAmmos(furnace.getReloadCost());
+        player.getAmmos().forEach(ammo -> {
+            player.grabPowerup(PowerupTileFactory.create(PowerupTile.Type.NEWTON, ammo.getColor()));
+        });
 
-    @Test
-    void shoot() {
+        //PAYMENT WITH AMMOS
+        player.reload(furnace, furnace.getReloadCost(), new LinkedList<>());
+
+        assertTrue(furnace.isLoaded());
+        assertTrue(player.getAmmos().isEmpty());
+
+        furnace.setLoaded(false);
+
+        //TRYING PAYMENT WITH POWERUPS
+        player.reload(furnace, new LinkedList<>(), furnace.getReloadCost().stream().map(ammo -> PowerupTileFactory.create(PowerupTile.Type.NEWTON, ammo.getColor())).collect(Collectors.toList()));
+        assertTrue(furnace.isLoaded());
+        assertTrue(player.getPowerups().isEmpty());
+
+
+        furnace.setLoaded(false);
+        player.grabAmmos(furnace.getReloadCost());
+        player.getAmmos().forEach(ammo -> {
+            player.grabPowerup(PowerupTileFactory.create(PowerupTile.Type.NEWTON, ammo.getColor()));
+        });
+
+        //TRYING PAYMENT WITH POWERUPS - FAILING BECAUSE POWERUPS AREN'T OF THE SAME TYPE
+        assertThrows(
+                MissingOwnershipException.class,
+                () -> player.reload(
+                        furnace,
+                        new LinkedList<>(),
+                        furnace.getReloadCost().stream().map(ammo -> PowerupTileFactory.create(PowerupTile.Type.TELEPORTER, ammo.getColor())).collect(Collectors.toList())
+                )
+        );
+        assertFalse(furnace.isLoaded());
+        assertFalse(player.getPowerups().isEmpty());
+
+        //TRYING MIXED PAYMENT
+        player.reload(furnace, player.getAmmos().subList(0, 1), player.getPowerups().subList(1, 2));
+        assertTrue(furnace.isLoaded());
+        assertEquals(1, player.getAmmos().size());
+        assertEquals(1, player.getAmmos().size());
     }
 
     @Test

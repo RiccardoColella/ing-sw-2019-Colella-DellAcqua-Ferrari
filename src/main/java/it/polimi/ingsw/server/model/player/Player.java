@@ -374,16 +374,6 @@ public class Player implements Damageable, MatchModeChangedListener {
         }
     }
 
-    /**
-     * This method allows the player to use a weapon to shoot
-     * @param weapon the Weapon the player wants to use
-     * @param ammos the cost the player is paying with ammos
-     * @param powerups the cost the player is paying with powerups
-     */
-    public void shoot(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups) {
-        //TODO: implement shoot logic
-    }
-
     public void addSkull() {
         skulls++;
     }
