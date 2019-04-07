@@ -1,11 +1,12 @@
 package it.polimi.ingsw.server.model.battlefield;
 
-import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.factories.BoardFactory;
+import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.player.PlayerColor;
+import it.polimi.ingsw.server.model.player.PlayerInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.swing.*;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,6 +18,8 @@ class BoardTest {
     private Board board11b;
     private Board board12;
 
+    List<PlayerInfo> playerInfos = new LinkedList<>();
+    List<Player> players = new LinkedList<>();
 
     @BeforeEach
     void setUp() {
@@ -24,6 +27,12 @@ class BoardTest {
         board11a = BoardFactory.create(BoardFactory.Preset.BOARD_11_1);
         board11b = BoardFactory.create(BoardFactory.Preset.BOARD_11_2);
         board12 = BoardFactory.create(BoardFactory.Preset.BOARD_12);
+        for (int i = 0; i < 5; i++) {
+            playerInfos.add(new PlayerInfo("Player" + i, PlayerColor.values()[i]));
+        }
+        for (int i = 0; i < 5; i++){
+            players.add(new Player(playerInfos.get(i)));
+        }
     }
 
     @Test
@@ -137,13 +146,113 @@ class BoardTest {
 
     @Test
     void movePlayer() {
+        //Testing null block on BOARD_10
+        Optional<Block> block_10_0_2 = board10.getBlock(0,2);
+        Optional<Block> block_10_1_2 = board10.getBlock(1,2);
+        Player player0 = players.get(0);
+        block_10_0_2.get().addPlayer(player0);
+        assertEquals(1, block_10_0_2.get().getPlayers().size(), "Error: player0 seems not in position");
+        board10.movePlayer(player0,Direction.EAST);
+        assertEquals(1, block_10_0_2.get().getPlayers().size(), "Error: player0 should not be moved in a null block");
+        board10.movePlayer(player0, Direction.SOUTH);
+        assertEquals(0, block_10_0_2.get().getPlayers().size(), "Error: player0 should be moved");
+        assertEquals(1, block_10_1_2.get().getPlayers().size(), "Error: player0 should be moved here!");
+        block_10_1_2.get().removePlayer(player0);
+        //Testing boarder on BOARD_10
+        Optional<Block> block_10_1_3 = board10.getBlock(1,3);
+        Optional<Block> block_10_2_3 = board10.getBlock(2,3);
+        block_10_1_3.get().addPlayer(player0);
+        assertEquals(1, block_10_1_3.get().getPlayers().size(), "Error: player0 seems not in position");
+        board10.movePlayer(player0,Direction.EAST);
+        assertEquals(1, block_10_1_3.get().getPlayers().size(), "Error: player0 should not be moved over the boarder");
+        board10.movePlayer(player0, Direction.SOUTH);
+        assertEquals(0, block_10_1_3.get().getPlayers().size(), "Error: player0 should be moved");
+        assertEquals(1, block_10_2_3.get().getPlayers().size(), "Error: player0 should be moved here!");
+        block_10_2_3.get().removePlayer(player0);
+        //Testing multiple players on BOARD_10
+        assertEquals(0, block_10_2_3.get().getPlayers().size());
+        for (Player i : players){
+            block_10_2_3.get().addPlayer(i);
+        }
+        assertEquals(players.size(), block_10_2_3.get().getPlayers().size(), "Scenario not well configured");
+        int x = 3;
+        board10.movePlayer(players.get(x), Direction.NORTH);
+        List<Player> assertion = new LinkedList<>();
+        for (int i = 0; i < players.size(); i++){
+            if (i != x) {
+                assertion.add(players.get(i));
+            }
+        }
+        assertEquals(assertion, block_10_2_3.get().getPlayers());
+        assertEquals(1, block_10_1_3.get().getPlayers().size());
+        assertEquals(players.get(x), block_10_1_3.get().getPlayers().get(0));
+        board10.movePlayer(players.get(x), Direction.SOUTH);
+        assertEquals(players.size(), block_10_2_3.get().getPlayers().size());
+        for (Player i : players){
+            block_10_2_3.get().removePlayer(i);
+        }
+        assertEquals(0, block_10_2_3.get().getPlayers().size());
     }
 
     @Test
     void findPlayer() {
+        int i = 4;
+        int k = 0;
+        //Trying to find a single player on the board
+        Optional<Block> block0 = board11a.findPlayer(players.get(0));
+        assertEquals(Optional.empty(), block0);
+        Optional<Block> block_12_2_2 = board12.getBlock(2,2);
+        block_12_2_2.get().addPlayer(players.get(i));
+        assertEquals(block_12_2_2, board12.findPlayer(players.get(i)));
+        //Trying to find a player not alone in the board
+        Optional<Block> block_12_0_0 = board12.getBlock(0,0);
+        block_12_0_0.get().addPlayer(players.get(k));
+        assertEquals(block_12_2_2, board12.findPlayer(players.get(i)));
+        block_12_0_0.get().removePlayer(players.get(k));
+        //testing to find 2nd player on block
+        block_12_2_2.get().addPlayer(players.get(k));
+        assertEquals(block_12_2_2, board12.findPlayer(players.get(k)));
+        block_12_2_2.get().removePlayer(players.get(k));
+        block_12_2_2.get().removePlayer(players.get(i));
+        //testing illegal state (2 times same player on board)
+        Player playerUbiquitous = players.get(3);
+        block_12_2_2.get().addPlayer(playerUbiquitous);
+        block_12_0_0.get().addPlayer(playerUbiquitous);
+        try {
+            board12.findPlayer(playerUbiquitous);
+            fail();
+        } catch (IllegalStateException e){
+            assertEquals(null, e.getMessage());
+        }
+        block_12_2_2.get().removePlayer(playerUbiquitous);
+        block_12_2_2.get().removePlayer(playerUbiquitous);
     }
+
 
     @Test
     void teleportPlayer() {
+        int i = 2;
+        int k = 1;
+        int j = 0;
+        //Trying to teleport a single player on the board
+        Optional<Block> block_12_2_2 = board12.getBlock(2,2);
+        Optional<Block> block_12_0_0 = board12.getBlock(0,0);
+        block_12_2_2.get().addPlayer(players.get(i));
+        board12.teleportPlayer(players.get(i), block_12_0_0.get());
+        assertEquals(block_12_0_0, board12.findPlayer(players.get(i)));
+        //Trying to teleport a player not alone in the board
+        block_12_2_2.get().addPlayer(players.get(k));
+        board12.teleportPlayer(players.get(i), block_12_2_2.get());
+        assertEquals(block_12_2_2, board12.findPlayer(players.get(i)));
+        assertEquals(block_12_2_2, board12.findPlayer(players.get(k)));
+        //testing illegal state (player non present on board)
+        try {
+            board12.teleportPlayer(players.get(j), block_12_0_0.get());
+            fail();
+        } catch (NullPointerException e){
+            assertEquals(null, e.getMessage());
+        }
+        block_12_2_2.get().removePlayer(players.get(i));
+        block_12_2_2.get().removePlayer(players.get(k));
     }
 }

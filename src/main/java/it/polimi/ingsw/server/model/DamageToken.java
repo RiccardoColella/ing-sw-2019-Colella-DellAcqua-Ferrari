@@ -16,7 +16,6 @@ public class DamageToken {
      * @param attacker the player that inflicted the damage
      */
     public DamageToken(Player attacker) {
-        //TODO all function
         this.attacker = attacker;
     }
 
@@ -25,7 +24,6 @@ public class DamageToken {
      * @return the attacker
      */
     public Player getAttacker() {
-        //TODO all function
         return attacker;
     }
 }

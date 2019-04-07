@@ -192,14 +192,17 @@ public class Board {
      * @return the block on which is positioned the player
      */
     public Optional<Block> findPlayer(Player player) {
+        Optional<Block> blockWithPlayer = Optional.empty();
         for (Block[] blocks : field) {
             for (Block block : blocks) {
                 if ((block != null) && block.containsPlayer(player)) {
-                    return Optional.ofNullable(block);
+                    if (!blockWithPlayer.isPresent()){
+                        blockWithPlayer = Optional.ofNullable(block);
+                    } else throw new IllegalStateException();
                 }
             }
         }
-        return Optional.empty();
+        return blockWithPlayer;
     }
 
     /**
