@@ -466,6 +466,140 @@ public class Player implements Damageable, MatchModeChangedListener {
         return this.currentReward;
     }
 
+    /**
+     * This method determines which set of macro action can be executed by a player at a given time, based on:
+     * - player's health
+     * - current match mode
+     * - final frenzy turns
+     *
+     * @return the list of macro actions that can be executed by the player
+     */
+    public List<List<CompoundAction>> getAvailableMacroActions() {
+
+        if (match.getMode() != FINAL_FRENZY) {
+
+            if (this.damageTokens.size() > 5) {
+
+                return Arrays.asList(
+                        Arrays.asList(
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE
+                                ),
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB
+                                ),
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.SHOOT
+                                )
+                        ),
+                        Arrays.asList(
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE, BasicAction.RELOAD
+                                ),
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB, BasicAction.RELOAD
+                                ),
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.SHOOT, BasicAction.RELOAD
+                                )
+                        )
+                );
+            } else if (this.damageTokens.size() > 2) {
+
+                return Arrays.asList(
+                        Arrays.asList(
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE
+                                ),
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB
+                                ),
+                                new CompoundAction(
+                                        BasicAction.SHOOT
+                                )
+                        ),
+                        Arrays.asList(
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE, BasicAction.RELOAD
+                                ),
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB, BasicAction.RELOAD
+                                ),
+                                new CompoundAction(
+                                        BasicAction.SHOOT, BasicAction.RELOAD
+                                )
+                        )
+                );
+            } else {
+
+                return Arrays.asList(
+                        Arrays.asList(
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE
+                                ),
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.GRAB
+                                ),
+                                new CompoundAction(
+                                        BasicAction.SHOOT
+                                )
+                        ),
+                        Arrays.asList(
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE, BasicAction.RELOAD
+                                ),
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.GRAB, BasicAction.RELOAD
+                                ),
+                                new CompoundAction(
+                                        BasicAction.SHOOT, BasicAction.RELOAD
+                                )
+                        )
+                );
+            }
+        } else {
+            if (match.getPlayers().get(0) == this || match.getPlayersWhoDidFinalFrenzyTurn().contains(match.getPlayers().get(0))) {
+
+                return Arrays.asList(
+                        Arrays.asList(
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.RELOAD, BasicAction.SHOOT
+                                ),
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB
+                                )
+                        )
+                );
+            } else {
+
+                return Arrays.asList(
+                        Arrays.asList(
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.RELOAD, BasicAction.SHOOT
+                                ),
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE
+                                ),
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB
+                                )
+                        ),
+                        Arrays.asList(
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.RELOAD, BasicAction.SHOOT
+                                ),
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE, BasicAction.MOVE
+                                ),
+                                new CompoundAction(
+                                        BasicAction.MOVE, BasicAction.MOVE, BasicAction.GRAB
+                                )
+                        )
+                );
+            }
+        }
+    }
+
     public boolean firstBloodMatters() {
         return firstBloodMatters;
     }
@@ -497,11 +631,7 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     private void notifyPlayerDied(Player killer) {
-        this.playerDiedListeners.forEach(listener -> listener.onPlayerDied(
-            new PlayerDied(
-                this,
-                killer
-            )
-        ));
+        PlayerDied e = new PlayerDied(this, killer);
+        this.playerDiedListeners.forEach(listener -> listener.onPlayerDied(e));
     }
 }

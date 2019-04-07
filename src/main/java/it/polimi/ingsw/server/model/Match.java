@@ -85,7 +85,7 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
      */
     private Mode mode;
 
-    private int finalFrenzyPlayed;
+    private List<Player> playersWhoDidFinalFrenzyTurn;
     private List<MatchEndedListener> matchEndedListeners;
     private List<MatchModeChangedListener> matchModeChangedListeners;
     /**
@@ -108,7 +108,7 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
         this.mode = mode;
         this.matchEndedListeners = new ArrayList<>();
         this.matchModeChangedListeners = new ArrayList<>();
-        this.finalFrenzyPlayed = 0;
+        this.playersWhoDidFinalFrenzyTurn = new LinkedList<>();
     }
 
     //TODO: add second constructor to restart a saved match given the name of the file
@@ -329,5 +329,7 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
         }
     }
 
-
+    public List<Player> getPlayersWhoDidFinalFrenzyTurn() {
+        return playersWhoDidFinalFrenzyTurn;
+    }
 }
