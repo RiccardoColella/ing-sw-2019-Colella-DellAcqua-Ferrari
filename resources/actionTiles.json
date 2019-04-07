@@ -1,0 +1,199 @@
+[{
+  "type": "STANDARD",
+  "compoundActions": [[
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "MOVE"
+      ]
+    },
+    {
+      "actions": [
+        "MOVE",
+        "GRAB"
+      ]
+    },
+    {
+      "actions": [
+        "SHOOT"
+      ]
+    }],[
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "MOVE",
+        "RELOAD"
+      ]
+    },
+    {
+      "actions": [
+        "MOVE",
+        "GRAB",
+        "RELOAD"
+      ]
+    },
+    {
+      "actions": [
+        "SHOOT",
+        "RELOAD"
+      ]
+    }]]
+},{
+  "type": "ADRENALINE_1",
+  "compoundActions": [[
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "MOVE"
+      ]
+    },
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "GRAB"
+      ]
+    },
+    {
+      "actions": [
+        "SHOOT"
+      ]
+    }],[
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "MOVE",
+        "RELOAD"
+      ]
+    },
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "GRAB",
+        "RELOAD"
+      ]
+    },
+    {
+      "actions": [
+        "SHOOT",
+        "RELOAD"
+      ]
+    }]]
+},{
+  "type": "ADRENALINE_2",
+  "compoundActions": [[
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "MOVE"
+      ]
+    },
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "GRAB"
+      ]
+    },
+    {
+      "actions": [
+        "MOVE",
+        "SHOOT"
+      ]
+    }],[
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "MOVE",
+        "RELOAD"
+      ]
+    },
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "GRAB",
+        "RELOAD"
+      ]
+    },
+    {
+      "actions": [
+        "MOVE",
+        "SHOOT",
+        "RELOAD"
+      ]
+    }]]
+},{
+  "type": "FINAL_FRENZY_SINGLE_MODE",
+  "compoundActions": [[
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "RELOAD",
+        "SHOOT"
+      ]
+    },
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "MOVE",
+        "GRAB"
+      ]
+    }]]
+},{
+  "type": "FINAL_FRENZY_DOUBLE_MODE",
+  "compoundActions": [[
+    {
+      "actions": [
+        "MOVE",
+        "RELOAD",
+        "SHOOT"
+      ]
+    },
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "MOVE",
+        "MOVE"
+      ]
+    },
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "GRAB"
+      ]
+    }],[
+    {
+      "actions": [
+        "MOVE",
+        "RELOAD",
+        "SHOOT"
+      ]
+    },
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "MOVE",
+        "MOVE"
+      ]
+    },
+    {
+      "actions": [
+        "MOVE",
+        "MOVE",
+        "GRAB"
+      ]
+    }]]
+}]

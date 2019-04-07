@@ -6,5 +6,15 @@ package it.polimi.ingsw.server.model.currency;
 public enum CurrencyColor {
     RED,
     BLUE,
-    YELLOW
+    YELLOW;
+
+    public static CurrencyColor findByString(String s) {
+        for (CurrencyColor color: CurrencyColor.values()) {
+            if (s.equals(color.toString())) {
+                return color;
+            }
+        }
+
+        throw new IllegalArgumentException();
+    }
 }

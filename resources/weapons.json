@@ -1,16 +1,15 @@
-[
-  {
-    "loaded": true,
-    "name": "LOCK_RIFLE",
-    "acquisitionCost": [{
-      "color": "BLUE"
-    }],
-    "reloadCost": [{
-      "color": "BLUE"
-    }, {
-      "color": "BLUE"
-    }]
-  },
+[{
+  "loaded": true,
+  "name": "LOCK_RIFLE",
+  "acquisitionCost": [{
+    "color": "BLUE"
+  }],
+  "reloadCost": [{
+    "color": "BLUE"
+  }, {
+    "color": "BLUE"
+  }]
+},
   {
     "loaded": true,
     "name": "ELECTROSCYTHE",
@@ -47,10 +46,11 @@
     }],
     "reloadCost": [{
       "color": "BLUE"
-      },
+    },
       {
         "color": "RED"
-      }]
+      }
+    ]
   },
   {
     "loaded": true,
@@ -102,7 +102,8 @@
     },
       {
         "color": "YELLOW"
-      }],
+      }
+    ],
     "reloadCost": [{
       "color": "RED"
     }, {
@@ -123,12 +124,13 @@
     ],
     "reloadCost": [{
       "color": "BLUE"
-    },{
+    }, {
       "color": "BLUE"
     },
       {
         "color": "YELLOW"
-      }]
+      }
+    ]
   },
   {
     "loaded": true,
@@ -138,7 +140,7 @@
     }],
     "reloadCost": [{
       "color": "RED"
-    },{
+    }, {
       "color": "YELLOW"
     }]
   },
@@ -158,7 +160,7 @@
     }],
     "reloadCost": [{
       "color": "YELLOW"
-    },{
+    }, {
       "color": "RED"
     }]
   },
@@ -178,7 +180,7 @@
     }],
     "reloadCost": [{
       "color": "YELLOW"
-    },{
+    }, {
       "color": "YELLOW"
     }]
   },
@@ -193,7 +195,8 @@
     },
       {
         "color": "RED"
-      }]
+      }
+    ]
   },
   {
     "loaded": true,
@@ -203,7 +206,7 @@
     }],
     "reloadCost": [{
       "color": "YELLOW"
-    },{
+    }, {
       "color": "BLUE"
     }]
   },
@@ -212,14 +215,14 @@
     "name": "RAILGUN",
     "acquisitionCost": [{
       "color": "YELLOW"
-    },{
+    }, {
       "color": "BLUE"
     }],
     "reloadCost": [{
       "color": "YELLOW"
-    },{
+    }, {
       "color": "YELLOW"
-    },{
+    }, {
       "color": "BLUE"
     }]
   },
@@ -239,7 +242,7 @@
     }],
     "reloadCost": [{
       "color": "YELLOW"
-    },{
+    }, {
       "color": "RED"
     }]
   },

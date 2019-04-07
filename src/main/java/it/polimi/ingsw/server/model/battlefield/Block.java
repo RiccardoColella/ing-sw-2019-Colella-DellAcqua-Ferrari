@@ -14,7 +14,17 @@ public abstract class Block {
     public enum BorderType {
         WALL,
         DOOR,
-        NONE
+        NONE;
+
+        public static BorderType findByString(String s) {
+            for (BorderType type: BorderType.values()) {
+                if (s.equals(type.toString())) {
+                    return type;
+                }
+            }
+
+            throw new IllegalArgumentException();
+        }
     }
 
 

@@ -22,9 +22,8 @@ public class MatchFactory {
      * @param skulls an int representing the number of skulls
      * @param mode the initial match mode
      * @return an awesome match
-     * @throws FileNotFoundException thrown if the needed configuration files are not found
      */
-    public static Match create(List<PlayerInfo> playersInfo, BoardFactory.Preset preset, int skulls, Match.Mode mode) throws FileNotFoundException {
+    public static Match create(List<PlayerInfo> playersInfo, BoardFactory.Preset preset, int skulls, Match.Mode mode) {
         Match match = new Match(
                 playersInfo.stream().map(Player::new).collect(Collectors.toList()),
                 BoardFactory.create(preset),

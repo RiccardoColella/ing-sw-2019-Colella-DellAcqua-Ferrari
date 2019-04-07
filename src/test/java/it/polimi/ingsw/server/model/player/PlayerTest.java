@@ -1,21 +1,17 @@
 package it.polimi.ingsw.server.model.player;
 
 import it.polimi.ingsw.server.model.DamageToken;
-import it.polimi.ingsw.server.model.Damageable;
 import it.polimi.ingsw.server.model.Match;
 import it.polimi.ingsw.server.model.currency.Ammo;
-import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedGrabException;
 import it.polimi.ingsw.server.model.factories.*;
-import it.polimi.ingsw.server.controller.weapons.Attack;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,14 +23,10 @@ class PlayerTest {
     private static Weapon flamethrower;
     private static Weapon heatseeker;
     static {
-        try {
-            electroscythe = WeaponFactory.create(Weapon.Name.ELECTROSCYTHE);
-            furnace = WeaponFactory.create(Weapon.Name.FURNACE);
-            heatseeker = WeaponFactory.create(Weapon.Name.HEATSEEKER);
-            flamethrower = WeaponFactory.create(Weapon.Name.FLAMETHROWER);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        electroscythe = WeaponFactory.create(Weapon.Name.ELECTROSCYTHE);
+        furnace = WeaponFactory.create(Weapon.Name.FURNACE);
+        heatseeker = WeaponFactory.create(Weapon.Name.HEATSEEKER);
+        flamethrower = WeaponFactory.create(Weapon.Name.FLAMETHROWER);
     }
 
     private Match match;
@@ -43,12 +35,12 @@ class PlayerTest {
 
 
     @BeforeEach
-    void setUp() throws FileNotFoundException {
+    void setUp() {
         List<PlayerInfo> playerInfos = new LinkedList<>();
         for (int i = 0; i < 5; i++) {
             playerInfos.add(new PlayerInfo("Player" + i, PlayerColor.values()[i]));
         }
-        this.match = MatchFactory.create(playerInfos, BoardFactory.Preset.BOARD_10, 5, Match.Mode.STANDARD);
+        this.match = MatchFactory.create(playerInfos, BoardFactory.Preset.BOARD_1, 5, Match.Mode.STANDARD);
         this.player = match.getPlayers().get(4);
     }
 

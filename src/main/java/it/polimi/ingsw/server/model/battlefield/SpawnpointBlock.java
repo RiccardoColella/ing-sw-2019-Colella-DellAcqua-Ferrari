@@ -3,6 +3,7 @@ package it.polimi.ingsw.server.model.battlefield;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -29,12 +30,11 @@ public class SpawnpointBlock extends Block {
      * @param borderSouth BorderType of the southern border
      * @param borderWest BorderType of the western border
      * @param color the color associated to the spawnpoint
-     * @param weapons the weapons contained in the spawnpoint
      */
-    public SpawnpointBlock(int row, int column, BorderType borderNorth, BorderType borderEast, BorderType borderSouth, BorderType borderWest, CurrencyColor color, List<Weapon> weapons) {
+    public SpawnpointBlock(int row, int column, BorderType borderNorth, BorderType borderEast, BorderType borderSouth, BorderType borderWest, CurrencyColor color) {
         super(row, column, borderNorth, borderEast, borderSouth, borderWest);
         this.color = color;
-        this.weapons = weapons;
+        this.weapons = new LinkedList<>();
     }
 
     /**

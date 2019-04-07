@@ -3,6 +3,7 @@ package it.polimi.ingsw.server.model.factories;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import it.polimi.ingsw.server.model.collections.Deck;
+import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,16 +30,20 @@ public final class WeaponFactory {
      * This method is used to create any weapon
      * @param name the enum corresponding to the desired weapon
      * @return the weapon, ready to be bought
-     * @throws FileNotFoundException thrown if the weapon configuration file is not found
      */
-    public static Weapon create(Weapon.Name name) throws FileNotFoundException {
+    public static Weapon create(Weapon.Name name) {
 
         if (weaponMap == null) {
             weaponMap = new EnumMap<Weapon.Name, Weapon>(Weapon.Name.class);
-            Weapon[] weapons = new Gson().fromJson(
-                new FileReader(new File(WEAPON_JSON_PATH)),
-                    Weapon[].class
-            );
+            Weapon[] weapons;
+            try {
+                weapons = new Gson().fromJson(
+                        new FileReader(new File(WEAPON_JSON_PATH)),
+                        Weapon[].class
+                );
+            } catch (FileNotFoundException e) {
+                throw new MissingConfigurationFileException("Weapon configuration file not found");
+            }
 
             for (Weapon weapon: weapons) {
                 weaponMap.put(weapon.getName(), weapon);
@@ -52,9 +57,8 @@ public final class WeaponFactory {
      * This method initialize a new Deck containing all the known weapons
      *
      * @return a deck containing the supported weapons
-     * @throws FileNotFoundException thrown if the weapon configuration file is missing
      */
-    public static Deck<Weapon> createDeck() throws FileNotFoundException {
+    public static Deck<Weapon> createDeck() {
         LinkedList<Weapon> weapons = new LinkedList<>();
         for (Weapon.Name name : Weapon.Name.values()) {
             Weapon weapon = create(name);

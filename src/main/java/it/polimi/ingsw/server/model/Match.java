@@ -17,8 +17,6 @@ import it.polimi.ingsw.server.model.factories.PowerupTileFactory;
 import it.polimi.ingsw.server.model.factories.WeaponFactory;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
-
-import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -94,9 +92,8 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
      * @param board the board that was chosen for the match
      * @param skulls an int representing the number of skulls
      * @param mode the initial match mode
-     * @throws FileNotFoundException thrown if there are missing configuration files
      */
-    public Match(List<Player> players, Board board, int skulls, Mode mode) throws FileNotFoundException {
+    public Match(List<Player> players, Board board, int skulls, Mode mode) {
         this.skulls = skulls;
         this.players = players;
         this.board = board;
