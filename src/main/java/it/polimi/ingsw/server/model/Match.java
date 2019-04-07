@@ -3,7 +3,6 @@ package it.polimi.ingsw.server.model;
 import it.polimi.ingsw.server.model.battlefield.Board;
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.currency.BonusTile;
-import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.events.MatchEnded;
 import it.polimi.ingsw.server.model.events.MatchModeChanged;
@@ -19,6 +18,7 @@ import it.polimi.ingsw.server.model.factories.WeaponFactory;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 
+import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -94,8 +94,9 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
      * @param board the board that was chosen for the match
      * @param skulls an int representing the number of skulls
      * @param mode the initial match mode
+     * @throws FileNotFoundException thrown if there are missing configuration files
      */
-    public Match(List<Player> players, Board board, int skulls, Mode mode) {
+    public Match(List<Player> players, Board board, int skulls, Mode mode) throws FileNotFoundException {
         this.skulls = skulls;
         this.players = players;
         this.board = board;

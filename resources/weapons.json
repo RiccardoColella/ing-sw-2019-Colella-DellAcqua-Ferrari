@@ -1,0 +1,254 @@
+[
+  {
+    "loaded": true,
+    "name": "LOCK_RIFLE",
+    "acquisitionCost": [{
+      "color": "BLUE"
+    }],
+    "reloadCost": [{
+      "color": "BLUE"
+    }, {
+      "color": "BLUE"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "ELECTROSCYTHE",
+    "acquisitionCost": [],
+    "reloadCost": [{
+      "color": "BLUE"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "MACHINE_GUN",
+    "acquisitionCost": [{
+      "color": "RED"
+    }],
+    "reloadCost": [{
+      "color": "BLUE"
+    }, {
+      "color": "RED"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "TRACTOR_BEAM",
+    "acquisitionCost": [],
+    "reloadCost": [{
+      "color": "BLUE"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "THOR",
+    "acquisitionCost": [{
+      "color": "RED"
+    }],
+    "reloadCost": [{
+      "color": "BLUE"
+      },
+      {
+        "color": "RED"
+      }]
+  },
+  {
+    "loaded": true,
+    "name": "VORTEX_CANNON",
+    "acquisitionCost": [{
+      "color": "BLUE"
+    }],
+    "reloadCost": [{
+      "color": "RED"
+    },
+      {
+        "color": "BLUE"
+      }
+    ]
+  },
+  {
+    "loaded": true,
+    "name": "FURNACE",
+    "acquisitionCost": [{
+      "color": "BLUE"
+    }],
+    "reloadCost": [{
+      "color": "RED"
+    },
+      {
+        "color": "BLUE"
+      }
+    ]
+  },
+  {
+    "loaded": true,
+    "name": "PLASMA_GUN",
+    "acquisitionCost": [{
+      "color": "YELLOW"
+    }],
+    "reloadCost": [{
+      "color": "BLUE"
+    },
+      {
+        "color": "YELLOW"
+      }
+    ]
+  },
+  {
+    "loaded": true,
+    "name": "HEATSEEKER",
+    "acquisitionCost": [{
+      "color": "RED"
+    },
+      {
+        "color": "YELLOW"
+      }],
+    "reloadCost": [{
+      "color": "RED"
+    }, {
+      "color": "RED"
+    }, {
+      "color": "YELLOW"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "WHISPER",
+    "acquisitionCost": [{
+      "color": "BLUE"
+    },
+      {
+        "color": "YELLOW"
+      }
+    ],
+    "reloadCost": [{
+      "color": "BLUE"
+    },{
+      "color": "BLUE"
+    },
+      {
+        "color": "YELLOW"
+      }]
+  },
+  {
+    "loaded": true,
+    "name": "HELLION",
+    "acquisitionCost": [{
+      "color": "YELLOW"
+    }],
+    "reloadCost": [{
+      "color": "RED"
+    },{
+      "color": "YELLOW"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "FLAMETHROWER",
+    "acquisitionCost": [],
+    "reloadCost": [{
+      "color": "RED"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "TWO_X_TWO",
+    "acquisitionCost": [{
+      "color": "RED"
+    }],
+    "reloadCost": [{
+      "color": "YELLOW"
+    },{
+      "color": "RED"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "GRENADE_LAUNCHER",
+    "acquisitionCost": [],
+    "reloadCost": [{
+      "color": "RED"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "SHOTGUN",
+    "acquisitionCost": [{
+      "color": "YELLOW"
+    }],
+    "reloadCost": [{
+      "color": "YELLOW"
+    },{
+      "color": "YELLOW"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "ROCKET_LAUNCHER",
+    "acquisitionCost": [{
+      "color": "RED"
+    }],
+    "reloadCost": [{
+      "color": "RED"
+    },
+      {
+        "color": "RED"
+      }]
+  },
+  {
+    "loaded": true,
+    "name": "POWER_GLOVE",
+    "acquisitionCost": [{
+      "color": "BLUE"
+    }],
+    "reloadCost": [{
+      "color": "YELLOW"
+    },{
+      "color": "BLUE"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "RAILGUN",
+    "acquisitionCost": [{
+      "color": "YELLOW"
+    },{
+      "color": "BLUE"
+    }],
+    "reloadCost": [{
+      "color": "YELLOW"
+    },{
+      "color": "YELLOW"
+    },{
+      "color": "BLUE"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "SHOCKWAVE",
+    "acquisitionCost": [],
+    "reloadCost": [{
+      "color": "YELLOW"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "CYBERBLADE",
+    "acquisitionCost": [{
+      "color": "RED"
+    }],
+    "reloadCost": [{
+      "color": "YELLOW"
+    },{
+      "color": "RED"
+    }]
+  },
+  {
+    "loaded": true,
+    "name": "SLEDGEHAMMER",
+    "acquisitionCost": [],
+    "reloadCost": [{
+      "color": "YELLOW"
+    }]
+  }
+]

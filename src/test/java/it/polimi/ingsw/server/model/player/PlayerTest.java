@@ -6,18 +6,17 @@ import it.polimi.ingsw.server.model.Match;
 import it.polimi.ingsw.server.model.currency.Ammo;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
-import it.polimi.ingsw.server.model.events.PlayerDied;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedGrabException;
 import it.polimi.ingsw.server.model.factories.AmmoFactory;
 import it.polimi.ingsw.server.model.factories.BoardFactory;
 import it.polimi.ingsw.server.model.factories.MatchFactory;
-import it.polimi.ingsw.server.model.weapons.Attack;
+import it.polimi.ingsw.server.controller.weapons.Attack;
 import it.polimi.ingsw.server.model.weapons.Weapon;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,12 +24,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class PlayerTest {
 
-    private static List<Coin> reloadCost;
-    private static List<Coin> reloadCost1;
-    private static List<Coin> reloadCost2;
-    private static List<Coin> acquisitionCost;
-    private static List<Coin> acquisitionCost1;
-    private static List<Coin> acquisitionCost2;
+    private static List<Ammo> reloadCost;
+    private static List<Ammo> reloadCost1;
+    private static List<Ammo> reloadCost2;
+    private static List<Ammo> acquisitionCost;
+    private static List<Ammo> acquisitionCost1;
+    private static List<Ammo> acquisitionCost2;
 
     static {
         reloadCost = new LinkedList<>();
@@ -56,56 +55,27 @@ class PlayerTest {
 
     private Match match;
     private Player player;
-    private Attack prototypeAttack = new Attack() {
-        @Override
-        public List<List<Damageable>> getTargets(TargetType type) {
-            return null;
-        }
-
-        @Override
-        public String getName() {
-            return null;
-        }
-
-        @Override
-        public List<Coin> getCost() {
-            return null;
-        }
-
-        @Override
-        public List<Damageable> execute(Player attacker, Map<TargetType, List<Damageable>> targets) {
-            return null;
-        }
-
-        @Override
-        public TargetType getSupportedTargetTypes() {
-            return null;
-        }
-    };
-    private Weapon prototypeFreeWeapon = new Weapon(Weapon.Name.CYBERBLADE, prototypeAttack, new ArrayList<>(), new ArrayList<>());
+    private Weapon prototypeFreeWeapon = new Weapon(Weapon.Name.CYBERBLADE, new ArrayList<>(), new ArrayList<>());
     private Weapon prototypeCostlyWeapon = new Weapon(
             Weapon.Name.ELECTROSCYTHE,
-            prototypeAttack,
             acquisitionCost,
             reloadCost
     );
 
     private Weapon prototypeCostlyWeapon1 = new Weapon(
             Weapon.Name.FLAMETHROWER,
-            prototypeAttack,
             acquisitionCost1,
             reloadCost1
     );
 
     private Weapon prototypeCostlyWeapon2 = new Weapon(
             Weapon.Name.FURNACE,
-            prototypeAttack,
             acquisitionCost2,
             reloadCost2
     );
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws FileNotFoundException {
         List<PlayerInfo> playerInfos = new LinkedList<>();
         for (int i = 0; i < 5; i++) {
             playerInfos.add(new PlayerInfo("Player" + i, PlayerColor.values()[i]));

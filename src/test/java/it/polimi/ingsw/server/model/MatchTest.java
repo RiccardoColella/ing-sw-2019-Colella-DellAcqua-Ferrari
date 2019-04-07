@@ -8,6 +8,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,7 +23,7 @@ class MatchTest {
     private Match match;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws FileNotFoundException {
         List<PlayerInfo> playerInfos = new LinkedList<>();
         for (int i = 0; i < 5; i++) {
             playerInfos.add(new PlayerInfo("Player" + i, PlayerColor.values()[i]));

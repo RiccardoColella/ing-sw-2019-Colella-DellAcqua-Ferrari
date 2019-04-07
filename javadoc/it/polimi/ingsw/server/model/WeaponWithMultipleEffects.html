@@ -99,10 +99,10 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li><a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">it.polimi.ingsw.server.model.weapons.Weapon</a></li>
+<li><a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">it.polimi.ingsw.server.controller.weapons.Weapon</a></li>
 <li>
 <ul class="inheritance">
-<li>it.polimi.ingsw.server.model.weapons.WeaponWithMultipleEffects</li>
+<li>it.polimi.ingsw.server.controller.weapons.WeaponWithMultipleEffects</li>
 </ul>
 </li>
 </ul>
@@ -148,7 +148,7 @@ extends <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title=
 </tr>
 </table>
 <ul class="blockList">
-<li class="blockList"><a name="fields.inherited.from.class.it.polimi.ingsw.server.model.weapons.Weapon">
+<li class="blockList"><a name="fields.inherited.from.class.it.polimi.ingsw.server.controller.weapons.Weapon">
 <!--   -->
 </a>
 <h3>Fields inherited from class&nbsp;it.polimi.ingsw.server.model.<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a></h3>
@@ -168,7 +168,7 @@ extends <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title=
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/WeaponWithMultipleEffects.html#WeaponWithMultipleEffects-it.polimi.ingsw.server.model.weapons.Attack-java.util.Map-java.lang.String-java.util.List-java.util.List-boolean-">WeaponWithMultipleEffects</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Attack.html" title="interface in it.polimi.ingsw.server.model">Attack</a>&nbsp;basicAttack,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/WeaponWithMultipleEffects.html#WeaponWithMultipleEffects-it.polimi.ingsw.server.controller.weapons.Attack-java.util.Map-java.lang.String-java.util.List-java.util.List-boolean-">WeaponWithMultipleEffects</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Attack.html" title="interface in it.polimi.ingsw.server.model">Attack</a>&nbsp;basicAttack,
                          java.util.Map&lt;<a href="../../../../../it/polimi/ingsw/server/model/Attack.html" title="interface in it.polimi.ingsw.server.model">Attack</a>,java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Coin.html" title="interface in it.polimi.ingsw.server.model">Coin</a>&gt;&gt;&nbsp;poweredAttacks,
                          java.lang.String&nbsp;name,
                          java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Coin.html" title="interface in it.polimi.ingsw.server.model">Coin</a>&gt;&nbsp;reloadCost,
@@ -194,7 +194,7 @@ extends <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title=
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Coin.html" title="interface in it.polimi.ingsw.server.model">Coin</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/WeaponWithMultipleEffects.html#getAttackCost-it.polimi.ingsw.server.model.weapons.Attack-">getAttackCost</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Attack.html" title="interface in it.polimi.ingsw.server.model">Attack</a>&nbsp;attack)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/WeaponWithMultipleEffects.html#getAttackCost-it.polimi.ingsw.server.controller.weapons.Attack-">getAttackCost</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Attack.html" title="interface in it.polimi.ingsw.server.model">Attack</a>&nbsp;attack)</code>
 <div class="block">This method gets the cost of the given attack</div>
 </td>
 </tr>
@@ -212,11 +212,11 @@ extends <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title=
 </tr>
 </table>
 <ul class="blockList">
-<li class="blockList"><a name="methods.inherited.from.class.it.polimi.ingsw.server.model.weapons.Weapon">
+<li class="blockList"><a name="methods.inherited.from.class.it.polimi.ingsw.server.controller.weapons.Weapon">
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;it.polimi.ingsw.server.model.<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a></h3>
-<code><a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#chooseAttack-it.polimi.ingsw.server.model.weapons.Attack-">chooseAttack</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#executeActiveAttack--">executeActiveAttack</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#getAcquisitionCost--">getAcquisitionCost</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#getBasicAttack--">getBasicAttack</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#getName--">getName</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#getReloadCost--">getReloadCost</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#isLoaded--">isLoaded</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#setLoaded-boolean-">setLoaded</a></code></li>
+<code><a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#chooseAttack-it.polimi.ingsw.server.controller.weapons.Attack-">chooseAttack</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#executeActiveAttack--">executeActiveAttack</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#getAcquisitionCost--">getAcquisitionCost</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#getBasicAttack--">getBasicAttack</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#getName--">getName</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#getReloadCost--">getReloadCost</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#isLoaded--">isLoaded</a>, <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html#setLoaded-boolean-">setLoaded</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">

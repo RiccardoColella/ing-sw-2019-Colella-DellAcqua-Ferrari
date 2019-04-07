@@ -4,6 +4,7 @@ import it.polimi.ingsw.server.model.Match;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
 
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,8 +22,9 @@ public class MatchFactory {
      * @param skulls an int representing the number of skulls
      * @param mode the initial match mode
      * @return an awesome match
+     * @throws FileNotFoundException thrown if the needed configuration files are not found
      */
-    public static Match create(List<PlayerInfo> playersInfo, BoardFactory.Preset preset, int skulls, Match.Mode mode) {
+    public static Match create(List<PlayerInfo> playersInfo, BoardFactory.Preset preset, int skulls, Match.Mode mode) throws FileNotFoundException {
         Match match = new Match(
                 playersInfo.stream().map(Player::new).collect(Collectors.toList()),
                 BoardFactory.create(preset),
