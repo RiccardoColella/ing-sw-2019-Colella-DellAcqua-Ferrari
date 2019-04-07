@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.model.battlefield;
 
+import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.factories.BoardFactory;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.player.PlayerColor;
@@ -7,6 +8,7 @@ import it.polimi.ingsw.server.model.player.PlayerInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.*;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
