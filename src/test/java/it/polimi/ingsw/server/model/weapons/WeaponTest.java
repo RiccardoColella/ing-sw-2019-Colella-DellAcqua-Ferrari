@@ -1,6 +1,6 @@
 package it.polimi.ingsw.server.model.weapons;
 
-import it.polimi.ingsw.server.model.currency.Ammo;
+import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import org.junit.jupiter.api.Test;
 
@@ -15,8 +15,8 @@ class WeaponTest {
     void copyConstructor() {
         for (Weapon.Name name : Weapon.Name.values()) {
 
-            List<Ammo> cost1 = Arrays.asList(new Ammo(CurrencyColor.RED), new Ammo(CurrencyColor.YELLOW), new Ammo(CurrencyColor.BLUE));
-            List<Ammo> cost2 = Arrays.asList(new Ammo(CurrencyColor.BLUE));
+            List<AmmoCube> cost1 = Arrays.asList(new AmmoCube(CurrencyColor.RED), new AmmoCube(CurrencyColor.YELLOW), new AmmoCube(CurrencyColor.BLUE));
+            List<AmmoCube> cost2 = Arrays.asList(new AmmoCube(CurrencyColor.BLUE));
 
             Weapon copy = new Weapon(new Weapon(name, cost1, cost2));
             assertEquals(name, copy.getName(), "Incorrect weapon name");

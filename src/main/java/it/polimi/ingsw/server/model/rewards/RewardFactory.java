@@ -1,11 +1,7 @@
-package it.polimi.ingsw.server.model.factories;
+package it.polimi.ingsw.server.model.rewards;
 
 import com.google.gson.*;
-import it.polimi.ingsw.server.model.rewards.DoubleKillReward;
-import it.polimi.ingsw.server.model.rewards.KillshotReward;
-import it.polimi.ingsw.server.model.rewards.Reward;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
-import it.polimi.ingsw.server.model.rewards.RewardForPlayerDeath;
 
 import java.io.File;
 import java.io.FileReader;
@@ -16,8 +12,26 @@ import java.util.List;
 import java.util.Map;
 
 public final class RewardFactory {
+
+    public enum Type {
+        STANDARD,
+        FINAL_FRENZY,
+        KILLSHOT,
+        DOUBLE_KILL;
+
+        public static Type findByString(String s) {
+            for (Type type: Type.values()) {
+                if (s.equals(type.toString())) {
+                    return type;
+                }
+            }
+
+            throw new IllegalArgumentException();
+        }
+    }
+
     private static final String REWARDS_JSON_FILENAME = "./resources/rewards.json";
-    private static Map<Reward.Type, Reward> rewardMap;
+    private static Map<RewardFactory.Type, Reward> rewardMap;
 
     private RewardFactory() {
 
@@ -28,10 +42,10 @@ public final class RewardFactory {
      * @param type the enum corresponding to the desired reward object
      * @return the reward
      */
-    public static Reward create(Reward.Type type) {
+    public static Reward create(Type type) {
 
         if (rewardMap == null) {
-            rewardMap = new EnumMap<>(Reward.Type.class);
+            rewardMap = new EnumMap<>(Type.class);
             JsonElement jsonElement;
             try {
                 jsonElement = new JsonParser().parse(new FileReader(new File(REWARDS_JSON_FILENAME)));
@@ -41,20 +55,20 @@ public final class RewardFactory {
 
 
 
-            for (int i = 0; i < Reward.Type.values().length; i++) {
+            for (int i = 0; i < Type.values().length; i++) {
 
                 JsonObject fieldJson = jsonElement.getAsJsonArray().get(i).getAsJsonObject();
                 JsonArray rewards;
                 List<Integer> rewardsInt;
-                switch (Reward.Type.findByString(fieldJson.get("type").getAsString())) {
+                switch (Type.findByString(fieldJson.get("type").getAsString())) {
                     case DOUBLE_KILL:
-                        rewardMap.put(Reward.Type.DOUBLE_KILL, new DoubleKillReward(fieldJson.get("reward").getAsInt()));
+                        rewardMap.put(Type.DOUBLE_KILL, new DoubleKillReward(fieldJson.get("reward").getAsInt()));
                         break;
                     case KILLSHOT:
                         rewards = fieldJson.get("rewards").getAsJsonArray();
                         rewardsInt = new LinkedList<>();
                         rewards.iterator().forEachRemaining(element -> rewardsInt.add(element.getAsInt()));
-                        rewardMap.put(Reward.Type.KILLSHOT, new KillshotReward(rewardsInt.stream().mapToInt(num->num).toArray()));
+                        rewardMap.put(Type.KILLSHOT, new KillshotReward(rewardsInt.stream().mapToInt(num->num).toArray()));
                         break;
                     case FINAL_FRENZY:
                     case STANDARD:
@@ -62,8 +76,8 @@ public final class RewardFactory {
                         rewardsInt = new LinkedList<>();
                         rewards.iterator().forEachRemaining(element -> rewardsInt.add(element.getAsInt()));
                         rewardMap.put(
-                                Reward.Type.findByString(fieldJson.get("type").getAsString()),
-                                new RewardForPlayerDeath(
+                                Type.findByString(fieldJson.get("type").getAsString()),
+                                new PlayerDeathReward(
                                         rewardsInt.stream().mapToInt(num->num).toArray(),
                                         fieldJson.get("firstBlood").getAsInt()
                                 ));

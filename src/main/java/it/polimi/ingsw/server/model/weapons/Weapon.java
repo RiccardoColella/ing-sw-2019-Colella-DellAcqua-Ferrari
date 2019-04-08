@@ -1,10 +1,7 @@
 package it.polimi.ingsw.server.model.weapons;
 
-import it.polimi.ingsw.server.model.currency.Ammo;
-import it.polimi.ingsw.server.model.currency.Coin;
-import it.polimi.ingsw.server.model.factories.WeaponFactory;
+import it.polimi.ingsw.server.model.currency.AmmoCube;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -55,17 +52,17 @@ public class Weapon {
 
     private boolean loaded = true;
     private final Name name;
-    private final List<Ammo> acquisitionCost;
-    private final List<Ammo> reloadCost;
+    private final List<AmmoCube> acquisitionCost;
+    private final List<AmmoCube> reloadCost;
 
     /**
      * This constructor creates a Weapon with initial values
      *
      * @param name the name of the weapon
-     * @param acquisitionCost a list of Ammo used to determine the acquisition cost
-     * @param reloadCost a list of Ammo used to determine the reload cost
+     * @param acquisitionCost a list of AmmoCube used to determine the acquisition cost
+     * @param reloadCost a list of AmmoCube used to determine the reload cost
      */
-    public Weapon(Name name, List<Ammo> acquisitionCost, List<Ammo> reloadCost) {
+    public Weapon(Name name, List<AmmoCube> acquisitionCost, List<AmmoCube> reloadCost) {
         this.name = name;
         this.acquisitionCost = Collections.unmodifiableList(acquisitionCost);
         this.reloadCost = Collections.unmodifiableList(reloadCost);
@@ -88,11 +85,11 @@ public class Weapon {
         return name;
     }
 
-    public List<Ammo> getAcquisitionCost() {
+    public List<AmmoCube> getAcquisitionCost() {
         return acquisitionCost;
     }
 
-    public List<Ammo> getReloadCost() {
+    public List<AmmoCube> getReloadCost() {
         return reloadCost;
     }
 

@@ -1,8 +1,6 @@
-package it.polimi.ingsw.server.model.factories;
+package it.polimi.ingsw.server.model.currency;
 
 import it.polimi.ingsw.server.model.collections.Deck;
-import it.polimi.ingsw.server.model.currency.BonusTile;
-import it.polimi.ingsw.server.model.currency.CurrencyColor;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -17,18 +15,18 @@ public final class BonusTileFactory {
     }
 
     public static BonusTile create(CurrencyColor firstColor, CurrencyColor secondColor) {
-        return new BonusTile(AmmoFactory.create(firstColor), AmmoFactory.create(secondColor));
+        return new BonusTile(AmmoCubeFactory.create(firstColor), AmmoCubeFactory.create(secondColor));
     }
 
     public static BonusTile create(CurrencyColor firstColor, CurrencyColor secondColor, CurrencyColor thirdColor) {
-        return new BonusTile(AmmoFactory.create(firstColor), AmmoFactory.create(secondColor), AmmoFactory.create(thirdColor));
+        return new BonusTile(AmmoCubeFactory.create(firstColor), AmmoCubeFactory.create(secondColor), AmmoCubeFactory.create(thirdColor));
     }
 
     public static Deck<BonusTile> createDeck() {
         List<BonusTile> bonusTiles = new LinkedList<>();
-        // 36 bonus card, 18 with 3 ammos, 18 2 ammos + powerup
-        // 2 ammos + powerup: 2 with 2 ammos of the same color for each color (= 6 cards), 4 for every combination (= 12 cards) RY RB BY
-        // 3 ammos: 3 for each combo of 2 ammos of the same color + 1 different color (YBB, YRR, BYY, BRR, RYY, RBB) (= 18 cards)
+        // 36 bonus card, 18 with 3 ammoCubes, 18 2 ammoCubes + powerup
+        // 2 ammoCubes + powerup: 2 with 2 ammoCubes of the same color for each color (= 6 cards), 4 for every combination (= 12 cards) RY RB BY
+        // 3 ammoCubes: 3 for each combo of 2 ammoCubes of the same color + 1 different color (YBB, YRR, BYY, BRR, RYY, RBB) (= 18 cards)
         for (CurrencyColor mainColor : CurrencyColor.values()) {
             for (CurrencyColor secondColor : CurrencyColor.values()) {
                 if (mainColor != secondColor) {

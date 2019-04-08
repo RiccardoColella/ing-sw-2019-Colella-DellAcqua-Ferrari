@@ -1,10 +1,10 @@
 package it.polimi.ingsw.server.controller.powerupeffects;
 
-import it.polimi.ingsw.server.model.*;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.TypeMismatchException;
+import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.Player;
 
 public class TeleporterEffect extends PowerupEffect {

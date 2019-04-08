@@ -12,17 +12,17 @@ public class Deck<T> implements Collection<T> {
     /**
      * List of all elements still in the deck
      */
-    private LinkedList<T> cards;
+    private final LinkedList<T> cards;
 
     /**
      * List of the used element's of the deck
      */
-    private List<T> discarded;
+    private final List<T> discarded;
 
     /**
      * Set true if the deck should be recreated with discard List when empty
      */
-    private boolean autoRecycleDiscarded;
+    private boolean recycleDiscarded;
 
     /**
      * This constructor creates a deck from a list of cards that acts like a Queue.
@@ -30,12 +30,14 @@ public class Deck<T> implements Collection<T> {
      * are shuffled and re-inserted into the Queue
      *
      * @param cards the initial cards in the deck
-     * @param autoRecycleDiscarded specifies whether the deck should be reinitialized automatically
+     * @param recycleDiscarded specifies whether the deck should be reinitialized automatically
      *                             when it becomes empty, reshuffling the discarded cards
      */
-    public Deck(List<T> cards, boolean autoRecycleDiscarded) {
+    public Deck(List<T> cards, boolean recycleDiscarded) {
         this.cards = new LinkedList<>(cards);
-        this.autoRecycleDiscarded = autoRecycleDiscarded;
+        this.discarded = new LinkedList<>();
+        this.recycleDiscarded = recycleDiscarded;
+        shuffle();
     }
 
     /**
@@ -62,8 +64,8 @@ public class Deck<T> implements Collection<T> {
         }
     }
 
-    public void recycleIfNeeded() {
-        if (cards.isEmpty() && autoRecycleDiscarded) {
+    private void recycleIfNeeded() {
+        if (cards.isEmpty() && recycleDiscarded) {
             cards.addAll(discarded);
             discarded.clear();
             shuffle();
@@ -83,6 +85,7 @@ public class Deck<T> implements Collection<T> {
      */
     public void discard(T item) {
         discarded.add(item);
+        recycleIfNeeded();
     }
 
 

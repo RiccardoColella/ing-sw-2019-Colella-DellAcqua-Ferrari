@@ -1,8 +1,10 @@
 package it.polimi.ingsw.server.model.player;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ActionTile {
 
@@ -25,7 +27,10 @@ public class ActionTile {
      */
     public ActionTile(Type type, List<List<CompoundAction>> compoundActions) {
         this.type = type;
-        this.compoundActions = Collections.unmodifiableList(compoundActions);
+        this.compoundActions = Collections.unmodifiableList(
+                compoundActions.stream().map(Collections::unmodifiableList)
+                .collect(Collectors.toList())
+        );
     }
 
     /**

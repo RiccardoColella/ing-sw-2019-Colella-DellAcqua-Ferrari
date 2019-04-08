@@ -1,6 +1,6 @@
 package it.polimi.ingsw.server.model.events;
 
-import it.polimi.ingsw.server.model.Match;
+import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.Player;
 
 import java.util.EventObject;

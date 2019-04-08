@@ -36,17 +36,17 @@ public abstract class Block {
     /**
      * List of the player on the block
      */
-    private List<Player> players;
+    private final List<Player> players;
 
     /**
      * Block's row in the field
      */
-    private int row;
+    private final int row;
 
     /**
      * Block's column in the field
      */
-    private int column;
+    private final int column;
 
     /**
      * Class constructor given the position in the board and every BoarderType
@@ -61,12 +61,15 @@ public abstract class Block {
                  BorderType borderWest) {
         this.row = row;
         this.column = column;
+
         // MAPPING DIRECTIONS
-        this.borders = new EnumMap<>(Direction.class);
-        this.borders.put(Direction.NORTH,  borderNorth);
-        this.borders.put(Direction.EAST,  borderEast);
-        this.borders.put(Direction.SOUTH, borderSouth);
-        this.borders.put(Direction.WEST,  borderWest);
+        EnumMap<Direction, BorderType> borders = new EnumMap<>(Direction.class);
+        borders.put(Direction.NORTH,  borderNorth);
+        borders.put(Direction.EAST,  borderEast);
+        borders.put(Direction.SOUTH, borderSouth);
+        borders.put(Direction.WEST,  borderWest);
+
+        this.borders = Collections.unmodifiableMap(borders);
 
         this.players = new LinkedList<>();
     }

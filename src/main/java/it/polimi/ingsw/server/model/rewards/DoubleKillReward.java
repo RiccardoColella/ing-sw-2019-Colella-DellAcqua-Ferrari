@@ -9,7 +9,12 @@ public class DoubleKillReward implements Reward {
     }
 
     @Override
-    public int getRewardFor(int index, boolean ...isFirst) {
+    public int getRewardFor(int index, boolean isFirst) {
         return points;
+    }
+
+    @Override
+    public int getRewardFor(int index) {
+        return getRewardFor(index, false);
     }
 }

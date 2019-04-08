@@ -1,9 +1,9 @@
 package it.polimi.ingsw.server.model.currency;
 
 /**
- * This class represents the ammos, which are the main currency of the game
+ * This class represents the ammoCubes, which are the main currency of the game
  */
-public class Ammo implements Coin {
+public class AmmoCube implements Coin {
 
     /**
      * This property stores the color of the ammo
@@ -12,20 +12,20 @@ public class Ammo implements Coin {
 
     /**
      * Class constructor given the color
-     * @param color Ammo's color
+     * @param color AmmoCube's color
      */
-    public Ammo(CurrencyColor color) {
+    public AmmoCube(CurrencyColor color) {
         this.color = color;
     }
 
     /**
-     * Check if the Ammo's color
+     * Check if the AmmoCube's color
      * @param that color to be compared
      * @return true if the color is the same
      */
     @Override
     public boolean equalsTo(Coin that) {
-        return that instanceof Ammo && this.hasSameValueAs(that);
+        return that instanceof AmmoCube && this.hasSameValueAs(that);
     }
 
     /**

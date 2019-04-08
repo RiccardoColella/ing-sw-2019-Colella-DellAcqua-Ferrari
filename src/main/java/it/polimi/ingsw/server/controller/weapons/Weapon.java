@@ -1,7 +1,6 @@
 package it.polimi.ingsw.server.controller.weapons;
 
-import it.polimi.ingsw.server.controller.weapons.Attack;
-import it.polimi.ingsw.server.model.Damageable;
+import it.polimi.ingsw.server.model.player.Damageable;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import java.util.LinkedList;

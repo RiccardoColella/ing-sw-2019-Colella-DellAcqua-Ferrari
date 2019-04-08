@@ -7,12 +7,12 @@ public class PlayerInfo {
     /**
      * This property contains the nickname chosen by the player
      */
-    private String nickname;
+    private final String nickname;
 
     /**
      * This property contains the color of the player's pawn
      */
-    private PlayerColor color;
+    private final PlayerColor color;
 
     /**
      * This constructor creates a player info object given the nickname and the color

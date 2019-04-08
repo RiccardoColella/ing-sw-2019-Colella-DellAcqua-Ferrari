@@ -1,7 +1,9 @@
-package it.polimi.ingsw.server.model;
+package it.polimi.ingsw.server.model.match;
+
+import it.polimi.ingsw.server.model.player.DamageToken;
 
 public class Killshot {
-    private DamageToken damageToken;
+    private final DamageToken damageToken;
     private boolean overkill;
 
     public Killshot(DamageToken damageToken, boolean overkill) {

@@ -1,4 +1,4 @@
-package it.polimi.ingsw.server.model.factories;
+package it.polimi.ingsw.server.model.player;
 
 import com.google.gson.Gson;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;

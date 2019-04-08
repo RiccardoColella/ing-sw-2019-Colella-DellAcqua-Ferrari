@@ -1,4 +1,4 @@
-package it.polimi.ingsw.server.model.factories;
+package it.polimi.ingsw.server.model.weapons;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

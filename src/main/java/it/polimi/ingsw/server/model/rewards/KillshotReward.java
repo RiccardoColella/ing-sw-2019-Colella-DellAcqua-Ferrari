@@ -8,7 +8,11 @@ public class KillshotReward implements Reward {
     }
 
     @Override
-    public int getRewardFor(int index, boolean ...isFirst) {
+    public int getRewardFor(int index, boolean isFirst) {
         return points[index];
+    }
+    @Override
+    public int getRewardFor(int index) {
+        return getRewardFor(index, false);
     }
 }

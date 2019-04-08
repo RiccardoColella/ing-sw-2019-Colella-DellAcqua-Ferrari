@@ -1,10 +1,8 @@
 package it.polimi.ingsw.server.model.player;
 
-import it.polimi.ingsw.server.model.DamageToken;
-import it.polimi.ingsw.server.model.Damageable;
-import it.polimi.ingsw.server.model.Match;
+import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.battlefield.Direction;
-import it.polimi.ingsw.server.model.currency.Ammo;
+import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.events.MatchModeChanged;
@@ -17,15 +15,14 @@ import it.polimi.ingsw.server.model.events.listeners.PlayerOverkilledListener;
 import it.polimi.ingsw.server.model.events.listeners.PlayerRebornListener;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedGrabException;
-import it.polimi.ingsw.server.model.factories.ActionTileFactory;
-import it.polimi.ingsw.server.model.factories.RewardFactory;
+import it.polimi.ingsw.server.model.rewards.RewardFactory;
 import it.polimi.ingsw.server.model.rewards.Reward;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static it.polimi.ingsw.server.model.Match.Mode.FINAL_FRENZY;
+import static it.polimi.ingsw.server.model.match.Match.Mode.FINAL_FRENZY;
 
 /**
  * This class represents the player entity, storing all info about its status during the match
@@ -59,9 +56,9 @@ public class Player implements Damageable, MatchModeChangedListener {
     private int skulls;
 
     /**
-     * This property stores the ammos owned by the player
+     * This property stores the ammoCubes owned by the player
      */
-    private List<Ammo> ammos = new LinkedList<>();
+    private List<AmmoCube> ammoCubes = new LinkedList<>();
 
     /**
      * This property stores the powerups owned by the player
@@ -87,17 +84,19 @@ public class Player implements Damageable, MatchModeChangedListener {
     private List<PlayerOverkilledListener> playerOverkilledListeners = new ArrayList<>();
     private List<PlayerRebornListener> playerRebornListeners = new ArrayList<>();
 
-    private Match match;
+    private final Match match;
 
-    private Reward currentReward = RewardFactory.create(Reward.Type.STANDARD);
+    private Reward currentReward = RewardFactory.create(RewardFactory.Type.STANDARD);
 
     private boolean isAlive = true;
 
     /**
      * This constructor creates a player from the basic info: the player will be empty and ready to start a new match
+     * @param match the match this new player belongs to
      * @param info a PlayerInfo object containing the basic info
      */
-    public Player(PlayerInfo info) {
+    public Player(Match match, PlayerInfo info) {
+        this.match = match;
         this.info = info;
     }
 
@@ -233,11 +232,11 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     /**
-     * This method gets the ammos currently owned by the player
-     * @return a list of the ammos the player owns
+     * This method gets the ammoCubes currently owned by the player
+     * @return a list of the ammoCubes the player owns
      */
-    public List<Ammo> getAmmos() {
-        return this.ammos;
+    public List<AmmoCube> getAmmoCubes() {
+        return this.ammoCubes;
     }
 
     /**
@@ -249,11 +248,11 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     /**
-     * This method gets the player's nickname
-     * @return a string representing the player's nickname
+     * This method gets the player's information
+     * @return a PlayerInfo object
      */
-    public String getNickname() {
-        return this.info.getNickname();
+    public PlayerInfo getPlayerInfo() {
+        return this.info;
     }
 
     /**
@@ -268,8 +267,8 @@ public class Player implements Damageable, MatchModeChangedListener {
      * This method gets the action the player is currently doing
      * @return the CompoundAction the player is currently doing, or null if it's not doing anything
      */
-    public CompoundAction getActiveAction() {
-        return this.activeAction;
+    public Optional<CompoundAction> getActiveAction() {
+        return Optional.ofNullable(this.activeAction);
     }
 
     /**
@@ -291,17 +290,17 @@ public class Player implements Damageable, MatchModeChangedListener {
     /**
      * This method allows the player to buy a new weapon when he already has 3, exchanging it for one of those he owns
      * @param weapon the Weapon that the player is buying
-     * @param ammos the cost the player is paying with ammos
+     * @param ammoCubes the cost the player is paying with ammoCubes
      * @param powerups the cost the player is paying with powerups
      * @param discardedWeapon the Weapon the player is giving up for the new one
      *
      */
-    public void grabWeapon(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups, Weapon discardedWeapon) {
+    public void grabWeapon(Weapon weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups, Weapon discardedWeapon) {
         if (this.weapons.size() == 3) {
             weapons.remove(discardedWeapon);
         }
         try {
-            grabWeapon(weapon, ammos, powerups);
+            grabWeapon(weapon, ammoCubes, powerups);
         } catch (MissingOwnershipException ex) {
             weapons.add(discardedWeapon);
             throw ex;
@@ -313,12 +312,12 @@ public class Player implements Damageable, MatchModeChangedListener {
     /**
      * This method allows the player to buy a new weapon, given that he has less than 3 weapons
      * @param weapon the Weapon that the player is buying
-     * @param ammos the cost the player is paying with ammos
+     * @param ammoCubes the cost the player is paying with ammoCubes
      * @param powerups the cost the player is paying with powerups
      */
-    public void grabWeapon(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups) {
+    public void grabWeapon(Weapon weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
         if (this.weapons.size() < 3) {
-            this.pay(ammos, powerups);
+            this.pay(ammoCubes, powerups);
             weapon.setLoaded(true);
             weapons.add(weapon);
         } else throw new UnauthorizedGrabException("Player already has 3 weapons and needs to drop one in order to buy one");
@@ -335,32 +334,28 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     /**
-     * This method allows the player to gram new ammos
-     * @param ammos a list containing the ammos the player is grabbing
+     * This method allows the player to gram new ammoCubes
+     * @param ammoCubes a list containing the ammoCubes the player is grabbing
      */
-    public void grabAmmos(List<Ammo> ammos) {
-            for (Ammo newAmmo : ammos) {
-                if (this.ammos.stream()
-                              .filter(a -> a.equalsTo(newAmmo))
+    public void grabAmmoCubes(List<AmmoCube> ammoCubes) {
+            for (AmmoCube newAmmoCube : ammoCubes) {
+                if (this.ammoCubes.stream()
+                              .filter(a -> a.equalsTo(newAmmoCube))
                               .count() < 3) {
-                    this.ammos.add(newAmmo);
+                    this.ammoCubes.add(newAmmoCube);
                 }
             }
-    }
-
-    public void setMatch(Match match) {
-        this.match = match;
     }
 
     /**
      * This method allows the player to reload a weapon it owns
      * @param weapon the Weapon that shall be reloaded
-     * @param ammos the cost the player is paying with ammos
+     * @param ammoCubes the cost the player is paying with ammoCubes
      * @param powerups the cost the player is paying with powerups
      */
-    public void reload(Weapon weapon, List<Ammo> ammos, List<PowerupTile> powerups) {
+    public void reload(Weapon weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
         if (!weapon.isLoaded()) {
-            pay(ammos, powerups);
+            pay(ammoCubes, powerups);
             weapon.setLoaded(true);
         }
     }
@@ -400,24 +395,24 @@ public class Player implements Damageable, MatchModeChangedListener {
         switch (event.getMode()) {
             case FINAL_FRENZY:
                 if (this.damageTokens.isEmpty()) {
-                    this.currentReward = RewardFactory.create(Reward.Type.FINAL_FRENZY);
+                    this.currentReward = RewardFactory.create(RewardFactory.Type.FINAL_FRENZY);
                 }
                 break;
             case STANDARD:
             case SUDDEN_DEATH:
-                this.currentReward = RewardFactory.create(Reward.Type.STANDARD);
+                this.currentReward = RewardFactory.create(RewardFactory.Type.STANDARD);
                 break;
             default:
                 throw new IllegalArgumentException();
         }
     }
 
-    private void pay(List<Ammo> ammos, List<PowerupTile> powerups) {
-        for (Ammo spentAmmo : ammos) {
-            Optional<Ammo> paidAmmo = this.ammos.stream().filter(ownedAmmo -> ownedAmmo.equalsTo(spentAmmo)).findAny();
+    private void pay(List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
+        for (AmmoCube spentAmmoCube : ammoCubes) {
+            Optional<AmmoCube> paidAmmo = this.ammoCubes.stream().filter(ownedAmmo -> ownedAmmo.equalsTo(spentAmmoCube)).findAny();
             if (paidAmmo.isPresent()) {
-                this.ammos.remove(paidAmmo.get());
-            } else throw new MissingOwnershipException("Player can't afford this weapon, missing ammos");
+                this.ammoCubes.remove(paidAmmo.get());
+            } else throw new MissingOwnershipException("Player can't afford this weapon, missing ammoCubes");
         }
 
         for (PowerupTile spentPowerup : powerups) {
@@ -431,8 +426,8 @@ public class Player implements Damageable, MatchModeChangedListener {
     public void pay(List<Coin> coins) {
         this.pay(
                 coins.stream()
-                        .filter(coin -> coin instanceof Ammo)
-                        .map(coin -> (Ammo) coin)
+                        .filter(coin -> coin instanceof AmmoCube)
+                        .map(coin -> (AmmoCube) coin)
                         .collect(Collectors.toList()),
                 coins.stream()
                         .filter(coin -> coin instanceof PowerupTile)
@@ -484,7 +479,7 @@ public class Player implements Damageable, MatchModeChangedListener {
         isAlive = true;
         damageTokens.clear();
         if (match.getMode() == FINAL_FRENZY) { // when a player dies during final frenzy, he flips his board
-            this.currentReward = RewardFactory.create(Reward.Type.FINAL_FRENZY);
+            this.currentReward = RewardFactory.create(RewardFactory.Type.FINAL_FRENZY);
         }
         notifyPlayerBroughtBackToLife();
     }

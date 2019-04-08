@@ -1,16 +1,13 @@
 package it.polimi.ingsw.server.model.player;
 
-import it.polimi.ingsw.server.model.DamageToken;
-import it.polimi.ingsw.server.model.Match;
-import it.polimi.ingsw.server.model.currency.Ammo;
-import it.polimi.ingsw.server.model.currency.Coin;
-import it.polimi.ingsw.server.model.currency.CurrencyColor;
-import it.polimi.ingsw.server.model.currency.PowerupTile;
-import it.polimi.ingsw.server.model.events.PlayerDied;
+import it.polimi.ingsw.server.model.match.Match;
+import it.polimi.ingsw.server.model.match.MatchFactory;
+import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.server.model.currency.*;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedGrabException;
-import it.polimi.ingsw.server.model.factories.*;
 import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.model.weapons.WeaponFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -134,7 +131,7 @@ class PlayerTest {
     @Test
     void chooseWeapon() {
         player = match.getActivePlayer();
-        player.grabAmmos(electroscythe.getAcquisitionCost());
+        player.grabAmmoCubes(electroscythe.getAcquisitionCost());
         player.grabWeapon(electroscythe, electroscythe.getAcquisitionCost(), new ArrayList<>());
 
         //CHOOSING A WEAPON
@@ -164,8 +161,8 @@ class PlayerTest {
     @Test
     void grabWeapon() {
         // FILLING UP THE WALLET SO THAT THE PLAYER CAN BUY A WEAPON
-        player.grabAmmos(electroscythe.getAcquisitionCost());
-        int playerAmmos = player.getAmmos().size();
+        player.grabAmmoCubes(electroscythe.getAcquisitionCost());
+        int playerAmmoCubes = player.getAmmoCubes().size();
 
         //BUYING AN AFFORDABLE WEAPON WHILE HAVING LESS THAN 3 WEAPONS
         player.grabWeapon(
@@ -173,17 +170,17 @@ class PlayerTest {
                 electroscythe.getAcquisitionCost(),
                 new LinkedList<>()
         );
-        playerAmmos -= electroscythe.getAcquisitionCost().size();
-        assertEquals(playerAmmos, player.getAmmos().size(), "Player did not pay correctly");
+        playerAmmoCubes -= electroscythe.getAcquisitionCost().size();
+        assertEquals(playerAmmoCubes, player.getAmmoCubes().size(), "Player did not pay correctly");
         assertTrue(player.getWeapons().contains(electroscythe), "Player did not get the weapon he paid for");
 
         //BUYING A FREE WEAPON
-        player.grabAmmos(flamethrower.getAcquisitionCost());
-        playerAmmos += flamethrower.getAcquisitionCost().size();
+        player.grabAmmoCubes(flamethrower.getAcquisitionCost());
+        playerAmmoCubes += flamethrower.getAcquisitionCost().size();
         player.grabWeapon(flamethrower, flamethrower.getAcquisitionCost(), new LinkedList<>());
-        playerAmmos -= flamethrower.getAcquisitionCost().size();
+        playerAmmoCubes -= flamethrower.getAcquisitionCost().size();
         assertTrue(player.getWeapons().contains(flamethrower), "Player did not get the weapon he paid for");
-        assertEquals(playerAmmos, player.getAmmos().size(), "Player did not pay correctly");
+        assertEquals(playerAmmoCubes, player.getAmmoCubes().size(), "Player did not pay correctly");
 
         //TRYING TO BUY A WEAPON THE PLAYER CAN'T AFFORD
         assertThrows(MissingOwnershipException.class,
@@ -193,11 +190,11 @@ class PlayerTest {
                 new LinkedList<>()
         ), "Player bought a weapon without paying");
         assertFalse(player.getWeapons().contains(heatseeker), "Player got the weapon although he did not pay for it");
-        assertEquals(playerAmmos, player.getAmmos().size(), "Player lost some ammo even if the purchase did not happen");
+        assertEquals(playerAmmoCubes, player.getAmmoCubes().size(), "Player lost some ammo even if the purchase did not happen");
 
         //FILLING UP THE WALLET TO BUY MORE WEAPONS
-        player.grabAmmos(heatseeker.getAcquisitionCost());
-        playerAmmos += heatseeker.getAcquisitionCost().size();
+        player.grabAmmoCubes(heatseeker.getAcquisitionCost());
+        playerAmmoCubes += heatseeker.getAcquisitionCost().size();
 
         //BUYING THE THIRD WEAPON
         player.grabWeapon(
@@ -206,13 +203,13 @@ class PlayerTest {
                 new LinkedList<>()
         );
 
-        playerAmmos -= heatseeker.getAcquisitionCost().size();
+        playerAmmoCubes -= heatseeker.getAcquisitionCost().size();
         assertTrue(player.getWeapons().contains(heatseeker), "Player did not get the weapon he paid for");
-        assertEquals(playerAmmos, player.getAmmos().size(), "Player did not pay the right amount of ammo");
+        assertEquals(playerAmmoCubes, player.getAmmoCubes().size(), "Player did not pay the right amount of ammo");
 
         //FILLING UP THE WALLET TO BUY THE FOURTH WEAPON
-        player.grabAmmos(furnace.getAcquisitionCost());
-        playerAmmos += furnace.getAcquisitionCost().size();
+        player.grabAmmoCubes(furnace.getAcquisitionCost());
+        playerAmmoCubes += furnace.getAcquisitionCost().size();
 
         //BUYING THE FOURTH WEAPON DISCARDING A WEAPON
         player.grabWeapon(
@@ -222,19 +219,19 @@ class PlayerTest {
                 electroscythe
         );
 
-        playerAmmos -= furnace.getAcquisitionCost().size();
-        assertEquals(playerAmmos, player.getAmmos().size(), "Player did not pay the right amount of ammo");
+        playerAmmoCubes -= furnace.getAcquisitionCost().size();
+        assertEquals(playerAmmoCubes, player.getAmmoCubes().size(), "Player did not pay the right amount of ammo");
         assertTrue(player.getWeapons().contains(furnace), "Player did not get the weapon he paid for");
         assertFalse(player.getWeapons().contains(electroscythe), "Player still owns the weapon he discarded"); // the discarded weapon does not belong to the player anymore
 
         //REFILLING THE WALLET
-        player.grabAmmos(electroscythe.getAcquisitionCost());
-        playerAmmos += electroscythe.getAcquisitionCost().size();
+        player.grabAmmoCubes(electroscythe.getAcquisitionCost());
+        playerAmmoCubes += electroscythe.getAcquisitionCost().size();
 
         //TRYING TO BUY A FOURTH WEAPON WITHOUT DISCARDING ONE
         assertThrows(UnauthorizedGrabException.class, () -> player.grabWeapon(electroscythe, new LinkedList<>(), new LinkedList<>()), "Player grabbed a fourth weapon");
         assertFalse(player.getWeapons().contains(electroscythe), "The weapon was grabbed even if the purchase did not end correctly");
-        assertEquals(playerAmmos, player.getAmmos().size(), "Player could pay for a weapon that he was not allowed to grab");
+        assertEquals(playerAmmoCubes, player.getAmmoCubes().size(), "Player could pay for a weapon that he was not allowed to grab");
 
         //TRYING TO BUY A FOURTH WEAPON DISCARDING A WEAPON THAT DOES NOT BELONG TO THE PLAYER
         assertThrows(UnauthorizedGrabException.class, () -> player.grabWeapon(electroscythe, new LinkedList<>(), new LinkedList<>(), electroscythe), "Player grabbed a fourth weapon");
@@ -265,63 +262,63 @@ class PlayerTest {
     }
 
     /**
-     * This test covers the method grabAmmos in the following situations:
-     * - grabbing up to 3 ammos of each color
-     * - trying to grab more ammos when player already has 3 of that color
+     * This test covers the method grabAmmoCubes in the following situations:
+     * - grabbing up to 3 ammoCubes of each color
+     * - trying to grab more ammoCubes when player already has 3 of that color
      */
     @Test
-    void grabAmmos() {
+    void grabAmmoCubes() {
         this.player = match.getActivePlayer();
-        List<Ammo> redAmmos = new LinkedList<>();
-        List<Ammo> blueAmmos = new LinkedList<>();
-        List<Ammo> yellowAmmos = new LinkedList<>();
+        List<AmmoCube> redAmmoCubes = new LinkedList<>();
+        List<AmmoCube> blueAmmoCubes = new LinkedList<>();
+        List<AmmoCube> yellowAmmoCubes = new LinkedList<>();
 
         for (int i = 0; i < 3; i++) {
-            redAmmos.add(AmmoFactory.create(CurrencyColor.RED));
-            blueAmmos.add(AmmoFactory.create(CurrencyColor.BLUE));
-            yellowAmmos.add(AmmoFactory.create(CurrencyColor.YELLOW));
+            redAmmoCubes.add(AmmoCubeFactory.create(CurrencyColor.RED));
+            blueAmmoCubes.add(AmmoCubeFactory.create(CurrencyColor.BLUE));
+            yellowAmmoCubes.add(AmmoCubeFactory.create(CurrencyColor.YELLOW));
         }
 
-        //PLAYER GRABS 3 RED AMMOS AND 3 BLUE AMMOS
-        this.player.grabAmmos(redAmmos);
-        assertEquals(redAmmos.size(), player.getAmmos().size());
-        this.player.grabAmmos(blueAmmos);
-        assertEquals(blueAmmos.size() + redAmmos.size(), player.getAmmos().size(), "Player did not grab all ammos");
+        //PLAYER GRABS 3 RED AMMO CUBES AND 3 BLUE AMMO CUBES
+        this.player.grabAmmoCubes(redAmmoCubes);
+        assertEquals(redAmmoCubes.size(), player.getAmmoCubes().size());
+        this.player.grabAmmoCubes(blueAmmoCubes);
+        assertEquals(blueAmmoCubes.size() + redAmmoCubes.size(), player.getAmmoCubes().size(), "Player did not grab all ammoCubes");
 
-        //PLAYER ALREADY HAS 3 RED AMMOS
-        this.player.grabAmmos(redAmmos);
-        assertEquals(blueAmmos.size() + redAmmos.size(), player.getAmmos().size(), "Player grabbed too many red ammos");
+        //PLAYER ALREADY HAS 3 RED AMMO CUBES
+        this.player.grabAmmoCubes(redAmmoCubes);
+        assertEquals(blueAmmoCubes.size() + redAmmoCubes.size(), player.getAmmoCubes().size(), "Player grabbed too many red ammoCubes");
 
-        //PLAYER GRABS 3 YELLOW AMMOS
-        this.player.grabAmmos(yellowAmmos);
-        assertEquals(redAmmos.size() + blueAmmos.size() + yellowAmmos.size(), player.getAmmos().size(), "Player did not grab all ammos");
+        //PLAYER GRABS 3 YELLOW AMMO CUBES
+        this.player.grabAmmoCubes(yellowAmmoCubes);
+        assertEquals(redAmmoCubes.size() + blueAmmoCubes.size() + yellowAmmoCubes.size(), player.getAmmoCubes().size(), "Player did not grab all ammoCubes");
 
         //PLAYER CAN'T GRAB ANYTHING ANYMORE
-        this.player.grabAmmos(yellowAmmos);
-        this.player.grabAmmos(blueAmmos);
-        assertEquals(redAmmos.size() + blueAmmos.size() + yellowAmmos.size(), player.getAmmos().size(), "Player grabbed too many ammos");
+        this.player.grabAmmoCubes(yellowAmmoCubes);
+        this.player.grabAmmoCubes(blueAmmoCubes);
+        assertEquals(redAmmoCubes.size() + blueAmmoCubes.size() + yellowAmmoCubes.size(), player.getAmmoCubes().size(), "Player grabbed too many ammoCubes");
     }
 
     /**
      * This test covers the method reload in the following situations:
-     * - reloading a weapon and paying in ammos
+     * - reloading a weapon and paying in ammoCubes
      * - reloading a weapon and paying in powerups
-     * - reloading a weapon and paying with both ammos and powerups
+     * - reloading a weapon and paying with both ammoCubes and powerups
      * - trying to reload a weapon with money that is not owned
      */
     @Test
     void reload() {
-        player.grabAmmos(furnace.getAcquisitionCost());
+        player.grabAmmoCubes(furnace.getAcquisitionCost());
         player.grabWeapon(furnace, furnace.getAcquisitionCost(), new LinkedList<>());
         furnace.setLoaded(false);
-        player.grabAmmos(furnace.getReloadCost());
-        player.getAmmos().forEach(ammo -> player.grabPowerup(PowerupTileFactory.create(PowerupTile.Type.NEWTON, ammo.getColor())));
+        player.grabAmmoCubes(furnace.getReloadCost());
+        player.getAmmoCubes().forEach(ammo -> player.grabPowerup(PowerupTileFactory.create(PowerupTile.Type.NEWTON, ammo.getColor())));
 
-        //PAYMENT WITH AMMOS
+        //PAYMENT WITH AMMO CUBES
         player.reload(furnace, furnace.getReloadCost(), new LinkedList<>());
 
         assertTrue(furnace.isLoaded(), "Player could not reload");
-        assertTrue(player.getAmmos().isEmpty(), "Player did not pay");
+        assertTrue(player.getAmmoCubes().isEmpty(), "Player did not pay");
 
         furnace.setLoaded(false);
 
@@ -332,8 +329,8 @@ class PlayerTest {
 
 
         furnace.setLoaded(false);
-        player.grabAmmos(furnace.getReloadCost());
-        player.getAmmos().forEach(ammo -> player.grabPowerup(PowerupTileFactory.create(PowerupTile.Type.NEWTON, ammo.getColor())));
+        player.grabAmmoCubes(furnace.getReloadCost());
+        player.getAmmoCubes().forEach(ammo -> player.grabPowerup(PowerupTileFactory.create(PowerupTile.Type.NEWTON, ammo.getColor())));
 
         //TRYING PAYMENT WITH POWERUPS - FAILING BECAUSE POWERUPS AREN'T OF THE SAME TYPE
         assertThrows(
@@ -349,15 +346,15 @@ class PlayerTest {
         assertFalse(player.getPowerups().isEmpty(), "Powerups were used incorrectly");
 
         //TRYING MIXED PAYMENT
-        player.reload(furnace, player.getAmmos().subList(0, 1), player.getPowerups().subList(1, 2));
+        player.reload(furnace, player.getAmmoCubes().subList(0, 1), player.getPowerups().subList(1, 2));
         assertTrue(furnace.isLoaded(), "Player could not reload");
-        assertEquals(1, player.getAmmos().size(), "Wrong amount of ammos spent");
-        assertEquals(1, player.getAmmos().size(), "Wrong amount of ammos spent");
+        assertEquals(1, player.getAmmoCubes().size(), "Wrong amount of ammoCubes spent");
+        assertEquals(1, player.getAmmoCubes().size(), "Wrong amount of ammoCubes spent");
     }
 
     /** This test covers the method onMatchModeChanged in the following situations:
-     * - standard -> final frenzy for player with 0 damage (should flip the board)
-     * - standard -> final frenzy for player with damage (should not flip the board)
+     * - standard: final frenzy for player with 0 damage (should flip the board)
+     * - standard: final frenzy for player with damage (should not flip the board)
      */
     @Test
     void onMatchModeChanged() {
@@ -385,11 +382,11 @@ class PlayerTest {
         assertEquals(Match.Mode.FINAL_FRENZY, match.getMode());
         for (Player p : match.getPlayers()) {
             if (p.equals(player) || match.getPlayers().indexOf(p) == 0) {
-                assertTrue(p.getDamageTokens().isEmpty(), p.getNickname() + " has tokens but should not");
-                assertNotEquals(9, p.getCurrentReward().getRewardFor(0, true), "Player does not have final frenzy reward, but should " + p.getNickname());
+                assertTrue(p.getDamageTokens().isEmpty(), p.getPlayerInfo().getNickname() + " has tokens but should not");
+                assertNotEquals(9, p.getCurrentReward().getRewardFor(0, true), "Player does not have final frenzy reward, but should " + p.getPlayerInfo().getNickname());
             } else {
-                assertFalse(p.getDamageTokens().isEmpty(), p.getNickname() + " does not have tokens but should");
-                assertEquals(9, p.getCurrentReward().getRewardFor(0, true), "Player has final frenzy reward, but should not " + p.getNickname());
+                assertFalse(p.getDamageTokens().isEmpty(), p.getPlayerInfo().getNickname() + " does not have tokens but should");
+                assertEquals(9, p.getCurrentReward().getRewardFor(0, true), "Player has final frenzy reward, but should not " + p.getPlayerInfo().getNickname());
             }
         }
     }
@@ -414,22 +411,22 @@ class PlayerTest {
 
     /**
      * This test covers the method pay in the following situations:
-     * - paying with both ammos and powerups
+     * - paying with both ammoCubes and powerups
      * - trying to pay with an empty wallet
      */
     @Test
     void pay() {
         List<Coin> coins = new LinkedList<>();
         for (int i = 0; i < 2; i++) {
-            Ammo ammo = AmmoFactory.create(CurrencyColor.RED);
+            AmmoCube ammoCube = AmmoCubeFactory.create(CurrencyColor.RED);
             PowerupTile powerupTile = PowerupTileFactory.create(PowerupTile.Type.NEWTON, CurrencyColor.BLUE);
-            coins.add(ammo);
+            coins.add(ammoCube);
             coins.add(powerupTile);
             player.grabPowerup(powerupTile);
-            player.grabAmmos(Collections.singletonList(ammo));
+            player.grabAmmoCubes(Collections.singletonList(ammoCube));
         }
         player.pay(coins);
-        assertTrue(player.getAmmos().isEmpty(), "Player still has the coins he spent");
+        assertTrue(player.getAmmoCubes().isEmpty(), "Player still has the coins he spent");
         assertTrue(player.getPowerups().isEmpty(), "Player still has the powerups he spent");
         assertThrows(
                 MissingOwnershipException.class,

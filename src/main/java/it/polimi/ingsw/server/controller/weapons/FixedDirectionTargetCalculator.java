@@ -1,6 +1,6 @@
 package it.polimi.ingsw.server.controller.weapons;
 
-import it.polimi.ingsw.server.model.Damageable;
+import it.polimi.ingsw.server.model.player.Damageable;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.battlefield.Direction;
 

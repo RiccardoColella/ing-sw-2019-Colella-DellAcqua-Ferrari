@@ -1,8 +1,6 @@
-package it.polimi.ingsw.server.model.factories;
+package it.polimi.ingsw.server.model.currency;
 
 import it.polimi.ingsw.server.model.collections.Deck;
-import it.polimi.ingsw.server.model.currency.CurrencyColor;
-import it.polimi.ingsw.server.model.currency.PowerupTile;
 
 import java.util.LinkedList;
 import java.util.List;

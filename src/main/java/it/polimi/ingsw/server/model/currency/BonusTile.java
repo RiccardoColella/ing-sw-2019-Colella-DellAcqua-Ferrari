@@ -14,42 +14,42 @@ public class BonusTile {
     private final boolean canPick;
 
     /**
-     * This property stores the ammos that can be picked by who has this tile
+     * This property stores the ammoCubes that can be picked by who has this tile
      */
-    private final List<Ammo> ammos;
+    private final List<AmmoCube> ammoCubes;
 
     /**
-     * Class constructor. With 2 Ammo you can pick a PowerUp
-     * @param ammo1 the first Ammo cube
-     * @param ammo2 the second Ammo cube
+     * Class constructor. With 2 AmmoCube you can pick a PowerUp
+     * @param ammoCube1 the first AmmoCube cube
+     * @param ammoCube2 the second AmmoCube cube
      */
-    public BonusTile(Ammo ammo1, Ammo ammo2) {
+    public BonusTile(AmmoCube ammoCube1, AmmoCube ammoCube2) {
         this.canPick = true;
-        this.ammos = new ArrayList<>();
-        this.ammos.add(ammo1);
-        this.ammos.add(ammo2);
+        this.ammoCubes = new ArrayList<>();
+        this.ammoCubes.add(ammoCube1);
+        this.ammoCubes.add(ammoCube2);
     }
 
     /**
-     * Class constructor. With 3 Ammo you can't pick a PowerUp
-     * @param ammo1 the first Ammo cube
-     * @param ammo2 the second Ammo cube
-     * @param ammo3 the third Ammo cube
+     * Class constructor. With 3 AmmoCube you can't pick a PowerUp
+     * @param ammoCube1 the first AmmoCube cube
+     * @param ammoCube2 the second AmmoCube cube
+     * @param ammoCube3 the third AmmoCube cube
      */
-    public BonusTile(Ammo ammo1, Ammo ammo2, Ammo ammo3) {
+    public BonusTile(AmmoCube ammoCube1, AmmoCube ammoCube2, AmmoCube ammoCube3) {
         this.canPick = false;
-        this.ammos = new ArrayList<>();
-        this.ammos.add(ammo1);
-        this.ammos.add(ammo2);
-        this.ammos.add(ammo3);
+        this.ammoCubes = new ArrayList<>();
+        this.ammoCubes.add(ammoCube1);
+        this.ammoCubes.add(ammoCube2);
+        this.ammoCubes.add(ammoCube3);
     }
 
     /**
-     * Tells all the availables Ammo
-     * @return the List of available Ammo
+     * Tells all the availables AmmoCube
+     * @return the List of available AmmoCube
      */
-    public List<Ammo> getRewards() {
-        return this.ammos;
+    public List<AmmoCube> getRewards() {
+        return this.ammoCubes;
     }
 
     /**

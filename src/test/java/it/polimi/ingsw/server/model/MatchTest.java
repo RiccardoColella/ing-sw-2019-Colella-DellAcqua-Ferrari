@@ -1,7 +1,9 @@
 package it.polimi.ingsw.server.model;
 
-import it.polimi.ingsw.server.model.factories.BoardFactory;
-import it.polimi.ingsw.server.model.factories.MatchFactory;
+import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.server.model.match.Match;
+import it.polimi.ingsw.server.model.match.MatchFactory;
+import it.polimi.ingsw.server.model.player.DamageToken;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.server.model.player.PlayerInfo;

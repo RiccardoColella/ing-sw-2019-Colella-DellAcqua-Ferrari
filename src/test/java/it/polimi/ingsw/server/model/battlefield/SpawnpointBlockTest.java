@@ -2,8 +2,8 @@ package it.polimi.ingsw.server.model.battlefield;
 
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
-import it.polimi.ingsw.server.model.factories.WeaponFactory;
 import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.model.weapons.WeaponFactory;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;

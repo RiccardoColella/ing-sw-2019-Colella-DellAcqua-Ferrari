@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server.model.battlefield;
 
-import it.polimi.ingsw.server.model.factories.BoardFactory;
+import it.polimi.ingsw.server.model.match.Match;
+import it.polimi.ingsw.server.model.match.MatchFactory;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
@@ -30,9 +31,7 @@ class BoardTest {
         for (int i = 0; i < 5; i++) {
             playerInfos.add(new PlayerInfo("Player" + i, PlayerColor.values()[i]));
         }
-        for (int i = 0; i < 5; i++){
-            players.add(new Player(playerInfos.get(i)));
-        }
+        this.players = MatchFactory.create(playerInfos, BoardFactory.Preset.BOARD_1, 1, Match.Mode.STANDARD).getPlayers();
     }
 
     @Test

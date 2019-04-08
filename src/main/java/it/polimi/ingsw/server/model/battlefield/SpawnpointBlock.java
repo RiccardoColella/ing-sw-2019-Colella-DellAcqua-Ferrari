@@ -19,7 +19,7 @@ public class SpawnpointBlock extends Block {
     /**
      * This property stores the weapons that are currently available in the spawnpoint
      */
-    private List<Weapon> weapons;
+    private final List<Weapon> weapons;
 
     /**
      * Class constructor given the position in the board, every BoarderType, the color of the spawnpoint and the weapons it contains

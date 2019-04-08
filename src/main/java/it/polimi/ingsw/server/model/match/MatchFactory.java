@@ -1,12 +1,9 @@
-package it.polimi.ingsw.server.model.factories;
+package it.polimi.ingsw.server.model.match;
 
-import it.polimi.ingsw.server.model.Match;
-import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
 
-import java.io.FileNotFoundException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MatchFactory {
 
@@ -25,7 +22,7 @@ public class MatchFactory {
      */
     public static Match create(List<PlayerInfo> playersInfo, BoardFactory.Preset preset, int skulls, Match.Mode mode) {
         Match match = new Match(
-                playersInfo.stream().map(Player::new).collect(Collectors.toList()),
+                playersInfo,
                 BoardFactory.create(preset),
                 skulls,
                 mode
@@ -33,7 +30,6 @@ public class MatchFactory {
         match.getPlayers().forEach(player -> {
             player.addPlayerDiedListener(match);
             player.addPlayerOverkilledListener(match);
-            player.setMatch(match);
             match.addMatchModeChangedListener(player);
         });
         return match;

@@ -1,13 +1,11 @@
 package it.polimi.ingsw.server.model.factories;
 
-import com.google.gson.Gson;
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.model.weapons.WeaponFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.io.FileNotFoundException;
 
 import static org.junit.jupiter.api.Assertions.*;
 

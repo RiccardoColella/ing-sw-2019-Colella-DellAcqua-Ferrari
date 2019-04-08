@@ -148,8 +148,8 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>private java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Player.html#ammos">ammos</a></span></code>
-<div class="block">This property stores the ammos owned by the player</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Player.html#ammoCubes">ammoCubes</a></span></code>
+<div class="block">This property stores the ammoCubes owned by the player</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -252,7 +252,7 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
       java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&gt;&nbsp;weapons,
       int&nbsp;points,
       int&nbsp;skulls,
-      java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos,
+      java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes,
       java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/PowerupTile.html" title="class in it.polimi.ingsw.server.model">PowerupTile</a>&gt;&nbsp;powerups,
       <a href="../../../../../it/polimi/ingsw/server/model/CompoundAction.html" title="class in it.polimi.ingsw.server.model">CompoundAction</a>&nbsp;activeAction)</code>
 <div class="block">This constructor creates a player given all info about its status: the player will be restored to an existing status and ready to continue a saved match</div>
@@ -322,7 +322,7 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <tr id="i9" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Player.html#getAmmos--">getAmmos</a></span>()</code>
-<div class="block">This method gets the ammos currently owned by the player</div>
+<div class="block">This method gets the ammoCubes currently owned by the player</div>
 </td>
 </tr>
 <tr id="i10" class="altColor">
@@ -385,8 +385,8 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 </tr>
 <tr id="i20" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Player.html#grabAmmos-java.util.List-">grabAmmos</a></span>(java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos)</code>
-<div class="block">This method allows the player to gram new ammos</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Player.html#grabAmmos-java.util.List-">grabAmmos</a></span>(java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes)</code>
+<div class="block">This method allows the player to gram new ammoCubes</div>
 </td>
 </tr>
 <tr id="i21" class="rowColor">
@@ -398,7 +398,7 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <tr id="i22" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Player.html#grabWeapon-it.polimi.ingsw.server.controller.weapons.Weapon-java.util.List-java.util.List-">grabWeapon</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;weapon,
-          java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos,
+          java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes,
           java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/PowerupTile.html" title="class in it.polimi.ingsw.server.model">PowerupTile</a>&gt;&nbsp;powerups)</code>
 <div class="block">This method allows the player to buy a new weapon, given that he has less than 3 weapons</div>
 </td>
@@ -406,7 +406,7 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <tr id="i23" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Player.html#grabWeapon-it.polimi.ingsw.server.controller.weapons.Weapon-java.util.List-java.util.List-it.polimi.ingsw.server.controller.weapons.Weapon-">grabWeapon</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;weapon,
-          java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos,
+          java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes,
           java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/PowerupTile.html" title="class in it.polimi.ingsw.server.model">PowerupTile</a>&gt;&nbsp;powerups,
           <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;discardedWeapon)</code>
 <div class="block">This method allows the player to buy a new weapon when he already has 3, exchanging it for one of those he owns</div>
@@ -428,13 +428,13 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 </tr>
 <tr id="i27" class="rowColor">
 <td class="colFirst"><code>private void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Player.html#pay-java.util.List-java.util.List-">pay</a></span>(java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Player.html#pay-java.util.List-java.util.List-">pay</a></span>(java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes,
    java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/PowerupTile.html" title="class in it.polimi.ingsw.server.model">PowerupTile</a>&gt;&nbsp;powerups)</code>&nbsp;</td>
 </tr>
 <tr id="i28" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Player.html#reload-it.polimi.ingsw.server.controller.weapons.Weapon-java.util.List-java.util.List-">reload</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;weapon,
-      java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos,
+      java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes,
       java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/PowerupTile.html" title="class in it.polimi.ingsw.server.model">PowerupTile</a>&gt;&nbsp;powerups)</code>
 <div class="block">This method allows the player to reload a weapon it owns</div>
 </td>
@@ -447,12 +447,12 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 </tr>
 <tr id="i30" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Player.html#setMatch-it.polimi.ingsw.server.model.Match-">setMatch</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Match.html" title="class in it.polimi.ingsw.server.model">Match</a>&nbsp;match)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Player.html#setMatch-it.polimi.ingsw.server.model.match.Match-">setMatch</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Match.html" title="class in it.polimi.ingsw.server.model">Match</a>&nbsp;match)</code>&nbsp;</td>
 </tr>
 <tr id="i31" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../it/polimi/ingsw/server/model/Player.html#shoot-it.polimi.ingsw.server.controller.weapons.Weapon-java.util.List-java.util.List-">shoot</a></span>(<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;weapon,
-     java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos,
+     java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes,
      java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/PowerupTile.html" title="class in it.polimi.ingsw.server.model">PowerupTile</a>&gt;&nbsp;powerups)</code>
 <div class="block">This method allows the player to use a weapon to shoot</div>
 </td>
@@ -562,14 +562,14 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <div class="block">This property stores the skulls owned by the player</div>
 </li>
 </ul>
-<a name="ammos">
+<a name="ammoCubes">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>ammos</h4>
-<pre>private&nbsp;java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt; ammos</pre>
-<div class="block">This property stores the ammos owned by the player</div>
+<h4>ammoCubes</h4>
+<pre>private&nbsp;java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt; ammoCubes</pre>
+<div class="block">This property stores the ammoCubes owned by the player</div>
 </li>
 </ul>
 <a name="powerups">
@@ -682,7 +682,7 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
               java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&gt;&nbsp;weapons,
               int&nbsp;points,
               int&nbsp;skulls,
-              java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos,
+              java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes,
               java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/PowerupTile.html" title="class in it.polimi.ingsw.server.model">PowerupTile</a>&gt;&nbsp;powerups,
               <a href="../../../../../it/polimi/ingsw/server/model/CompoundAction.html" title="class in it.polimi.ingsw.server.model">CompoundAction</a>&nbsp;activeAction)</pre>
 <div class="block">This constructor creates a player given all info about its status: the player will be restored to an existing status and ready to continue a saved match</div>
@@ -694,7 +694,7 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <dd><code>weapons</code> - a list containing the weapons owned by the player</dd>
 <dd><code>points</code> - an int representing the points scored by the player so far</dd>
 <dd><code>skulls</code> - an int representing the skulls owned by the player</dd>
-<dd><code>ammos</code> - a list containing the ammos owned by the player</dd>
+<dd><code>ammoCubes</code> - a list containing the ammoCubes owned by the player</dd>
 <dd><code>powerups</code> - a list containing the powerups owned by the player</dd>
 <dd><code>activeAction</code> - the action the player is currently doing</dd>
 </dl>
@@ -859,10 +859,10 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <li class="blockList">
 <h4>getAmmos</h4>
 <pre>public&nbsp;java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;getAmmos()</pre>
-<div class="block">This method gets the ammos currently owned by the player</div>
+<div class="block">This method gets the ammoCubes currently owned by the player</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>a list of the ammos the player owns</dd>
+<dd>a list of the ammoCubes the player owns</dd>
 </dl>
 </li>
 </ul>
@@ -957,7 +957,7 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <li class="blockList">
 <h4>grabWeapon</h4>
 <pre>public&nbsp;void&nbsp;grabWeapon(<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;weapon,
-                       java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos,
+                       java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes,
                        java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/PowerupTile.html" title="class in it.polimi.ingsw.server.model">PowerupTile</a>&gt;&nbsp;powerups,
                        <a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;discardedWeapon)
                 throws <a href="../../../../../it/polimi/ingsw/server/model/exceptions/UnauthorizedGrabException.html" title="class in it.polimi.ingsw.server.model.exceptions">UnauthorizedGrabException</a>,
@@ -966,7 +966,7 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>weapon</code> - the Weapon that the player is buying</dd>
-<dd><code>ammos</code> - the cost the player is paying with ammos</dd>
+<dd><code>ammoCubes</code> - the cost the player is paying with ammoCubes</dd>
 <dd><code>powerups</code> - the cost the player is paying with powerups</dd>
 <dd><code>discardedWeapon</code> - the Weapon the player is giving up for the new one</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
@@ -982,7 +982,7 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <li class="blockList">
 <h4>grabWeapon</h4>
 <pre>public&nbsp;void&nbsp;grabWeapon(<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;weapon,
-                       java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos,
+                       java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes,
                        java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/PowerupTile.html" title="class in it.polimi.ingsw.server.model">PowerupTile</a>&gt;&nbsp;powerups)
                 throws <a href="../../../../../it/polimi/ingsw/server/model/exceptions/MissingOwnershipException.html" title="class in it.polimi.ingsw.server.model.exceptions">MissingOwnershipException</a>,
                        <a href="../../../../../it/polimi/ingsw/server/model/exceptions/UnauthorizedGrabException.html" title="class in it.polimi.ingsw.server.model.exceptions">UnauthorizedGrabException</a></pre>
@@ -990,7 +990,7 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>weapon</code> - the Weapon that the player is buying</dd>
-<dd><code>ammos</code> - the cost the player is paying with ammos</dd>
+<dd><code>ammoCubes</code> - the cost the player is paying with ammoCubes</dd>
 <dd><code>powerups</code> - the cost the player is paying with powerups</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../../../../../it/polimi/ingsw/server/model/exceptions/MissingOwnershipException.html" title="class in it.polimi.ingsw.server.model.exceptions">MissingOwnershipException</a></code></dd>
@@ -1021,11 +1021,11 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <ul class="blockList">
 <li class="blockList">
 <h4>grabAmmos</h4>
-<pre>public&nbsp;void&nbsp;grabAmmos(java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos)</pre>
-<div class="block">This method allows the player to gram new ammos</div>
+<pre>public&nbsp;void&nbsp;grabAmmos(java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes)</pre>
+<div class="block">This method allows the player to gram new ammoCubes</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>ammos</code> - a list containing the ammos the player is grabbing</dd>
+<dd><code>ammoCubes</code> - a list containing the ammoCubes the player is grabbing</dd>
 </dl>
 </li>
 </ul>
@@ -1045,14 +1045,14 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <li class="blockList">
 <h4>reload</h4>
 <pre>public&nbsp;void&nbsp;reload(<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;weapon,
-                   java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos,
+                   java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes,
                    java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/PowerupTile.html" title="class in it.polimi.ingsw.server.model">PowerupTile</a>&gt;&nbsp;powerups)
             throws <a href="../../../../../it/polimi/ingsw/server/model/exceptions/MissingOwnershipException.html" title="class in it.polimi.ingsw.server.model.exceptions">MissingOwnershipException</a></pre>
 <div class="block">This method allows the player to reload a weapon it owns</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>weapon</code> - the Weapon that shall be reloaded</dd>
-<dd><code>ammos</code> - the cost the player is paying with ammos</dd>
+<dd><code>ammoCubes</code> - the cost the player is paying with ammoCubes</dd>
 <dd><code>powerups</code> - the cost the player is paying with powerups</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../../../../../it/polimi/ingsw/server/model/exceptions/MissingOwnershipException.html" title="class in it.polimi.ingsw.server.model.exceptions">MissingOwnershipException</a></code></dd>
@@ -1066,13 +1066,13 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <li class="blockList">
 <h4>shoot</h4>
 <pre>public&nbsp;void&nbsp;shoot(<a href="../../../../../it/polimi/ingsw/server/model/Weapon.html" title="class in it.polimi.ingsw.server.model">Weapon</a>&nbsp;weapon,
-                  java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos,
+                  java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes,
                   java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/PowerupTile.html" title="class in it.polimi.ingsw.server.model">PowerupTile</a>&gt;&nbsp;powerups)</pre>
 <div class="block">This method allows the player to use a weapon to shoot</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>weapon</code> - the Weapon the player wants to use</dd>
-<dd><code>ammos</code> - the cost the player is paying with ammos</dd>
+<dd><code>ammoCubes</code> - the cost the player is paying with ammoCubes</dd>
 <dd><code>powerups</code> - the cost the player is paying with powerups</dd>
 </dl>
 </li>
@@ -1132,7 +1132,7 @@ implements <a href="../../../../../it/polimi/ingsw/server/model/Damageable.html"
 <ul class="blockList">
 <li class="blockList">
 <h4>pay</h4>
-<pre>private&nbsp;void&nbsp;pay(java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammos,
+<pre>private&nbsp;void&nbsp;pay(java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/Ammo.html" title="class in it.polimi.ingsw.server.model">Ammo</a>&gt;&nbsp;ammoCubes,
                  java.util.List&lt;<a href="../../../../../it/polimi/ingsw/server/model/PowerupTile.html" title="class in it.polimi.ingsw.server.model">PowerupTile</a>&gt;&nbsp;powerups)
           throws <a href="../../../../../it/polimi/ingsw/server/model/exceptions/MissingOwnershipException.html" title="class in it.polimi.ingsw.server.model.exceptions">MissingOwnershipException</a></pre>
 <dl>

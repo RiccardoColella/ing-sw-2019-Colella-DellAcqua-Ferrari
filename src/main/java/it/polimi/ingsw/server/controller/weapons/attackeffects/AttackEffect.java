@@ -1,7 +1,7 @@
 package it.polimi.ingsw.server.controller.weapons.attackeffects;
 
-import it.polimi.ingsw.server.model.DamageToken;
-import it.polimi.ingsw.server.model.Damageable;
+import it.polimi.ingsw.server.model.player.DamageToken;
+import it.polimi.ingsw.server.model.player.Damageable;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.battlefield.Board;
 import it.polimi.ingsw.server.model.player.Player;

@@ -1,4 +1,4 @@
-package it.polimi.ingsw.server.model;
+package it.polimi.ingsw.server.model.match;
 
 import it.polimi.ingsw.server.model.battlefield.Board;
 import it.polimi.ingsw.server.model.collections.Deck;
@@ -12,13 +12,16 @@ import it.polimi.ingsw.server.model.events.listeners.MatchEndedListener;
 import it.polimi.ingsw.server.model.events.listeners.MatchModeChangedListener;
 import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
 import it.polimi.ingsw.server.model.events.listeners.PlayerOverkilledListener;
-import it.polimi.ingsw.server.model.factories.BonusTileFactory;
-import it.polimi.ingsw.server.model.factories.PowerupTileFactory;
-import it.polimi.ingsw.server.model.factories.RewardFactory;
-import it.polimi.ingsw.server.model.factories.WeaponFactory;
+import it.polimi.ingsw.server.model.currency.BonusTileFactory;
+import it.polimi.ingsw.server.model.currency.PowerupTileFactory;
+import it.polimi.ingsw.server.model.player.DamageToken;
+import it.polimi.ingsw.server.model.rewards.RewardFactory;
+import it.polimi.ingsw.server.model.weapons.WeaponFactory;
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.player.PlayerInfo;
 import it.polimi.ingsw.server.model.rewards.Reward;
 import it.polimi.ingsw.server.model.weapons.Weapon;
+
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,7 +56,7 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
     /**
      * This property stores the players that are participating in the match
      */
-    private List<Player> players;
+    private final List<Player> players;
 
     /**
      * This property stores the player that is currently playing
@@ -63,22 +66,22 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
     /**
      * This property stores the killshots and whether they have overkill
      */
-    private List<Killshot> killshots;
+    private final List<Killshot> killshots;
 
     /**
      * This property stores the deck of bonus tiles, which will never run out during the match
      */
-    private Deck<BonusTile> bonusDeck;
+    private final Deck<BonusTile> bonusDeck;
 
     /**
      * This property stores the deck of weapons, which might run out during the match because all weapons are either on spawnpoints or owned by players
      */
-    private Deck<Weapon> weaponDeck;
+    private final Deck<Weapon> weaponDeck;
 
     /**
      * This property stores the deck of powerups, which will never run out during the match
      */
-    private Deck<PowerupTile> powerupDeck;
+    private final Deck<PowerupTile> powerupDeck;
 
     /**
      * This property stores the mode of the match, which can change if final frenzy is triggered
@@ -90,14 +93,14 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
     private List<MatchModeChangedListener> matchModeChangedListeners;
     /**
      * This constructor creates a new match from scratch
-     * @param players the players who are joining this match
+     * @param playerInfoList the playerInfoList containing the information to create the players
      * @param board the board that was chosen for the match
      * @param skulls an int representing the number of skulls
      * @param mode the initial match mode
      */
-    public Match(List<Player> players, Board board, int skulls, Mode mode) {
+    public Match(List<PlayerInfo> playerInfoList, Board board, int skulls, Mode mode) {
         this.skulls = skulls;
-        this.players = players;
+        this.players = playerInfoList.stream().map(info -> new Player(this, info)).collect(Collectors.toList());
         this.board = board;
         this.activePlayer = this.players.get(0);
         this.killshots = new LinkedList<>();
@@ -108,16 +111,6 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
         this.matchEndedListeners = new ArrayList<>();
         this.matchModeChangedListeners = new ArrayList<>();
         this.playersWhoDidFinalFrenzyTurn = new LinkedList<>();
-    }
-
-    //TODO: add second constructor to restart a saved match given the name of the file
-
-    /**
-     * This method saves the state of the match on a file
-     * @param filename a String with the name of the file
-     */
-    public void save(String filename) {
-        //Advanced functionality to implement later
     }
 
     /**
@@ -214,7 +207,7 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
 
         // In case of multiple killshots, the active player who dealt those attacks gets an extra point
         if (deadPlayers.size() > 1) {
-            this.activePlayer.addPoints(RewardFactory.create(Reward.Type.DOUBLE_KILL).getRewardFor(0));
+            this.activePlayer.addPoints(RewardFactory.create(RewardFactory.Type.DOUBLE_KILL).getRewardFor(0));
         }
 
         // Now we can bring back to life those players
@@ -351,7 +344,7 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
     }
 
     private void scoreKillshots() {
-        Reward rewards = RewardFactory.create(Reward.Type.KILLSHOT);
+        Reward rewards = RewardFactory.create(RewardFactory.Type.KILLSHOT);
         List<Player> scoringPlayers = this.players.stream().sorted((a, b) -> {
             int amountComparator = getKillshotCount(b) - getKillshotCount(a);
             int firstComparator = 0;
