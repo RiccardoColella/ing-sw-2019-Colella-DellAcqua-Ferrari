@@ -229,8 +229,11 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
             notifyMatchModeChanged();
         } else if (this.mode == Mode.SUDDEN_DEATH) {
             notifyMatchEnded();
+        } else if (this.mode == Mode.FINAL_FRENZY) {
+            playersWhoDidFinalFrenzyTurn.add(activePlayer);
         }
 
+        //TODO: check if match is over (all players played final frenzy in final frenzy mode, or 0 skulls in sudden death)
         return deadPlayers;
     }
 
