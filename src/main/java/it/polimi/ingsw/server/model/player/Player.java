@@ -18,6 +18,8 @@ import it.polimi.ingsw.server.model.events.listeners.PlayerRebornListener;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedGrabException;
 import it.polimi.ingsw.server.model.factories.ActionTileFactory;
+import it.polimi.ingsw.server.model.factories.RewardFactory;
+import it.polimi.ingsw.server.model.rewards.Reward;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 
 import java.util.*;
@@ -29,15 +31,6 @@ import static it.polimi.ingsw.server.model.Match.Mode.FINAL_FRENZY;
  * This class represents the player entity, storing all info about its status during the match
  */
 public class Player implements Damageable, MatchModeChangedListener {
-    /**
-     * This property represents the reward achievable for killing the player in standard mode
-     */
-    private static final int[] STANDARD_REWARD = {8, 6, 4, 2, 1, 1};
-
-    /**
-     * This property represents the reward achievable for killing the player in final frenzy mode
-     */
-    private static final int[] FINAL_FRENZY_REWARD = {2, 1, 1, 1};
 
     private static final int MORTAL_DAMAGE = 11;
     /**
@@ -96,9 +89,7 @@ public class Player implements Damageable, MatchModeChangedListener {
 
     private Match match;
 
-    private int[] currentReward = STANDARD_REWARD;
-
-    private boolean firstBloodMatters = true;
+    private Reward currentReward = RewardFactory.create(Reward.Type.STANDARD);
 
     private boolean isAlive = true;
 
@@ -157,7 +148,6 @@ public class Player implements Damageable, MatchModeChangedListener {
             }
         }
     }
-
 
     /**
      * This method assigns a single damage token to a Damageable
@@ -410,14 +400,12 @@ public class Player implements Damageable, MatchModeChangedListener {
         switch (event.getMode()) {
             case FINAL_FRENZY:
                 if (this.damageTokens.isEmpty()) {
-                    this.currentReward = FINAL_FRENZY_REWARD;
-                    this.firstBloodMatters = false;
+                    this.currentReward = RewardFactory.create(Reward.Type.FINAL_FRENZY);
                 }
                 break;
             case STANDARD:
             case SUDDEN_DEATH:
-                this.currentReward = STANDARD_REWARD;
-                this.firstBloodMatters = true;
+                this.currentReward = RewardFactory.create(Reward.Type.STANDARD);
                 break;
             default:
                 throw new IllegalArgumentException();
@@ -453,7 +441,7 @@ public class Player implements Damageable, MatchModeChangedListener {
                 );
     }
 
-    public int[] getCurrentReward() {
+    public Reward getCurrentReward() {
         return this.currentReward;
     }
 
@@ -486,9 +474,6 @@ public class Player implements Damageable, MatchModeChangedListener {
         }
     }
 
-    public boolean firstBloodMatters() {
-        return firstBloodMatters;
-    }
 
     public boolean isAlive() {
         return isAlive;
@@ -499,8 +484,7 @@ public class Player implements Damageable, MatchModeChangedListener {
         isAlive = true;
         damageTokens.clear();
         if (match.getMode() == FINAL_FRENZY) { // when a player dies during final frenzy, he flips his board
-            this.firstBloodMatters = false;
-            this.currentReward = FINAL_FRENZY_REWARD;
+            this.currentReward = RewardFactory.create(Reward.Type.FINAL_FRENZY);
         }
         notifyPlayerBroughtBackToLife();
     }

@@ -1,0 +1,33 @@
+[{
+  "type": "STANDARD",
+  "rewards": [
+    8,
+    6,
+    4,
+    2,
+    1,
+    1
+  ],
+  "firstBlood": 1
+}, {
+  "type": "FINAL_FRENZY",
+  "rewards": [
+    2,
+    1,
+    1,
+    1
+  ],
+  "firstBlood": 0
+}, {
+  "type": "KILLSHOT",
+  "rewards": [
+    8,
+    6,
+    4,
+    2,
+    1
+  ]
+}, {
+  "type": "DOUBLE_KILL",
+  "reward": 1
+}]
