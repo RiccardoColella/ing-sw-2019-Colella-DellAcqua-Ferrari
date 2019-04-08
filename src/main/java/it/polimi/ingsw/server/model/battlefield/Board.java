@@ -5,7 +5,7 @@ import it.polimi.ingsw.server.model.player.Player;
 import java.util.*;
 
 /**
- * This class implements the gameboard
+ * This class implements the game board
  */
 public class Board {
 
@@ -86,7 +86,7 @@ public class Board {
         return borderType == Block.BorderType.NONE;
     }
 
-    private boolean canMoove(Direction direction, Block block){
+    private boolean canMove(Direction direction, Block block){
         return sameRoom(direction, block) || otherRoom(direction, block);
     }
 
@@ -101,9 +101,7 @@ public class Board {
                 .filter(direction -> otherRoom(direction, block))
                 .forEach(direction -> {
                     Optional<Block> toAdd = getBlockNeighbor(block, direction);
-                    if (toAdd.isPresent()){
-                        visibleBlocks.addAll(getRoom(toAdd.get()));
-                    }
+                    toAdd.ifPresent(block1 -> visibleBlocks.addAll(getRoom(block1)));
                 });
         return visibleBlocks;
     }
@@ -121,7 +119,7 @@ public class Board {
         while(!queue.isEmpty()){
             Block controlledBlock = queue.remove();
             Arrays.stream(Direction.values())
-                    .filter(direction -> sameRoom(direction, controlledBlock) && !roomsBlock.contains(getBlockNeighbor(controlledBlock, direction).get()))
+                    .filter(direction -> sameRoom(direction, controlledBlock) && !roomsBlock.contains(getBlockNeighbor(controlledBlock, direction).orElse(null)))
                     .forEach(direction -> {
                         Optional<Block> toAdd = getBlockNeighbor(controlledBlock, direction);
                         if (toAdd.isPresent() && !roomsBlock.contains(toAdd.get())){
@@ -159,9 +157,9 @@ public class Board {
     public List<Block> getColumn(Block block) {
         List<Block> column = new ArrayList<>();
         int c = block.getColumn();
-        for (int r = 0; r < field.length; r++){
-            Block toAdd = field[r][c];
-            if (toAdd != null){
+        for (Block[] blocks : field) {
+            Block toAdd = blocks[c];
+            if (toAdd != null) {
                 column.add(toAdd);
             }
         }
@@ -177,7 +175,7 @@ public class Board {
         //move player will check if the desired move is possible
         Optional<Block> position = findPlayer(player);
         Optional<Block> nextPosition;
-        if (position.isPresent() && canMoove(direction, position.get())){
+        if (position.isPresent() && canMove(direction, position.get())){
             nextPosition = getBlockNeighbor(position.get(), direction);
             if (nextPosition.isPresent()){
                 position.get().removePlayer(player);
@@ -197,7 +195,7 @@ public class Board {
             for (Block block : blocks) {
                 if ((block != null) && block.containsPlayer(player)) {
                     if (!blockWithPlayer.isPresent()){
-                        blockWithPlayer = Optional.ofNullable(block);
+                        blockWithPlayer = Optional.of(block);
                     } else throw new IllegalStateException();
                 }
             }
@@ -207,7 +205,7 @@ public class Board {
 
     /**
      * teleport player will move the player to the desired block without checking anything
-     * @param player is the player who needs to be mooved
+     * @param player is the player who needs to be moved
      * @param block is the destination block
      */
     public void teleportPlayer(Player player, Block block) {
