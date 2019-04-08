@@ -14,8 +14,10 @@ import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
 import it.polimi.ingsw.server.model.events.listeners.PlayerOverkilledListener;
 import it.polimi.ingsw.server.model.factories.BonusTileFactory;
 import it.polimi.ingsw.server.model.factories.PowerupTileFactory;
+import it.polimi.ingsw.server.model.factories.RewardFactory;
 import it.polimi.ingsw.server.model.factories.WeaponFactory;
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.rewards.Reward;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import java.util.*;
 import java.util.List;
@@ -212,12 +214,12 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
 
         // In case of multiple killshots, the active player who dealt those attacks gets an extra point
         if (deadPlayers.size() > 1) {
-            this.activePlayer.addPoints(1);
+            this.activePlayer.addPoints(RewardFactory.create(Reward.Type.DOUBLE_KILL).getRewardFor(0));
         }
 
         // Now we can bring back to life those players
         for (Player deadPlayer : deadPlayers) {
-            scorePoints(deadPlayer);
+            scoreVictimPoints(deadPlayer);
             if (this.skulls > 0) {
                 this.skulls--;
                 deadPlayer.addSkull();
@@ -270,11 +272,39 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
         this.matchModeChangedListeners.forEach(l -> l.onMatchModeChanged(e));
     }
 
+    private int getKillshotCount(Player player) {
+        int score = 0;
+        for (Killshot killshot : this.killshots) {
+            if (killshot.getDamageToken().getAttacker() == player) {
+                if (killshot.isOverkill()) {
+                    score++;
+                }
+                score++;
+            }
+        }
+        return score;
+    }
+
     /**
      * This method triggers the MatchEnded event and sends it to its listeners
      */
     private void notifyMatchEnded() {
-        MatchEnded e = new MatchEnded(this, this.players);
+        scoreKillshots();
+        List<Player> rankings = this.players.stream().sorted((a, b) -> {
+            int absoluteScore = b.getPoints() - a.getPoints(); // if a has more points than b, a is ahead of b (and vice-versa)
+            int killshotScore = this.getKillshotCount(b) - getKillshotCount(a);
+            int firstComparator = 0;
+            for (Killshot killshot : killshots) {
+                if (killshot.getDamageToken().getAttacker() == a) {
+                    firstComparator = -1;
+                    break;
+                } else if (killshot.getDamageToken().getAttacker() == b) {
+                    firstComparator = 1;
+                }
+            }
+            return absoluteScore != 0 ? absoluteScore : killshotScore != 0 ? killshotScore : firstComparator;
+        }).collect(Collectors.toList());
+        MatchEnded e = new MatchEnded(this, rankings);
         this.matchEndedListeners.forEach(l -> l.onMatchEnded(e));
     }
 
@@ -290,10 +320,7 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
         this.matchModeChangedListeners.add(listener);
     }
 
-    private void scorePoints(Player victim) {
-        if (victim.firstBloodMatters()) {
-            victim.getDamageTokens().get(0).getAttacker().addPoints(1);
-        }
+    private void scoreVictimPoints(Player victim) {
         List<Player> scoringPlayers = this.players.stream()
                 .filter(player -> player != victim && victim.getDamageTokens().stream().anyMatch(damageToken -> damageToken.getAttacker() == player))
                 .sorted((a, b) -> {
@@ -316,16 +343,30 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
                             timeComparison;
                 })
                 .collect(Collectors.toList());
-
-        int maxIndex = victim.getCurrentReward().length;
         int currentIndex = victim.getSkulls();
         for (Player scoringPlayer : scoringPlayers) {
-            if (maxIndex > currentIndex) {
-                scoringPlayer.addPoints(victim.getCurrentReward()[currentIndex]);
-            } else {
-                scoringPlayer.addPoints(1); // any scoring player gets at list one point
-            }
+            scoringPlayer.addPoints(victim.getCurrentReward().getRewardFor(currentIndex, currentIndex == victim.getSkulls()));
             currentIndex++;
+        }
+    }
+
+    private void scoreKillshots() {
+        Reward rewards = RewardFactory.create(Reward.Type.KILLSHOT);
+        List<Player> scoringPlayers = this.players.stream().sorted((a, b) -> {
+            int amountComparator = getKillshotCount(b) - getKillshotCount(a);
+            int firstComparator = 0;
+            for (Killshot killshot : killshots) {
+                if (killshot.getDamageToken().getAttacker() == a) {
+                    firstComparator = -1;
+                    break;
+                } else if (killshot.getDamageToken().getAttacker() == b) {
+                    firstComparator = 1;
+                }
+            }
+            return amountComparator != 0 ? amountComparator : firstComparator;
+        }).collect(Collectors.toList());
+        for (Player player : scoringPlayers) {
+            player.addPoints(rewards.getRewardFor(scoringPlayers.indexOf(player)));
         }
     }
 

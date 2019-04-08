@@ -46,6 +46,14 @@ class PlayerTest {
         this.player = match.getPlayers().get(4);
     }
 
+    /**
+     * This test covers the methods addDamageTokens and addDamageToken (which calls addDamageTokens) in the following situations:
+     * - adding tokens in "standard" configurations
+     * - adding tokens when the player has marks given by the attacker
+     * - adding tokens when the player has marks, but not belonging to the attacker
+     * - adding enough tokens to kill the player
+     * - adding an overkill token and some extra tokens that are not counted
+     */
     @Test
     void addDamageTokens() {
         List<DamageToken> tokens = new LinkedList<>();
@@ -117,6 +125,12 @@ class PlayerTest {
 
     }
 
+    /**
+     * This test covers the method chooseWeapon in the following situations:
+     * - choosing a valid weapon
+     * - trying to choose an unloaded weapon
+     * - trying to choose a weapon that does not belong to the player
+     */
     @Test
     void chooseWeapon() {
         player = match.getActivePlayer();
@@ -138,6 +152,15 @@ class PlayerTest {
         assertNull(player.getActiveWeapon().orElse(null), "Player tried to chose a weapon that did not belong to him"); // the weapon can't be active because it is not owned by the player
     }
 
+    /**
+     * This test covers the method grabWeapon in the following situations:
+     * - grabbing a weapon with enough money
+     * - grabbing a weapon that is free (acquisition cost is an empty list)
+     * - trying to grab a weapon the player can't afford
+     * - grabbing a weapon while already owning 3, but selecting a weapon to discard
+     * - trying to grab a weapon while already owning 3 without discarding a weapon
+     * - trying to grab a weapon while already owning 3 and discarding a not-owned weapon
+     */
     @Test
     void grabWeapon() {
         // FILLING UP THE WALLET SO THAT THE PLAYER CAN BUY A WEAPON
@@ -212,8 +235,16 @@ class PlayerTest {
         assertThrows(UnauthorizedGrabException.class, () -> player.grabWeapon(electroscythe, new LinkedList<>(), new LinkedList<>()), "Player grabbed a fourth weapon");
         assertFalse(player.getWeapons().contains(electroscythe), "The weapon was grabbed even if the purchase did not end correctly");
         assertEquals(playerAmmos, player.getAmmos().size(), "Player could pay for a weapon that he was not allowed to grab");
+
+        //TRYING TO BUY A FOURTH WEAPON DISCARDING A WEAPON THAT DOES NOT BELONG TO THE PLAYER
+        assertThrows(UnauthorizedGrabException.class, () -> player.grabWeapon(electroscythe, new LinkedList<>(), new LinkedList<>(), electroscythe), "Player grabbed a fourth weapon");
     }
 
+    /**
+     * This test covers the method grabPowerup in the following situations:
+     * - grabbing up to 3 powerups
+     * - trying to buy a fourth powerup, which is not allowed
+     */
     @Test
     void grabPowerup() {
         this.player = match.getActivePlayer();
@@ -233,6 +264,11 @@ class PlayerTest {
         assertEquals(3, player.getPowerups().size(), "Player grabbed too many powerups");
     }
 
+    /**
+     * This test covers the method grabAmmos in the following situations:
+     * - grabbing up to 3 ammos of each color
+     * - trying to grab more ammos when player already has 3 of that color
+     */
     @Test
     void grabAmmos() {
         this.player = match.getActivePlayer();
@@ -266,6 +302,13 @@ class PlayerTest {
         assertEquals(redAmmos.size() + blueAmmos.size() + yellowAmmos.size(), player.getAmmos().size(), "Player grabbed too many ammos");
     }
 
+    /**
+     * This test covers the method reload in the following situations:
+     * - reloading a weapon and paying in ammos
+     * - reloading a weapon and paying in powerups
+     * - reloading a weapon and paying with both ammos and powerups
+     * - trying to reload a weapon with money that is not owned
+     */
     @Test
     void reload() {
         player.grabAmmos(furnace.getAcquisitionCost());
@@ -312,6 +355,10 @@ class PlayerTest {
         assertEquals(1, player.getAmmos().size(), "Wrong amount of ammos spent");
     }
 
+    /** This test covers the method onMatchModeChanged in the following situations:
+     * - standard -> final frenzy for player with 0 damage (should flip the board)
+     * - standard -> final frenzy for player with damage (should not flip the board)
+     */
     @Test
     void onMatchModeChanged() {
         List<DamageToken> tokens = new LinkedList<>();
@@ -339,16 +386,18 @@ class PlayerTest {
         for (Player p : match.getPlayers()) {
             if (p.equals(player) || match.getPlayers().indexOf(p) == 0) {
                 assertTrue(p.getDamageTokens().isEmpty(), p.getNickname() + " has tokens but should not");
-                assertFalse(p.firstBloodMatters(), "First blood should not matter for " + p.getNickname());
-                assertNotEquals(8, p.getCurrentReward()[0], "Player does not have final frenzy reward, but should " + p.getNickname());
+                assertNotEquals(9, p.getCurrentReward().getRewardFor(0, true), "Player does not have final frenzy reward, but should " + p.getNickname());
             } else {
                 assertFalse(p.getDamageTokens().isEmpty(), p.getNickname() + " does not have tokens but should");
-                assertTrue(p.firstBloodMatters(), "First blood should matter for " + p.getNickname());
-                assertEquals(8, p.getCurrentReward()[0], "Player has final frenzy reward, but should not " + p.getNickname());
+                assertEquals(9, p.getCurrentReward().getRewardFor(0, true), "Player has final frenzy reward, but should not " + p.getNickname());
             }
         }
     }
 
+    /**
+     * This test covers the method bringBackToLife in the following situations:
+     * - dead player that shall be brought back to life
+     */
     @Test
     void bringBackToLife() {
         List<DamageToken> tokens = new LinkedList<>();
@@ -363,6 +412,11 @@ class PlayerTest {
         assertTrue(player.isAlive());
     }
 
+    /**
+     * This test covers the method pay in the following situations:
+     * - paying with both ammos and powerups
+     * - trying to pay with an empty wallet
+     */
     @Test
     void pay() {
         List<Coin> coins = new LinkedList<>();
@@ -385,6 +439,12 @@ class PlayerTest {
 
     }
 
+    /**
+     * This test covers the methods addMarks and addMark (which calls addMarks) in the following situations:
+     * - adding up to three marks of the same player
+     * - trying to add a fourth mark of the same player, which results in nothing
+     * - adding another mark, but belonging to a different player
+     */
     @Test
     void addMarks() {
         for (int i = 0; i < 4; i++) {
@@ -397,6 +457,15 @@ class PlayerTest {
         assertEquals(4, player.getMarks().size(), "Mark should have been added because it's from another player");
     }
 
+    /**
+     * This test covers the method getAvailableMacroActions in the following situations:
+     * - player has less than 3 damage (2) in standard mode
+     * - player has more than 3 damage (3, 5) but less than 6 in standard mode
+     * - player has more than 6 damage (6) in standard mode
+     * - player's turn is before the first player turn in final frenzy
+     * - player's turn is after the first player turn in final frenzy
+     * - player is the first player in final frenzy
+     */
     @Test
     void getAvailableMacroActions() {
         List<DamageToken> tokens = new LinkedList<>();

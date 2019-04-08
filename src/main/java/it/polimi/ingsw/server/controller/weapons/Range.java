@@ -1,4 +1,4 @@
-package it.polimi.ingsw.server.model;
+package it.polimi.ingsw.server.controller.weapons;
 
 /**
  * This class represents a range of admissible int values
