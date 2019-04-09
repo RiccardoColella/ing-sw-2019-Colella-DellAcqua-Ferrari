@@ -1,8 +1,10 @@
 package it.polimi.ingsw.server.model.battlefield;
 
+import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.Player;
 
 import java.util.*;
+import java.util.List;
 
 /**
  * This class implements the game board
@@ -17,6 +19,14 @@ public class Board {
      */
     public Board(Block[][] field) {
         this.field = field;
+    }
+
+    int getRowLenght(){
+        return field.length;
+    }
+
+    int getColumnLenght(){
+        return field[0].length;
     }
 
     /**
@@ -216,6 +226,14 @@ public class Board {
         block.addPlayer(player);
     }
 
-
+    public SpawnpointBlock getSpawnpoint(CurrencyColor color){
+        for (Block[] blocks : field){
+            for (Block block : blocks){
+                if (block instanceof SpawnpointBlock && ((SpawnpointBlock) block).getColor() == color){
+                    return (SpawnpointBlock) block;
+                }
+            }
+        } throw new IllegalStateException();
+    }
 
 }
