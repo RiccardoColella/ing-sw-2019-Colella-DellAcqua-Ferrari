@@ -1,7 +1,5 @@
 package it.polimi.ingsw.server.model.currency;
 
-import java.io.Serializable;
-
 /**
  * This class represents the actual powerup tile, which can be in the Deck or owned by a Player
  */

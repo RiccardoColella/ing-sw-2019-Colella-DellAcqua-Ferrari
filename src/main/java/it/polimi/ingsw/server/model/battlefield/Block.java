@@ -63,13 +63,13 @@ public abstract class Block {
         this.column = column;
 
         // MAPPING DIRECTIONS
-        EnumMap<Direction, BorderType> borders = new EnumMap<>(Direction.class);
-        borders.put(Direction.NORTH,  borderNorth);
-        borders.put(Direction.EAST,  borderEast);
-        borders.put(Direction.SOUTH, borderSouth);
-        borders.put(Direction.WEST,  borderWest);
+        EnumMap<Direction, BorderType> borderMap = new EnumMap<>(Direction.class);
+        borderMap.put(Direction.NORTH,  borderNorth);
+        borderMap.put(Direction.EAST,  borderEast);
+        borderMap.put(Direction.SOUTH, borderSouth);
+        borderMap.put(Direction.WEST,  borderWest);
 
-        this.borders = Collections.unmodifiableMap(borders);
+        this.borders = Collections.unmodifiableMap(borderMap);
 
         this.players = new LinkedList<>();
     }

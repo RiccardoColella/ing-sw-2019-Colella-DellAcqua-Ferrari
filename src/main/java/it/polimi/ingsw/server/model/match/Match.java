@@ -222,7 +222,7 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
         if (this.skulls == 0 && this.mode == Mode.STANDARD) {
             this.mode = Mode.FINAL_FRENZY;
             notifyMatchModeChanged();
-        } else if (this.mode == Mode.SUDDEN_DEATH) {
+        } else if (this.skulls == 0 && this.mode == Mode.SUDDEN_DEATH) {
             notifyMatchEnded();
         } else if (this.mode == Mode.FINAL_FRENZY) {
             playersWhoDidFinalFrenzyTurn.add(activePlayer);
@@ -231,7 +231,6 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
             }
         }
 
-        //TODO: check if match is over (all players played final frenzy in final frenzy mode, or 0 skulls in sudden death)
         return deadPlayers;
     }
 
@@ -302,7 +301,8 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
                     firstComparator = 1;
                 }
             }
-            return absoluteScore != 0 ? absoluteScore : killshotScore != 0 ? killshotScore : firstComparator;
+            int tieBreaker = killshotScore != 0 ? killshotScore : firstComparator;
+            return absoluteScore != 0 ? absoluteScore : tieBreaker;
         }).collect(Collectors.toList());
         MatchEnded e = new MatchEnded(this, rankings);
         this.matchEndedListeners.forEach(l -> l.onMatchEnded(e));
@@ -360,9 +360,10 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
                     for (Killshot killshot : killshots) {
                         if (killshot.getDamageToken().getAttacker() == a) {
                             firstComparator = -1;
-                            break;
                         } else if (killshot.getDamageToken().getAttacker() == b) {
                             firstComparator = 1;
+                        }
+                        if (firstComparator != 0) {
                             break;
                         }
                 }

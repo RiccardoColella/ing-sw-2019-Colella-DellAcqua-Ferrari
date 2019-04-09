@@ -1,6 +1,5 @@
 package it.polimi.ingsw.server.model.rewards;
 
-import it.polimi.ingsw.server.model.rewards.RewardFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

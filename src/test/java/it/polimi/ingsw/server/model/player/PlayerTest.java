@@ -8,6 +8,7 @@ import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedGrabException;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.model.weapons.WeaponFactory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,8 +42,13 @@ class PlayerTest {
         }
         this.match = MatchFactory.create(playerInfos, BoardFactory.Preset.BOARD_1, 5, Match.Mode.STANDARD);
         this.player = match.getPlayers().get(4);
+        this.match.getPlayers().forEach(p -> this.match.getBoard().getSpawnpoint(CurrencyColor.BLUE).addPlayer(p));
     }
 
+    @AfterEach
+    void tearDown() {
+        this.match.getPlayers().forEach(p -> this.match.getBoard().getSpawnpoint(CurrencyColor.BLUE).removePlayer(p));
+    }
     /**
      * This test covers the methods addDamageTokens and addDamageToken (which calls addDamageTokens) in the following situations:
      * - adding tokens in "standard" configurations

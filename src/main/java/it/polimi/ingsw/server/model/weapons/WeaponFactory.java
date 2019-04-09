@@ -1,16 +1,12 @@
 package it.polimi.ingsw.server.model.weapons;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
-import it.polimi.ingsw.server.model.weapons.Weapon;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.Reader;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This class creates all the 21 weapons of the game
@@ -34,7 +30,7 @@ public final class WeaponFactory {
     public static Weapon create(Weapon.Name name) {
 
         if (weaponMap == null) {
-            weaponMap = new EnumMap<Weapon.Name, Weapon>(Weapon.Name.class);
+            weaponMap = new EnumMap<>(Weapon.Name.class);
             Weapon[] weapons;
             try {
                 weapons = new Gson().fromJson(

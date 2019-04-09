@@ -1,7 +1,5 @@
 package it.polimi.ingsw.server.model.currency;
 
-import it.polimi.ingsw.server.model.currency.AmmoCube;
-import it.polimi.ingsw.server.model.currency.CurrencyColor;
 
 /**
  * Factory class to create ammoCubes for the match

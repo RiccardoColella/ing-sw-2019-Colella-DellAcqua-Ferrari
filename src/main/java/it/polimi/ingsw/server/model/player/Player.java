@@ -1,5 +1,7 @@
 package it.polimi.ingsw.server.model.player;
 
+import it.polimi.ingsw.server.model.battlefield.Block;
+import it.polimi.ingsw.server.model.battlefield.SpawnpointBlock;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.battlefield.Direction;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
@@ -30,6 +32,14 @@ import static it.polimi.ingsw.server.model.match.Match.Mode.FINAL_FRENZY;
 public class Player implements Damageable, MatchModeChangedListener {
 
     private static final int MORTAL_DAMAGE = 11;
+
+    private static final int MAX_OVERKILL_DAMAGE = 12;
+
+    private static final int MAX_AMMO_CUBES_ALLOWED_FOR_COLOR = 3;
+    private static final int MAX_POWERUPS_ALLOWED = 3;
+    private static final int MAX_WEAPONS_ALLOWED = 3;
+    private static final int MAX_MARKS_ALLOWED_BY_SAME_PLAYER = 3;
+
     /**
      * This property represents the marks received by the player during its current life
      */
@@ -130,11 +140,11 @@ public class Player implements Damageable, MatchModeChangedListener {
             this.getMarks().removeAll(extraDamage); // and they are removed from the mark list
         }
 
-        if (this.damageTokens.size() < MORTAL_DAMAGE + 1) {
-            if (newTokens.size() + this.damageTokens.size() <= MORTAL_DAMAGE + 1) { // any extra damage after overkill will not be counted
+        if (this.damageTokens.size() < MAX_OVERKILL_DAMAGE) {
+            if (newTokens.size() + this.damageTokens.size() <= MAX_OVERKILL_DAMAGE) { // any extra damage after overkill will not be counted
                 this.damageTokens.addAll(newTokens);
             } else {
-                int last = (MORTAL_DAMAGE + 1) - this.damageTokens.size();
+                int last = (MAX_OVERKILL_DAMAGE) - this.damageTokens.size();
                 this.damageTokens.addAll(newTokens.subList(0, last));
             }
             // >= because both PlayerDied and PlayerOverkilled can be caused by the same attack
@@ -142,7 +152,7 @@ public class Player implements Damageable, MatchModeChangedListener {
                 isAlive = false;
                 notifyPlayerDied(shooter);
             }
-            if (this.damageTokens.size() == MORTAL_DAMAGE + 1) {
+            if (this.damageTokens.size() == MAX_OVERKILL_DAMAGE) {
                 notifyPlayerOverkilled(shooter);
             }
         }
@@ -288,7 +298,7 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     /**
-     * This method allows the player to buy a new weapon when he already has 3, exchanging it for one of those he owns
+     * This method allows the player to buy a new weapon when he already has the maximum allowed, exchanging it for one of those he owns
      * @param weapon the Weapon that the player is buying
      * @param ammoCubes the cost the player is paying with ammoCubes
      * @param powerups the cost the player is paying with powerups
@@ -296,7 +306,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      *
      */
     public void grabWeapon(Weapon weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups, Weapon discardedWeapon) {
-        if (this.weapons.size() == 3) {
+        if (this.weapons.size() == MAX_WEAPONS_ALLOWED) {
             weapons.remove(discardedWeapon);
         }
         try {
@@ -306,21 +316,26 @@ public class Player implements Damageable, MatchModeChangedListener {
             throw ex;
         }
         discardedWeapon.setLoaded(false);
-        //TODO: put the discarded weapon back into the spawnpoint
+        Optional<Block> spawnpoint = this.match.getBoard().findPlayer(this);
+        if (spawnpoint.isPresent()) {
+            ((SpawnpointBlock) spawnpoint.get()).dropWeapon(weapon);
+        } else {
+            throw new UnauthorizedGrabException("Player is trying to grab a weapon from a non-existent spawnpoint");
+        }
     }
 
     /**
-     * This method allows the player to buy a new weapon, given that he has less than 3 weapons
+     * This method allows the player to buy a new weapon, given that he has less than the maximum weapons allowed
      * @param weapon the Weapon that the player is buying
      * @param ammoCubes the cost the player is paying with ammoCubes
      * @param powerups the cost the player is paying with powerups
      */
     public void grabWeapon(Weapon weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
-        if (this.weapons.size() < 3) {
+        if (this.weapons.size() < MAX_WEAPONS_ALLOWED) {
             this.pay(ammoCubes, powerups);
             weapon.setLoaded(true);
             weapons.add(weapon);
-        } else throw new UnauthorizedGrabException("Player already has 3 weapons and needs to drop one in order to buy one");
+        } else throw new UnauthorizedGrabException("Player already has " + MAX_WEAPONS_ALLOWED + " weapons and needs to drop one in order to buy one");
     }
 
     /**
@@ -328,9 +343,9 @@ public class Player implements Damageable, MatchModeChangedListener {
      * @param powerup the Powerup the player is grabbing
      */
     public void grabPowerup(PowerupTile powerup) {
-        if (this.powerups.size() < 3) {
+        if (this.powerups.size() < MAX_POWERUPS_ALLOWED) {
             this.powerups.add(powerup);
-        } else throw new UnauthorizedGrabException("Player already had 3 powerups");
+        } else throw new UnauthorizedGrabException("Player already had " + MAX_POWERUPS_ALLOWED +" powerups");
     }
 
     /**
@@ -341,7 +356,7 @@ public class Player implements Damageable, MatchModeChangedListener {
             for (AmmoCube newAmmoCube : ammoCubes) {
                 if (this.ammoCubes.stream()
                               .filter(a -> a.equalsTo(newAmmoCube))
-                              .count() < 3) {
+                              .count() < MAX_AMMO_CUBES_ALLOWED_FOR_COLOR) {
                     this.ammoCubes.add(newAmmoCube);
                 }
             }
@@ -368,7 +383,7 @@ public class Player implements Damageable, MatchModeChangedListener {
         for (DamageToken mark : marks) {
             if (this.marks.stream()
                           .filter(t -> t.getAttacker() == mark.getAttacker())
-                          .count() < 3) {
+                          .count() < MAX_MARKS_ALLOWED_BY_SAME_PLAYER) {
                 this.marks.add(mark);
             }
         }

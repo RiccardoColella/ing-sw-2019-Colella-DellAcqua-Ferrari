@@ -2,7 +2,6 @@ package it.polimi.ingsw.server.model.player;
 
 import com.google.gson.Gson;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
-import it.polimi.ingsw.server.model.player.ActionTile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,7 +28,7 @@ public class ActionTileFactory {
     public static ActionTile create(ActionTile.Type type) {
 
         if (actionTileMap == null) {
-            actionTileMap = new EnumMap<ActionTile.Type, ActionTile>(ActionTile.Type.class);
+            actionTileMap = new EnumMap<>(ActionTile.Type.class);
             ActionTile[] actionTiles;
             try {
                 actionTiles = new Gson().fromJson(

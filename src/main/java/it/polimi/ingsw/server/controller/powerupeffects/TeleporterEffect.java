@@ -2,8 +2,6 @@ package it.polimi.ingsw.server.controller.powerupeffects;
 
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
-import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
-import it.polimi.ingsw.server.model.exceptions.TypeMismatchException;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.Player;
 
@@ -14,10 +12,8 @@ public class TeleporterEffect extends PowerupEffect {
      * @param match        the Match the player is associated with
      * @param sourcePlayer the player who is using this effect
      * @param powerupTile  the associated powerup type
-     * @throws MissingOwnershipException thrown if the player didn't have the correct PowerupTile for this effect
-     * @throws TypeMismatchException     thrown if the powerup tile does not correspond to the effect
      */
-    public TeleporterEffect(Match match, Player sourcePlayer, PowerupTile powerupTile) throws MissingOwnershipException, TypeMismatchException {
+    public TeleporterEffect(Match match, Player sourcePlayer, PowerupTile powerupTile) {
         super(match, sourcePlayer, powerupTile, PowerupTile.Type.TELEPORTER);
     }
 

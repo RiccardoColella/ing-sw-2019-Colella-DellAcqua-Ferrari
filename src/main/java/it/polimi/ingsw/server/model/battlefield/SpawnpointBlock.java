@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class SpawnpointBlock extends Block {
 
+    private static final int MAX_WEAPONS = 3;
     /**
      * This property represents the CurrencyColor associated to the spawnpoint
      */
@@ -60,7 +61,7 @@ public class SpawnpointBlock extends Block {
      * @param weapon the weapon to drop
      */
     public void dropWeapon(Weapon weapon) {
-        if (this.getWeapons().size() < 3){
+        if (this.getWeapons().size() < MAX_WEAPONS){
             this.weapons.add(weapon);
         } else throw new IllegalStateException();
     }

@@ -2,8 +2,6 @@ package it.polimi.ingsw.server.controller.powerupeffects;
 
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
-import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
-import it.polimi.ingsw.server.model.exceptions.TypeMismatchException;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.Player;
 
@@ -17,10 +15,8 @@ public class TargetingScopeEffect extends PowerupEffect {
      * @param match        the Match the player is associated with
      * @param sourcePlayer the player who is using this effect
      * @param powerupTile  the associated powerup type
-     * @throws MissingOwnershipException thrown if the player didn't have the correct PowerupTile for this effect
-     * @throws TypeMismatchException     thrown if the powerup tile does not correspond to the effect
      */
-    public TargetingScopeEffect(Match match, Player sourcePlayer, PowerupTile powerupTile) throws MissingOwnershipException, TypeMismatchException {
+    public TargetingScopeEffect(Match match, Player sourcePlayer, PowerupTile powerupTile) {
         super(match, sourcePlayer, powerupTile, PowerupTile.Type.TARGETING_SCOPE);
     }
 
@@ -30,10 +26,8 @@ public class TargetingScopeEffect extends PowerupEffect {
      */
     public void activate(Coin coin) {
 
-        try {
-            sourcePlayer.pay(Collections.singletonList(coin));
-        } catch (MissingOwnershipException e) {
-            throw new MissingOwnershipException("The player " + sourcePlayer + " cannot afford this effect " + this);
-        }
+
+        sourcePlayer.pay(Collections.singletonList(coin));
+
     }
 }

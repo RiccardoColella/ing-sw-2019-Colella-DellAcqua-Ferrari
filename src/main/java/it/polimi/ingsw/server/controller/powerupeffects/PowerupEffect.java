@@ -23,10 +23,8 @@ public abstract class PowerupEffect {
      * @param sourcePlayer the player who is using this effect
      * @param powerupTile the associated powerup tile
      * @param powerupType the powerup type associated with the tile
-     * @throws MissingOwnershipException thrown if the player didn't have the correct PowerupTile for this effect
-     * @throws TypeMismatchException thrown if the powerup tile does not correspond to the effect
      */
-    public PowerupEffect(Match match, Player sourcePlayer, PowerupTile powerupTile, PowerupTile.Type powerupType) throws MissingOwnershipException, TypeMismatchException {
+    public PowerupEffect(Match match, Player sourcePlayer, PowerupTile powerupTile, PowerupTile.Type powerupType) {
 
         this.match = match;
         this.sourcePlayer = sourcePlayer;

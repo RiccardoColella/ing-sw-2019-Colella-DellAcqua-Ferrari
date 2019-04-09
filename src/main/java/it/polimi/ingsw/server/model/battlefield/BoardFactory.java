@@ -1,7 +1,6 @@
 package it.polimi.ingsw.server.model.battlefield;
 
 import com.google.gson.*;
-import it.polimi.ingsw.server.model.battlefield.*;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 

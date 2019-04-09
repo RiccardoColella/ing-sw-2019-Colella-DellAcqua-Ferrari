@@ -1,7 +1,5 @@
 package it.polimi.ingsw.server.controller.weapons;
 
-import it.polimi.ingsw.server.controller.weapons.Range;
-
 /**
  * This interface is implemented by the attacks that can move the player itself or one of the targets
  */
