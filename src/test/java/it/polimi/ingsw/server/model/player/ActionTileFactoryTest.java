@@ -1,4 +1,4 @@
-package it.polimi.ingsw.server.model.factories;
+package it.polimi.ingsw.server.model.player;
 
 import it.polimi.ingsw.server.model.player.ActionTile;
 import it.polimi.ingsw.server.model.player.ActionTileFactory;

@@ -1,4 +1,4 @@
-package it.polimi.ingsw.server.model.factories;
+package it.polimi.ingsw.server.model.rewards;
 
 import it.polimi.ingsw.server.model.rewards.RewardFactory;
 import org.junit.jupiter.api.Test;

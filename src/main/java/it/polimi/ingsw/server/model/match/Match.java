@@ -226,6 +226,9 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
             notifyMatchEnded();
         } else if (this.mode == Mode.FINAL_FRENZY) {
             playersWhoDidFinalFrenzyTurn.add(activePlayer);
+            if (playersWhoDidFinalFrenzyTurn.size() == players.size()) {
+                notifyMatchEnded();
+            }
         }
 
         //TODO: check if match is over (all players played final frenzy in final frenzy mode, or 0 skulls in sudden death)
@@ -282,6 +285,10 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
      * This method triggers the MatchEnded event and sends it to its listeners
      */
     private void notifyMatchEnded() {
+        //Scoring player boards that still have damage
+        List<Player> playersWithDamage = players.stream().filter(p -> !p.getDamageTokens().isEmpty() && p.isAlive()).collect(Collectors.toList());
+        playersWithDamage.forEach(this::scoreVictimPoints);
+
         scoreKillshots();
         List<Player> rankings = this.players.stream().sorted((a, b) -> {
             int absoluteScore = b.getPoints() - a.getPoints(); // if a has more points than b, a is ahead of b (and vice-versa)
@@ -338,24 +345,27 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
                 .collect(Collectors.toList());
         int currentIndex = victim.getSkulls();
         for (Player scoringPlayer : scoringPlayers) {
-            scoringPlayer.addPoints(victim.getCurrentReward().getRewardFor(currentIndex, currentIndex == victim.getSkulls()));
+            scoringPlayer.addPoints(victim.getCurrentReward().getRewardFor(currentIndex, scoringPlayer == victim.getDamageTokens().get(0).getAttacker()));
             currentIndex++;
         }
     }
 
     private void scoreKillshots() {
         Reward rewards = RewardFactory.create(RewardFactory.Type.KILLSHOT);
-        List<Player> scoringPlayers = this.players.stream().sorted((a, b) -> {
-            int amountComparator = getKillshotCount(b) - getKillshotCount(a);
-            int firstComparator = 0;
-            for (Killshot killshot : killshots) {
-                if (killshot.getDamageToken().getAttacker() == a) {
-                    firstComparator = -1;
-                    break;
-                } else if (killshot.getDamageToken().getAttacker() == b) {
-                    firstComparator = 1;
+        List<Player> scoringPlayers = this.players.stream()
+                .filter(player -> killshots.stream().map(k -> k.getDamageToken().getAttacker()).anyMatch(killer -> killer == player))
+                .sorted((a, b) -> {
+                    int amountComparator = getKillshotCount(b) - getKillshotCount(a);
+                    int firstComparator = 0;
+                    for (Killshot killshot : killshots) {
+                        if (killshot.getDamageToken().getAttacker() == a) {
+                            firstComparator = -1;
+                            break;
+                        } else if (killshot.getDamageToken().getAttacker() == b) {
+                            firstComparator = 1;
+                            break;
+                        }
                 }
-            }
             return amountComparator != 0 ? amountComparator : firstComparator;
         }).collect(Collectors.toList());
         for (Player player : scoringPlayers) {

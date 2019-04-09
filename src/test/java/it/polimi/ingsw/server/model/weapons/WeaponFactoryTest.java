@@ -1,4 +1,4 @@
-package it.polimi.ingsw.server.model.factories;
+package it.polimi.ingsw.server.model.weapons;
 
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.weapons.Weapon;

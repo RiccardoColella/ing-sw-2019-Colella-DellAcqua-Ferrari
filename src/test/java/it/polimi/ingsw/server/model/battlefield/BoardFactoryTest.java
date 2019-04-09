@@ -1,4 +1,4 @@
-package it.polimi.ingsw.server.model.factories;
+package it.polimi.ingsw.server.model.battlefield;
 
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import org.junit.jupiter.api.Test;
