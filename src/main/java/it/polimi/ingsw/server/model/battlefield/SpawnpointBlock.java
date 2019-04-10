@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class SpawnpointBlock extends Block {
 
-    private static final int MAX_WEAPONS = 3;
+    private final int maxWeapons;
     /**
      * This property represents the CurrencyColor associated to the spawnpoint
      */
@@ -32,10 +32,11 @@ public class SpawnpointBlock extends Block {
      * @param borderWest BorderType of the western border
      * @param color the color associated to the spawnpoint
      */
-    public SpawnpointBlock(int row, int column, BorderType borderNorth, BorderType borderEast, BorderType borderSouth, BorderType borderWest, CurrencyColor color) {
+    public SpawnpointBlock(int row, int column, BorderType borderNorth, BorderType borderEast, BorderType borderSouth, BorderType borderWest, CurrencyColor color, int maxWeapons) {
         super(row, column, borderNorth, borderEast, borderSouth, borderWest);
         this.color = color;
         this.weapons = new LinkedList<>();
+        this.maxWeapons = maxWeapons;
     }
 
     /**
@@ -57,20 +58,21 @@ public class SpawnpointBlock extends Block {
     }
 
     /**
-     * This method allows for a weapon to be put back in the spawnpoint
-     * @param weapon the weapon to drop
-     */
-    public void dropWeapon(Weapon weapon) {
-        if (this.getWeapons().size() < MAX_WEAPONS){
-            this.weapons.add(weapon);
-        } else throw new IllegalStateException();
-    }
-
-    /**
      * This method gets the color of the spawnpoint
      * @return the CurrencyColor corresponding to the color of the spawnpoint
      */
     public CurrencyColor getColor() {
         return this.color;
+    }
+
+    /**
+     * This method allows for a weapon to be put back in the spawnpoint
+     * @param w the weapon to drop
+     */
+    @Override
+    public void drop(Weapon w) {
+        if (this.getWeapons().size() < maxWeapons){
+            this.weapons.add(w);
+        } else throw new IllegalStateException();
     }
 }

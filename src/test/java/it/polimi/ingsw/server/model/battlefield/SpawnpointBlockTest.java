@@ -14,12 +14,12 @@ class SpawnpointBlockTest {
 
     @Test
     void grabWeapon() {
-        SpawnpointBlock block = new SpawnpointBlock(0,0, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.NONE, CurrencyColor.BLUE);
+        SpawnpointBlock block = new SpawnpointBlock(0,0, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.NONE, CurrencyColor.BLUE, 3);
         Deck<Weapon> weapons = WeaponFactory.createDeck();
 
         Optional<Weapon> weapon = weapons.pick();
         assertTrue(weapon.isPresent());
-        block.dropWeapon(weapon.get());
+        block.drop(weapon.get());
         assertEquals(1,block.getWeapons().size());
         block.grabWeapon(weapon.get());
         assertEquals(0, block.getWeapons().size());
@@ -32,8 +32,8 @@ class SpawnpointBlockTest {
     }
 
     @Test
-    void dropWeapon() {
-        SpawnpointBlock block = new SpawnpointBlock(0,0, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.NONE, CurrencyColor.BLUE);
+    void drop() {
+        SpawnpointBlock block = new SpawnpointBlock(0,0, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.NONE, CurrencyColor.BLUE, 3);
         Deck<Weapon> weapons = WeaponFactory.createDeck();
 
         Optional<Weapon> weapon1 = weapons.pick();
@@ -46,13 +46,13 @@ class SpawnpointBlockTest {
         assertTrue(weapon4.isPresent());
 
         assertEquals(0, block.getWeapons().size());
-        block.dropWeapon(weapon1.get());
-        block.dropWeapon(weapon2.get());
-        block.dropWeapon(weapon3.get());
+        block.drop(weapon1.get());
+        block.drop(weapon2.get());
+        block.drop(weapon3.get());
         assertEquals(3, block.getWeapons().size());
 
         try {
-            block.dropWeapon(weapon1.get());
+            block.drop(weapon1.get());
             fail();
         } catch (IllegalStateException e){
             assertNull(e.getMessage());

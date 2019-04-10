@@ -31,15 +31,6 @@ import static it.polimi.ingsw.server.model.match.Match.Mode.FINAL_FRENZY;
  */
 public class Player implements Damageable, MatchModeChangedListener {
 
-    private static final int MORTAL_DAMAGE = 11;
-
-    private static final int MAX_OVERKILL_DAMAGE = 12;
-
-    private static final int MAX_AMMO_CUBES_ALLOWED_FOR_COLOR = 3;
-    private static final int MAX_POWERUPS_ALLOWED = 3;
-    private static final int MAX_WEAPONS_ALLOWED = 3;
-    private static final int MAX_MARKS_ALLOWED_BY_SAME_PLAYER = 3;
-
     /**
      * This property represents the marks received by the player during its current life
      */
@@ -100,14 +91,16 @@ public class Player implements Damageable, MatchModeChangedListener {
 
     private boolean isAlive = true;
 
+    private final PlayerConstraints constraints;
     /**
      * This constructor creates a player from the basic info: the player will be empty and ready to start a new match
      * @param match the match this new player belongs to
      * @param info a PlayerInfo object containing the basic info
      */
-    public Player(Match match, PlayerInfo info) {
+    public Player(Match match, PlayerInfo info, PlayerConstraints constraints) {
         this.match = match;
         this.info = info;
+        this.constraints = constraints;
     }
 
     /**
@@ -140,19 +133,19 @@ public class Player implements Damageable, MatchModeChangedListener {
             this.getMarks().removeAll(extraDamage); // and they are removed from the mark list
         }
 
-        if (this.damageTokens.size() < MAX_OVERKILL_DAMAGE) {
-            if (newTokens.size() + this.damageTokens.size() <= MAX_OVERKILL_DAMAGE) { // any extra damage after overkill will not be counted
+        if (this.damageTokens.size() < constraints.getMaxDamage()) {
+            if (newTokens.size() + this.damageTokens.size() <= constraints.getMaxDamage()) { // any extra damage after overkill will not be counted
                 this.damageTokens.addAll(newTokens);
             } else {
-                int last = (MAX_OVERKILL_DAMAGE) - this.damageTokens.size();
+                int last = (constraints.getMaxDamage()) - this.damageTokens.size();
                 this.damageTokens.addAll(newTokens.subList(0, last));
             }
             // >= because both PlayerDied and PlayerOverkilled can be caused by the same attack
-            if (isAlive && this.damageTokens.size() >= MORTAL_DAMAGE) {
+            if (isAlive && this.damageTokens.size() >= constraints.getMortalDamage()) {
                 isAlive = false;
                 notifyPlayerDied(shooter);
             }
-            if (this.damageTokens.size() == MAX_OVERKILL_DAMAGE) {
+            if (this.damageTokens.size() == constraints.getMaxDamage()) {
                 notifyPlayerOverkilled(shooter);
             }
         }
@@ -306,7 +299,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      *
      */
     public void grabWeapon(Weapon weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups, Weapon discardedWeapon) {
-        if (this.weapons.size() == MAX_WEAPONS_ALLOWED) {
+        if (this.weapons.size() == constraints.getMaxWeaponsForPlayer()) {
             weapons.remove(discardedWeapon);
         }
         try {
@@ -318,9 +311,9 @@ public class Player implements Damageable, MatchModeChangedListener {
         discardedWeapon.setLoaded(false);
         Optional<Block> spawnpoint = this.match.getBoard().findPlayer(this);
         if (spawnpoint.isPresent()) {
-            ((SpawnpointBlock) spawnpoint.get()).dropWeapon(weapon);
+            spawnpoint.get().drop(weapon);
         } else {
-            throw new UnauthorizedGrabException("Player is trying to grab a weapon from a non-existent spawnpoint");
+            throw new UnauthorizedGrabException("Player is trying to put a weapon into a nonexisting block");
         }
     }
 
@@ -331,11 +324,11 @@ public class Player implements Damageable, MatchModeChangedListener {
      * @param powerups the cost the player is paying with powerups
      */
     public void grabWeapon(Weapon weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
-        if (this.weapons.size() < MAX_WEAPONS_ALLOWED) {
+        if (this.weapons.size() < constraints.getMaxWeaponsForPlayer()) {
             this.pay(ammoCubes, powerups);
             weapon.setLoaded(true);
             weapons.add(weapon);
-        } else throw new UnauthorizedGrabException("Player already has " + MAX_WEAPONS_ALLOWED + " weapons and needs to drop one in order to buy one");
+        } else throw new UnauthorizedGrabException("Player already has " + constraints.getMaxWeaponsForPlayer() + " weapons and needs to drop one in order to buy one");
     }
 
     /**
@@ -343,9 +336,9 @@ public class Player implements Damageable, MatchModeChangedListener {
      * @param powerup the Powerup the player is grabbing
      */
     public void grabPowerup(PowerupTile powerup) {
-        if (this.powerups.size() < MAX_POWERUPS_ALLOWED) {
+        if (this.powerups.size() < constraints.getMaxPowerupsForPlayer()) {
             this.powerups.add(powerup);
-        } else throw new UnauthorizedGrabException("Player already had " + MAX_POWERUPS_ALLOWED +" powerups");
+        } else throw new UnauthorizedGrabException("Player already had " + constraints.getMaxPowerupsForPlayer() +" powerups");
     }
 
     /**
@@ -356,7 +349,7 @@ public class Player implements Damageable, MatchModeChangedListener {
             for (AmmoCube newAmmoCube : ammoCubes) {
                 if (this.ammoCubes.stream()
                               .filter(a -> a.equalsTo(newAmmoCube))
-                              .count() < MAX_AMMO_CUBES_ALLOWED_FOR_COLOR) {
+                              .count() < constraints.getMaxAmmoCubesOfAColor()) {
                     this.ammoCubes.add(newAmmoCube);
                 }
             }
@@ -383,7 +376,7 @@ public class Player implements Damageable, MatchModeChangedListener {
         for (DamageToken mark : marks) {
             if (this.marks.stream()
                           .filter(t -> t.getAttacker() == mark.getAttacker())
-                          .count() < MAX_MARKS_ALLOWED_BY_SAME_PLAYER) {
+                          .count() < constraints.getMaxMarksFromPlayer()) {
                 this.marks.add(mark);
             }
         }
@@ -422,19 +415,29 @@ public class Player implements Damageable, MatchModeChangedListener {
         }
     }
 
-    private void pay(List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
-        for (AmmoCube spentAmmoCube : ammoCubes) {
+    private void pay(List<AmmoCube> spentAmmoCubes, List<PowerupTile> spentPowerups) {
+        List<AmmoCube> alreadyPaidAmmoCubes = new LinkedList<>();
+        for (AmmoCube spentAmmoCube : spentAmmoCubes) {
             Optional<AmmoCube> paidAmmo = this.ammoCubes.stream().filter(ownedAmmo -> ownedAmmo.equalsTo(spentAmmoCube)).findAny();
             if (paidAmmo.isPresent()) {
                 this.ammoCubes.remove(paidAmmo.get());
-            } else throw new MissingOwnershipException("Player can't afford this weapon, missing ammoCubes");
+                alreadyPaidAmmoCubes.add(paidAmmo.get());
+            } else {
+                grabAmmoCubes(alreadyPaidAmmoCubes);
+                throw new MissingOwnershipException("Player can't afford this weapon, missing ammoCubes");
+            }
         }
-
-        for (PowerupTile spentPowerup : powerups) {
+        List<PowerupTile> alreadyPaidPowerups = new LinkedList<>();
+        for (PowerupTile spentPowerup : spentPowerups) {
             Optional<PowerupTile> paidPowerup = this.powerups.stream().filter(ownedAmmo -> ownedAmmo.equalsTo(spentPowerup)).findAny();
             if (paidPowerup.isPresent()) {
                 this.powerups.remove(paidPowerup.get());
-            } else throw new MissingOwnershipException("Player can't afford this weapon, missing powerups");
+                alreadyPaidPowerups.add(paidPowerup.get());
+            } else {
+                grabAmmoCubes(alreadyPaidAmmoCubes);
+                alreadyPaidPowerups.forEach(this::grabPowerup);
+                throw new MissingOwnershipException("Player can't afford this weapon, missing powerups");
+            }
         }
     }
 
@@ -468,9 +471,9 @@ public class Player implements Damageable, MatchModeChangedListener {
 
         if (match.getMode() != FINAL_FRENZY) {
 
-            if (this.damageTokens.size() > 5) {
+            if (this.damageTokens.size() >= constraints.getSecondAdrenalineTrigger()) {
                 return ActionTileFactory.create(ActionTile.Type.ADRENALINE_2);
-            } else if (this.damageTokens.size() > 2) {
+            } else if (this.damageTokens.size() >= constraints.getFirstAdrenalineTrigger()) {
                 return ActionTileFactory.create(ActionTile.Type.ADRENALINE_1);
             } else {
                 return ActionTileFactory.create(ActionTile.Type.STANDARD);
@@ -514,4 +517,9 @@ public class Player implements Damageable, MatchModeChangedListener {
         PlayerDied e = new PlayerDied(this, killer);
         this.playerDiedListeners.forEach(listener -> listener.onPlayerDied(e));
     }
+
+    PlayerConstraints getConstraints() {
+        return constraints;
+    }
+
 }

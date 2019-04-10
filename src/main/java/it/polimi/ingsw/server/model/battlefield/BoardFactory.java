@@ -99,7 +99,8 @@ public class BoardFactory {
                                 Block.BorderType.findByString(borders.get(Direction.EAST.toString()).getAsString()),
                                 Block.BorderType.findByString(borders.get(Direction.SOUTH.toString()).getAsString()),
                                 Block.BorderType.findByString(borders.get(Direction.WEST.toString()).getAsString()),
-                                CurrencyColor.findByString(json.getAsJsonObject().get("color").getAsString())
+                                CurrencyColor.findByString(json.getAsJsonObject().get("color").getAsString()),
+                                json.getAsJsonObject().get("maxWeapons").getAsInt()
                         );
             }
         }

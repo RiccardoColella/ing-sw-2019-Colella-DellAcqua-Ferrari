@@ -15,6 +15,7 @@ import it.polimi.ingsw.server.model.events.listeners.PlayerOverkilledListener;
 import it.polimi.ingsw.server.model.currency.BonusTileFactory;
 import it.polimi.ingsw.server.model.currency.PowerupTileFactory;
 import it.polimi.ingsw.server.model.player.DamageToken;
+import it.polimi.ingsw.server.model.player.PlayerFactory;
 import it.polimi.ingsw.server.model.rewards.RewardFactory;
 import it.polimi.ingsw.server.model.weapons.WeaponFactory;
 import it.polimi.ingsw.server.model.player.Player;
@@ -100,7 +101,7 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
      */
     public Match(List<PlayerInfo> playerInfoList, Board board, int skulls, Mode mode) {
         this.skulls = skulls;
-        this.players = playerInfoList.stream().map(info -> new Player(this, info)).collect(Collectors.toList());
+        this.players = playerInfoList.stream().map(info -> PlayerFactory.create(this, info)).collect(Collectors.toList());
         this.board = board;
         this.activePlayer = this.players.get(0);
         this.killshots = new LinkedList<>();

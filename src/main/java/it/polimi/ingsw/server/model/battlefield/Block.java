@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.model.battlefield;
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.weapons.Weapon;
 
 import java.util.*;
 
@@ -124,5 +125,7 @@ public abstract class Block {
     public boolean containsPlayer(Player player) {
         return this.players.contains(player);
     }
+
+    public abstract void drop(Weapon w);
 
 }

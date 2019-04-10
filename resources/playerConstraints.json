@@ -1,0 +1,10 @@
+{
+  "maxAmmoCubesOfAColor": 3,
+  "maxWeaponsForPlayer": 3,
+  "maxMarksFromPlayer": 3,
+  "maxPowerupsForPlayer": 3,
+  "mortalDamage": 11,
+  "maxDamage": 12,
+  "firstAdrenalineTrigger": 3,
+  "secondAdrenalineTrigger": 6
+}
