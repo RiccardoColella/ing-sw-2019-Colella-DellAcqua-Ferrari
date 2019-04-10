@@ -1,14 +1,12 @@
 package it.polimi.ingsw.server.model.player;
 
-import it.polimi.ingsw.server.model.exceptions.IncoherentConfigurationException;
+import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.match.MatchFactory;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.*;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
-import it.polimi.ingsw.server.model.exceptions.UnauthorizedGrabException;
 import it.polimi.ingsw.server.model.weapons.Weapon;
-import it.polimi.ingsw.server.model.weapons.WeaponFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -126,7 +124,6 @@ class PlayerTest {
         assertEquals(expectedTokens, player.getDamageTokens().size(), "Too much damage was added, max is " + player.getConstraints().getMaxDamage());
         List<Player> dead = match.endTurn();
         assertEquals(dead.get(0), player, "Player is not counted as dead");
-
     }
 
     /**
@@ -267,13 +264,13 @@ class PlayerTest {
             playerAmmoCubes += currentWeapon.get().getAcquisitionCost().size();
             Weapon extraWeapon = currentWeapon.get();
             //not discarding a weapon at this point will result in an exception
-            assertThrows(UnauthorizedGrabException.class, () -> player.grabWeapon(extraWeapon, extraWeapon.getAcquisitionCost(), new LinkedList<>()), "Player grabbed a weapon exceeding his limit");
+            assertThrows(UnauthorizedExchangeException.class, () -> player.grabWeapon(extraWeapon, extraWeapon.getAcquisitionCost(), new LinkedList<>()), "Player grabbed a weapon exceeding his limit");
             assertFalse(player.getWeapons().contains(extraWeapon), "The weapon was grabbed even if the purchase did not end correctly");
             assertEquals(playerAmmoCubes, player.getAmmoCubes().size(), "Player could pay for a weapon that he was not allowed to grab");
 
             //TRYING TO BUY A FOURTH WEAPON DISCARDING A WEAPON THAT DOES NOT BELONG TO THE PLAYER
             //the player can't cheat the system and pretend to discard a weapon that isn't his
-            assertThrows(UnauthorizedGrabException.class, () -> player.grabWeapon(extraWeapon, new LinkedList<>(), new LinkedList<>(), extraWeapon), "Player grabbed a fourth weapon");
+            assertThrows(UnauthorizedExchangeException.class, () -> player.grabWeapon(extraWeapon, new LinkedList<>(), new LinkedList<>(), extraWeapon), "Player grabbed a fourth weapon");
 
             //the player follows the rules and discards a weapon
             Weapon toDiscard = player.getWeapons().get(0);
@@ -313,7 +310,7 @@ class PlayerTest {
         Optional<PowerupTile> unallowedPowerup = match.getPowerupDeck().pick();
 
         if (unallowedPowerup.isPresent()) {
-            assertThrows(UnauthorizedGrabException.class, () -> this.player.grabPowerup(unallowedPowerup.get()), "Player grabbed too many powerups");
+            assertThrows(UnauthorizedExchangeException.class, () -> this.player.grabPowerup(unallowedPowerup.get()), "Player grabbed too many powerups");
             //PLAYER STILL HAS THE MAX ALLOWED NUMBER OF POWERUPS
             assertEquals(this.player.getConstraints().getMaxPowerupsForPlayer(), player.getPowerups().size(), "Player grabbed too many powerups");
         }

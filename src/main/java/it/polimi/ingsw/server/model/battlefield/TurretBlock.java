@@ -1,6 +1,6 @@
 package it.polimi.ingsw.server.model.battlefield;
 
-import it.polimi.ingsw.server.model.exceptions.UnauthorizedGrabException;
+import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 
 /**
@@ -22,6 +22,6 @@ public class TurretBlock extends Block {
 
     @Override
     public void drop(Weapon w) {
-        throw new UnauthorizedGrabException("Player is trying to drop a weapon in a Turret");
+        throw new UnauthorizedExchangeException("Player is trying to drop a weapon in a Turret");
     }
 }

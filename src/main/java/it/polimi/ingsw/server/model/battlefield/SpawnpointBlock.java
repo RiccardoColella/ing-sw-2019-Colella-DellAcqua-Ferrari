@@ -31,6 +31,7 @@ public class SpawnpointBlock extends Block {
      * @param borderSouth BorderType of the southern border
      * @param borderWest BorderType of the western border
      * @param color the color associated to the spawnpoint
+     * @param maxWeapons the maximum amount of weapons this block can contain
      */
     public SpawnpointBlock(int row, int column, BorderType borderNorth, BorderType borderEast, BorderType borderSouth, BorderType borderWest, CurrencyColor color, int maxWeapons) {
         super(row, column, borderNorth, borderEast, borderSouth, borderWest);

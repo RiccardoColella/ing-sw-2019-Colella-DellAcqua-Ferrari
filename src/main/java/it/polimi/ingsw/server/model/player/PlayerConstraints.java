@@ -1,13 +1,29 @@
 package it.polimi.ingsw.server.model.player;
 
+import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class represents the set of constraints needed for the instantiation of a Player
+ */
 public class PlayerConstraints {
 
     private Map<String, Integer> constraints;
 
-    PlayerConstraints(Map<String, Integer> constraints) {
+    /**
+     * This constructor instantiates a PlayerConstraints object giving the ability to change the default values
+     *
+     * @param constraints a map containing the keys for overriding the defaults
+     */
+    public PlayerConstraints(Map<String, Integer> constraints) {
         this.constraints = constraints;
+    }
+
+    /**
+     * Default constructor, all getters values will default to the official Adrenaline game values
+     */
+    public PlayerConstraints() {
+        this.constraints = new HashMap<>();
     }
 
     public int getMaxAmmoCubesOfAColor() {

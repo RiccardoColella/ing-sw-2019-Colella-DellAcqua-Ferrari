@@ -1,10 +1,7 @@
 package it.polimi.ingsw.server.model.match;
 
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
-import it.polimi.ingsw.server.model.player.DamageToken;
-import it.polimi.ingsw.server.model.player.Player;
-import it.polimi.ingsw.server.model.player.PlayerColor;
-import it.polimi.ingsw.server.model.player.PlayerInfo;
+import it.polimi.ingsw.server.model.player.*;
 import it.polimi.ingsw.server.model.rewards.Reward;
 import it.polimi.ingsw.server.model.rewards.RewardFactory;
 import org.junit.jupiter.api.AfterEach;
@@ -22,13 +19,16 @@ import static org.junit.jupiter.api.Assertions.*;
 class MatchTest {
 
     private Match match;
+    private List<PlayerInfo> playerInfos = new LinkedList<>();
+
 
     @BeforeEach
     void setUp() {
-        List<PlayerInfo> playerInfos = new LinkedList<>();
+        // Populating a list of players which will join the match
         for (int i = 0; i < 5; i++) {
             playerInfos.add(new PlayerInfo("Player" + i, PlayerColor.values()[i]));
         }
+        // Calling the factory which will setup a match and connect the needed event listeners
         this.match = MatchFactory.create(playerInfos, BoardFactory.Preset.BOARD_1, 5, Match.Mode.STANDARD);
     }
 
@@ -36,10 +36,13 @@ class MatchTest {
     void tearDown() {
     }
 
+    /**
+     * This test verifies that the turns are executed in circle
+     */
     @Test
     void changeTurn() {
 
-        for (int i = 0; i < match.getPlayers().size() + 1; i++) {
+        for (int i = 0; i < 2 * match.getPlayers().size(); i++) {
             assertSame(match.getActivePlayer(), match.getPlayers().get(i % match.getPlayers().size()), "Active player mismatch");
             match.changeTurn();
         }
@@ -48,35 +51,48 @@ class MatchTest {
 
     @Test
     void endTurn() {
+
+        // Setting all the players to their damage limit
         match.getPlayers().forEach(player -> player
-                .addDamageTokens(IntStream.range(0, 10)
+                .addDamageTokens(IntStream.range(0, player.getConstraints().getMortalDamage() - 1)
                         .boxed()
                         .map(x -> new DamageToken(match.getPlayers().get(1)))
                         .collect(Collectors.toList()))
         );
 
+        // This should kill all the players
         match.getPlayers().forEach(player -> player.addDamageToken(new DamageToken(match.getPlayers().get(1))));
+        // endTurn should return all the players in the match
         List<Player> deadPlayers = match.endTurn();
         assertEquals(match.getPlayers().size(), deadPlayers.size(), "endTurn didn't provide the correct amount of dead players");
+
+        // Bringing all the players back to life for the next torture...
         deadPlayers.forEach(Player::bringBackToLife);
 
-
-        match.getPlayers().get(1).addDamageTokens(
-                IntStream.range(0, 10)
+        // Re-setting all the players to their damage limit
+        match.getPlayers().get(1)
+                .addDamageTokens(IntStream.range(0, match.getPlayers().get(1).getConstraints().getMortalDamage() - 1)
                         .boxed()
                         .map(x -> new DamageToken(match.getPlayers().get(1)))
                         .collect(Collectors.toList())
         );
+        // Killing the first player
         match.getPlayers().get(1).addDamageToken(new DamageToken(match.getPlayers().get(1)));
+        // This should return only one player
         deadPlayers = match.endTurn();
         assertEquals(1, deadPlayers.size(), "endTurn didn't provide the correct amount of dead players");
-        deadPlayers.forEach(Player::bringBackToLife);
+        assertSame(match.getPlayers().get(1), deadPlayers.get(0), "endTurn didn't provide the correct Player instance");
     }
 
+    /**
+     * Testing that the event fires correctly, for example by checking the number of remaining skulls in the match
+     */
     @Test
     void onPlayerDied() {
+
+        // Setting all the players to their damage limit
         match.getPlayers().forEach(player -> player
-                .addDamageTokens(IntStream.range(0, 10)
+                .addDamageTokens(IntStream.range(0, player.getConstraints().getMortalDamage() - 1)
                 .boxed()
                 .map(x -> new DamageToken(match.getPlayers().get(1)))
                 .collect(Collectors.toList()))
@@ -84,31 +100,59 @@ class MatchTest {
 
         int matchSkulls = match.getRemainingSkulls();
         int victimSkulls = match.getPlayers().get(1).getSkulls();
+        int killshots = match.getKillshots().size();
         match.getPlayers().get(1).addDamageToken(new DamageToken(match.getActivePlayer()));
+        // It's essential to call this function to make the scoring at the end of each turn
         match.endTurn();
         match.getPlayers().get(1).bringBackToLife();
+
+        // Now we expect the match skulls decreased because one should have been assigned to the killed player.
+        // The number of killshots should have been increased by an event call to the "onPlayerDied" method made by the victim
         matchSkulls--;
         victimSkulls++;
+        killshots++;
         assertEquals(matchSkulls, match.getRemainingSkulls(), "Skull not subtracted from the match");
         assertEquals(victimSkulls, match.getPlayers().get(1).getSkulls(), "Skull not added to the victim");
+        assertEquals(killshots, match.getKillshots().size(), "Killshots not increased");
+        assertSame(match.getActivePlayer(), match.getKillshots().get(0).getDamageToken().getAttacker(), "Killshot does not reference the correct attacker");
+
+        // Changing the active player
         match.changeTurn();
 
+        // Testing that an overkill causes the active player (killer) to receive a mark from the victim
         int killerMarks = match.getActivePlayer().getMarks().size();
         victimSkulls = match.getPlayers().get(0).getSkulls();
+        // Actual overkill
         match.getPlayers().get(0).addDamageTokens(Arrays.asList(new DamageToken(match.getActivePlayer()), new DamageToken(match.getActivePlayer())));
+        // Scoring
         match.endTurn();
         match.getPlayers().get(0).bringBackToLife();
+
+        // Expected values are as following
         matchSkulls--;
         victimSkulls++;
         killerMarks++;
         assertEquals(matchSkulls, match.getRemainingSkulls(), "Skull not subtracted from the match");
         assertEquals(victimSkulls, match.getPlayers().get(0).getSkulls(), "Skull not added to the victim");
         assertEquals(killerMarks, match.getActivePlayer().getMarks().size(), "No mark assigned to the player who did an overkill");
-        match.changeTurn();
     }
 
+
+    /**
+     * Testing the scoring in a simulated match. Rewards changes during the match due to players' death
+     */
     @Test
     void scoring() {
+
+        match = MatchFactory.create(
+                playerInfos,
+                BoardFactory.Preset.BOARD_1,
+                5,
+                Match.Mode.STANDARD,
+                // Using this lambda we can test the scoring on the official Adrenaline rules
+                (matchInstance, playerInfo) -> new Player(match, playerInfo, new PlayerConstraints())
+        );
+
         Player target = match.getPlayers().get(4);
         List<DamageToken> tokens = new LinkedList<>();
         // PLAYER 0 GIVES 3 DAMAGE TO PLAYER 4

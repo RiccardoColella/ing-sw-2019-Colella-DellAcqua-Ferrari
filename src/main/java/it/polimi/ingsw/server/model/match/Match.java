@@ -25,6 +25,8 @@ import it.polimi.ingsw.server.model.weapons.Weapon;
 
 import java.util.*;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -92,16 +94,19 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
     private List<Player> playersWhoDidFinalFrenzyTurn;
     private List<MatchEndedListener> matchEndedListeners;
     private List<MatchModeChangedListener> matchModeChangedListeners;
+
     /**
      * This constructor creates a new match from scratch
+     *
      * @param playerInfoList the playerInfoList containing the information to create the players
      * @param board the board that was chosen for the match
      * @param skulls an int representing the number of skulls
      * @param mode the initial match mode
+     * @param playerSupplier a bi-function which provides a Player instance given this match and a PlayerInfo object
      */
-    public Match(List<PlayerInfo> playerInfoList, Board board, int skulls, Mode mode) {
+    public Match(List<PlayerInfo> playerInfoList, Board board, int skulls, Mode mode, BiFunction<Match, PlayerInfo, Player> playerSupplier) {
         this.skulls = skulls;
-        this.players = playerInfoList.stream().map(info -> PlayerFactory.create(this, info)).collect(Collectors.toList());
+        this.players = Collections.unmodifiableList(playerInfoList.stream().map(info -> playerSupplier.apply(this, info)).collect(Collectors.toList()));
         this.board = board;
         this.activePlayer = this.players.get(0);
         this.killshots = new LinkedList<>();
@@ -113,6 +118,10 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
         this.matchModeChangedListeners = new ArrayList<>();
         this.playersWhoDidFinalFrenzyTurn = new LinkedList<>();
     }
+
+
+
+
 
     /**
      * This method gets the bonus tile deck

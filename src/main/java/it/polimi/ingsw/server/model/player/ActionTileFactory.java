@@ -22,6 +22,7 @@ public class ActionTileFactory {
 
     /**
      * This method is used to create an ActionTile
+     *
      * @param type the enum corresponding to the desired action tile
      * @return the action tile containing the configured set of CompoundAction
      */

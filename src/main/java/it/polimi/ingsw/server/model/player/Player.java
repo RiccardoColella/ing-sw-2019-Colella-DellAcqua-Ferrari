@@ -1,7 +1,7 @@
 package it.polimi.ingsw.server.model.player;
 
 import it.polimi.ingsw.server.model.battlefield.Block;
-import it.polimi.ingsw.server.model.battlefield.SpawnpointBlock;
+import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.battlefield.Direction;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
@@ -16,7 +16,6 @@ import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
 import it.polimi.ingsw.server.model.events.listeners.PlayerOverkilledListener;
 import it.polimi.ingsw.server.model.events.listeners.PlayerRebornListener;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
-import it.polimi.ingsw.server.model.exceptions.UnauthorizedGrabException;
 import it.polimi.ingsw.server.model.rewards.RewardFactory;
 import it.polimi.ingsw.server.model.rewards.Reward;
 import it.polimi.ingsw.server.model.weapons.Weapon;
@@ -96,6 +95,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      * This constructor creates a player from the basic info: the player will be empty and ready to start a new match
      * @param match the match this new player belongs to
      * @param info a PlayerInfo object containing the basic info
+     * @param constraints a PlayerConstraints object containing a set of rules regarding the health and the scoring
      */
     public Player(Match match, PlayerInfo info, PlayerConstraints constraints) {
         this.match = match;
@@ -313,7 +313,7 @@ public class Player implements Damageable, MatchModeChangedListener {
         if (spawnpoint.isPresent()) {
             spawnpoint.get().drop(weapon);
         } else {
-            throw new UnauthorizedGrabException("Player is trying to put a weapon into a nonexisting block");
+            throw new UnauthorizedExchangeException("Player is trying to put a weapon into a nonexisting block");
         }
     }
 
@@ -328,7 +328,7 @@ public class Player implements Damageable, MatchModeChangedListener {
             this.pay(ammoCubes, powerups);
             weapon.setLoaded(true);
             weapons.add(weapon);
-        } else throw new UnauthorizedGrabException("Player already has " + constraints.getMaxWeaponsForPlayer() + " weapons and needs to drop one in order to buy one");
+        } else throw new UnauthorizedExchangeException("Player already has " + constraints.getMaxWeaponsForPlayer() + " weapons and needs to drop one in order to buy one");
     }
 
     /**
@@ -338,7 +338,7 @@ public class Player implements Damageable, MatchModeChangedListener {
     public void grabPowerup(PowerupTile powerup) {
         if (this.powerups.size() < constraints.getMaxPowerupsForPlayer()) {
             this.powerups.add(powerup);
-        } else throw new UnauthorizedGrabException("Player already had " + constraints.getMaxPowerupsForPlayer() +" powerups");
+        } else throw new UnauthorizedExchangeException("Player already had " + constraints.getMaxPowerupsForPlayer() +" powerups");
     }
 
     /**
@@ -518,7 +518,7 @@ public class Player implements Damageable, MatchModeChangedListener {
         this.playerDiedListeners.forEach(listener -> listener.onPlayerDied(e));
     }
 
-    PlayerConstraints getConstraints() {
+    public PlayerConstraints getConstraints() {
         return constraints;
     }
 
