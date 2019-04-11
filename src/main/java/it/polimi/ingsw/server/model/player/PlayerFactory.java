@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.server.model.match.Match;
-import it.polimi.ingsw.server.model.rewards.*;
 
 import java.io.File;
 import java.io.FileReader;

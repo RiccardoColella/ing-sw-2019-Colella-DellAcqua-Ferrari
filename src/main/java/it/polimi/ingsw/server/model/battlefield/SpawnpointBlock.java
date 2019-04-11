@@ -55,7 +55,7 @@ public class SpawnpointBlock extends Block {
     public void grabWeapon(Weapon weapon) {
         if (this.getWeapons().contains(weapon)){
             this.weapons.remove(weapon);
-        } else throw new IllegalArgumentException();
+        } else throw new IllegalArgumentException("Grabbing was not possible, the weapon is not in this spawnpoint");
     }
 
     /**
@@ -74,6 +74,6 @@ public class SpawnpointBlock extends Block {
     public void drop(Weapon w) {
         if (this.getWeapons().size() < maxWeapons){
             this.weapons.add(w);
-        } else throw new IllegalStateException();
+        } else throw new IllegalStateException("Dropping was not possible, the spawnpoint is full");
     }
 }

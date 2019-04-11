@@ -1,12 +1,20 @@
 package it.polimi.ingsw.server.model.currency;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import it.polimi.ingsw.server.model.collections.Deck;
+import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
 
 public final class BonusTileFactory {
 
+    private static final String BONUS_DECK_JSON_FILENAME = "./resources/bonusDeck.json";
+    private static Map<BonusTile, Integer> tileQuantityMap;
     /**
      * Empty private constructor
      */
@@ -22,26 +30,52 @@ public final class BonusTileFactory {
         return new BonusTile(AmmoCubeFactory.create(firstColor), AmmoCubeFactory.create(secondColor), AmmoCubeFactory.create(thirdColor));
     }
 
-    public static Deck<BonusTile> createDeck() {
-        List<BonusTile> bonusTiles = new LinkedList<>();
-        // 36 bonus card, 18 with 3 ammoCubes, 18 2 ammoCubes + powerup
-        // 2 ammoCubes + powerup: 2 with 2 ammoCubes of the same color for each color (= 6 cards), 4 for every combination (= 12 cards) RY RB BY
-        // 3 ammoCubes: 3 for each combo of 2 ammoCubes of the same color + 1 different color (YBB, YRR, BYY, BRR, RYY, RBB) (= 18 cards)
-        for (CurrencyColor mainColor : CurrencyColor.values()) {
-            for (CurrencyColor secondColor : CurrencyColor.values()) {
-                if (mainColor != secondColor) {
-                    for (int i = 0; i < 2; i++) {
-                        bonusTiles.add(BonusTileFactory.create(mainColor, mainColor, secondColor));
-                        bonusTiles.add(BonusTileFactory.create(mainColor, secondColor));
-                    }
-                    bonusTiles.add(BonusTileFactory.create(mainColor, mainColor, secondColor));
-                }
-            }
-            for (int i = 0; i < 2; i++) {
-                bonusTiles.add(BonusTileFactory.create(mainColor, mainColor));
-            }
+    /**
+     * This method creates the single tiles, mapping them with their amount, reading from the configuration file
+     */
+    private static void readTiles() {
+        tileQuantityMap = new HashMap<>();
+        JsonElement jsonElement;
+        try {
+            jsonElement = new JsonParser().parse(new FileReader(new File(BONUS_DECK_JSON_FILENAME)));
+        } catch (IOException e) {
+            throw new MissingConfigurationFileException("Unable to read Bonus Deck configuration file");
         }
+        JsonArray jsonTileArray = jsonElement.getAsJsonArray();
+        jsonTileArray.forEach(
+                tile -> {
+                    if (tile.getAsJsonObject().get("thirdAmmo") != null) {
+                        tileQuantityMap.put(
+                                BonusTileFactory.create(
+                                        CurrencyColor.findByString(tile.getAsJsonObject().get("firstAmmo").getAsString()),
+                                        CurrencyColor.findByString(tile.getAsJsonObject().get("secondAmmo").getAsString()),
+                                        CurrencyColor.findByString(tile.getAsJsonObject().get("thirdAmmo").getAsString())
+                                ),
+                                tile.getAsJsonObject().get("quantity").getAsInt()
+                        );
+                    } else {
+                        tileQuantityMap.put(
+                                BonusTileFactory.create(
+                                        CurrencyColor.findByString(tile.getAsJsonObject().get("firstAmmo").getAsString()),
+                                        CurrencyColor.findByString(tile.getAsJsonObject().get("secondAmmo").getAsString())
+                                ),
+                                tile.getAsJsonObject().get("quantity").getAsInt()
+                        );
+                    }
+                }
 
+        );
+    }
+    public static Deck<BonusTile> createDeck() {
+        if (tileQuantityMap == null) {
+            readTiles();
+        }
+        List<BonusTile> bonusTiles = new LinkedList<>();
+        tileQuantityMap.forEach((tile, quantity) -> {
+            for (int i = 0; i < quantity; i++) {
+                bonusTiles.add(new BonusTile(tile));
+            }
+        });
         return new Deck<>(bonusTiles, true);
     }
 }

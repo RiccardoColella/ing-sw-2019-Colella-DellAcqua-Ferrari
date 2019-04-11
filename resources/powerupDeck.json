@@ -1,0 +1,51 @@
+[
+  {
+    "name": "Newton",
+    "color": "YELLOW",
+    "quantity": 2
+  }, {
+  "name": "Newton",
+  "color": "RED",
+  "quantity": 2
+}, {
+  "name": "Newton",
+  "color": "BLUE",
+  "quantity": 2
+},{
+  "name": "Tagback Grenade",
+  "color": "YELLOW",
+  "quantity": 2
+}, {
+  "name": "Tagback Grenade",
+  "color": "RED",
+  "quantity": 2
+}, {
+  "name": "Tagback Grenade",
+  "color": "BLUE",
+  "quantity": 2
+},{
+  "name": "Teleporter",
+  "color": "YELLOW",
+  "quantity": 2
+}, {
+  "name": "Teleporter",
+  "color": "RED",
+  "quantity": 2
+}, {
+  "name": "Teleporter",
+  "color": "BLUE",
+  "quantity": 2
+},{
+  "name": "Targeting Scope",
+  "color": "YELLOW",
+  "quantity": 2
+}, {
+  "name": "Targeting Scope",
+  "color": "RED",
+  "quantity": 2
+}, {
+  "name": "Targeting Scope",
+  "color": "BLUE",
+  "quantity": 2
+}
+]

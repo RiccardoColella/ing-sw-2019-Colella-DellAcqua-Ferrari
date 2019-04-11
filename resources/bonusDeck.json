@@ -1,0 +1,55 @@
+[{
+  "firstAmmo": "YELLOW",
+  "secondAmmo": "YELLOW",
+  "quantity": 2
+}, {
+  "firstAmmo": "RED",
+  "secondAmmo": "RED",
+  "quantity": 2
+}, {
+  "firstAmmo": "BLUE",
+  "secondAmmo": "BLUE",
+  "quantity": 2
+}, {
+  "firstAmmo": "YELLOW",
+  "secondAmmo": "RED",
+  "quantity": 4
+}, {
+  "firstAmmo": "YELLOW",
+  "secondAmmo": "BLUE",
+  "quantity": 4
+}, {
+  "firstAmmo": "RED",
+  "secondAmmo": "BLUE",
+  "quantity": 4
+}, {
+  "firstAmmo": "YELLOW",
+  "secondAmmo": "YELLOW",
+  "thirdAmmo": "RED",
+  "quantity": 3
+}, {
+  "firstAmmo": "RED",
+  "secondAmmo": "RED",
+  "thirdAmmo": "BLUE",
+  "quantity": 3
+}, {
+  "firstAmmo": "BLUE",
+  "secondAmmo": "BLUE",
+  "thirdAmmo": "RED",
+  "quantity": 3
+}, {
+  "firstAmmo": "YELLOW",
+  "secondAmmo": "YELLOW",
+  "thirdAmmo": "BLUE",
+  "quantity": 3
+}, {
+  "firstAmmo": "RED",
+  "secondAmmo": "RED",
+  "thirdAmmo": "YELLOW",
+  "quantity": 3
+}, {
+  "firstAmmo": "BLUE",
+  "secondAmmo": "BLUE",
+  "thirdAmmo": "YELLOW",
+  "quantity": 3
+}]

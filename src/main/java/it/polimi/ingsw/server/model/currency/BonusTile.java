@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server.model.currency;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,9 +26,10 @@ public class BonusTile {
      */
     public BonusTile(AmmoCube ammoCube1, AmmoCube ammoCube2) {
         this.canPick = true;
-        this.ammoCubes = new ArrayList<>();
-        this.ammoCubes.add(ammoCube1);
-        this.ammoCubes.add(ammoCube2);
+        List<AmmoCube> cubes = new ArrayList<>();
+        cubes.add(ammoCube1);
+        cubes.add(ammoCube2);
+        this.ammoCubes = Collections.unmodifiableList(cubes);
     }
 
     /**
@@ -38,10 +40,20 @@ public class BonusTile {
      */
     public BonusTile(AmmoCube ammoCube1, AmmoCube ammoCube2, AmmoCube ammoCube3) {
         this.canPick = false;
-        this.ammoCubes = new ArrayList<>();
-        this.ammoCubes.add(ammoCube1);
-        this.ammoCubes.add(ammoCube2);
-        this.ammoCubes.add(ammoCube3);
+        List<AmmoCube> cubes = new ArrayList<>();
+        cubes.add(ammoCube1);
+        cubes.add(ammoCube2);
+        cubes.add(ammoCube3);
+        this.ammoCubes = Collections.unmodifiableList(cubes);
+    }
+
+    /**
+     * Copy constructor
+     * @param copy the BonusTile that will be copied
+     */
+    public BonusTile(BonusTile copy) {
+        this.canPick = copy.canPick;
+        this.ammoCubes = Collections.unmodifiableList(copy.ammoCubes);
     }
 
     /**

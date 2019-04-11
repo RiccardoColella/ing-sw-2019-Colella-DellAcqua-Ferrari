@@ -1,5 +1,11 @@
 package it.polimi.ingsw.server.model.player;
 
+import it.polimi.ingsw.server.model.events.PlayerDied;
+import it.polimi.ingsw.server.model.events.PlayerOverkilled;
+import it.polimi.ingsw.server.model.events.PlayerReborn;
+import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
+import it.polimi.ingsw.server.model.events.listeners.PlayerOverkilledListener;
+import it.polimi.ingsw.server.model.events.listeners.PlayerRebornListener;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.match.MatchFactory;
@@ -12,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -178,6 +185,7 @@ class PlayerTest {
      * This test covers the method grabWeapon in the following situations:
      * - grabbing a weapon with enough money
      * - trying to grab a weapon the player can't afford
+     * - trying to discard a weapon when the player can still buy more weapons
      * - grabbing a weapon while already owning the max, but selecting a weapon to discard
      * - trying to grab a weapon while already owning the max without discarding a weapon
      * - trying to grab a weapon while already owning the max and discarding a not-owned weapon
@@ -192,7 +200,7 @@ class PlayerTest {
         if (currentWeapon.isPresent() && player.getConstraints().getMaxWeaponsForPlayer() >= player.getWeapons().size() + 1) {
             player.grabAmmoCubes(currentWeapon.get().getAcquisitionCost());
             playerAmmoCubes += currentWeapon.get().getAcquisitionCost().size();
-            //BUYING AN AFFORDABLE WEAPON WHILE HAVING LESS THAN 3 WEAPONS
+            //BUYING AN AFFORDABLE WEAPON WHILE HAVING LESS THAN MAX WEAPONS
             player.grabWeapon(
                     currentWeapon.get(),
                     currentWeapon.get().getAcquisitionCost(),
@@ -219,6 +227,19 @@ class PlayerTest {
                     ), "Player bought a weapon without paying");
             assertFalse(player.getWeapons().contains(costlyWeapon), "Player got the weapon although he did not pay for it");
             assertEquals(playerAmmoCubes, player.getAmmoCubes().size(), "Player lost some ammo even if the purchase did not happen");
+
+            //trying to discard a weapon while having less than the maximum allowed
+            Weapon ownedWeapon = player.getWeapons().get(0);
+            assertThrows(IllegalArgumentException.class,
+                    () -> player.grabWeapon(
+                            costlyWeapon,
+                            costlyWeapon.getAcquisitionCost(),
+                            new LinkedList<>(),
+                            ownedWeapon
+                    ), "Player discarded a weapon when he did not have the maximum allowed");
+            assertFalse(player.getWeapons().contains(costlyWeapon), "Player got the weapon although he did not pay for it");
+            assertEquals(playerAmmoCubes, player.getAmmoCubes().size(), "Player lost some ammo even if the purchase did not happen");
+            assertTrue(player.getWeapons().contains(ownedWeapon), "Weapon should not have been discarded");
 
             //FILLING UP THE WALLET TO BUY MORE WEAPONS
             player.grabAmmoCubes(costlyWeapon.getAcquisitionCost());
@@ -270,7 +291,7 @@ class PlayerTest {
 
             //TRYING TO BUY A FOURTH WEAPON DISCARDING A WEAPON THAT DOES NOT BELONG TO THE PLAYER
             //the player can't cheat the system and pretend to discard a weapon that isn't his
-            assertThrows(UnauthorizedExchangeException.class, () -> player.grabWeapon(extraWeapon, new LinkedList<>(), new LinkedList<>(), extraWeapon), "Player grabbed a fourth weapon");
+            assertThrows(IllegalArgumentException.class, () -> player.grabWeapon(extraWeapon, new LinkedList<>(), new LinkedList<>(), extraWeapon), "Player grabbed a fourth weapon");
 
             //the player follows the rules and discards a weapon
             Weapon toDiscard = player.getWeapons().get(0);
@@ -629,6 +650,56 @@ class PlayerTest {
             match.endTurn();
             match.changeTurn();
         }
+
+    }
+
+    /**
+     * This test checks whether addPlayerDiedListener adds once and only once the same listener
+     */
+    @Test
+    void addPlayerDiedListener() {
+        PlayerDiedListener listener = event -> Logger.getLogger(event.getVictim() + " died!");
+        int expectedListeners = player.getPlayerDiedListeners().size();
+        player.addPlayerDiedListener(listener);
+        expectedListeners++;
+        //the first time, the listener is added
+        assertEquals(expectedListeners, player.getPlayerDiedListeners().size(), "Listener was not added");
+        player.addPlayerDiedListener(listener);
+        //the second time, the listener is ignored
+        assertEquals(expectedListeners, player.getPlayerDiedListeners().size(), "Listener was added twice");
+    }
+
+    /**
+     * This test checks whether addPlayerOverkilledListener adds once and only once the same listener
+     */
+    @Test
+    void addPlayerOverkilledListener() {
+        PlayerOverkilledListener listener = event -> Logger.getLogger(event.getVictim() + " was overkilled!");
+        int expectedListeners = player.getPlayerOverkilledListeners().size();
+        player.addPlayerOverkilledListener(listener);
+        expectedListeners++;
+        //the first time, the listener is added
+        assertEquals(expectedListeners, player.getPlayerOverkilledListeners().size(), "Listener was not added");
+        player.addPlayerOverkilledListener(listener);
+        //the second time, the listener is ignored
+        assertEquals(expectedListeners, player.getPlayerOverkilledListeners().size(), "Listener was added twice");
+
+    }
+
+    /**
+     * This test checks whether addPlayerRebornListener adds once and only once the same listener
+     */
+    @Test
+    void addPlayerRebornListener() {
+        PlayerRebornListener listener = event -> Logger.getLogger(event.getPhoenix() + " is alive again!");
+        int expectedListeners = player.getPlayerRebornListeners().size();
+        player.addPlayerRebornListener(listener);
+        expectedListeners++;
+        //the first time, the listener is added
+        assertEquals(expectedListeners, player.getPlayerRebornListeners().size(), "Listener was not added");
+        player.addPlayerRebornListener(listener);
+        //the second time, the listener is ignored
+        assertEquals(expectedListeners, player.getPlayerRebornListeners().size(), "Listener was added twice");
 
     }
 }

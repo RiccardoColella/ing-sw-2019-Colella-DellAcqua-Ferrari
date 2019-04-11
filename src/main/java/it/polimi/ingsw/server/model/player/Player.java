@@ -80,17 +80,41 @@ public class Player implements Damageable, MatchModeChangedListener {
      */
     private Weapon activeWeapon;
 
+    /**
+     * This property stores the listeners to the PlayerDied event
+     */
     private List<PlayerDiedListener> playerDiedListeners = new ArrayList<>();
+
+    /**
+     * This property stores the listeners to the PlayerOverkilled event
+     */
     private List<PlayerOverkilledListener> playerOverkilledListeners = new ArrayList<>();
+
+    /**
+     * This property stores the listeners to the PlayerReborn event
+     */
     private List<PlayerRebornListener> playerRebornListeners = new ArrayList<>();
 
+    /**
+     * This property stores the match the Player is participating to
+     */
     private final Match match;
 
+    /**
+     * This property stores the reward that will be given to who kills or damages the player
+     */
     private Reward currentReward = RewardFactory.create(RewardFactory.Type.STANDARD);
 
+    /**
+     * This property represents the life status of the player
+     */
     private boolean isAlive = true;
 
+    /**
+     * This property stores the constraints given to the player, such as how much damage can be received or how much AmmoCubes can be owned
+     */
     private final PlayerConstraints constraints;
+
     /**
      * This constructor creates a player from the basic info: the player will be empty and ready to start a new match
      * @param match the match this new player belongs to
@@ -114,9 +138,9 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     /**
-     * This method assigns damage tokens to a Damageable
-     *
-     * @param newTokens a list of DamageToken that should be given to the Damageable
+     * This method assigns damage tokens to a Player. It checks how much damage can still be added and notifies
+     * the listeners in case of death or overkill
+     * @param newTokens a list of DamageToken that should be given to the Player
      */
     @Override
     public void addDamageTokens(List<DamageToken> newTokens) {
@@ -133,10 +157,13 @@ public class Player implements Damageable, MatchModeChangedListener {
             this.getMarks().removeAll(extraDamage); // and they are removed from the mark list
         }
 
+        //checking whether the player can still receive some damage
         if (this.damageTokens.size() < constraints.getMaxDamage()) {
-            if (newTokens.size() + this.damageTokens.size() <= constraints.getMaxDamage()) { // any extra damage after overkill will not be counted
+            if (newTokens.size() + this.damageTokens.size() <= constraints.getMaxDamage()) {
+                //all new damage can be added
                 this.damageTokens.addAll(newTokens);
             } else {
+                //any extra damage after overkill will not be counted
                 int last = (constraints.getMaxDamage()) - this.damageTokens.size();
                 this.damageTokens.addAll(newTokens.subList(0, last));
             }
@@ -145,6 +172,7 @@ public class Player implements Damageable, MatchModeChangedListener {
                 isAlive = false;
                 notifyPlayerDied(shooter);
             }
+            //if the player received damage and his damage is equal to the max receivable, he has been overkilled
             if (this.damageTokens.size() == constraints.getMaxDamage()) {
                 notifyPlayerOverkilled(shooter);
             }
@@ -190,6 +218,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      * @param weapon a loaded weapon owned by the player
      */
     public void chooseWeapon(Weapon weapon) {
+        //the weapon will be set as active only if it is loaded and it belongs to the player
         if (this.weapons.contains(weapon) && weapon.isLoaded()) {
             this.activeWeapon = weapon;
         }
@@ -300,17 +329,26 @@ public class Player implements Damageable, MatchModeChangedListener {
      */
     public void grabWeapon(Weapon weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups, Weapon discardedWeapon) {
         if (this.weapons.size() == constraints.getMaxWeaponsForPlayer()) {
-            weapons.remove(discardedWeapon);
-        }
+            //the weapon should only be discarded if the player already has the maximum number available
+            if (!weapons.remove(discardedWeapon)) {
+                //if the player did not own the discarded weapon, an exception is thrown
+                throw new IllegalArgumentException("Discarded weapon does not belong to the player");
+            }
+        } else throw new IllegalArgumentException("Player should not discard a weapon if he only owns " + this.weapons.size() + " and the maximum is " + this.constraints.getMaxWeaponsForPlayer());
+
         try {
+            //now the weapon can be grabbed if the player has enough money to pay for it
             grabWeapon(weapon, ammoCubes, powerups);
         } catch (MissingOwnershipException ex) {
+            //if the player could not pay for the weapon, the discarded weapon is given back to him
             weapons.add(discardedWeapon);
             throw ex;
         }
-        discardedWeapon.setLoaded(false);
+
+        //the discarded weapon is put back to the spawnpoint
         Optional<Block> spawnpoint = this.match.getBoard().findPlayer(this);
         if (spawnpoint.isPresent()) {
+            discardedWeapon.setLoaded(false);
             spawnpoint.get().drop(weapon);
         } else {
             throw new UnauthorizedExchangeException("Player is trying to put a weapon into a nonexisting block");
@@ -325,6 +363,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      */
     public void grabWeapon(Weapon weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
         if (this.weapons.size() < constraints.getMaxWeaponsForPlayer()) {
+            //if the player can grab more weapons, he pays and gets the weapon
             this.pay(ammoCubes, powerups);
             weapon.setLoaded(true);
             weapons.add(weapon);
@@ -336,6 +375,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      * @param powerup the Powerup the player is grabbing
      */
     public void grabPowerup(PowerupTile powerup) {
+        //player is allowed to grab a powerup only if he has not reached the max available
         if (this.powerups.size() < constraints.getMaxPowerupsForPlayer()) {
             this.powerups.add(powerup);
         } else throw new UnauthorizedExchangeException("Player already had " + constraints.getMaxPowerupsForPlayer() +" powerups");
@@ -346,13 +386,14 @@ public class Player implements Damageable, MatchModeChangedListener {
      * @param ammoCubes a list containing the ammoCubes the player is grabbing
      */
     public void grabAmmoCubes(List<AmmoCube> ammoCubes) {
-            for (AmmoCube newAmmoCube : ammoCubes) {
-                if (this.ammoCubes.stream()
-                              .filter(a -> a.equalsTo(newAmmoCube))
-                              .count() < constraints.getMaxAmmoCubesOfAColor()) {
-                    this.ammoCubes.add(newAmmoCube);
-                }
+        //a player can always try to grab ammo cubes, but they will only be added if the max allowed has not been reached
+        for (AmmoCube newAmmoCube : ammoCubes) {
+            if (this.ammoCubes.stream()
+                          .filter(a -> a.equalsTo(newAmmoCube))
+                          .count() < constraints.getMaxAmmoCubesOfAColor()) {
+                this.ammoCubes.add(newAmmoCube);
             }
+        }
     }
 
     /**
@@ -362,17 +403,25 @@ public class Player implements Damageable, MatchModeChangedListener {
      * @param powerups the cost the player is paying with powerups
      */
     public void reload(Weapon weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
-        if (!weapon.isLoaded()) {
+        if (!weapon.isLoaded() && this.getWeapons().contains(weapon)) {
             pay(ammoCubes, powerups);
             weapon.setLoaded(true);
-        }
+        } else throw new IllegalArgumentException("Weapon could not be loaded");
     }
 
+    /**
+     * This method adds a skull to the player
+     */
     public void addSkull() {
         skulls++;
     }
 
+    /**
+     * This method adds marks to the player
+     * @param marks a list of DamageToken representing the marks to add
+     */
     public void addMarks(List<DamageToken> marks) {
+        //adding marks to the player if the attacker had not already given him the max allowed
         for (DamageToken mark : marks) {
             if (this.marks.stream()
                           .filter(t -> t.getAttacker() == mark.getAttacker())
@@ -382,22 +431,48 @@ public class Player implements Damageable, MatchModeChangedListener {
         }
     }
 
+    /**
+     * This method adds a mark to the player
+     * @param mark the DamageToken representing the mark
+     */
     public void addMark(DamageToken mark) {
         this.addMarks(new LinkedList<>(Collections.singletonList(mark)));
     }
 
+    /**
+     * This method adds a new listener of PlayerDied event to the list
+     * @param listener the PlayerDiedListener to add
+     */
     public void addPlayerDiedListener(PlayerDiedListener listener) {
-        playerDiedListeners.add(listener);
+        if (!this.playerDiedListeners.contains(listener)) {
+            playerDiedListeners.add(listener);
+        }
     }
 
+    /**
+     * This method adds a new listener of PlayerOverkilled event to the list
+     * @param listener the PlayerOverkilledListener to add
+     */
     public void addPlayerOverkilledListener(PlayerOverkilledListener listener) {
-        playerOverkilledListeners.add(listener);
+        if (!this.playerOverkilledListeners.contains(listener)) {
+            playerOverkilledListeners.add(listener);
+        }
     }
 
+    /**
+     * This method adds a new listener of PlayerReborn event to the list
+     * @param listener the PlayerRebornListener to add
+     */
     public void addPlayerRebornListener(PlayerRebornListener listener) {
-        playerRebornListeners.add(listener);
+        if (!this.playerRebornListeners.contains(listener)) {
+            playerRebornListeners.add(listener);
+        }
     }
 
+    /**
+     * This method is called when the match mode changes, so players check if they need to change their reward
+     * @param event the MatchModeChanged event
+     */
     @Override
     public void onMatchModeChanged(MatchModeChanged event) {
         switch (event.getMode()) {
@@ -411,29 +486,43 @@ public class Player implements Damageable, MatchModeChangedListener {
                 this.currentReward = RewardFactory.create(RewardFactory.Type.STANDARD);
                 break;
             default:
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Unrecognizable match mode");
         }
     }
 
+    /**
+     * This method handles payment given a list of ammo cubes and a list of powerups
+     * @param spentAmmoCubes the list of ammo cubes spent by the player
+     * @param spentPowerups the list of powerups spent by the player
+     */
     private void pay(List<AmmoCube> spentAmmoCubes, List<PowerupTile> spentPowerups) {
+        //saving the ammo cubes spent because if the player can't complete the payment correctly, the inital situation
+        //will be restored
         List<AmmoCube> alreadyPaidAmmoCubes = new LinkedList<>();
+
         for (AmmoCube spentAmmoCube : spentAmmoCubes) {
             Optional<AmmoCube> paidAmmo = this.ammoCubes.stream().filter(ownedAmmo -> ownedAmmo.equalsTo(spentAmmoCube)).findAny();
             if (paidAmmo.isPresent()) {
+                //if the player owns the ammo, it is removed from his wallet
                 this.ammoCubes.remove(paidAmmo.get());
                 alreadyPaidAmmoCubes.add(paidAmmo.get());
             } else {
+                //already paid ammo cubes are given back to the player and an exception is thrown
                 grabAmmoCubes(alreadyPaidAmmoCubes);
                 throw new MissingOwnershipException("Player can't afford this weapon, missing ammoCubes");
             }
         }
+
+        //as for ammo cubes, spent powerups are temporarily stored
         List<PowerupTile> alreadyPaidPowerups = new LinkedList<>();
         for (PowerupTile spentPowerup : spentPowerups) {
             Optional<PowerupTile> paidPowerup = this.powerups.stream().filter(ownedAmmo -> ownedAmmo.equalsTo(spentPowerup)).findAny();
             if (paidPowerup.isPresent()) {
+                //if the player owns the powerup, it is removed from his wallet
                 this.powerups.remove(paidPowerup.get());
                 alreadyPaidPowerups.add(paidPowerup.get());
             } else {
+                //all already paid ammo cubes and powerups are given back to the player and an exception is thrown
                 grabAmmoCubes(alreadyPaidAmmoCubes);
                 alreadyPaidPowerups.forEach(this::grabPowerup);
                 throw new MissingOwnershipException("Player can't afford this weapon, missing powerups");
@@ -441,7 +530,12 @@ public class Player implements Damageable, MatchModeChangedListener {
         }
     }
 
+    /**
+     * This method supports a generic payment
+     * @param coins the list of coins used for the payment
+     */
     public void pay(List<Coin> coins) {
+        //the private pay method is called, after dividing coins in ammo cubes and powerups
         this.pay(
                 coins.stream()
                         .filter(coin -> coin instanceof AmmoCube)
@@ -454,6 +548,10 @@ public class Player implements Damageable, MatchModeChangedListener {
                 );
     }
 
+    /**
+     * This method gets the current reward for damaging the player
+     * @return the current Reward
+     */
     public Reward getCurrentReward() {
         return this.currentReward;
     }
@@ -470,7 +568,7 @@ public class Player implements Damageable, MatchModeChangedListener {
     public ActionTile getAvailableMacroActions() {
 
         if (match.getMode() != FINAL_FRENZY) {
-
+            //if the mode is not final frenzy, the action tile is determined by the adrenaline triggers
             if (this.damageTokens.size() >= constraints.getSecondAdrenalineTrigger()) {
                 return ActionTileFactory.create(ActionTile.Type.ADRENALINE_2);
             } else if (this.damageTokens.size() >= constraints.getFirstAdrenalineTrigger()) {
@@ -479,6 +577,7 @@ public class Player implements Damageable, MatchModeChangedListener {
                 return ActionTileFactory.create(ActionTile.Type.STANDARD);
             }
         } else {
+            //if the mode is final frenzy, the action tile is determined by the player's turn
             if (match.getPlayers().get(0) == this || match.getPlayersWhoDidFinalFrenzyTurn().contains(match.getPlayers().get(0))) {
                 return ActionTileFactory.create(ActionTile.Type.FINAL_FRENZY_SINGLE_MODE);
             } else {
@@ -487,11 +586,17 @@ public class Player implements Damageable, MatchModeChangedListener {
         }
     }
 
-
+    /**
+     * This method gets the life status of the player
+     * @return true if player is currently alive, false if he is dead
+     */
     public boolean isAlive() {
         return isAlive;
     }
 
+    /**
+     * This method allows for a player to be brought back to life
+     */
     // Called by the Controller after it has determined (asking the human player) where it should spawn, based on a Powerup selection
     public void bringBackToLife() {
         isAlive = true;
@@ -502,24 +607,61 @@ public class Player implements Damageable, MatchModeChangedListener {
         notifyPlayerBroughtBackToLife();
     }
 
+    /**
+     * This method notifies all PlayerRebornListeners
+     */
     private void notifyPlayerBroughtBackToLife() {
         PlayerReborn e = new PlayerReborn(this);
         playerRebornListeners.forEach(l -> l.onPlayerReborn(e));
     }
 
-
+    /**
+     * This method notifies all PlayerOverkilledListeners
+     * @param killer the killer that overkilled this player
+     */
     private void notifyPlayerOverkilled(Player killer) {
         PlayerOverkilled e = new PlayerOverkilled(this, killer);
         playerOverkilledListeners.forEach(l -> l.onPlayerOverkilled(e));
     }
 
+    /**
+     * This method notifies all PlayerDiedListeners
+     * @param killer the killer that killed this player
+     */
     private void notifyPlayerDied(Player killer) {
         PlayerDied e = new PlayerDied(this, killer);
         this.playerDiedListeners.forEach(listener -> listener.onPlayerDied(e));
     }
 
+    /**
+     * This method gets the constraints given to the player
+     * @return a PlayerConstraints object
+     */
     public PlayerConstraints getConstraints() {
         return constraints;
     }
 
+    /**
+     * This method gets the listeners of PlayerDied event
+     * @return a list of PlayerDiedListener
+     */
+    public List<PlayerDiedListener> getPlayerDiedListeners() {
+        return this.playerDiedListeners;
+    }
+
+    /**
+     * This method gets the listeners of PlayerOverkilled event
+     * @return a list of PlayerOverkilledListener
+     */
+    public List<PlayerOverkilledListener> getPlayerOverkilledListeners() {
+        return this.playerOverkilledListeners;
+    }
+
+    /**
+     * This method gets the listeners of PlayerReborn event
+     * @return a list of PlayerRebornListener
+     */
+    public List<PlayerRebornListener> getPlayerRebornListeners() {
+        return this.playerRebornListeners;
+    }
 }
