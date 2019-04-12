@@ -7,6 +7,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BoardFactoryTest {
 
+    /**
+     * This test verifies that BoardFactory.create() returns a non-null Board for each existing preset value
+     */
     @Test
     void create() {
         for (BoardFactory.Preset preset : BoardFactory.Preset.values()) {

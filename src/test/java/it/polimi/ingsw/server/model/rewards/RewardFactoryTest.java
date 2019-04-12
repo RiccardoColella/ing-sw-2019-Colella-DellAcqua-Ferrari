@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RewardFactoryTest {
 
+    /**
+     * This test verifies that create() returns a valid non-null Reward for each enum value
+     */
     @Test
     void create() {
         for (RewardFactory.Type type : RewardFactory.Type.values()) {

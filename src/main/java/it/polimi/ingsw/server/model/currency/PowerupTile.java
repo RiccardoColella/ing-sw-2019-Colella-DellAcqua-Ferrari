@@ -91,12 +91,12 @@ public class PowerupTile implements Coin {
     /**
      * This method checks whether two coins have the same value
      *
-     * @param coin the Coin to compare
+     * @param that the Coin to compare
      * @return true if the two coins have the same value, false otherwise
      */
     @Override
-    public boolean hasSameValueAs(Coin coin) {
-        return false;
+    public boolean hasSameValueAs(Coin that) {
+        return this.color == that.getColor();
     }
 
     /**

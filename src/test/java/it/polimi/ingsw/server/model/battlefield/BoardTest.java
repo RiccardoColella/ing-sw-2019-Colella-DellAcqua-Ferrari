@@ -147,8 +147,6 @@ class BoardTest {
         assertTrue(block_1_1_2.isPresent());
         //Cleaning Set that will be reused as expected result from previously test
         asserted.clear();
-        //Checking the variable is ready to be reinitialised
-        assertTrue(asserted.isEmpty());
         //Building the expected result
         asserted.addAll(board1.getRoom(block_1_1_2.get()));
         nearRoom1 = board1.getBlockNeighbor(block_1_1_2.get(), Direction.NORTH);
@@ -420,10 +418,10 @@ class BoardTest {
         int j = 0;
         //Trying to teleport a single player on the board
         //Getting some Optional<block> containing blocks expected as result
-        Optional<Block> block_6_2_2 = board4.getBlock(2,2);
+        Optional<Block> block_4_2_2 = board4.getBlock(2,2);
         Optional<Block> block_4_0_0 = board4.getBlock(0,0);
         //Adding the player to the board
-        block_6_2_2.ifPresent(block -> block.addPlayer(players.get(i)));
+        block_4_2_2.ifPresent(block -> block.addPlayer(players.get(i)));
         //Executing teleportPlayer
         block_4_0_0.ifPresent(destinationBlock -> board4.teleportPlayer(players.get(i), destinationBlock));
         //Checking result
@@ -431,18 +429,18 @@ class BoardTest {
 
         //Trying to teleport a player not alone in the board
         //Adding another player to the board
-        block_6_2_2.ifPresent(block -> block.addPlayer(players.get(k)));
+        block_4_2_2.ifPresent(block -> block.addPlayer(players.get(k)));
         //Executing teleportPlayer
-        block_6_2_2.ifPresent(destinationBlock -> board4.teleportPlayer(players.get(i), destinationBlock));
+        block_4_2_2.ifPresent(destinationBlock -> board4.teleportPlayer(players.get(i), destinationBlock));
         //Checking result
-        assertEquals(block_6_2_2, board4.findPlayer(players.get(i)));
-        assertEquals(block_6_2_2, board4.findPlayer(players.get(k)));
+        assertEquals(block_4_2_2, board4.findPlayer(players.get(i)));
+        assertEquals(block_4_2_2, board4.findPlayer(players.get(k)));
 
         //testing illegal state (player non present on board)
         assertTrue(block_4_0_0.isPresent());
         assertThrows(NullPointerException.class, () -> board4.teleportPlayer(players.get(j), block_4_0_0.get()));
         //Cleaning scenario
-        block_6_2_2.ifPresent(block -> block.removePlayer(players.get(i)));
-        block_6_2_2.ifPresent(block -> block.removePlayer(players.get(k)));
+        block_4_2_2.ifPresent(block -> block.removePlayer(players.get(i)));
+        block_4_2_2.ifPresent(block -> block.removePlayer(players.get(k)));
     }
 }

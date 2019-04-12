@@ -19,6 +19,9 @@ class WeaponFactoryTest {
     void tearDown() {
     }
 
+    /**
+     * This test verifies that all weapon names correspond to an actual weapon
+     */
     @Test
     void create() {
         for (Weapon.Name name : Weapon.Name.values()) {
@@ -26,6 +29,9 @@ class WeaponFactoryTest {
         }
     }
 
+    /**
+     * This test verifies that a deck is created with all the 21 expected weapons
+     */
     @Test
     void createDeck() {
         Deck<Weapon> deck = WeaponFactory.createDeck();

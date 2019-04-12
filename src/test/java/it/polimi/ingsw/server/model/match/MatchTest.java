@@ -48,7 +48,9 @@ class MatchTest {
         }
     }
 
-
+    /**
+     * This test verifies that the method endTurn() returns all the dead players (and only them)
+     */
     @Test
     void endTurn() {
 
@@ -139,7 +141,7 @@ class MatchTest {
 
 
     /**
-     * Testing the scoring in a simulated match. Rewards changes during the match due to players' death
+     * Testing the scoring in a simulated match. Rewards change during the match due to players' death
      */
     @Test
     void scoring() {
@@ -191,7 +193,7 @@ class MatchTest {
         // CHANGE TURN
         match.endTurn();
         // BEST SHOOTERS: 1 - 0 - 2 - 3
-        int[] points = new int[5];
+        int[] points = new int[5]; //used to store the points earned by each player
         assertEquals(
                 RewardFactory.create(RewardFactory.Type.STANDARD).getRewardFor(0, false),
                 match.getPlayers().get(1).getPoints(),
@@ -291,8 +293,8 @@ class MatchTest {
             match.changeTurn();
         }
 
-        //PLAYER 0 : 1 KILL 3^
-        //PLAYER 1 : 1 KILL 4^
+        //PLAYER 0 : 1 KILL 3^ (because he gave the killshot before player 1)
+        //PLAYER 1 : 1 KILL 4^ (because he gave the killshot before player 2)
         //PLAYER 2 : 0
         //PLAYER 3 : 1 OVERKILL 2^
         //PLAYER 4 : 1 KILL 1 OVERKILL 1^
