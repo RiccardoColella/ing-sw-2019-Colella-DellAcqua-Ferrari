@@ -20,8 +20,31 @@ public class TurretBlock extends Block {
         super(row, column, borderNorth, borderEast, borderSouth, borderWest);
     }
 
+    /**
+     * Turret blocks do not support the dropping action, so an exception must be thrown
+     *
+     * @param weapon the weapon to drop
+     */
     @Override
-    public void drop(Weapon w) {
+    public void drop(Weapon weapon) {
         throw new UnauthorizedExchangeException("Player is trying to drop a weapon in a Turret");
     }
+
+    /**
+     * Clone the current block creating a new one constructed with the same initial parameters
+     *
+     * @return the clone
+     */
+    @Override
+    public Block clone() {
+        return new TurretBlock(
+                this.getRow(),
+                this.getColumn(),
+                this.getBoarderType(Direction.NORTH),
+                this.getBoarderType(Direction.EAST),
+                this.getBoarderType(Direction.SOUTH),
+                this.getBoarderType(Direction.WEST)
+        );
+    }
+
 }

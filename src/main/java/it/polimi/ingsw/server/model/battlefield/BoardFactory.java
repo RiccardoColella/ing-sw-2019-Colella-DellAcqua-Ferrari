@@ -13,7 +13,7 @@ import java.util.Map;
 public class BoardFactory {
 
     private static final String BOARD_JSON_FILENAME = "./resources/boards.json";
-    private static Map<Preset, Block[][]> boardMap;
+    private static Map<Preset, Board> boardMap;
 
 
     /**
@@ -36,38 +36,41 @@ public class BoardFactory {
     public static Board create(Preset preset) {
 
         if (boardMap == null) {
-            boardMap = new EnumMap<>(Preset.class);
-            JsonElement jsonElement;
-            try {
-                jsonElement = new JsonParser().parse(new FileReader(new File(BOARD_JSON_FILENAME)));
-            } catch (IOException e) {
-                throw new MissingConfigurationFileException("Unable to read Board configuration file");
-            }
+            initialize();
+        }
 
+        return boardMap.get(preset).clone();
+    }
 
-
-            for (int i = 0; i < Preset.values().length; i++) {
-
-                JsonArray fieldJson = jsonElement.getAsJsonArray().get(i).getAsJsonArray();
-                List<Block[]> field = new LinkedList<>();
-
-                for (int r = 0; r < fieldJson.size(); r++) {
-
-                    List<Block> blockRow = new LinkedList<>();
-                    JsonArray row = fieldJson.get(r).getAsJsonArray();
-
-                    for (int c = 0; c < row.size(); c++) {
-                        blockRow.add(blockFromJsonElement(r, c, row.get(c)));
-                    }
-                    field.add(blockRow.toArray(new Block[]{}));
-                }
-
-                boardMap.put(Preset.values()[i], field.toArray(new Block[][]{}));
-            }
+    private static void initialize() {
+        boardMap = new EnumMap<>(Preset.class);
+        JsonElement jsonElement;
+        try {
+            jsonElement = new JsonParser().parse(new FileReader(new File(BOARD_JSON_FILENAME)));
+        } catch (IOException e) {
+            throw new MissingConfigurationFileException("Unable to read Board configuration file");
         }
 
 
-        return new Board(boardMap.get(preset));
+
+        for (int i = 0; i < Preset.values().length; i++) {
+
+            JsonArray fieldJson = jsonElement.getAsJsonArray().get(i).getAsJsonArray();
+            List<Block[]> field = new LinkedList<>();
+
+            for (int r = 0; r < fieldJson.size(); r++) {
+
+                List<Block> blockRow = new LinkedList<>();
+                JsonArray row = fieldJson.get(r).getAsJsonArray();
+
+                for (int c = 0; c < row.size(); c++) {
+                    blockRow.add(blockFromJsonElement(r, c, row.get(c)));
+                }
+                field.add(blockRow.toArray(new Block[]{}));
+            }
+
+            boardMap.put(Preset.values()[i], new Board(field.toArray(new Block[][]{})));
+        }
     }
 
     private static Block blockFromJsonElement(int r, int c, JsonElement json) {

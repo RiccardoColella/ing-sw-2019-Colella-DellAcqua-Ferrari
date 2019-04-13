@@ -126,6 +126,17 @@ public abstract class Block {
         return this.players.contains(player);
     }
 
-    public abstract void drop(Weapon w);
+    /**
+     * On spawnpoints this method drops a Weapon
+     *
+     * @param weapon the weapon to drop
+     */
+    public abstract void drop(Weapon weapon);
 
+    /**
+     * Creates a copy of the current block
+     *
+     * @return the clone
+     */
+    public abstract Block clone();
 }

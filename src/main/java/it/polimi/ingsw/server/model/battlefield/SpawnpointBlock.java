@@ -68,12 +68,31 @@ public class SpawnpointBlock extends Block {
 
     /**
      * This method allows for a weapon to be put back in the spawnpoint
-     * @param w the weapon to drop
+     * @param weapon the weapon to drop
      */
     @Override
-    public void drop(Weapon w) {
+    public void drop(Weapon weapon) {
         if (this.getWeapons().size() < maxWeapons){
-            this.weapons.add(w);
+            this.weapons.add(weapon);
         } else throw new IllegalStateException("Dropping was not possible, the spawnpoint is full");
+    }
+
+    /**
+     * Clone the current block creating a new one constructed with the same initial parameters
+     *
+     * @return the clone
+     */
+    @Override
+    public Block clone() {
+        return new SpawnpointBlock(
+                this.getRow(),
+                this.getColumn(),
+                this.getBoarderType(Direction.NORTH),
+                this.getBoarderType(Direction.EAST),
+                this.getBoarderType(Direction.SOUTH),
+                this.getBoarderType(Direction.WEST),
+                this.color,
+                this.maxWeapons
+        );
     }
 }
