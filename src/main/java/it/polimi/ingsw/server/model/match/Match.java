@@ -87,6 +87,11 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
     private final Deck<PowerupTile> powerupDeck;
 
     /**
+     * This property represents the Match status, whether it's over or not
+     */
+    private boolean ended = false;
+
+    /**
      * This property stores the mode of the match, which can change if final frenzy is triggered
      */
     private Mode mode;
@@ -118,9 +123,6 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
         this.matchModeChangedListeners = new ArrayList<>();
         this.playersWhoDidFinalFrenzyTurn = new LinkedList<>();
     }
-
-
-
 
 
     /**
@@ -233,11 +235,11 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
             this.mode = Mode.FINAL_FRENZY;
             notifyMatchModeChanged();
         } else if (this.skulls == 0 && this.mode == Mode.SUDDEN_DEATH) {
-            notifyMatchEnded();
+            close();
         } else if (this.mode == Mode.FINAL_FRENZY) {
             playersWhoDidFinalFrenzyTurn.add(activePlayer);
             if (playersWhoDidFinalFrenzyTurn.size() == players.size()) {
-                notifyMatchEnded();
+                close();
             }
         }
 
@@ -291,9 +293,10 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
     }
 
     /**
-     * This method triggers the MatchEnded event and sends it to its listeners
+     * This method closes the match when it ends naturally following the rules
      */
-    private void notifyMatchEnded() {
+    private void close() {
+        ended = true;
         //Scoring player boards that still have damage
         List<Player> playersWithDamage = players.stream().filter(p -> !p.getDamageTokens().isEmpty() && p.isAlive()).collect(Collectors.toList());
         playersWithDamage.forEach(this::scoreVictimPoints);
@@ -313,7 +316,20 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
             }
             int tieBreaker = killshotScore != 0 ? killshotScore : firstComparator;
             return absoluteScore != 0 ? absoluteScore : tieBreaker;
+            // TODO: instead of returning an ordered list in which the information about ties gets lost,
+            // return a List<List<Player>> or a Map<Integer, List<Player>> or a Map<Player, Integer> containing for each player
+            // his rank
         }).collect(Collectors.toList());
+
+        notifyMatchEnded(rankings);
+    }
+
+    /**
+     * This method triggers the MatchEnded event and sends it to its listeners
+     *
+     * @param rankings the ordered list of players, sorted by their score descending
+     */
+    private void notifyMatchEnded(List<Player> rankings) {
         MatchEnded e = new MatchEnded(this, rankings);
         this.matchEndedListeners.forEach(l -> l.onMatchEnded(e));
     }
@@ -386,5 +402,9 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
 
     public List<Player> getPlayersWhoDidFinalFrenzyTurn() {
         return playersWhoDidFinalFrenzyTurn;
+    }
+
+    public boolean isEnded() {
+        return ended;
     }
 }

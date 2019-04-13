@@ -5,11 +5,11 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Unit test for ClientMain.
+ * Unit test for Main.
  */
-public class ClientMainTest
+public class SocketMainTest
 {
-    //TODO: add tests once the responsibilities of the class ClientMain have been defined
+    //TODO: add tests once the responsibilities of the class Main have been defined
     /**
      * Rigorous Test :-)
      */

@@ -1,4 +1,10 @@
 it.polimi.ingsw
+it.polimi.ingsw.client
+it.polimi.ingsw.server
+it.polimi.ingsw.server.bootstrap
+it.polimi.ingsw.server.controller
+it.polimi.ingsw.server.controller.events
+it.polimi.ingsw.server.controller.events.listeners
 it.polimi.ingsw.server.controller.powerupeffects
 it.polimi.ingsw.server.controller.weapons
 it.polimi.ingsw.server.controller.weapons.attackeffects
@@ -12,3 +18,5 @@ it.polimi.ingsw.server.model.match
 it.polimi.ingsw.server.model.player
 it.polimi.ingsw.server.model.rewards
 it.polimi.ingsw.server.model.weapons
+it.polimi.ingsw.server.view
+it.polimi.ingsw.server.view.remote

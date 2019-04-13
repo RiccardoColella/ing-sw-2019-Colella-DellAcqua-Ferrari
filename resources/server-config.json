@@ -1,0 +1,7 @@
+{
+  "maxParallelMatches": 10,
+  "matchStartTimeout": 60000,
+  "clientAcceptTimeout": 1000,
+  "minClients": 3,
+  "maxClients": 5
+}
