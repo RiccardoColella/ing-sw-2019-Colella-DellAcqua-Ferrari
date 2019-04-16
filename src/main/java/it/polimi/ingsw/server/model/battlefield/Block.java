@@ -37,7 +37,7 @@ public abstract class Block {
     /**
      * List of the player on the block
      */
-    private final List<Player> players;
+    private final Set<Player> players;
 
     /**
      * Block's row in the field
@@ -72,7 +72,7 @@ public abstract class Block {
 
         this.borders = Collections.unmodifiableMap(borderMap);
 
-        this.players = new LinkedList<>();
+        this.players = new HashSet<>();
     }
 
     /**
@@ -88,7 +88,7 @@ public abstract class Block {
      * Gets players on the Block
      * @return players on the Block
      */
-    public List<Player> getPlayers() {
+    public Set<Player> getPlayers() {
         return this.players;
     }
 

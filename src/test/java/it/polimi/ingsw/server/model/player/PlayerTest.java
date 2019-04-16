@@ -1,8 +1,5 @@
 package it.polimi.ingsw.server.model.player;
 
-import it.polimi.ingsw.server.model.events.PlayerDied;
-import it.polimi.ingsw.server.model.events.PlayerOverkilled;
-import it.polimi.ingsw.server.model.events.PlayerReborn;
 import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
 import it.polimi.ingsw.server.model.events.listeners.PlayerOverkilledListener;
 import it.polimi.ingsw.server.model.events.listeners.PlayerRebornListener;

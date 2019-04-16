@@ -1,15 +1,18 @@
 package it.polimi.ingsw.server.controller.weapons;
 
+import it.polimi.ingsw.server.model.battlefield.Block;
+import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.player.Damageable;
-import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
+import it.polimi.ingsw.server.model.player.Player;
+
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * This class represents the most basic name of weapon of the game, which only has a basic attack
  */
-public class Weapon {
+public class BasicWeapon {
 
     /**
      * This enum cathegorizes the 21 different weapons
@@ -58,7 +61,7 @@ public class Weapon {
     /**
      * This property represents the Basic Attack, which is something all weapons have
      */
-    private final Attack basicAttack;
+    protected final Attack basicAttack;
 
     /**
      * This property stores the Attack that is currently being executed
@@ -83,12 +86,15 @@ public class Weapon {
     /**
      * This property represents the cost in coin that shall be paid to reload the weapon
      */
-    private final List<Coin> reloadCost;
+    private final List<AmmoCube> reloadCost;
 
     /**
      * This property represents the cost in coin that shall be paid to purchase the weapon
      */
-    private final List<Coin> acquisitionCost;
+    private final List<AmmoCube> acquisitionCost;
+
+    protected Block startingBlock;
+
 
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
@@ -98,7 +104,7 @@ public class Weapon {
      * @param acquisitionCost a list of coin equal to the acquisition cost of the weapon
      * @param reloadCost a list of coin equal to the reload cost of the weapon
      */
-    public Weapon(Name name, Attack basicAttack, List<Coin> acquisitionCost, List<Coin> reloadCost) {
+    public BasicWeapon(Name name, Attack basicAttack, List<AmmoCube> acquisitionCost, List<AmmoCube> reloadCost) {
         this.basicAttack = basicAttack;
         this.name = name;
         this.isLoaded = false;
@@ -106,6 +112,7 @@ public class Weapon {
         this.damagedTargets = new LinkedList<>();
         this.reloadCost = reloadCost;
         this.acquisitionCost = acquisitionCost;
+        startingBlock = null;
     }
 
     /**
@@ -129,51 +136,12 @@ public class Weapon {
     }
 
     /**
-     * This method gets the reload cost of the weapon
-     * @return coin list equal to the reload cost
-     */
-    public List<Coin> getReloadCost() {
-        return this.reloadCost;
-    }
-
-    /**
-     * This method gets the acquisition cost of the weapon
-     * @return coin list equal to the acquisition cost
-     */
-    public List<Coin> getAcquisitionCost() {
-        return this.acquisitionCost;
-    }
-
-    /**
-     * This method gets the basic attack of the weapon
-     * @return the basic attack of the weapon
-     */
-    public Attack getBasicAttack() {
-        return this.basicAttack;
-    }
-
-    /**
      * This method gets the name of the weapon
      * @return the name of the weapon as a String
      */
-    public Name getName() {
-        return this.name;
-    }
 
-    /**
-     * This method tells whether the weapon is loaded
-     * @return true if the weapon is loaded, otherwise false
-     */
-    public boolean isLoaded() {
-        return this.isLoaded;
-    }
-
-    /**
-     * This method updates the loaded status of the weapon
-     * @param isLoaded boolean which sould be true if the weapon is loaded, otherwise false
-     */
-    public void setLoaded(boolean isLoaded) {
-        this.isLoaded = isLoaded;
+    public String getName() {
+        return this.name.toString();
     }
 
     /**
@@ -184,5 +152,33 @@ public class Weapon {
      */
     protected boolean hasAttack(Attack attack) {
         return basicAttack.equals(attack);
+    }
+
+    public void askForTargets() {
+        //TODO: ask view for targets and set them as the current target
+    }
+
+    public void shoot(Communicator communicator, Player activePlayer) {
+        //TODO: implement shooting handling
+        //this method should be overridden by children
+        activeAttack = basicAttack;
+        handlePayment(communicator, activeAttack, activePlayer);
+        while (basicAttack.hasNext()) {
+            initStartingBlock(communicator, activePlayer);
+            initAttack();
+            basicAttack.next().execute(communicator, startingBlock, activePlayer);
+        }
+    }
+
+    protected void handlePayment(Communicator communicator, Attack chosenAttack, Player activePlayer) {
+
+    }
+
+    protected void initStartingBlock(Communicator communicator, Player activePlayer) {
+        this.startingBlock = activePlayer.getMatch().getBoard().findPlayer(activePlayer).orElseThrow(() -> new IllegalStateException("Player is not in the board"));
+    }
+
+    protected void initAttack() {
+
     }
 }

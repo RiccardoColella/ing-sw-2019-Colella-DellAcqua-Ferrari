@@ -13,7 +13,4 @@ public class MatchEnded extends EventObject {
         super(source);
     }
 
-    public Controller getSource() {
-        return this.getSource();
-    }
 }

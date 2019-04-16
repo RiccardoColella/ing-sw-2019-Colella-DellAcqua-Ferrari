@@ -1,8 +1,6 @@
 package it.polimi.ingsw.server.model.weapons;
 
 import it.polimi.ingsw.server.model.collections.Deck;
-import it.polimi.ingsw.server.model.weapons.Weapon;
-import it.polimi.ingsw.server.model.weapons.WeaponFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

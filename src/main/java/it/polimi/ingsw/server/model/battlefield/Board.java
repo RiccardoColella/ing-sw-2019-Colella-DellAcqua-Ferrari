@@ -253,4 +253,16 @@ public class Board {
 
         return new Board(fieldCopy);
     }
+
+    public Set<Block> getBlocks() {
+        Set<Block> blocks = new HashSet<>();
+        for (Block[] row : field) {
+            for (Block block : row) {
+                if (block != null) {
+                    blocks.add(block);
+                }
+            }
+        }
+        return blocks;
+    }
 }

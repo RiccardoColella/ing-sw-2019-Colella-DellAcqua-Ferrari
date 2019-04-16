@@ -15,18 +15,16 @@ import it.polimi.ingsw.server.model.events.listeners.PlayerOverkilledListener;
 import it.polimi.ingsw.server.model.currency.BonusTileFactory;
 import it.polimi.ingsw.server.model.currency.PowerupTileFactory;
 import it.polimi.ingsw.server.model.player.DamageToken;
-import it.polimi.ingsw.server.model.player.PlayerFactory;
 import it.polimi.ingsw.server.model.rewards.RewardFactory;
+import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.model.weapons.WeaponFactory;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
 import it.polimi.ingsw.server.model.rewards.Reward;
-import it.polimi.ingsw.server.model.weapons.Weapon;
 
 import java.util.*;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**

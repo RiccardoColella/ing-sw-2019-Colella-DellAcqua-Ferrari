@@ -664,4 +664,8 @@ public class Player implements Damageable, MatchModeChangedListener {
     public List<PlayerRebornListener> getPlayerRebornListeners() {
         return this.playerRebornListeners;
     }
+
+    public Match getMatch() {
+        return match;
+    }
 }

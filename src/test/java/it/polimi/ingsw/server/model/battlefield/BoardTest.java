@@ -337,16 +337,16 @@ class BoardTest {
         int x = 3;
         board1.movePlayer(players.get(x), Direction.NORTH);
         //Building expected result
-        List<Player> assertion = new LinkedList<>();
+        Set<Player> assertion = new HashSet<>();
         for (int i = 0; i < players.size(); i++){
             if (i != x) {
                 assertion.add(players.get(i));
             }
         }
         //Checking movePlayer
-        block_1_2_3.ifPresent(block -> assertEquals(assertion, block.getPlayers()));
+        block_1_2_3.ifPresent(block -> assertTrue(block.getPlayers().containsAll(assertion)));
         block_1_1_3.ifPresent(block -> assertEquals(1, block.getPlayers().size()));
-        block_1_1_3.ifPresent(block -> assertEquals(players.get(x), block.getPlayers().get(0)));
+        block_1_1_3.ifPresent(block -> assertTrue(block.getPlayers().contains(players.get(x))));
         //Removing players from the board
         board1.movePlayer(players.get(x), Direction.SOUTH);
         block_1_2_3.ifPresent(block -> assertEquals(players.size(), block.getPlayers().size()));
