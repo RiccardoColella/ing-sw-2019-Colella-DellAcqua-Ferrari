@@ -668,4 +668,8 @@ public class Player implements Damageable, MatchModeChangedListener {
     public Match getMatch() {
         return match;
     }
+
+    public Block getBlock() {
+        return match.getBoard().findPlayer(this).orElseThrow(() -> new IllegalStateException("Player is not on the board"));
+    }
 }

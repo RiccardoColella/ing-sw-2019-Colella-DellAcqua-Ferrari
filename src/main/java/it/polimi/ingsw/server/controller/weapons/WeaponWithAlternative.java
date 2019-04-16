@@ -4,10 +4,7 @@ import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.player.Player;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -68,7 +65,7 @@ public class WeaponWithAlternative extends BasicWeapon {
             selectedAttack = basicAttack;
         }
         handlePayment(communicator, selectedAttack, activePlayer);
-        selectedAttack.execute(communicator, startingBlock, activePlayer);
+        selectedAttack.execute(communicator, activePlayer, HashSet::new, HashMap::new);
     }
 
 }

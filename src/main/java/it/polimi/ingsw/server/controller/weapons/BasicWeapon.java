@@ -6,6 +6,8 @@ import it.polimi.ingsw.server.model.player.Damageable;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.player.Player;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -163,19 +165,15 @@ public class BasicWeapon {
         //this method should be overridden by children
         activeAttack = basicAttack;
         handlePayment(communicator, activeAttack, activePlayer);
-        while (basicAttack.hasNext()) {
-            initStartingBlock(communicator, activePlayer);
-            initAttack();
-            basicAttack.next().execute(communicator, startingBlock, activePlayer);
-        }
+        basicAttack.execute(communicator, activePlayer, HashSet::new, HashMap::new);
     }
 
     protected void handlePayment(Communicator communicator, Attack chosenAttack, Player activePlayer) {
 
     }
 
-    protected void initStartingBlock(Communicator communicator, Player activePlayer) {
-        this.startingBlock = activePlayer.getMatch().getBoard().findPlayer(activePlayer).orElseThrow(() -> new IllegalStateException("Player is not in the board"));
+    protected Block determineStartingBlock(Communicator communicator, Player activePlayer) {
+        return activePlayer.getMatch().getBoard().findPlayer(activePlayer).orElseThrow(() -> new IllegalStateException("Player is not in the board"));
     }
 
     protected void initAttack() {

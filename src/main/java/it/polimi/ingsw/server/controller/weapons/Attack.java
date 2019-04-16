@@ -10,6 +10,7 @@ import it.polimi.ingsw.server.model.player.Damageable;
 import it.polimi.ingsw.server.model.player.Player;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -17,7 +18,7 @@ import java.util.stream.Stream;
 /**
  * This class schematizes an attack, which is the effect that a weapon has on one or more targets
  */
-public abstract class Attack implements Iterator {
+public abstract class Attack {
 
     /**
      * This enum differentiates the possible type of targets of an attack
@@ -46,18 +47,12 @@ public abstract class Attack implements Iterator {
 
     protected final String name;
     protected final ActionConfig[] actionConfigs;
-    protected Map<Player, BonusTargetCombination> bonusTargets;
-    protected Set<Player> availableTargets;
-    protected Board board;
-    protected int currentActionIndex;
+    protected final Board board;
 
     public Attack(String name, ActionConfig[] actionConfigs, Board board) {
         this.name = name;
         this.actionConfigs = actionConfigs;
-        this.bonusTargets = new HashMap<>();
-        this.availableTargets = new HashSet<>();
         this.board = board;
-        this.currentActionIndex = 0;
     }
 
     /**
@@ -84,54 +79,56 @@ public abstract class Attack implements Iterator {
      */
     public abstract List<Coin> getCost();
 
-    /**
-     * This method strikes the attack and returns the damageables this attack was dealt on
-     *
-     * @param attacker the player who is executing the attack
-     * @param targets a Map associating target types to a list of damageable needed to determine the effect
-     * @return the list of Damageable affected by this attack, the list will be empty if no one was affected
-     */
-    public abstract List<Damageable> execute(Player attacker, Map<TargetType, List<Damageable>> targets);
 
     public abstract TargetType getSupportedTargetTypes();
 
-    public void execute(Communicator communicator, Block startingPoint, Player activePlayer) {
-        Optional<Set<Player>> chosenTargets;
-        List<Set<Player>> targets = getPotentialTargets(startingPoint);
-        if (!actionConfigs[currentActionIndex].isSkippable() && targets.isEmpty()) {
-            //non skippable actions must have targets
-            throw new IllegalStateException("Player should not have been allowed to pick a weapon with an unusable attack");
+    public final void execute(Communicator communicator, Player activePlayer, Supplier<Set<Player>> availableTargetsSupplier, Supplier<Map<Player, BonusTargetCombination>> bonusTargetsSupplier) {
+
+        for (ActionConfig actionConfig : actionConfigs) {
+
+            Block startingPoint = actionConfig.getStartingBlock(communicator, getStartingBlockPlayer(activePlayer));
+            Set<Player> availableTargets = availableTargetsSupplier.get();
+            Map<Player, BonusTargetCombination> bonusTargets = bonusTargetsSupplier.get();
+
+            Optional<Set<Player>> chosenTargets;
+            List<Set<Player>> targets = getPotentialTargets(actionConfig, startingPoint, availableTargets, bonusTargets);
+            if (!actionConfig.isSkippable() && targets.isEmpty()) {
+                //non skippable actions must have targets
+                throw new IllegalStateException("Player should not have been allowed to pick a weapon with an unusable attack");
+            } else if (actionConfig.isSkippable() && !targets.isEmpty()) {
+                //if the action is skippable, feedback from the player is needed for any amount greater than 0 of sets of targets
+                chosenTargets = communicator.selectOptional(targets);
+            } else if (targets.size() > 1) {
+                chosenTargets = Optional.of(communicator.select(targets));
+            } else if (targets.size() == 1) {
+                chosenTargets = Optional.of(targets.get(0));
+            } else {
+                //no targets could be chosen
+                chosenTargets = Optional.empty();
+            }
+            chosenTargets.ifPresent(players -> handleAction(communicator, actionConfig, activePlayer, players));
         }
-        else if (actionConfigs[currentActionIndex].isSkippable() && !targets.isEmpty()) {
-            //if the action is skippable, feedback from the player is needed for any amount greater than 0 of sets of targets
-            chosenTargets = communicator.selectOptional(targets);
-        } else if (targets.size() > 1) {
-            chosenTargets = Optional.of(communicator.select(targets));
-        } else if (targets.size() == 1) {
-            chosenTargets = Optional.of(targets.get(0));
-        } else {
-            //no targets could be chosen
-            chosenTargets = Optional.empty();
-        }
-        chosenTargets.ifPresent(players -> handleAction(communicator, actionConfigs[currentActionIndex], activePlayer, players));
-        currentActionIndex++;
     }
 
-    public List<Set<Player>> getPotentialTargets(Block startingPoint) {
+    protected Player getStartingBlockPlayer(Player activePlayer) {
+        return activePlayer;
+    }
+
+    public List<Set<Player>> getPotentialTargets(ActionConfig actionConfig, Block startingPoint, Set<Player> availableTargets, Map<Player, BonusTargetCombination> bonusTargets) {
         List<Set<Player>> potentialTargets = new LinkedList<>();
         //if there is a calculator, we get all the targets available based on their position and then intersect them with the available targets
-        Optional<TargetCalculator> calculator = actionConfigs[currentActionIndex].getCalculator();
+        Optional<TargetCalculator> calculator = actionConfig.getCalculator();
         if (calculator.isPresent()) {
             Set<Block> blocksWithPotentialTargets = calculator.get().computeTargets(startingPoint);
-            potentialTargets = handleFieldOfAction(blocksWithPotentialTargets, actionConfigs[currentActionIndex].getFieldOfAction());
+            potentialTargets = handleFieldOfAction(blocksWithPotentialTargets, actionConfig.getFieldOfAction(), availableTargets);
         }
         if (!bonusTargets.isEmpty()) {
-            handleBonusTargets(potentialTargets);
+            handleBonusTargets(potentialTargets, bonusTargets);
         }
         return potentialTargets;
     }
 
-    private List<Set<Player>> handleFieldOfAction(Set<Block> blocksWithPotentialTargets, ActionScope fieldOfAction) {
+    private List<Set<Player>> handleFieldOfAction(Set<Block> blocksWithPotentialTargets, ActionScope fieldOfAction, Set<Player> availableTargets) {
         List<Set<Player>> potentialTargets;
         switch (fieldOfAction) {
             case ONE_PLAYER:
@@ -167,7 +164,7 @@ public abstract class Attack implements Iterator {
         return potentialTargets;
     }
 
-    private void handleBonusTargets(List<Set<Player>> potentialTargets) {
+    private void handleBonusTargets(List<Set<Player>> potentialTargets, Map<Player, BonusTargetCombination> bonusTargets) {
         for (Map.Entry<Player, BonusTargetCombination> entry : bonusTargets.entrySet()) {
             Player target = entry.getKey();
             BonusTargetCombination wayToUse = entry.getValue();
@@ -231,49 +228,5 @@ public abstract class Attack implements Iterator {
             default:
                 throw new EnumConstantNotPresentException(ActionType.class, "Action Type " + currentConfig.getActionType() + " is unknown");
         }
-    }
-
-    public void addBonusTarget(Player target, BonusTargetCombination howToAdd) {
-        this.bonusTargets.put(target, howToAdd);
-    }
-
-    public void removeBonusTarget(Player targetToRemove) {
-        this.bonusTargets.remove(targetToRemove);
-    }
-
-    public void clearBonusTargets() {
-        this.bonusTargets.clear();
-    }
-
-    public void addAvailableTargets(Player target) {
-        this.availableTargets.add(target);
-    }
-
-    public void addAvailableTargets(Set<Player> targets) {
-        this.availableTargets.addAll(targets);
-    }
-
-    public void clearAvailableTargets() {
-        this.availableTargets.clear();
-    }
-
-    public void removeAvailableTarget(Player target) {
-        this.availableTargets.remove(target);
-    }
-
-    @Override
-    public boolean hasNext() {
-        return currentActionIndex < actionConfigs.length;
-    }
-
-    @Override
-    public Attack next() {
-        if (this.hasNext()) {
-            return this;
-        } else throw new NoSuchElementException("No next element found");
-    }
-
-    public void rewind() {
-        currentActionIndex = 0;
     }
 }
