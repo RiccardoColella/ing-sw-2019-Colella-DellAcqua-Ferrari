@@ -5,12 +5,13 @@ import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
 import it.polimi.ingsw.server.view.View;
+import it.polimi.ingsw.shared.commands.Command;
 
 import java.net.Socket;
 import java.util.List;
 
 /**
- * Socket based implementation of the server-side View
+ * Socket based implementation of the server-side SocketView
  */
 public class SocketView extends View {
 
@@ -28,7 +29,7 @@ public class SocketView extends View {
     // TODO: Verify that the socket is automatically closed
     @Override
     public boolean isConnected() {
-        return false;
+        return socket.isConnected();
     }
 
     @Override
@@ -49,5 +50,10 @@ public class SocketView extends View {
     @Override
     public Match.Mode getChosenMode() {
         return null;
+    }
+
+    @Override
+    public void sendCommand(Command command) {
+
     }
 }

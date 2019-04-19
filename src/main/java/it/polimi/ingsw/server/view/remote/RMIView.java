@@ -5,20 +5,22 @@ import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
 import it.polimi.ingsw.server.view.View;
+import it.polimi.ingsw.shared.commands.Command;
 
 import java.net.Socket;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.rmi.server.RMISocketFactory;
 import java.util.List;
 
 /**
- * RMI based implementation of the server-side View
+ * RMIConnector based implementation of the server-side SocketView
  */
 public class RMIView extends View {
 
-    private Socket socket;
+    private boolean connected = true;
 
-    public RMIView(Socket socket) {
-        this.socket = socket;
-    }
+    public RMIView() { }
 
     @Override
     public PowerupTile chooseSpawnpoint(List<PowerupTile> powerups) {
@@ -27,7 +29,7 @@ public class RMIView extends View {
 
     @Override
     public boolean isConnected() {
-        return false;
+        return connected;
     }
 
     @Override
@@ -48,5 +50,10 @@ public class RMIView extends View {
     @Override
     public Match.Mode getChosenMode() {
         return null;
+    }
+
+    @Override
+    public void sendCommand(Command command) {
+
     }
 }

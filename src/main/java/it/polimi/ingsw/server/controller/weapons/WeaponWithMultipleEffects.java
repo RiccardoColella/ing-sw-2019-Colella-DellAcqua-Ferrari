@@ -1,10 +1,8 @@
 package it.polimi.ingsw.server.controller.weapons;
 
-import it.polimi.ingsw.server.model.currency.AmmoCube;
-import it.polimi.ingsw.server.model.currency.Coin;
-import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.view.Interviewer;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -58,7 +56,7 @@ public class WeaponWithMultipleEffects extends BasicWeapon {
     }
 
     @Override
-    public void shoot(Communicator communicator, Player activePlayer) {
+    public void shoot(Interviewer interviewer, Player activePlayer) {
         List<Attack> allAttacks = new LinkedList<>(poweredAttacks);
         allAttacks.add(this.basicAttack);
         availableAttacks.clear();
@@ -68,7 +66,7 @@ public class WeaponWithMultipleEffects extends BasicWeapon {
             }
         }
         do {
-            if ((this.activeAttack = askForAttack(communicator)) != null) {
+            if ((this.activeAttack = askForAttack(interviewer)) != null) {
                 // TODO: execute attack
             }
         } while (!availableAttacks.isEmpty() && activeAttack != null);
@@ -76,15 +74,15 @@ public class WeaponWithMultipleEffects extends BasicWeapon {
     }
 
     @Nullable
-    private Attack askForAttack(Communicator communicator) {
+    private Attack askForAttack(Interviewer interviewer) {
         List<String> options = availableAttacks.stream().map(Attack::getName).collect(Collectors.toCollection(LinkedList::new));
 
         Attack chosenAttack = null;
         Optional<String> choice;
 
         choice = availableAttacks.contains(this.basicAttack) ?
-                Optional.of(communicator.select(options)) :
-                communicator.selectOptional(options);
+                Optional.of(interviewer.select(options)) :
+                interviewer.selectOptional(options);
 
         if (choice.isPresent()) {
             chosenAttack = availableAttacks.stream()

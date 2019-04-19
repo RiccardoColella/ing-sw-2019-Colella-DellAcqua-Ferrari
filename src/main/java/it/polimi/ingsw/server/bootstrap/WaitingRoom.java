@@ -10,7 +10,7 @@ import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 /**
- * This class is used to create a virtual waiting room in which RMI and Socket clients will wait until a virtual
+ * This class is used to create a virtual waiting room in which RMIConnector and Socket clients will wait until a virtual
  * game room is available
  */
 public class WaitingRoom implements AutoCloseable {

@@ -18,7 +18,7 @@ public class Controller implements Runnable {
     public Controller(Match match, List<View> views) {
 
         if (views.size() != match.getPlayers().size()) {
-            throw new IllegalArgumentException("View number does not match player number");
+            throw new IllegalArgumentException("SocketView number does not match player number");
         }
 
         this.match = match;

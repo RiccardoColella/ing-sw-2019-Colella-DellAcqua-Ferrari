@@ -1,12 +1,11 @@
 package it.polimi.ingsw.server.controller.weapons;
 
 import it.polimi.ingsw.server.model.battlefield.Block;
-import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.Coin;
-import it.polimi.ingsw.server.model.player.Damageable;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.view.Interviewer;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -96,11 +95,11 @@ public class BasicWeapon {
         return basicAttack.equals(attack);
     }
 
-    public void shoot(Communicator communicator, Player activePlayer) {
+    public void shoot(Interviewer interviewer, Player activePlayer) {
         currentShooter = activePlayer;
-        handlePayment(communicator, activeAttack, currentShooter);
+        handlePayment(interviewer, activeAttack, currentShooter);
         activeAttack = basicAttack;
-        basicAttack.execute(communicator, this);
+        basicAttack.execute(interviewer, this);
         previouslyHit.clear();
         activeAttack = null;
     }
@@ -109,13 +108,13 @@ public class BasicWeapon {
         previouslyHit.addAll(targets);
     }
 
-    protected void handlePayment(Communicator communicator, Attack chosenAttack, Player activePlayer) {
+    protected void handlePayment(Interviewer interviewer, Attack chosenAttack, Player activePlayer) {
         if (canAffordAttack(chosenAttack)) {
             //TODO: integrate payment handling
         } else throw new IllegalStateException("Unaffordable attacks cannot be chosen");
     }
 
-    protected Block determineStartingBlock(Communicator communicator, Player activePlayer) {
+    protected Block determineStartingBlock(Interviewer interviewer, Player activePlayer) {
         return activePlayer.getMatch().getBoard().findPlayer(activePlayer).orElseThrow(() -> new IllegalStateException("Player is not in the board"));
     }
 

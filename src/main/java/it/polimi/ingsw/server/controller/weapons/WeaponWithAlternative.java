@@ -1,10 +1,8 @@
 package it.polimi.ingsw.server.controller.weapons;
 
-import it.polimi.ingsw.server.model.battlefield.TurretBlock;
-import it.polimi.ingsw.server.model.currency.AmmoCube;
-import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.utils.Tuple;
 
 import java.util.*;
@@ -47,7 +45,7 @@ public class WeaponWithAlternative extends BasicWeapon {
     }
 
     @Override
-    public void shoot(Communicator communicator, Player activePlayer) {
+    public void shoot(Interviewer interviewer, Player activePlayer) {
         Attack selectedAttack;
         availableAttacks.clear();
         if (canAffordAttack(basicAttack) && canDoFirstAction(basicAttack)) {
@@ -61,7 +59,7 @@ public class WeaponWithAlternative extends BasicWeapon {
             for (Attack attack : availableAttacks) {
                 potentialAttacks.add(new Tuple<>(attack.getName(), attack.getCost().stream().map(Object::toString).collect(Collectors.toList())));
             }
-            String selectedAttackName = communicator.select(potentialAttacks).getItem1();
+            String selectedAttackName = interviewer.select(potentialAttacks).getItem1();
             if (selectedAttackName.equals(basicAttack.getName())) {
                 selectedAttack = basicAttack;
             } else {
@@ -70,8 +68,8 @@ public class WeaponWithAlternative extends BasicWeapon {
         } else if (availableAttacks.size() == 1) {
             selectedAttack = availableAttacks.get(0);
         } else throw new IllegalStateException("No attacks available");
-        handlePayment(communicator, selectedAttack, activePlayer);
-        selectedAttack.execute(communicator, this);
+        handlePayment(interviewer, selectedAttack, activePlayer);
+        selectedAttack.execute(interviewer, this);
     }
 
     @Override
