@@ -3,6 +3,7 @@ package it.polimi.ingsw.server.controller.weapons;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.weapons.Weapon;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,12 +23,10 @@ public class WeaponWithAlternative extends BasicWeapon {
      *
      * @param name                  the name of the weapon
      * @param basicAttack           the basic attack of the weapon
-     * @param acquisitionCost       a list of coin equal to the acquisition cost of the weapon
-     * @param reloadCost            a list of coin equal to the reload cost of the weapon
      * @param alternativeAttack     the alternative attack of the weapon
      */
-    public WeaponWithAlternative(Name name, Attack basicAttack, List<AmmoCube> acquisitionCost, List<AmmoCube> reloadCost, Attack alternativeAttack) {
-        super(name, basicAttack, acquisitionCost, reloadCost);
+    public WeaponWithAlternative(Weapon.Name name, Attack basicAttack, Attack alternativeAttack) {
+        super(name, basicAttack);
         this.alternativeAttack = alternativeAttack;
     }
 
@@ -65,7 +64,7 @@ public class WeaponWithAlternative extends BasicWeapon {
             selectedAttack = basicAttack;
         }
         handlePayment(communicator, selectedAttack, activePlayer);
-        selectedAttack.execute(communicator, activePlayer, HashSet::new, HashMap::new);
+        selectedAttack.execute(communicator, this);
     }
 
 }

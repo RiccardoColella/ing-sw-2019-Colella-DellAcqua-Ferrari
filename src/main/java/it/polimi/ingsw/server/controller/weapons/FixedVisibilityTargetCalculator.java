@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This class is a TargetCalculator that finds targets that are (or are not) visible from the starting point
@@ -34,13 +35,13 @@ public class FixedVisibilityTargetCalculator implements TargetCalculator {
      * @return a list of the available groups of targets, which will be empty if none are available
      */
     @Override
-    public Set<Block> computeTargets(Block startingPoint) {
+    public Set<Player> computeTargets(Block startingPoint) {
         if (visible) {
-            return board.getVisibleBlocks(startingPoint);
+            return board.getVisibleBlocks(startingPoint).stream().flatMap(block -> block.getPlayers().stream()).collect(Collectors.toSet());
         } else {
             Set<Block> nonVisible = board.getBlocks();
             nonVisible.removeIf(block -> board.getVisibleBlocks(startingPoint).contains(block));
-            return nonVisible;
+            return nonVisible.stream().flatMap(block -> block.getPlayers().stream()).collect(Collectors.toSet());
         }
     }
 }

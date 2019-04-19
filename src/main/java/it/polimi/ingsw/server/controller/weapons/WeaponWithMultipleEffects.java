@@ -4,6 +4,7 @@ import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.weapons.Weapon;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -19,25 +20,19 @@ public class WeaponWithMultipleEffects extends BasicWeapon {
      */
     private final List<Attack> poweredAttacks;
 
-    /**
-     * This property states whether the attacks can be used in any order or not
-     */
-    private final boolean mustExecuteInOrder;
-
     private List<Attack> remainingAttacks;
+
+    private final boolean mustExecuteInOrder;
 
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
      *
      * @param name                  the name of the weapon
      * @param basicAttack           the basic attack of the weapon
-     * @param acquisitionCost       a list of coin equal to the acquisition cost of the weapon
-     * @param reloadCost            a list of coin equal to the reload cost of the weapon
      * @param poweredAttacks        a non-empty map of the powered attacks of the weapon with their relative cost
-     * @param mustExecuteInOrder    true if the effects can only be used in the given order and with basic effect first
      */
-    public WeaponWithMultipleEffects(Name name, Attack basicAttack, List<AmmoCube> acquisitionCost, List<AmmoCube> reloadCost, List<Attack> poweredAttacks, boolean mustExecuteInOrder) {
-        super(name, basicAttack, acquisitionCost, reloadCost);
+    public WeaponWithMultipleEffects(Weapon.Name name, Attack basicAttack, List<Attack> poweredAttacks, boolean mustExecuteInOrder) {
+        super(name, basicAttack);
         this.poweredAttacks = poweredAttacks;
         this.mustExecuteInOrder = mustExecuteInOrder;
     }

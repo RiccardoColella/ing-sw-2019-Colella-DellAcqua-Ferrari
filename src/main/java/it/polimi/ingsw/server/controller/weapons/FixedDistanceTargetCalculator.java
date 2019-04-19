@@ -7,6 +7,7 @@ import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.player.Player;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static it.polimi.ingsw.server.model.battlefield.Block.BorderType.WALL;
 
@@ -35,7 +36,7 @@ public class FixedDistanceTargetCalculator implements TargetCalculator {
      * @return a list of the available groups of targets, which will be empty if none are available
      */
     @Override
-    public Set<Block> computeTargets(Block startingPoint) {
+    public Set<Player> computeTargets(Block startingPoint) {
         Set<Block> toCheck = new HashSet<>();
         Set<Block> alreadyChecked = new HashSet<>();
         toCheck.add(startingPoint);
@@ -51,7 +52,7 @@ public class FixedDistanceTargetCalculator implements TargetCalculator {
             candidates.addAll(toCheck);
         }
         candidates.removeIf(block -> block.getPlayers().isEmpty());
-        return candidates;
+        return candidates.stream().flatMap(block -> block.getPlayers().stream()).collect(Collectors.toSet());
     }
 
     /**

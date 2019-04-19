@@ -1,0 +1,960 @@
+[
+  {
+    "weaponId": "Lock Rifle",
+    "basicAttack": {
+      "name": "basic effect",
+      "actions": [
+          {
+            "damage": 2,
+            "targetAmount": "ONE",
+            "targetPosition": "VISIBLE",
+            "skippable": false,
+            "startingPoint": "ACTIVE_PLAYER",
+            "targets": "FIND"
+          }, {
+            "marks": 1,
+            "targetAmount": "ONE",
+            "skippable": false,
+            "targets": "INHERIT_LAST"
+        }
+      ],
+      "canReHitSameTarget": false
+    },
+    "advancedAttacks": [
+      {
+        "name": "with second lock",
+        "cost": ["RED"],
+        "actions": [
+          {
+            "mark": 1,
+            "targetAmount": "ONE",
+            "targetPosition": "VISIBLE",
+            "skippable": false,
+            "startingPoint": "ACTIVE_PLAYER",
+            "targets": "FIND"
+          }
+        ],
+        "canReHitSameTarget": false
+      }
+    ]
+  },
+  {
+    "weaponId": "Electroscythe",
+    "basicAttack": {
+      "name": "basic mode",
+      "actions": [
+        {
+          "damage": 1,
+          "targetAmount": "BLOCK",
+          "targetPosition": "FIXED",
+          "targetDistance": {
+            "min": 0,
+            "max": 0
+          },
+          "skippable": false,
+          "startingPoint": "ACTIVE_PLAYER",
+          "targets": "FIND"
+        }
+      ]
+    },
+    "alternativeAttack": {
+      "name": "in reaper mode",
+      "cost": ["BLUE", "RED"],
+      "actions": [
+        {
+          "damage": 2,
+          "targetAmount": "BLOCK",
+          "targetPosition": "FIXED",
+          "targetDistance": {
+            "min": 0,
+            "max": 0
+          },
+          "skippable": false,
+          "startingPoint": "ACTIVE_PLAYER",
+          "targets": "FIND"
+        }
+      ]
+    }
+  },
+  {
+    "weaponId": "Machine Gun",
+    "basicMustBeFirst": true,
+    "basicAttack": {
+      "name": "basic effect",
+      "actions": [
+        {
+          "damage": 1,
+          "targetAmount": 1,
+          "targetPosition": "VISIBLE",
+          "startingPoint": "ACTIVE_PLAYER",
+          "skippable": false,
+          "targets": "FIND"
+        },
+        {
+          "damage": 1,
+          "targetAmount": 1,
+          "targetPosition": "VISIBLE",
+          "startingPoint": "ACTIVE_PLAYER",
+          "skippable": true,
+          "canReHitSameTarget": false,
+          "targets": "FIND"
+        }
+      ]
+    },
+    "veto": "HIT_BY_ADVANCED",
+    "advancedAttacks": [
+      {
+        "name": "with focus shot",
+        "cost": ["YELLOW"],
+        "basicMustBeFirst": true,
+        "actions": [
+          {
+            "damage": 1,
+            "skippable": false,
+            "targetAmount": "ONE",
+            "startingPoint": "ACTIVE_PLAYER",
+            "targets": "INHERIT_ALL"
+          }
+        ]
+      },
+      {
+        "name": "with turret tripod",
+        "cost": ["BLUE"],
+        "basicMustBeFirst": true,
+        "actions": [
+          {
+            "damage": 1,
+            "startingPoint": "ACTIVE_PLAYER",
+            "skippable": false,
+            "targetAmount": "ONE",
+            "targetPosition": "VISIBLE",
+            "targets": "INHERIT_ALL"
+          }, {
+            "damage": 1,
+            "startingPoint": "ACTIVE_PLAYER",
+            "skippable": true,
+            "targetAmount": "ONE",
+            "targetPosition": "VISIBLE",
+            "canReHitSameTarget": true
+          }
+        ]
+      }
+    ],
+    "maxHitsPerTarget": 2
+  },
+  {
+    "weaponId": "Tractor Beam",
+    "basicAttack": {
+      "name": "basic mode",
+      "actions": [
+        {
+          "move": {"min": 0, "max": 2},
+          "startingPoint": "VISIBLE",
+          "targetAmount": "ONE",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 0, "max": 2},
+          "targetFinalPosition": "FIXED",
+          "targetFinalDistance": {"min": 0, "max": 0},
+          "skippable": false,
+          "targets": "FIND"
+        },
+        {
+          "damage": 1,
+          "targetAmount": "ONE",
+          "skippable": false,
+          "targets": "INHERIT_LAST"
+        }
+      ]
+    },
+    "alternativeAttack": {
+      "name": "in punisher mode",
+      "cost": ["RED", "YELLOW"],
+      "actions": [
+        {
+          "move": {"min": 0, "max": 2},
+          "targetAmount": "ONE",
+          "startingPoint": "ACTIVE_PLAYER",
+          "targetPosition": "FIXED",
+          "targetDistance": {
+            "min": 0,
+            "max": 2
+          },
+          "targetFinalPosition": "FIXED",
+          "targetFinalDistance": {
+            "min": 0,
+            "max": 0
+          },
+          "skippable": false,
+          "targets": "FIND"
+        },
+        {
+          "damage": 3,
+          "targetAmount": "ONE",
+          "skippable": false,
+          "targets": "INHERIT_LAST"
+        }
+      ]
+    }
+  },
+  {
+    "weaponId": "T.H.O.R.",
+    "mustExecuteInOrder": true,
+    "basicAttack": {
+      "name": "basic effect",
+      "actions": [
+        {
+          "damage": 2,
+          "targetAmount": "ONE",
+          "targetPosition": "VISIBLE",
+          "startingPoint": "ACTIVE_PLAYER",
+          "skippable": false
+        }
+      ]
+    },
+    "advancedAttacks": [
+      {
+        "name": "with chain reaction",
+        "cost": ["BLUE"],
+        "actions": [
+          {
+            "damage": 1,
+            "targetPosition": "VISIBLE",
+            "startingPoint": "PREVIOUS_TARGET",
+            "skippable": false,
+            "targetAmount": "ONE",
+            "veto": "ALL_PREVIOUS"
+          }
+        ]
+      },
+      {
+        "name": "with high voltage",
+        "cost": ["BLUE"],
+        "actions": [
+          {
+            "damage": 2,
+            "targetPosition": "VISIBLE",
+            "startingPoint": "PREVIOUS_TARGET",
+            "skippable": false,
+            "targetAmount": "ONE",
+            "veto": "ALL_PREVIOUS"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "weaponId": "Vortex Cannon",
+    "mustExecuteInOrder": true,
+    "basicAttack": {
+      "name": "basic effect",
+      "actions": [
+        {
+          "startingPoint": "VISIBLE",
+          "andNotStartingPoint": "ACTIVE_PLAYER",
+          "targetPosition": "FIXED",
+          "targetDistance": {
+            "min": 0,
+            "max": 1
+          },
+          "move": {"min": 0, "max": 1},
+          "targetFinalDistance": {"min": 0, "max": 0},
+          "targetFinalPosition": "FIXED",
+          "skippable": false,
+          "targetAmount": "ONE"
+        },
+        {
+          "startingPoint": "INHERIT",
+          "targets": "INHERIT_LAST",
+          "damage": 2,
+          "skippable": false,
+          "targetAmount": "ONE"
+        }
+      ]
+    },
+    "advancedAttack": {
+      "name": "with black hole",
+      "cost": ["RED"],
+      "actions": [
+        {
+          "startingPoint": "INHERIT",
+          "targetPosition": "FIXED",
+          "targetDistance": {
+            "min": 0,
+            "max": 1
+          },
+          "move": {"min": 0, "max": 1},
+          "targetFinalDistance": {"min": 0, "max": 0},
+          "targetFinalPosition": "FIXED",
+          "skippable": false,
+          "targetAmount": "ONE",
+          "veto": "ALL_PREVIOUS"
+        }, {
+          "startingPoint": "INHERIT",
+          "targets": "INHERIT_LAST",
+          "damage": 1,
+          "skippable": false,
+          "targetAmount": "ONE"
+        },
+        {
+          "startingPoint": "INHERIT",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 0, "max": 1},
+          "move": {"min": 0, "max": 1},
+          "targetFinalDistance": {"min": 0, "max": 0},
+          "targetFinalPosition": "FIXED",
+          "skippable": true,
+          "canReHitSameTarget": false,
+          "targetAmount": "ONE"
+        }, {
+          "startingPoint": "INHERIT",
+          "targets": "INHERIT_LAST",
+          "damage": 1,
+          "skippable": false,
+          "targetAmount": "ONE"
+        }
+      ]
+    }
+  },
+  {
+    "weaponId": "Furnace",
+    "basicAttack": {
+      "name": "basic mode",
+      "actions": [
+        {
+          "startingPoint": "ACTIVE_PLAYER",
+          "targetPosition": "VISIBLE_ROOM",
+          "targetDistance": {"min": 1},
+          "targetAmount": "ROOM",
+          "damage": 1,
+          "skippable": false,
+          "targets": "FIND"
+        }
+      ]
+    },
+    "alternativeAttack": {
+      "name": "in cozy fire mode",
+      "actions": [
+        {
+          "startingPoint": "ACTIVE_PLAYER",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 1, "max": 1},
+          "damage": 1,
+          "targetAmount": "BLOCK",
+          "skippable": false,
+          "targets": "FIND"
+        }
+      ]
+    }
+  },
+  {
+    "weaponId": "Plasma Gun",
+    "basicAttack": {
+      "name": "basic effect",
+      "actions": [
+        {
+          "damage": 2,
+          "skippable": false,
+          "targetPosition": "VISIBLE",
+          "targets": "FIND",
+          "startingPoint": "ACTIVE_PLAYER",
+          "targetAmount": "ONE"
+        }
+      ]
+    },
+    "advancedAttaks": [
+      {
+        "name": "with phase glide",
+        "actions": [
+          {
+            "move": {"min": 1, "max": 2},
+            "skippable": false,
+            "targets": "SELF",
+            "targetAmount": "ONE"
+          }
+        ]
+      },
+      {
+        "name": "with charged shot",
+        "cost": ["BLUE"],
+        "actions": [
+          {
+            "damage": 1,
+            "targets": "INHERIT_ALL",
+            "targetAmount": "ONE",
+            "skippable": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "weaponId": "Heatseeker",
+    "basicAttack": {
+      "name": "effect",
+      "actions": [
+        {
+          "damage": 3,
+          "targetAmount": "ONE",
+          "targetPosition": "VISIBLE",
+          "visibility": false,
+          "startingPoint": "ACTIVE_PLAYER",
+          "targets": "FIND",
+          "skippable": false
+        }
+      ]
+    }
+  },
+  {
+    "weaponId": "Whisper",
+    "basicAttack": {
+      "name": "effect",
+      "actions": [
+        {
+          "damage": 3,
+          "targetAmount": "ONE",
+          "targetPosition": "VISIBLE",
+          "targetDistance": {"min": 2},
+          "skippable": false,
+          "startingPoint": "ACTIVE_PLAYER",
+          "targets": "FIND"
+        },
+        {
+          "mark": 1,
+          "targetAmount": "ONE",
+          "targets": "INHERIT_LAST",
+          "skippable": false
+        }
+      ]
+    }
+  },
+  {
+    "weaponId": "Hellion",
+    "basicAttack": {
+      "name": "basic mode",
+      "actions": [
+        {
+          "damage": 1,
+          "targets": "FIND",
+          "skippable": false,
+          "targetAmount": "ONE",
+          "targetPosition": "VISIBLE",
+          "targetDistance": {"min": 1},
+          "startingPoint": "ACTIVE_PLAYER"
+        },
+        {
+          "mark": 1,
+          "targets": "INHERIT",
+          "targetAmount": "BLOCK",
+          "skippable": false
+        }
+      ]
+    },
+    "alternativeAttack": {
+      "name": "nano tracer mode",
+      "cost": ["RED"],
+      "actions": [
+        {
+          "damage": 1,
+          "targets": "FIND",
+          "skippable": false,
+          "targetAmount": "ONE",
+          "targetPosition": "VISIBLE",
+          "targetDistance": {"min": 1},
+          "startingPoint": "ACTIVE_PLAYER"
+        },
+        {
+          "mark": 2,
+          "targets": "INHERIT",
+          "targetAmount": "BLOCK",
+          "skippable": false
+        }
+      ]
+    }
+  },
+  {
+    "weaponId": "Flamethrower",
+    "basicAttack": {
+      "name": "basic mode",
+      "actions": [
+        {
+          "damage": 1,
+          "targets": "FIND",
+          "startingPoint": "ACTIVE_PLAYER",
+          "skippable": false,
+          "targetPosition": "STRAIGHT",
+          "targetDirection": "FIXED",
+          "targetDistance": {"min": 1, "max": 1},
+          "targetAmount": "ONE"
+        },
+        {
+          "damage": 1,
+          "targets": "FIND",
+          "startingPoint": "ACTIVE_PLAYER",
+          "skippable": true,
+          "targetPosition": "STRAIGHT",
+          "targetDirection": "INHERIT",
+          "targetDistance": {"min": 2, "max": 2},
+          "targetAmount": "ONE"
+        }
+      ]
+    },
+    "alternativeAttack": {
+      "name": "in barbecue mode",
+      "cost": ["YELLOW", "YELLOW"],
+      "actions": [
+        {
+          "damage": 2,
+          "targets": "FIND",
+          "startingPoint": "ACTIVE_PLAYER",
+          "skippable": false,
+          "targetPosition": "STRAIGHT",
+          "targetDirection": "FIXED",
+          "targetDistance": {"min": 1, "max": 1},
+          "targetAmount": "BLOCK"
+        },
+        {
+          "damage": 1,
+          "targets": "FIND",
+          "startingPoint": "ACTIVE_PLAYER",
+          "skippable": true,
+          "targetPosition": "STRAIGHT",
+          "targetDirection": "INHERIT",
+          "targetDistance": {"min": 2, "max": 2},
+          "targetAmount": "BLOCK"
+        }
+      ]
+    }
+  },
+  {
+    "weaponId": "2x-2",
+    "basicAttack": {
+      "name": "basic mode",
+      "actions": [
+        {
+          "damage": 1,
+          "targets": "FIND",
+          "startingPoint": "ACTIVE_PLAYER",
+          "targetPosition": "VISIBLE",
+          "targetAmount": "ONE",
+          "skippable": false
+        },
+        {
+          "mark": 2,
+          "targets": "INHERIT_LAST",
+          "skippable": false,
+          "targetAmount": "ONE"
+        }
+      ]
+    },
+    "alternativeAttack": {
+      "name": "in scanner mode",
+      "actions": [
+        {
+          "mark": 1,
+          "targets": "FIND",
+          "startingPoint": "ACTIVE_PLAYER",
+          "targetPosition": "VISIBLE",
+          "targetAmount": "ONE",
+          "skippable": false
+        },
+        {
+          "mark": 1,
+          "targets": "FIND",
+          "startingPoint": "ACTIVE_PLAYER",
+          "targetPosition": "VISIBLE",
+          "targetAmount": "ONE",
+          "skippable": true,
+          "veto": "ALL_PREVIOUS"
+        },
+        {
+          "mark": 1,
+          "targets": "FIND",
+          "startingPoint": "ACTIVE_PLAYER",
+          "targetPosition": "VISIBLE",
+          "targetAmount": "ONE",
+          "skippable": true,
+          "veto": "ALL_PREVIOUS"
+        }
+      ]
+    }
+  },
+  {
+    "weaponId": "Grenade Launcher",
+    "basicAttack": {
+      "name": "basic effect",
+      "actions": [
+        {
+          "damage": 1,
+          "targets": "FIND",
+          "startingPoint": "ACTIVE_PLAYER",
+          "skippable": false,
+          "targetPosition": "VISIBLE",
+          "targetAmount": "ONE"
+        },
+        {
+          "move": {"min": 1, "max": 1},
+          "skippable": true,
+          "targets": "INHERIT_LAST",
+          "targetAmount": "ONE"
+        }
+      ]
+    },
+    "advancedAttacks": [
+      {
+        "name": "with extra grenade",
+        "cost": ["RED"],
+        "actions": [
+          {
+            "damage": 1,
+            "skippable": false,
+            "targets": "FIND",
+            "targetAmount": "BLOCK",
+            "startingPoint": "ACTIVE_PLAYER",
+            "targetPosition": "VISIBLE"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "weaponId": "Shotgun",
+    "basicAttack": {
+      "name": "basic mode",
+      "actions": [
+        {
+          "damage": 3,
+          "targets": "FIND",
+          "skippable": false,
+          "startingPoint": "ACTIVE_PLAYER",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 0, "max": 0},
+          "targetAmount": "ONE"
+        },
+        {
+          "move": {"min": 1, "max": 1},
+          "targets": "INHERIT_LAST",
+          "skippable": true,
+          "targetAmount": "ONE"
+        }
+      ]
+    },
+    "alternativeAttack": {
+      "name": "in long barrel mode",
+      "actions": [
+        {
+          "damage": 2,
+          "targets": "FIND",
+          "targetPosition": "FIXED",
+          "targetAmount": "ONE",
+          "startingPoint": "ACTIVE_PLAYER",
+          "skippable": false,
+          "targetDistance": {"min": 1, "max": 1}
+        }
+      ]
+    }
+  },
+  {
+    "weaponId": "Rocket Launcher",
+    "basicAttack": {
+      "name": "basic effect",
+      "actions": [
+        {
+          "damage": 2,
+          "targets": "FIND",
+          "targetAmount": "ONE",
+          "targetPosition": "VISIBLE",
+          "startingPoint": "ACTIVE_PLAYER",
+          "targetDistance": {"min": 1},
+          "skippable": false
+        },
+        {
+          "move": {"min": 1, "max": 1},
+          "skippable": true,
+          "targets": "INHERIT_LAST",
+          "targetAmount": "ONE"
+        }
+      ]
+    },
+    "advancedAttacks": [
+      {
+        "name": "with rocket jump",
+        "cost": ["BLUE"],
+        "actions": [
+          {
+            "move": {"min": 1, "max": 2},
+            "targets": "SELF",
+            "targetAmount": "ONE",
+            "skippable": false
+          }
+        ]
+      },
+      {
+        "name": "with fragmenting warhead",
+        "cost": ["YELLOW"],
+        "basicMustBeDoneFirst": true,
+        "actions": [
+          {
+            "damage": 1,
+            "targetAmount": "BLOCK",
+            "targets": "FIND",
+            "andTargets": "INCLUDE_LAST",
+            "startingPoint": "INHERIT",
+            "targetDistance": {"min": 0, "max": 0},
+            "skippable": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "weaponId": "Power Glove",
+    "basicAttack": {
+      "name": "basic mode",
+      "actions": [
+        {
+          "move": {"min": 1, "max": 1},
+          "skippable": false,
+          "targetAmount": "ONE",
+          "targets": "SELF"
+        },
+        {
+          "damage": 1,
+          "targets": "FIND",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 0, "max": 0},
+          "startingPoint": "ACTIVE_PLAYER",
+          "targetAmount": "ONE",
+          "skippable": false
+        },
+        {
+          "mark": 2,
+          "targets": "INHERIT_LAST",
+          "skippable": false,
+          "targetAmount": "ONE"
+        }
+      ]
+    },
+    "alternativeAttack": {
+      "name": "in rocket fist mode",
+      "cost": ["BLUE"],
+      "actions": [
+        {
+          "move": {"min": 1, "max": 1},
+          "skippable": false,
+          "targets": "SELF",
+          "targetAmount": "ONE",
+          "fixedDirection": true
+        },
+        {
+          "damage": 2,
+          "targets": "FIND",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 0, "max": 0},
+          "startingPoint": "ACTIVE_PLAYER",
+          "targetAmount": "ONE",
+          "skippable": false
+        },
+        {
+          "move": {"min": 1, "max": 1},
+          "skippable": true,
+          "targets": "SELF",
+          "targetAmount": "ONE",
+          "fixedDirection": true
+
+        },
+        {
+          "damage": 2,
+          "targets": "FIND",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 0, "max": 0},
+          "startingPoint": "ACTIVE_PLAYER",
+          "targetAmount": "ONE",
+          "skippable": false
+        }
+      ]
+    }
+  },
+  {
+    "weaponId": "Railgun",
+    "basicAttack": {
+      "name": "basic mode",
+      "actions": [
+        {
+          "damage": 3,
+          "targets": "FIND",
+          "targetAmount": "ONE",
+          "targetPosition": "STRAIGHT",
+          "targetDirection": "FIXED",
+          "goesThroughWalls": true,
+          "startingPoint": "ACTIVE_PLAYER",
+          "skippable": false
+        }
+      ]
+    },
+    "alternativeAttack": {
+      "name": "in piercing mode",
+      "actions": [
+        {
+          "damage": 2,
+          "targets": "FIND",
+          "targetAmount": "ONE",
+          "targetPosition": "STRAIGHT",
+          "targetDirection": "FIXED",
+          "goesThroughWalls": true,
+          "startingPoint": "ACTIVE_PLAYER",
+          "skippable": false
+        },
+        {
+          "damage": 2,
+          "targets": "FIND",
+          "startingPoint": "INHERIT",
+          "targetAmount": "ONE",
+          "veto": "ALL_PREVIOUS",
+          "targetPosition": "STRAIGHT",
+          "targetDirection": "INHERIT",
+          "skippable": true,
+          "goesThroughWalls": true
+        }
+      ]
+    }
+  },
+  {
+    "weaponId": "Shockwave",
+    "basicAttack": {
+      "name": "basic mode",
+      "actions": [
+        {
+          "damage": 1,
+          "targets": "FIND",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 1, "max": 1},
+          "targetAmount": "ONE",
+          "skippable": false,
+          "startingPoint": "ACTIVE_PLAYER"
+        },
+        {
+          "damage": 1,
+          "targets": "FIND",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 1, "max": 1},
+          "targetAmount": "ONE",
+          "skippable": true,
+          "startingPoint": "INHERIT",
+          "veto": "ALL_PREVIOUS"
+        },
+        {
+          "damage": 1,
+          "targets": "FIND",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 1, "max": 1},
+          "targetAmount": "ONE",
+          "skippable": true,
+          "startingPoint": "INHERIT",
+          "veto": "ALL_PREVIOUS"
+        }
+      ]
+    },
+    "alternativeAttack": {
+      "name": "in tsunami mode",
+      "cost": ["YELLOW"],
+      "actions": [
+        {
+          "damage": 1,
+          "targets": "FIND",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 1, "max": 1},
+          "targetAmount": "ALL",
+          "skippable": false,
+          "startingPoint": "ACTIVE_PLAYER"
+        }
+      ]
+    }
+  },
+  {
+    "weaponId": "Cyberblade",
+    "basicAttack": {
+      "name": "basic effect",
+      "actions": [
+        {
+          "damage": 2,
+          "targets": "FIND",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 0, "max": 0},
+          "targetAmount": "ONE",
+          "skippable": false,
+          "startingPoint": "ACTIVE_PLAYER"
+        }
+      ]
+    },
+    "advancedAttacks": [
+      {
+        "name": "with shadowstep",
+        "actions": [
+          {
+            "move": {"min": 1, "max": 1},
+            "skippable": false,
+            "basicMustBeFirst": false,
+            "targetAmount": "ONE",
+            "targets": "SELF"
+          }
+        ]
+      },
+      {
+        "name": "with slice and dice",
+        "cost": ["YELLOW"],
+        "actions": [
+          {
+            "damage": 2,
+            "targets": "FIND",
+            "targetPosition": "FIXED",
+            "targetDistance": {"min": 0, "max": 0},
+            "targetAmount": "ONE",
+            "skippable": false,
+            "startingPoint": "ACTIVE_PLAYER",
+            "veto": "ALL_PREVIOUS",
+            "basicMustBeFirst": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "weaponId": "Sledgehammer",
+    "basicAttack": {
+      "name": "basic mode",
+      "actions": [
+        {
+          "damage": 2,
+          "targets": "FIND",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 0, "max": 0},
+          "targetAmount": "ONE",
+          "skippable": false,
+          "startingPoint": "ACTIVE_PLAYER"
+        }
+      ]
+    },
+    "alternativeAttack": {
+      "name": "in pulverize mode",
+      "cost": ["RED"],
+      "actions": [
+        {
+          "damage": 3,
+          "targets": "FIND",
+          "targetPosition": "FIXED",
+          "targetDistance": {"min": 0, "max": 0},
+          "targetAmount": "ONE",
+          "skippable": false,
+          "startingPoint": "ACTIVE_PLAYER"
+        },
+        {
+          "move": {"min": 0, "max": 2},
+          "targets": "INHERIT_LAST",
+          "skippable": false,
+          "targetFinalPosition": "STRAIGHT",
+          "targetAmount": "ONE"
+        }
+      ]
+    }
+  }
+]

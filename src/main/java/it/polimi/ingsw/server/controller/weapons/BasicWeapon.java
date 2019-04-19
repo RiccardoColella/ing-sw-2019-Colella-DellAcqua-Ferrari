@@ -5,60 +5,14 @@ import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.player.Damageable;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.weapons.Weapon;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class represents the most basic name of weapon of the game, which only has a basic attack
  */
 public class BasicWeapon {
-
-    /**
-     * This enum cathegorizes the 21 different weapons
-     */
-    public enum Name {
-        LOCK_RIFLE("Lock Rifle"),
-        ELECTROSCYTHE("Electroscythe"),
-        MACHINE_GUN("Machine Gun"),
-        TRACTOR_BEAM("Tractor Beam"),
-        THOR("T.H.O.R."),
-        VORTEX_CANNON("Vortex Cannon"),
-        FURNACE("Furnace"),
-        PLASMA_GUN("Plasma Gun"),
-        HEATSEEKER("Heatseeker"),
-        WHISPER("Whisper"),
-        HELLION("Hellion"),
-        FLAMETHROWER("Flamethrower"),
-        TWO_X_TWO("2x-2"),
-        GRENADE_LAUNCHER("Grenade Launcher"),
-        SHOTGUN("Shotgun"),
-        ROCKET_LAUNCHER("Rocket Launcher"),
-        POWER_GLOVE("Power Glove"),
-        RAILGUN("Railgun"),
-        SHOCKWAVE("Shockwave"),
-        CYBERBLADE("Cyberblade"),
-        SLEDGEHAMMER("Sledgehammer");
-
-        private String humanReadableName;
-
-        /**
-         * Constructs the enum associated with a human readable name
-         *
-         *
-         * @param humanReadableName a human readable name for the weapon
-         */
-        Name(String humanReadableName) {
-            this.humanReadableName = humanReadableName;
-        }
-
-        @Override
-        public String toString() {
-            return humanReadableName;
-        }
-    }
 
     /**
      * This property represents the Basic Attack, which is something all weapons have
@@ -73,29 +27,17 @@ public class BasicWeapon {
     /**
      * This property represents the weapon's name as a String
      */
-    private final Name name;
-
-    /**
-     * This property stores whether the weapon is loaded, and can therefore be used
-     */
-    private boolean isLoaded;
+    private final Weapon.Name name;
 
     /**
      * This property stores the targets that have been damaged during the current shoot action
      */
-    protected List<Damageable> damagedTargets;
+    protected List<Player> previouslyHit;
 
-    /**
-     * This property represents the cost in coin that shall be paid to reload the weapon
-     */
-    private final List<AmmoCube> reloadCost;
-
-    /**
-     * This property represents the cost in coin that shall be paid to purchase the weapon
-     */
-    private final List<AmmoCube> acquisitionCost;
 
     protected Block startingBlock;
+
+    protected Player currentShooter;
 
 
     /**
@@ -103,17 +45,12 @@ public class BasicWeapon {
      *
      * @param name the name of the weapon
      * @param basicAttack the basic attack of the weapon
-     * @param acquisitionCost a list of coin equal to the acquisition cost of the weapon
-     * @param reloadCost a list of coin equal to the reload cost of the weapon
      */
-    public BasicWeapon(Name name, Attack basicAttack, List<AmmoCube> acquisitionCost, List<AmmoCube> reloadCost) {
+    public BasicWeapon(Weapon.Name name, Attack basicAttack) {
         this.basicAttack = basicAttack;
         this.name = name;
-        this.isLoaded = false;
         this.activeAttack = null;
-        this.damagedTargets = new LinkedList<>();
-        this.reloadCost = reloadCost;
-        this.acquisitionCost = acquisitionCost;
+        this.previouslyHit = new LinkedList<>();
         startingBlock = null;
     }
 
@@ -163,9 +100,14 @@ public class BasicWeapon {
     public void shoot(Communicator communicator, Player activePlayer) {
         //TODO: implement shooting handling
         //this method should be overridden by children
+        currentShooter = activePlayer;
         activeAttack = basicAttack;
-        handlePayment(communicator, activeAttack, activePlayer);
-        basicAttack.execute(communicator, activePlayer, HashSet::new, HashMap::new);
+        handlePayment(communicator, activeAttack, currentShooter);
+        basicAttack.execute(communicator, this);
+    }
+
+    public void addHitTargets(Set<Player> targets) {
+        previouslyHit.addAll(targets);
     }
 
     protected void handlePayment(Communicator communicator, Attack chosenAttack, Player activePlayer) {
@@ -178,5 +120,21 @@ public class BasicWeapon {
 
     protected void initAttack() {
 
+    }
+
+    public Player getCurrentShooter() {
+        return currentShooter;
+    }
+
+    public List<Attack> getExecutedAttacks() {
+        return new LinkedList<>();
+    }
+
+    public Optional<Block> getStartingPoint() {
+        return Optional.ofNullable(this.startingBlock);
+    }
+
+    public List<Player> getAllTargets() {
+        return previouslyHit;
     }
 }

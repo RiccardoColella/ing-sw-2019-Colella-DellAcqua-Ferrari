@@ -48,6 +48,16 @@ public class Weapon {
         public String toString() {
             return humanReadableName;
         }
+
+        public static Name findByString(String s) {
+            for (Name name: Name.values()) {
+                if (s.equals(name.toString())) {
+                    return name;
+                }
+            }
+
+            throw new IllegalArgumentException();
+        }
     }
 
     private boolean loaded = true;
