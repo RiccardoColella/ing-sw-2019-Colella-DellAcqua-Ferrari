@@ -2,12 +2,14 @@ package it.polimi.ingsw.server.controller.weapons;
 
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
+import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.player.Damageable;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class represents the most basic name of weapon of the game, which only has a basic attack
@@ -39,7 +41,7 @@ public class BasicWeapon {
 
     protected Player currentShooter;
 
-
+    protected List<Attack> availableAttacks;
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
      *
@@ -52,6 +54,7 @@ public class BasicWeapon {
         this.activeAttack = null;
         this.previouslyHit = new LinkedList<>();
         startingBlock = null;
+        availableAttacks = new LinkedList<>();
     }
 
     /**
@@ -93,17 +96,13 @@ public class BasicWeapon {
         return basicAttack.equals(attack);
     }
 
-    public void askForTargets() {
-        //TODO: ask view for targets and set them as the current target
-    }
-
     public void shoot(Communicator communicator, Player activePlayer) {
-        //TODO: implement shooting handling
-        //this method should be overridden by children
         currentShooter = activePlayer;
-        activeAttack = basicAttack;
         handlePayment(communicator, activeAttack, currentShooter);
+        activeAttack = basicAttack;
         basicAttack.execute(communicator, this);
+        previouslyHit.clear();
+        activeAttack = null;
     }
 
     public void addHitTargets(Set<Player> targets) {
@@ -111,15 +110,13 @@ public class BasicWeapon {
     }
 
     protected void handlePayment(Communicator communicator, Attack chosenAttack, Player activePlayer) {
-
+        if (canAffordAttack(chosenAttack)) {
+            //TODO: integrate payment handling
+        } else throw new IllegalStateException("Unaffordable attacks cannot be chosen");
     }
 
     protected Block determineStartingBlock(Communicator communicator, Player activePlayer) {
         return activePlayer.getMatch().getBoard().findPlayer(activePlayer).orElseThrow(() -> new IllegalStateException("Player is not in the board"));
-    }
-
-    protected void initAttack() {
-
     }
 
     public Player getCurrentShooter() {
@@ -136,5 +133,36 @@ public class BasicWeapon {
 
     public List<Player> getAllTargets() {
         return previouslyHit;
+    }
+
+    protected boolean canAffordAttack(Attack attack) {
+        List<Coin> activePlayerWallet = this.currentShooter.getAmmoCubes().stream().map(ammoCube -> (Coin) ammoCube).collect(Collectors.toCollection(LinkedList::new));
+        activePlayerWallet.addAll(this.currentShooter.getPowerups().stream().map(powerupTile -> (Coin) powerupTile).collect(Collectors.toList()));
+        for (Coin coin : attack.getCost()) {
+            if (activePlayerWallet.contains(coin)) {
+                activePlayerWallet.remove(coin);
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean hasAvailableAttacks(Player activePlayer) {
+        this.currentShooter = activePlayer;
+        if (!canAffordAttack(basicAttack)) {
+            return false;
+        }
+        return canDoFirstAction(basicAttack);
+    }
+
+    protected boolean canDoFirstAction(Attack attack) {
+        Set<Block> startingPoints = attack.getPotentialStartingPoints(attack.getActionConfigs().get(0), this);
+        for (Block startingPoint : startingPoints) {
+            if (!attack.getPotentialTargets(startingPoint, attack.getActionConfigs().get(0), this).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

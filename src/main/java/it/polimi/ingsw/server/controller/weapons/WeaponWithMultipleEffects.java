@@ -20,8 +20,6 @@ public class WeaponWithMultipleEffects extends BasicWeapon {
      */
     private final List<Attack> poweredAttacks;
 
-    private List<Attack> remainingAttacks;
-
     private final boolean mustExecuteInOrder;
 
     /**
@@ -61,34 +59,39 @@ public class WeaponWithMultipleEffects extends BasicWeapon {
 
     @Override
     public void shoot(Communicator communicator, Player activePlayer) {
-        remainingAttacks = new LinkedList<>(poweredAttacks);
-        remainingAttacks.add(this.basicAttack);
-
+        List<Attack> allAttacks = new LinkedList<>(poweredAttacks);
+        allAttacks.add(this.basicAttack);
+        availableAttacks.clear();
+        for (int i = 0; i < allAttacks.size(); i++) {
+            if (canAffordAttack(allAttacks.get(i)) && canDoFirstAction(allAttacks.get(i))) {
+                availableAttacks.add(allAttacks.get(i));
+            }
+        }
         do {
             if ((this.activeAttack = askForAttack(communicator)) != null) {
                 // TODO: execute attack
             }
-        } while (!remainingAttacks.isEmpty() && activeAttack != null);
+        } while (!availableAttacks.isEmpty() && activeAttack != null);
 
     }
 
     @Nullable
     private Attack askForAttack(Communicator communicator) {
-        List<String> options = remainingAttacks.stream().map(Attack::getName).collect(Collectors.toCollection(LinkedList::new));
+        List<String> options = availableAttacks.stream().map(Attack::getName).collect(Collectors.toCollection(LinkedList::new));
 
         Attack chosenAttack = null;
         Optional<String> choice;
 
-        choice = remainingAttacks.contains(this.basicAttack) ?
+        choice = availableAttacks.contains(this.basicAttack) ?
                 Optional.of(communicator.select(options)) :
                 communicator.selectOptional(options);
 
         if (choice.isPresent()) {
-            chosenAttack = remainingAttacks.stream()
+            chosenAttack = availableAttacks.stream()
                     .filter(attack -> attack.getName().equals(choice.get()))
                     .findAny()
                     .orElseThrow(() -> new IllegalStateException(("Player chose an attack that does not exist")));
-            remainingAttacks.remove(chosenAttack);
+            availableAttacks.remove(chosenAttack);
         }
 
         return chosenAttack;

@@ -1,9 +1,11 @@
 package it.polimi.ingsw.server.controller.weapons;
 
+import it.polimi.ingsw.server.model.battlefield.TurretBlock;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.utils.Tuple;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,25 +48,37 @@ public class WeaponWithAlternative extends BasicWeapon {
 
     @Override
     public void shoot(Communicator communicator, Player activePlayer) {
-        List<Coin> activePlayerWallet = activePlayer.getAmmoCubes().stream().map(ammoCube -> (Coin) ammoCube).collect(Collectors.toCollection(LinkedList::new));
-        activePlayerWallet.addAll(activePlayer.getPowerups().stream().map(powerupTile -> (Coin) powerupTile).collect(Collectors.toList()));
         Attack selectedAttack;
-        if (activePlayerWallet.containsAll(alternativeAttack.getCost())) {
-            //player can afford the alternative attack
-            Map<String, List<String>> potentialAttacks = new HashMap<>();
-            potentialAttacks.put(basicAttack.getName(), basicAttack.getCost().stream().map(Object::toString).collect(Collectors.toList()));
-            potentialAttacks.put(alternativeAttack.getName(), alternativeAttack.getCost().stream().map(Object::toString).collect(Collectors.toList()));
-            String selectedAttackName = communicator.select(potentialAttacks);
+        availableAttacks.clear();
+        if (canAffordAttack(basicAttack) && canDoFirstAction(basicAttack)) {
+            availableAttacks.add(basicAttack);
+        }
+        if (canAffordAttack(alternativeAttack) && canDoFirstAction(alternativeAttack)) {
+            availableAttacks.add(alternativeAttack);
+        }
+        if (availableAttacks.size() == 2) {
+            List<Tuple<String, List<String>>> potentialAttacks = new LinkedList<>();
+            for (Attack attack : availableAttacks) {
+                potentialAttacks.add(new Tuple<>(attack.getName(), attack.getCost().stream().map(Object::toString).collect(Collectors.toList())));
+            }
+            String selectedAttackName = communicator.select(potentialAttacks).getItem1();
             if (selectedAttackName.equals(basicAttack.getName())) {
                 selectedAttack = basicAttack;
             } else {
                 selectedAttack = alternativeAttack;
             }
-        } else {
-            selectedAttack = basicAttack;
-        }
+        } else if (availableAttacks.size() == 1) {
+            selectedAttack = availableAttacks.get(0);
+        } else throw new IllegalStateException("No attacks available");
         handlePayment(communicator, selectedAttack, activePlayer);
         selectedAttack.execute(communicator, this);
     }
 
+    @Override
+    public boolean hasAvailableAttacks(Player activePlayer) {
+        currentShooter = activePlayer;
+        return (canAffordAttack(basicAttack) && canDoFirstAction(basicAttack))
+                ||
+               (canAffordAttack(alternativeAttack) && canDoFirstAction(alternativeAttack));
+    }
 }

@@ -27,7 +27,7 @@ public class Attack {
     }
 
     protected final String name;
-    protected final List<ActionConfig> actionConfigs;
+    private final List<ActionConfig> actionConfigs;
     protected final Board board;
     protected boolean basicFirst;
     protected final List<Coin> cost;
@@ -164,6 +164,10 @@ public class Attack {
 
     public List<Coin> getCost() {
         return cost;
+    }
+
+    List<ActionConfig> getActionConfigs() {
+        return this.actionConfigs;
     }
 }
 
