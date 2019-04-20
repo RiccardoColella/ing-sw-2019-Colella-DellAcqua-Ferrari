@@ -1,10 +1,14 @@
 package it.polimi.ingsw.server.model.battlefield;
 
+import it.polimi.ingsw.server.controller.weapons.Range;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.shared.Direction;
 
 import java.util.*;
 import java.util.List;
+
+import static it.polimi.ingsw.server.model.battlefield.Block.BorderType.WALL;
 
 /**
  * This class implements the game board
@@ -82,7 +86,7 @@ public class Board {
      * @return true if in that direction there is a door
      */
     private boolean otherRoom(Direction direction, Block block){
-        return block.getBoarderType(direction) == Block.BorderType.DOOR;
+        return block.getBorderType(direction) == Block.BorderType.DOOR;
     }
 
     /**
@@ -92,7 +96,7 @@ public class Board {
      * @return true if the block in that direction is in the same room.
      */
     private boolean sameRoom(Direction direction, Block block){
-        Block.BorderType borderType = block.getBoarderType(direction);
+        Block.BorderType borderType = block.getBorderType(direction);
         return borderType == Block.BorderType.NONE;
     }
 
@@ -264,5 +268,46 @@ public class Board {
             }
         }
         return blocks;
+    }
+
+    public Set<Block> getReachableBlocks(Block startingPoint, Range range) {
+        Set<Block> toCheck = new HashSet<>();
+        Set<Block> alreadyChecked = new HashSet<>();
+        toCheck.add(startingPoint);
+        //getting all the blocks at min distance from starting point, step by step
+        for (int i = 0; i < range.getMin(); i++) {
+            checkNeighbors(alreadyChecked, toCheck);
+        }
+        //at this point, toCheck contains all the blocks at the min acceptable distance from startingPoint
+        Set<Block> candidates = new HashSet<>(toCheck);
+        //if min and max are different, all blocks with a distance smaller than max but greater than min will be added
+        for (int distance = range.getMin(); distance < range.getMax(); distance++) {
+            checkNeighbors(alreadyChecked, toCheck);
+            candidates.addAll(toCheck);
+        }
+        return candidates;
+    }
+
+    /**
+     * This method modifies the two input sets, adding new blocks to the set that needs to be checked and moving the checked blocks to alreadyChecked
+     * @param alreadyChecked blocks that have previously been checked
+     * @param toCheck the blocks that will be checked
+     */
+    private void checkNeighbors(Set<Block> alreadyChecked, Set<Block> toCheck) {
+        List<Block> neighbors = new LinkedList<>();
+        toCheck.forEach(block -> {
+            for (Direction dir : Direction.values()) {
+                if (block.getBorderType(dir) != WALL) {
+                    this.getBlockNeighbor(block, dir).ifPresent(neighbors::add);
+                }
+            }
+            alreadyChecked.add(block);
+        });
+        toCheck.clear();
+        neighbors.forEach(n -> {
+            if (!alreadyChecked.contains(n)) {
+                toCheck.add(n);
+            }
+        });
     }
 }

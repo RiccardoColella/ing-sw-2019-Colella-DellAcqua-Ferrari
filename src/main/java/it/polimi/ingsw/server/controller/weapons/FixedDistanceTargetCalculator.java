@@ -1,8 +1,7 @@
 package it.polimi.ingsw.server.controller.weapons;
 
 import it.polimi.ingsw.server.model.battlefield.Board;
-import it.polimi.ingsw.server.model.battlefield.Direction;
-import it.polimi.ingsw.server.model.player.Damageable;
+import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.player.Player;
 
@@ -37,44 +36,10 @@ public class FixedDistanceTargetCalculator implements TargetCalculator {
      */
     @Override
     public Set<Player> computeTargets(Block startingPoint) {
-        Set<Block> toCheck = new HashSet<>();
-        Set<Block> alreadyChecked = new HashSet<>();
-        toCheck.add(startingPoint);
-        //getting all the blocks at min distance from starting point, step by step
-        for (int i = 0; i < range.getMin(); i++) {
-            checkNeighbors(alreadyChecked, toCheck);
-        }
-        //at this point, toCheck contains all the blocks at the min acceptable distance from startingPoint
-        Set<Block> candidates = new HashSet<>(toCheck);
-        //if min and max are different, all blocks with a distance smaller than max but greater than min will be added
-        for (int distance = range.getMin(); distance < range.getMax(); distance++) {
-            checkNeighbors(alreadyChecked, toCheck);
-            candidates.addAll(toCheck);
-        }
+        Set<Block> candidates = board.getReachableBlocks(startingPoint, range);
         candidates.removeIf(block -> block.getPlayers().isEmpty());
         return candidates.stream().flatMap(block -> block.getPlayers().stream()).collect(Collectors.toSet());
     }
 
-    /**
-     * This method modifies the two input sets, adding new blocks to the set that needs to be checked and moving the checked blocks to alreadyChecked
-     * @param alreadyChecked blocks that have previously been checked
-     * @param toCheck the blocks that will be checked
-     */
-    private void checkNeighbors(Set<Block> alreadyChecked, Set<Block> toCheck) {
-        List<Block> neighbors = new LinkedList<>();
-        toCheck.forEach(block -> {
-            for (Direction dir : Direction.values()) {
-                if (block.getBoarderType(dir) != WALL) {
-                    board.getBlockNeighbor(block, dir).ifPresent(neighbors::add);
-                }
-            }
-            alreadyChecked.add(block);
-        });
-        toCheck.clear();
-        neighbors.forEach(n -> {
-            if (!alreadyChecked.contains(n)) {
-                toCheck.add(n);
-            }
-        });
-    }
+
 }

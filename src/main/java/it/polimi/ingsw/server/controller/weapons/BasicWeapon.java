@@ -6,6 +6,7 @@ import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.view.Interviewer;
+import it.polimi.ingsw.utils.Tuple;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ public class BasicWeapon {
     /**
      * This property stores the targets that have been damaged during the current shoot action
      */
-    protected List<Player> previouslyHit;
+    protected List<Tuple<Set<Player>, Attack>> previouslyHit;
 
 
     protected Block startingBlock;
@@ -104,8 +105,8 @@ public class BasicWeapon {
         activeAttack = null;
     }
 
-    public void addHitTargets(Set<Player> targets) {
-        previouslyHit.addAll(targets);
+    public void addHitTargets(Set<Player> targets, Attack attack) {
+        previouslyHit.add(new Tuple<>(targets, attack));
     }
 
     protected void handlePayment(Interviewer interviewer, Attack chosenAttack, Player activePlayer) {
@@ -131,7 +132,9 @@ public class BasicWeapon {
     }
 
     public List<Player> getAllTargets() {
-        return previouslyHit;
+        List<Player> hitTargets = new ArrayList<>();
+        previouslyHit.forEach(tuple -> hitTargets.addAll(tuple.getItem1()));
+        return hitTargets;
     }
 
     protected boolean canAffordAttack(Attack attack) {

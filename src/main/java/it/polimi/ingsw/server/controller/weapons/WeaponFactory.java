@@ -3,21 +3,25 @@ package it.polimi.ingsw.server.controller.weapons;
 import com.google.gson.*;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.battlefield.Board;
+import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.server.model.currency.AmmoCubeFactory;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.exceptions.IncoherentConfigurationException;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
-import it.polimi.ingsw.server.model.player.Damageable;
+import it.polimi.ingsw.server.model.player.DamageToken;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.view.Interviewer;
+import it.polimi.ingsw.utils.TriConsumer;
 
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -106,8 +110,7 @@ public class WeaponFactory {
         BiFunction<Set<Set<Player>>, List<Player>, Set<Set<Player>>> veto = readVeto(actionObject);
         boolean skippable = actionObject.get("skippable").getAsBoolean();
         Function<BasicWeapon, Set<Block>> startingPointUpdater = readStartingPoint(actionObject);
-        Attack.ActionType actionType = readActionType(actionObject);
-        Range actionRange = readActionRange(actionObject, board);
+        TriConsumer<Set<Player>, Interviewer, BasicWeapon> executor = readActionType(actionObject, board.getBlocks().size());
         return new ActionConfig(
             targetCalculator,
             bonusTargets,
@@ -117,8 +120,7 @@ public class WeaponFactory {
             veto,
             skippable,
             startingPointUpdater,
-            actionType,
-            actionRange
+            executor
         );
     }
 
@@ -356,6 +358,13 @@ public class WeaponFactory {
                     break;
                 case "VISIBLE":
                     startingPointCalculator = weapon -> weapon.getCurrentShooter().getMatch().getBoard().getVisibleBlocks(weapon.getCurrentShooter().getBlock());
+                    if (actionObject.has("andNotStartingPoint") && actionObject.get("andNotStartingPoint").getAsString().equals("ACTIVE_PLAYER")) {
+                        startingPointCalculator = weapon -> {
+                            Set<Block> blocks = weapon.getCurrentShooter().getMatch().getBoard().getVisibleBlocks(weapon.getCurrentShooter().getBlock());
+                            blocks.remove(weapon.getCurrentShooter().getBlock());
+                            return blocks;
+                        };
+                    }
                     break;
                 case "PREVIOUS_TARGET":
                     startingPointCalculator = weapon -> new HashSet<>(Collections.singletonList(
@@ -373,26 +382,119 @@ public class WeaponFactory {
         return startingPointCalculator;
     }
 
-    private static Attack.ActionType readActionType(JsonObject actionObject) {
+    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readActionType(final JsonObject actionObject, int boardSize) {
+        TriConsumer<Set<Player>, Interviewer, BasicWeapon> executor;
         if (actionObject.has("damage")) {
-            return Attack.ActionType.DAMAGE;
+            executor = readDamageExecutor(actionObject);
         } else if (actionObject.has("mark")) {
-            return Attack.ActionType.MARK;
+            executor = readMarkExecutor(actionObject);
         } else if (actionObject.has("move")) {
-            return Attack.ActionType.MOVE;
+            executor = readMoveExecutor(actionObject, boardSize);
         } else throw new IncoherentConfigurationException("No action specified");
+        return executor;
     }
 
-    private static Range readActionRange(JsonObject actionObject, Board board) {
-        if (actionObject.has("damage")) {
-            int damage = actionObject.get("damage").getAsInt();
-            return new Range(damage, damage);
-        } else if (actionObject.has("mark")) {
-            int mark = actionObject.get("mark").getAsInt();
-            return new Range(mark, mark);
-        } else if (actionObject.has("move")) {
-            JsonObject move = actionObject.getAsJsonObject("move");
-            return computeRange(move, board.getBlocks().size());
-        } else throw new IncoherentConfigurationException("No action specified");
+    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readDamageExecutor(final JsonObject actionObject) {
+        return  (targets, interviewer, weapon) -> {
+            int damageAmount = actionObject.get("damage").getAsInt();
+            List<DamageToken> tokens = new ArrayList<>();
+            for (int i = 0; i < damageAmount; i++) {
+                tokens.add(new DamageToken(weapon.getCurrentShooter()));
+            }
+            targets.forEach(target -> target.addDamageTokens(tokens));
+        };
+    }
+
+    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readMarkExecutor(final JsonObject actionObject) {
+        return (targets, interviewer, weapon) -> {
+            int markAmount = actionObject.get("mark").getAsInt();
+            List<DamageToken> marks = new ArrayList<>();
+            for (int i = 0; i < markAmount; i++) {
+                marks.add(new DamageToken(weapon.getCurrentShooter()));
+            }
+            targets.forEach(target -> target.addDamageTokens(marks));
+        };
+    }
+
+    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readMoveExecutor(final JsonObject actionObject, int boardSize) {
+        final Range range = computeRange(actionObject.get("move").getAsJsonObject(), boardSize);
+        if (actionObject.has("targetFinalPosition")) {
+            String position = actionObject.get("targetFinalPosition").getAsString();
+            switch (position) {
+                case "FIXED":
+                    return readFixedTargetMoveExecutor(actionObject, range, boardSize);
+                case "STRAIGHT":
+                    return readStraightTargetMoveExecutor(range, boardSize);
+                default:
+                    throw new IncoherentConfigurationException("Unrecognized targetFinalPosition: " + position);
+            }
+        } else {
+            return readStandardMoveExecutor(range);
+        }
+    }
+
+    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readFixedTargetMoveExecutor(final JsonObject actionObject, final Range range, int boardSize) {
+        final Range rangeFromStartingBlock = computeRange(actionObject.get("targetFinalDistance").getAsJsonObject(), boardSize);
+        return (targets, interviewer, weapon) -> {
+            for (Player target : targets) {
+                Block start = weapon.getStartingPoint().orElseThrow(() -> new IllegalStateException("Missing starting point, can't calculate fixed distance"));
+                Board board = target.getMatch().getBoard();
+                Set<Block> arrivalOptionsFromTarget = board.getReachableBlocks(target.getBlock(), range);
+                Set<Block> arrivalOptionsFromStart = board.getReachableBlocks(start, rangeFromStartingBlock);
+                arrivalOptionsFromTarget.removeIf(block -> !arrivalOptionsFromStart.contains(block));
+                Set<Point> coordinates = arrivalOptionsFromTarget.stream().map(block -> new Point(block.getColumn(), block.getRow())).collect(Collectors.toSet());
+                Point chosenPoint = interviewer.select(coordinates);
+                board.teleportPlayer(target, board.getBlock(chosenPoint.y, chosenPoint.x).orElseThrow(() -> new IllegalArgumentException("Destination block does not exist")));
+            }
+        };
+    }
+
+    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readStraightTargetMoveExecutor(final Range range, int boardSize) {
+        return (targets, interviewer, weapon) -> {
+            for (Player target : targets) {
+                Block start = target.getBlock();
+                Board board = target.getMatch().getBoard();
+                Set<Direction> options = Arrays
+                        .stream(Direction.values())
+                        .filter(dir -> start.getBorderType(dir) != Block.BorderType.WALL)
+                        .collect(Collectors.toSet());
+
+                Optional<Direction> chosenDirection =
+                        range.getMin() > 0 ?
+                                Optional.of(interviewer.select(options)) :
+                                interviewer.selectOptional(options);
+
+                for (int i = 0; (i < range.getMax()) && chosenDirection.isPresent(); i++) {
+                    board.movePlayer(target, chosenDirection.get());
+                    chosenDirection = range.getMin() > (i + 1) ?
+                            chosenDirection :
+                            interviewer.selectOptional(Collections.singleton(chosenDirection.get()));
+                }
+
+            }
+        };
+    }
+
+    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readStandardMoveExecutor(final Range range) {
+        return (targets, interviewer, weapon) -> {
+            for (Player target : targets) {
+                Board board = target.getMatch().getBoard();
+                int i = 0;
+                Optional<Direction> chosenDirection;
+                do {
+                    Block start = target.getBlock();
+                    Set<Direction> options = Arrays
+                            .stream(Direction.values())
+                            .filter(dir -> start.getBorderType(dir) != Block.BorderType.WALL)
+                            .collect(Collectors.toSet());
+                    chosenDirection =
+                            range.getMin() > i ?
+                                    Optional.of(interviewer.select(options)) :
+                                    interviewer.selectOptional(options);
+                    chosenDirection.ifPresent(dir -> board.movePlayer(target, dir));
+                    i++;
+                } while (i < range.getMax() && chosenDirection.isPresent());
+            }
+        };
     }
 }

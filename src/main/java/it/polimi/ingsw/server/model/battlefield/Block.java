@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server.model.battlefield;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.shared.Direction;
 
 import java.util.*;
 
@@ -80,7 +81,7 @@ public abstract class Block {
      * @param direction border investigated
      * @return BorderType in the direction asked
      */
-    public BorderType getBoarderType(Direction direction) {
+    public BorderType getBorderType(Direction direction) {
         return this.borders.get(direction);
     }
 

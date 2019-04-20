@@ -3,7 +3,7 @@ package it.polimi.ingsw.server.model.player;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.match.Match;
-import it.polimi.ingsw.server.model.battlefield.Direction;
+import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.PowerupTile;

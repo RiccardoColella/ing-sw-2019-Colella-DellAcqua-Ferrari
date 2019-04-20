@@ -1,9 +1,8 @@
 package it.polimi.ingsw.server.controller.weapons;
 
 import it.polimi.ingsw.server.model.battlefield.Board;
-import it.polimi.ingsw.server.model.player.Damageable;
 import it.polimi.ingsw.server.model.battlefield.Block;
-import it.polimi.ingsw.server.model.battlefield.Direction;
+import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.server.model.player.Player;
 
 import javax.annotation.Nullable;
@@ -92,7 +91,7 @@ public class FixedDirectionTargetCalculator implements TargetCalculator {
         for (Block block : possibleBlocks) {
             if (wallFound) {
                 toRemove.add(block);
-            } else if (block.getBoarderType(direction) == Block.BorderType.WALL) {
+            } else if (block.getBorderType(direction) == Block.BorderType.WALL) {
                 wallFound = true;
             }
         }

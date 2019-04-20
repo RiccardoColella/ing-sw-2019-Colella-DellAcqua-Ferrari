@@ -2,11 +2,11 @@ package it.polimi.ingsw.server.controller.weapons;
 
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.player.Player;
-import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.view.Interviewer;
+import it.polimi.ingsw.utils.TriConsumer;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -14,8 +14,7 @@ import java.util.function.Function;
 
 public class ActionConfig {
     private final TargetCalculator calculator;
-    private final Range range;
-    private final Attack.ActionType actionType;
+    private final TriConsumer<Set<Player>, Interviewer, BasicWeapon> executor;
     private final boolean skippable;
     private final BiFunction<List<Player>, Player, Set<Player>> bonusTargets;
     private final Function<BasicWeapon, Set<Player>> targetsToChooseFrom;
@@ -34,11 +33,9 @@ public class ActionConfig {
             BiFunction<Set<Set<Player>>, List<Player>, Set<Set<Player>>> veto,
             boolean skippable,
             Function<BasicWeapon, Set<Block>> startingPointUpdater,
-            Attack.ActionType actionType,
-            Range range) {
+            TriConsumer<Set<Player>, Interviewer, BasicWeapon> executor) {
         this.calculator = calculator;
-        this.range = range;
-        this.actionType = actionType;
+        this.executor = executor;
         this.skippable = skippable;
         this.bonusTargets = bonusTargets;
         this.targetsToChooseFrom = targetsToChooseFrom;
@@ -52,12 +49,8 @@ public class ActionConfig {
         return Optional.ofNullable(calculator);
     }
 
-    public Range getRange() {
-        return range;
-    }
-
-    public Attack.ActionType getActionType() {
-        return actionType;
+    public void execute(Set<Player> targets, Interviewer interviewer, BasicWeapon weapon) {
+        executor.apply(targets, interviewer, weapon);
     }
 
     public boolean isSkippable() {

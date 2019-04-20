@@ -167,7 +167,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>private boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Board.html#canMove-it.polimi.ingsw.server.model.battlefield.Direction-it.polimi.ingsw.server.model.battlefield.Block-">canMove</a></span>(<a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Direction.html" title="enum in it.polimi.ingsw.server.model.battlefield">Direction</a>&nbsp;direction,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Board.html#canMove-it.polimi.ingsw.shared.Direction-it.polimi.ingsw.server.model.battlefield.Block-">canMove</a></span>(<a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Direction.html" title="enum in it.polimi.ingsw.server.model.battlefield">Direction</a>&nbsp;direction,
        <a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Block.html" title="class in it.polimi.ingsw.server.model.battlefield">Block</a>&nbsp;block)</code>&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
@@ -191,7 +191,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>java.util.Optional&lt;<a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Block.html" title="class in it.polimi.ingsw.server.model.battlefield">Block</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Board.html#getBlockNeighbor-it.polimi.ingsw.server.model.battlefield.Block-it.polimi.ingsw.server.model.battlefield.Direction-">getBlockNeighbor</a></span>(<a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Block.html" title="class in it.polimi.ingsw.server.model.battlefield">Block</a>&nbsp;block,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Board.html#getBlockNeighbor-it.polimi.ingsw.server.model.battlefield.Block-it.polimi.ingsw.shared.Direction-">getBlockNeighbor</a></span>(<a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Block.html" title="class in it.polimi.ingsw.server.model.battlefield">Block</a>&nbsp;block,
                 <a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Direction.html" title="enum in it.polimi.ingsw.server.model.battlefield">Direction</a>&nbsp;direction)</code>
 <div class="block">Tells who is the neighbor of the selected block</div>
 </td>
@@ -234,21 +234,21 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i12" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Board.html#movePlayer-it.polimi.ingsw.server.model.player.Player-it.polimi.ingsw.server.model.battlefield.Direction-">movePlayer</a></span>(<a href="../../../../../../it/polimi/ingsw/server/model/player/Player.html" title="class in it.polimi.ingsw.server.model.player">Player</a>&nbsp;player,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Board.html#movePlayer-it.polimi.ingsw.server.model.player.Player-it.polimi.ingsw.shared.Direction-">movePlayer</a></span>(<a href="../../../../../../it/polimi/ingsw/server/model/player/Player.html" title="class in it.polimi.ingsw.server.model.player">Player</a>&nbsp;player,
           <a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Direction.html" title="enum in it.polimi.ingsw.server.model.battlefield">Direction</a>&nbsp;direction)</code>
 <div class="block">Move a Player in the selected direction</div>
 </td>
 </tr>
 <tr id="i13" class="rowColor">
 <td class="colFirst"><code>private boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Board.html#otherRoom-it.polimi.ingsw.server.model.battlefield.Direction-it.polimi.ingsw.server.model.battlefield.Block-">otherRoom</a></span>(<a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Direction.html" title="enum in it.polimi.ingsw.server.model.battlefield">Direction</a>&nbsp;direction,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Board.html#otherRoom-it.polimi.ingsw.shared.Direction-it.polimi.ingsw.server.model.battlefield.Block-">otherRoom</a></span>(<a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Direction.html" title="enum in it.polimi.ingsw.server.model.battlefield">Direction</a>&nbsp;direction,
          <a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Block.html" title="class in it.polimi.ingsw.server.model.battlefield">Block</a>&nbsp;block)</code>
 <div class="block">Returns true if in that direction there is a door</div>
 </td>
 </tr>
 <tr id="i14" class="altColor">
 <td class="colFirst"><code>private boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Board.html#sameRoom-it.polimi.ingsw.server.model.battlefield.Direction-it.polimi.ingsw.server.model.battlefield.Block-">sameRoom</a></span>(<a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Direction.html" title="enum in it.polimi.ingsw.server.model.battlefield">Direction</a>&nbsp;direction,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Board.html#sameRoom-it.polimi.ingsw.shared.Direction-it.polimi.ingsw.server.model.battlefield.Block-">sameRoom</a></span>(<a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Direction.html" title="enum in it.polimi.ingsw.server.model.battlefield">Direction</a>&nbsp;direction,
         <a href="../../../../../../it/polimi/ingsw/server/model/battlefield/Block.html" title="class in it.polimi.ingsw.server.model.battlefield">Block</a>&nbsp;block)</code>
 <div class="block">Returns true if the block in that direction is in the same room.</div>
 </td>
@@ -356,7 +356,7 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="getBlockNeighbor-it.polimi.ingsw.server.model.battlefield.Block-it.polimi.ingsw.server.model.battlefield.Direction-">
+<a name="getBlockNeighbor-it.polimi.ingsw.server.model.battlefield.Block-it.polimi.ingsw.shared.Direction-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -374,7 +374,7 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="otherRoom-it.polimi.ingsw.server.model.battlefield.Direction-it.polimi.ingsw.server.model.battlefield.Block-">
+<a name="otherRoom-it.polimi.ingsw.shared.Direction-it.polimi.ingsw.server.model.battlefield.Block-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -392,7 +392,7 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="sameRoom-it.polimi.ingsw.server.model.battlefield.Direction-it.polimi.ingsw.server.model.battlefield.Block-">
+<a name="sameRoom-it.polimi.ingsw.shared.Direction-it.polimi.ingsw.server.model.battlefield.Block-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -410,7 +410,7 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="canMove-it.polimi.ingsw.server.model.battlefield.Direction-it.polimi.ingsw.server.model.battlefield.Block-">
+<a name="canMove-it.polimi.ingsw.shared.Direction-it.polimi.ingsw.server.model.battlefield.Block-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -484,7 +484,7 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="movePlayer-it.polimi.ingsw.server.model.player.Player-it.polimi.ingsw.server.model.battlefield.Direction-">
+<a name="movePlayer-it.polimi.ingsw.server.model.player.Player-it.polimi.ingsw.shared.Direction-">
 <!--   -->
 </a>
 <ul class="blockList">

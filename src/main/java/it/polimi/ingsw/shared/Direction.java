@@ -1,4 +1,4 @@
-package it.polimi.ingsw.server.model.battlefield;
+package it.polimi.ingsw.shared;
 
 /**
  * Define basic directions

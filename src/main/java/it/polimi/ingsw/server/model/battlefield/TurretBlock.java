@@ -2,6 +2,7 @@ package it.polimi.ingsw.server.model.battlefield;
 
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.shared.Direction;
 
 /**
  * This class represents all blocks of turret type, which are the blocks that refer to the bonus deck when a grab action occurs
@@ -40,10 +41,10 @@ public class TurretBlock extends Block {
         return new TurretBlock(
                 this.getRow(),
                 this.getColumn(),
-                this.getBoarderType(Direction.NORTH),
-                this.getBoarderType(Direction.EAST),
-                this.getBoarderType(Direction.SOUTH),
-                this.getBoarderType(Direction.WEST)
+                this.getBorderType(Direction.NORTH),
+                this.getBorderType(Direction.EAST),
+                this.getBorderType(Direction.SOUTH),
+                this.getBorderType(Direction.WEST)
         );
     }
 

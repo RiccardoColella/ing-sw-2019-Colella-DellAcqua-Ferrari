@@ -2,6 +2,7 @@ package it.polimi.ingsw.server.model.battlefield;
 
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.shared.Direction;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -87,10 +88,10 @@ public class SpawnpointBlock extends Block {
         return new SpawnpointBlock(
                 this.getRow(),
                 this.getColumn(),
-                this.getBoarderType(Direction.NORTH),
-                this.getBoarderType(Direction.EAST),
-                this.getBoarderType(Direction.SOUTH),
-                this.getBoarderType(Direction.WEST),
+                this.getBorderType(Direction.NORTH),
+                this.getBorderType(Direction.EAST),
+                this.getBorderType(Direction.SOUTH),
+                this.getBorderType(Direction.WEST),
                 this.color,
                 this.maxWeapons
         );
