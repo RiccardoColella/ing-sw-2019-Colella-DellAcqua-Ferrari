@@ -4,6 +4,7 @@ import com.google.gson.*;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.shared.Direction;
+import it.polimi.ingsw.utils.EnumValueByString;
 
 import java.io.*;
 import java.util.EnumMap;
@@ -88,10 +89,10 @@ public class BoardFactory {
                 return new TurretBlock(
                                 r,
                                 c,
-                                Block.BorderType.findByString(borders.get(Direction.NORTH.toString()).getAsString()),
-                                Block.BorderType.findByString(borders.get(Direction.EAST.toString()).getAsString()),
-                                Block.BorderType.findByString(borders.get(Direction.SOUTH.toString()).getAsString()),
-                                Block.BorderType.findByString(borders.get(Direction.WEST.toString()).getAsString())
+                                EnumValueByString.findByString(borders.get(Direction.NORTH.toString()).getAsString(), Block.BorderType.class),
+                                EnumValueByString.findByString(borders.get(Direction.EAST.toString()).getAsString(), Block.BorderType.class),
+                                EnumValueByString.findByString(borders.get(Direction.SOUTH.toString()).getAsString(), Block.BorderType.class),
+                                EnumValueByString.findByString(borders.get(Direction.WEST.toString()).getAsString(), Block.BorderType.class)
                         );
             } else {
                 // SPAWNPOINT
@@ -99,11 +100,11 @@ public class BoardFactory {
                 return new SpawnpointBlock(
                                 r,
                                 c,
-                                Block.BorderType.findByString(borders.get(Direction.NORTH.toString()).getAsString()),
-                                Block.BorderType.findByString(borders.get(Direction.EAST.toString()).getAsString()),
-                                Block.BorderType.findByString(borders.get(Direction.SOUTH.toString()).getAsString()),
-                                Block.BorderType.findByString(borders.get(Direction.WEST.toString()).getAsString()),
-                                CurrencyColor.findByString(json.getAsJsonObject().get("color").getAsString()),
+                                EnumValueByString.findByString(borders.get(Direction.NORTH.toString()).getAsString(), Block.BorderType.class),
+                                EnumValueByString.findByString(borders.get(Direction.EAST.toString()).getAsString(), Block.BorderType.class),
+                                EnumValueByString.findByString(borders.get(Direction.SOUTH.toString()).getAsString(), Block.BorderType.class),
+                                EnumValueByString.findByString(borders.get(Direction.WEST.toString()).getAsString(), Block.BorderType.class),
+                                EnumValueByString.findByString(json.getAsJsonObject().get("color").getAsString(), CurrencyColor.class),
                                 json.getAsJsonObject().get("maxWeapons").getAsInt()
                         );
             }

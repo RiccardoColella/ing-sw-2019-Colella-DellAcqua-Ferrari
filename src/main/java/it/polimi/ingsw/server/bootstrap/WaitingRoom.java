@@ -69,34 +69,35 @@ public class WaitingRoom implements AutoCloseable {
             Thread.currentThread().interrupt();
         }
 
-        synchronized (threadPool) {
-            if (!threadPool.isShutdown()) {
-                // Scheduling future execution
-                threadPool.execute(this::scheduledTask);
-            }
+
+        if (!threadPool.isShutdown()) {
+            // Scheduling future execution
+            threadPool.execute(this::scheduledTask);
         }
     }
 
     private void connectToNewViews() {
-        synchronized (threadPool) {
-            synchronized (connectedViews) {
-                try {
-                    connectedViews.add(
-                        currentSocketTask
-                            .get(ACCEPT_TIMEOUT, TimeUnit.MILLISECONDS)
-                    );
+        synchronized (connectedViews) {
+            try {
+                connectedViews.add(
+                    currentSocketTask
+                        .get(ACCEPT_TIMEOUT, TimeUnit.MILLISECONDS)
+                );
 
-                    // If the previous instruction did succeed then we can submit a new task for future calls,
-                    // otherwise this instruction will not be executed and on the next call currentSocketTask
-                    // will either hold the promised result or not
+                // If the previous instruction did succeed then we can submit a new task for future calls,
+                // otherwise this instruction will not be executed and on the next call currentSocketTask
+                // will either hold the promised result or not
+                if (!threadPool.isShutdown()) {
                     currentSocketTask = threadPool.submit(socketAcceptor);
-                } catch (ExecutionException ex) {
-                    currentSocketTask = threadPool.submit(socketAcceptor);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                } catch (TimeoutException ex) {
-                    logger.info("No view tried to connect, retrying...");
                 }
+            } catch (ExecutionException ex) {
+                if (!threadPool.isShutdown()) {
+                    currentSocketTask = threadPool.submit(socketAcceptor);
+                }
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } catch (TimeoutException ex) {
+                logger.info("No view tried to connect, retrying...");
             }
         }
     }

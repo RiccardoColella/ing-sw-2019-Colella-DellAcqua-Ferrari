@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
+import it.polimi.ingsw.utils.EnumValueByString;
 
 import java.io.File;
 import java.io.FileReader;
@@ -47,17 +48,17 @@ public final class BonusTileFactory {
                     if (tile.getAsJsonObject().get("thirdAmmo") != null) {
                         tileQuantityMap.put(
                                 BonusTileFactory.create(
-                                        CurrencyColor.findByString(tile.getAsJsonObject().get("firstAmmo").getAsString()),
-                                        CurrencyColor.findByString(tile.getAsJsonObject().get("secondAmmo").getAsString()),
-                                        CurrencyColor.findByString(tile.getAsJsonObject().get("thirdAmmo").getAsString())
+                                        EnumValueByString.findByString(tile.getAsJsonObject().get("firstAmmo").getAsString(), CurrencyColor.class),
+                                        EnumValueByString.findByString(tile.getAsJsonObject().get("secondAmmo").getAsString(), CurrencyColor.class),
+                                        EnumValueByString.findByString(tile.getAsJsonObject().get("thirdAmmo").getAsString(), CurrencyColor.class)
                                 ),
                                 tile.getAsJsonObject().get("quantity").getAsInt()
                         );
                     } else {
                         tileQuantityMap.put(
                                 BonusTileFactory.create(
-                                        CurrencyColor.findByString(tile.getAsJsonObject().get("firstAmmo").getAsString()),
-                                        CurrencyColor.findByString(tile.getAsJsonObject().get("secondAmmo").getAsString())
+                                        EnumValueByString.findByString(tile.getAsJsonObject().get("firstAmmo").getAsString(), CurrencyColor.class),
+                                        EnumValueByString.findByString(tile.getAsJsonObject().get("secondAmmo").getAsString(), CurrencyColor.class)
                                 ),
                                 tile.getAsJsonObject().get("quantity").getAsInt()
                         );

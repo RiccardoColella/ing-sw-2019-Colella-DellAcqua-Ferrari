@@ -18,18 +18,11 @@ import java.util.List;
  */
 public class RMIView extends View {
 
-    private boolean connected = true;
-
     public RMIView() { }
 
     @Override
     public PowerupTile chooseSpawnpoint(List<PowerupTile> powerups) {
         return null;
-    }
-
-    @Override
-    public boolean isConnected() {
-        return connected;
     }
 
     @Override
@@ -50,10 +43,5 @@ public class RMIView extends View {
     @Override
     public Match.Mode getChosenMode() {
         return null;
-    }
-
-    @Override
-    public void sendCommand(Command command) {
-
     }
 }

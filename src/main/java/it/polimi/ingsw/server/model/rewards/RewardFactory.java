@@ -2,6 +2,7 @@ package it.polimi.ingsw.server.model.rewards;
 
 import com.google.gson.*;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
+import it.polimi.ingsw.utils.EnumValueByString;
 
 import java.io.File;
 import java.io.FileReader;
@@ -18,16 +19,6 @@ public final class RewardFactory {
         FINAL_FRENZY,
         KILLSHOT,
         DOUBLE_KILL;
-
-        public static Type findByString(String s) {
-            for (Type type: Type.values()) {
-                if (s.equals(type.toString())) {
-                    return type;
-                }
-            }
-
-            throw new IllegalArgumentException();
-        }
     }
 
     private static final String REWARDS_JSON_FILENAME = "./resources/rewards.json";
@@ -60,7 +51,7 @@ public final class RewardFactory {
                 JsonObject fieldJson = jsonElement.getAsJsonArray().get(i).getAsJsonObject();
                 JsonArray rewards;
                 List<Integer> rewardsInt;
-                switch (Type.findByString(fieldJson.get("type").getAsString())) {
+                switch (EnumValueByString.findByString(fieldJson.get("type").getAsString(), Type.class)) {
                     case DOUBLE_KILL:
                         rewardMap.put(Type.DOUBLE_KILL, new DoubleKillReward(fieldJson.get("reward").getAsInt()));
                         break;
@@ -76,7 +67,7 @@ public final class RewardFactory {
                         rewardsInt = new LinkedList<>();
                         rewards.iterator().forEachRemaining(element -> rewardsInt.add(element.getAsInt()));
                         rewardMap.put(
-                                Type.findByString(fieldJson.get("type").getAsString()),
+                                EnumValueByString.findByString(fieldJson.get("type").getAsString(), Type.class),
                                 new PlayerDeathReward(
                                         rewardsInt.stream().mapToInt(num->num).toArray(),
                                         fieldJson.get("firstBlood").getAsInt()

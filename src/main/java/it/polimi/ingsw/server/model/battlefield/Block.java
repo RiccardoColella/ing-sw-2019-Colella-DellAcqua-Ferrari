@@ -17,16 +17,6 @@ public abstract class Block {
         WALL,
         DOOR,
         NONE;
-
-        public static BorderType findByString(String s) {
-            for (BorderType type: BorderType.values()) {
-                if (s.equals(type.toString())) {
-                    return type;
-                }
-            }
-
-            throw new IllegalArgumentException();
-        }
     }
 
 

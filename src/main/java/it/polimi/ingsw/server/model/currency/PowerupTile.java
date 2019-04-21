@@ -24,15 +24,6 @@ public class PowerupTile implements Coin {
         public String toString() {
             return name;
         }
-
-        public static Type findByString(String s) {
-            for (Type t: Type.values()) {
-                if (s.equals(t.toString())) {
-                    return t;
-                }
-            }
-            throw new IllegalArgumentException();
-        }
     }
 
 

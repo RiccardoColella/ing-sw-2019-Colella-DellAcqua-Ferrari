@@ -336,13 +336,13 @@ public class Player implements Damageable, MatchModeChangedListener {
             }
         } else throw new IllegalArgumentException("Player should not discard a weapon if he only owns " + this.weapons.size() + " and the maximum is " + this.constraints.getMaxWeaponsForPlayer());
 
-        try {
+        if (this.weapons.size() < constraints.getMaxWeaponsForPlayer()) {
             //now the weapon can be grabbed if the player has enough money to pay for it
             grabWeapon(weapon, ammoCubes, powerups);
-        } catch (MissingOwnershipException ex) {
+        } else {
             //if the player could not pay for the weapon, the discarded weapon is given back to him
             weapons.add(discardedWeapon);
-            throw ex;
+            throw new UnauthorizedExchangeException("Player already has " + constraints.getMaxWeaponsForPlayer() + " weapons and needs to drop one in order to buy one");
         }
 
         //the discarded weapon is put back to the spawnpoint

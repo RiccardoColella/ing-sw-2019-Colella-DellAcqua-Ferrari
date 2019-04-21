@@ -13,6 +13,7 @@ import it.polimi.ingsw.server.model.player.DamageToken;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.view.Interviewer;
+import it.polimi.ingsw.utils.EnumValueByString;
 import it.polimi.ingsw.utils.TriConsumer;
 
 import javax.annotation.Nullable;
@@ -62,7 +63,7 @@ public class WeaponFactory {
 
     private static void readWeapon(JsonElement jsonElement, Board board) {
         JsonObject weaponObject = jsonElement.getAsJsonObject();
-        Weapon.Name weaponId = Weapon.Name.findByString(weaponObject.get("weaponId").getAsString());
+        Weapon.Name weaponId = EnumValueByString.findByString(weaponObject.get("weaponId").getAsString(), Weapon.Name.class);
         Attack basicAttack = readAttack(weaponObject.get("basicAttack").getAsJsonObject(), board);
         if (weaponObject.has("alternativeAttack")) {
             Attack alternativeAttack = readAttack(weaponObject.get("alternativeAttack").getAsJsonObject(), board);
@@ -87,7 +88,7 @@ public class WeaponFactory {
         String name = attackObject.get("name").getAsString();
         List<Coin> cost = new ArrayList<>();
         if (attackObject.has("cost")) {
-            attackObject.get("cost").getAsJsonArray().forEach(color -> cost.add(AmmoCubeFactory.create(CurrencyColor.findByString(color.getAsString()))));
+            attackObject.get("cost").getAsJsonArray().forEach(color -> cost.add(AmmoCubeFactory.create(EnumValueByString.findByString(color.getAsString(), CurrencyColor.class))));
         }
         JsonArray actions = attackObject.get("actions").getAsJsonArray();
         TargetCalculator lastTargetCalculator = null;

@@ -1,13 +1,14 @@
-it.polimi.ingsw
 it.polimi.ingsw.client
+it.polimi.ingsw.client.io
+it.polimi.ingsw.client.ui
 it.polimi.ingsw.server
 it.polimi.ingsw.server.bootstrap
 it.polimi.ingsw.server.controller
 it.polimi.ingsw.server.controller.events
 it.polimi.ingsw.server.controller.events.listeners
+it.polimi.ingsw.server.controller.exceptions
 it.polimi.ingsw.server.controller.powerupeffects
 it.polimi.ingsw.server.controller.weapons
-it.polimi.ingsw.server.controller.weapons.attackeffects
 it.polimi.ingsw.server.model.battlefield
 it.polimi.ingsw.server.model.collections
 it.polimi.ingsw.server.model.currency
@@ -20,3 +21,8 @@ it.polimi.ingsw.server.model.rewards
 it.polimi.ingsw.server.model.weapons
 it.polimi.ingsw.server.view
 it.polimi.ingsw.server.view.remote
+it.polimi.ingsw.shared
+it.polimi.ingsw.shared.commands
+it.polimi.ingsw.shared.events
+it.polimi.ingsw.shared.events.listeners
+it.polimi.ingsw.utils
