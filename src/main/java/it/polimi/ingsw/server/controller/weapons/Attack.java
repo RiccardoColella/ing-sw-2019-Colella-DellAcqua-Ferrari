@@ -22,6 +22,7 @@ public class Attack {
     protected final Board board;
     private boolean basicFirst;
     protected final List<Coin> cost;
+    private Set<Player> lastHit;
 
     public Attack(String name, List<ActionConfig> actionConfigs, Board board, List<Coin> cost) {
         this.name = name;
@@ -29,6 +30,7 @@ public class Attack {
         this.board = board;
         this.basicFirst = false;
         this.cost = cost;
+        this.lastHit = new HashSet<>();
     }
 
     public Attack(Attack toCopy, boolean basicFirst) {
@@ -77,11 +79,16 @@ public class Attack {
             }
             if (!chosenSet.isPresent()) {
                 //TODO: attack is over
+                break;
+            } else if (chosenSet.get().isEmpty()) {
+                throw new IllegalStateException("Empty target selection");
             } else {
                 actionConfig.execute(chosenSet.get(), interviewer, weapon);
                 weapon.addHitTargets(chosenSet.get(), this);
+                lastHit = chosenSet.get();
             }
         }
+        lastHit.clear();
     }
 
     private Set<Set<String>> mapPlayerToNickName(Set<Set<Player>> potentialTargets) {
@@ -126,7 +133,7 @@ public class Attack {
 
 
     public Set<Player> getLastHit() {
-        return new HashSet<>();
+        return lastHit;
     }
 
     public List<Coin> getCost() {

@@ -17,11 +17,9 @@ public class WeaponWithMultipleEffects extends BasicWeapon {
     /**
      * This property maps each powered attack to its cost
      */
-    private final List<Attack> poweredAttacks;
+    protected final List<Attack> poweredAttacks;
 
     private final boolean mustExecuteInOrder;
-
-    private List<Attack> executedAttacks;
 
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
@@ -57,6 +55,7 @@ public class WeaponWithMultipleEffects extends BasicWeapon {
     public void shoot(Interviewer interviewer, Player activePlayer) {
         List<Attack> allAttacks = new LinkedList<>(poweredAttacks);
         allAttacks.add(0, this.basicAttack);
+        previouslyHit.clear();
         executedAttacks.clear();
         currentShooter = activePlayer;
         Optional<Attack> chosenAttack;
@@ -88,6 +87,7 @@ public class WeaponWithMultipleEffects extends BasicWeapon {
             if (activeAttack != null) {
                 executedAttacks.add(activeAttack);
                 handlePayment(interviewer, activeAttack, currentShooter);
+                activeAttack.execute(interviewer, this);
             }
         } while (activeAttack != null);
 

@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class WeaponFactory {
     private static final String WEAPON_JSON_PATH = "./resources/attacks.json";
 
-    private static Map<Weapon.Name, BasicWeapon> weaponMap;
+    private static Map<Weapon.Name, JsonObject> weaponMap;
 
     /**
      * Private empty constructor because this class should not have instances
@@ -45,12 +45,12 @@ public class WeaponFactory {
      */
     public static BasicWeapon create(Weapon.Name name, Board board) {
         if (weaponMap == null) {
-            readFromFile(board);
+            readFromFile();
         }
-        return weaponMap.get(name);
+        return readWeapon(weaponMap.get(name), board);
     }
 
-    private static void readFromFile(Board board) {
+    private static void readFromFile() {
         weaponMap = new EnumMap<>(Weapon.Name.class);
         JsonElement jsonElement;
         try {
@@ -59,16 +59,23 @@ public class WeaponFactory {
             throw new MissingConfigurationFileException("Weapon configuration file not found");
         }
 
-        jsonElement.getAsJsonArray().forEach(weapon -> readWeapon(weapon, board));
+        jsonElement.getAsJsonArray().forEach(weaponJson -> {
+            JsonObject weaponObject = weaponJson.getAsJsonObject();
+            weaponMap.put(
+                    EnumValueByString
+                            .findByString(weaponObject.get("weaponId").getAsString(), Weapon.Name.class),
+                    weaponObject
+            );
+        });
     }
 
-    private static void readWeapon(JsonElement jsonElement, Board board) {
-        JsonObject weaponObject = jsonElement.getAsJsonObject();
+    private static BasicWeapon readWeapon(JsonObject weaponObject, Board board) {
+
         Weapon.Name weaponId = EnumValueByString.findByString(weaponObject.get("weaponId").getAsString(), Weapon.Name.class);
         Attack basicAttack = readAttack(weaponObject.get("basicAttack").getAsJsonObject(), board);
         if (weaponObject.has("alternativeAttack")) {
             Attack alternativeAttack = readAttack(weaponObject.get("alternativeAttack").getAsJsonObject(), board);
-            weaponMap.put(weaponId, new WeaponWithAlternative(weaponId, basicAttack, alternativeAttack));
+            return new WeaponWithAlternative(weaponId, basicAttack, alternativeAttack);
         } else if (weaponObject.has("advancedAttacks")) {
             List<Attack> advancedAttacks = new LinkedList<>();
             weaponObject.get("advancedAttacks").getAsJsonArray().forEach(attack -> {
@@ -78,9 +85,9 @@ public class WeaponFactory {
                 advancedAttacks.add(advanced);
             });
             boolean mustExecuteInOrder = weaponObject.has("mustExecuteInOrder") && weaponObject.get("mustExecuteInOrder").getAsBoolean();
-            weaponMap.put(weaponId, new WeaponWithMultipleEffects(weaponId, basicAttack, advancedAttacks, mustExecuteInOrder));
+            return new WeaponWithMultipleEffects(weaponId, basicAttack, advancedAttacks, mustExecuteInOrder);
         } else {
-            weaponMap.put(weaponId, new BasicWeapon(weaponId, basicAttack));
+            return new BasicWeapon(weaponId, basicAttack);
         }
     }
 
@@ -95,6 +102,7 @@ public class WeaponFactory {
         TargetCalculator lastTargetCalculator = null;
         List<ActionConfig> actionConfigs = new ArrayList<>();
         for (JsonElement action : actions) {
+
             ActionConfig config = readAction(action, lastTargetCalculator, board);
             lastTargetCalculator = config.getCalculator().orElse(lastTargetCalculator);
             actionConfigs.add(config);
@@ -127,6 +135,7 @@ public class WeaponFactory {
     }
 
     private static @Nullable TargetCalculator readTargetCalculator(JsonObject actionObject, @Nullable TargetCalculator lastTargetCalculator, Board board) {
+
         if ("FIND".equals(actionObject.get("targets").getAsString())) {
             return elaborateFindingTarget(actionObject, board, lastTargetCalculator);
         }
@@ -140,7 +149,7 @@ public class WeaponFactory {
                 bonusTarget = (previouslyHit, activePlayer) -> {
                     Set<Player> last = new HashSet<>();
                     int index = previouslyHit.size() - 1;
-                    while (index > 0) {
+                    while (index >= 0) {
                         if (previouslyHit.get(index) != activePlayer) {
                             last.add(previouslyHit.get(index));
                             return last;
@@ -246,8 +255,10 @@ public class WeaponFactory {
             case "BLOCK":
                 adaptToScope = targets -> {
                     Set<Set<Player>> adaptedTargets = new HashSet<>();
-                    for (Player target: targets) {
-                        adaptedTargets.add(new HashSet<>(target.getBlock().getPlayers()));
+                    for (Player target : targets) {
+                        Set<Player> toAdd = new HashSet<>(target.getBlock().getPlayers());
+                        toAdd.remove(target.getMatch().getActivePlayer());
+                        adaptedTargets.add(toAdd);
                     }
                     return adaptedTargets;
                 };
@@ -256,15 +267,23 @@ public class WeaponFactory {
                 adaptToScope = targets -> {
                     Set<Set<Player>> adaptedTargets = new HashSet<>();
                     for (Player target : targets) {
-                        adaptedTargets.add(target
-                              .getMatch()
-                              .getBoard()
-                              .getRoom(target.getBlock())
-                              .stream()
-                              .flatMap(block -> block.getPlayers().stream())
-                              .collect(Collectors.toSet())
-                        );
+                        Set<Player> toAdd = target
+                                .getMatch()
+                                .getBoard()
+                                .getRoom(target.getBlock())
+                                .stream()
+                                .flatMap(block -> block.getPlayers().stream())
+                                .collect(Collectors.toSet());
+                        toAdd.remove(target.getMatch().getActivePlayer());
+                        adaptedTargets.add(toAdd);
                     }
+                    return adaptedTargets;
+                };
+                break;
+            case "ALL":
+                adaptToScope = targets -> {
+                    Set<Set<Player>> adaptedTargets = new HashSet<>();
+                    adaptedTargets.add(targets);
                     return adaptedTargets;
                 };
                 break;
@@ -278,7 +297,7 @@ public class WeaponFactory {
         BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> addToEach;
         String field = "andTargets";
         if (actionObject.has(field)) {
-            if ("INCLUDE_LAST".equals(actionObject.get(field).toString())) {
+            if ("INCLUDE_LAST".equals(actionObject.get(field).getAsString())) {
                 addToEach = (potentialTargets, weapon) -> {
                     Set<Set<Player>> result = new HashSet<>(potentialTargets);
                     Player toAdd = null;
@@ -338,7 +357,9 @@ public class WeaponFactory {
         for (Set<T> set : original) {
             Set<T> updatedSet = new HashSet<>(set);
             updatedSet.removeAll(toRemove);
-            updatedTargets.add(updatedSet);
+            if (!updatedSet.isEmpty()) {
+                updatedTargets.add(updatedSet);
+            }
         }
         return updatedTargets;
     }
@@ -414,7 +435,7 @@ public class WeaponFactory {
             for (int i = 0; i < markAmount; i++) {
                 marks.add(new DamageToken(weapon.getCurrentShooter()));
             }
-            targets.forEach(target -> target.addDamageTokens(marks));
+            targets.forEach(target -> target.addMarks(marks));
         };
     }
 
