@@ -12,13 +12,12 @@
             "startingPoint": "ACTIVE_PLAYER",
             "targets": "FIND"
           }, {
-            "marks": 1,
+            "mark": 1,
             "targetAmount": "ONE",
             "skippable": false,
             "targets": "INHERIT_LAST"
         }
-      ],
-      "canReHitSameTarget": false
+      ]
     },
     "advancedAttacks": [
       {
@@ -31,10 +30,10 @@
             "targetPosition": "VISIBLE",
             "skippable": false,
             "startingPoint": "ACTIVE_PLAYER",
-            "targets": "FIND"
+            "targets": "FIND",
+            "veto": "ALL_PREVIOUS"
           }
-        ],
-        "canReHitSameTarget": false
+        ]
       }
     ]
   },
@@ -84,7 +83,7 @@
       "actions": [
         {
           "damage": 1,
-          "targetAmount": 1,
+          "targetAmount": "ONE",
           "targetPosition": "VISIBLE",
           "startingPoint": "ACTIVE_PLAYER",
           "skippable": false,
@@ -92,7 +91,7 @@
         },
         {
           "damage": 1,
-          "targetAmount": 1,
+          "targetAmount": "ONE",
           "targetPosition": "VISIBLE",
           "startingPoint": "ACTIVE_PLAYER",
           "skippable": true,
@@ -135,7 +134,8 @@
             "skippable": true,
             "targetAmount": "ONE",
             "targetPosition": "VISIBLE",
-            "canReHitSameTarget": true
+            "canReHitSameTarget": true,
+            "targets": "FIND"
           }
         ]
       }
@@ -207,7 +207,8 @@
           "targetAmount": "ONE",
           "targetPosition": "VISIBLE",
           "startingPoint": "ACTIVE_PLAYER",
-          "skippable": false
+          "skippable": false,
+          "targets": "FIND"
         }
       ]
     },
@@ -222,7 +223,8 @@
             "startingPoint": "PREVIOUS_TARGET",
             "skippable": false,
             "targetAmount": "ONE",
-            "veto": "ALL_PREVIOUS"
+            "veto": "ALL_PREVIOUS",
+            "targets": "FIND"
           }
         ]
       },
@@ -236,7 +238,8 @@
             "startingPoint": "PREVIOUS_TARGET",
             "skippable": false,
             "targetAmount": "ONE",
-            "veto": "ALL_PREVIOUS"
+            "veto": "ALL_PREVIOUS",
+            "targets": "FIND"
           }
         ]
       }
@@ -260,7 +263,8 @@
           "targetFinalDistance": {"min": 0, "max": 0},
           "targetFinalPosition": "FIXED",
           "skippable": false,
-          "targetAmount": "ONE"
+          "targetAmount": "ONE",
+          "targets": "FIND"
         },
         {
           "startingPoint": "INHERIT",
@@ -322,7 +326,7 @@
       "actions": [
         {
           "startingPoint": "ACTIVE_PLAYER",
-          "targetPosition": "VISIBLE_ROOM",
+          "targetPosition": "VISIBLE",
           "targetDistance": {"min": 1},
           "targetAmount": "ROOM",
           "damage": 1,
@@ -700,7 +704,8 @@
             "andTargets": "INCLUDE_LAST",
             "startingPoint": "INHERIT",
             "targetDistance": {"min": 0, "max": 0},
-            "skippable": false
+            "skippable": false,
+            "targetPosition": "FIXED"
           }
         ]
       }

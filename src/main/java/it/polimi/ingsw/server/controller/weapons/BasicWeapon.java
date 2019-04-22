@@ -72,16 +72,16 @@ public class BasicWeapon {
     public void shoot(Interviewer interviewer, Player activePlayer) {
         currentShooter = activePlayer;
         executedAttacks.clear();
+        previouslyHit.clear();
         handlePayment(interviewer, activeAttack, currentShooter);
         activeAttack = basicAttack;
         executedAttacks.add(basicAttack);
         basicAttack.execute(interviewer, this);
-        previouslyHit.clear();
         activeAttack = null;
     }
 
     protected void addHitTargets(Set<Player> targets, Attack attack) {
-        previouslyHit.add(new Tuple<>(targets, attack));
+        previouslyHit.add(new Tuple<>(new HashSet<>(targets), attack));
     }
 
     protected void handlePayment(Interviewer interviewer, Attack chosenAttack, Player activePlayer) {
@@ -108,7 +108,7 @@ public class BasicWeapon {
         List<Coin> activePlayerWallet = this.currentShooter.getAmmoCubes().stream().map(ammoCube -> (Coin) ammoCube).collect(Collectors.toCollection(LinkedList::new));
         activePlayerWallet.addAll(this.currentShooter.getPowerups().stream().map(powerupTile -> (Coin) powerupTile).collect(Collectors.toList()));
         for (Coin coin : attack.getCost()) {
-            if (activePlayerWallet.contains(coin)) {
+            if (activePlayerWallet.stream().anyMatch(playerCoin -> playerCoin.hasSameValueAs(coin))) {
                 activePlayerWallet.remove(coin);
             } else {
                 return false;
@@ -137,5 +137,13 @@ public class BasicWeapon {
             }
         }
         return false;
+    }
+
+    public Set<Player> wasHitBy(Attack attack) {
+        return this.previouslyHit.stream()
+                .filter(execution -> execution.getItem2() == attack)
+                .flatMap(execution ->
+                        execution.getItem1().stream())
+                .collect(Collectors.toSet());
     }
 }
