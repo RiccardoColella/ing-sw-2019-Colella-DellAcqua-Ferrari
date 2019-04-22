@@ -79,12 +79,12 @@ public class SpawnpointBlock extends Block {
     }
 
     /**
-     * Clone the current block creating a new one constructed with the same initial parameters
+     * Copies the current block creating a new one constructed with the same initial parameters
      *
-     * @return the clone
+     * @return the copy
      */
     @Override
-    public Block clone() {
+    public Block copy() {
         return new SpawnpointBlock(
                 this.getRow(),
                 this.getColumn(),

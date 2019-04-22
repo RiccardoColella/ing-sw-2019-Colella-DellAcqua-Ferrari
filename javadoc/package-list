@@ -26,3 +26,4 @@ it.polimi.ingsw.shared.commands
 it.polimi.ingsw.shared.events
 it.polimi.ingsw.shared.events.listeners
 it.polimi.ingsw.utils
+it.polimi.ingsw.utils.io

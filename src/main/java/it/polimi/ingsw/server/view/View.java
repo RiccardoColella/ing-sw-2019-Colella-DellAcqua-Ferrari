@@ -3,12 +3,9 @@ package it.polimi.ingsw.server.view;
 import it.polimi.ingsw.server.controller.exceptions.ViewDisconnectedException;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 
-import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.match.Match;
-import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
-import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.shared.CommandQueue;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.commands.*;
@@ -17,12 +14,11 @@ import it.polimi.ingsw.shared.events.listeners.CommandReceivedListener;
 import it.polimi.ingsw.utils.EnumValueByString;
 
 import javax.annotation.Nullable;
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
 /**
- * This class is an abstract server-side SocketView. It contains all the methods needed for the interaction with the controller
+ * This class is an abstract server-side View. It contains all the methods needed for the interaction with the controller
  * and implements all the listeners needed to receive information from the model
  */
 public abstract class View implements Interviewer {
@@ -93,14 +89,8 @@ public abstract class View implements Interviewer {
     @Nullable
     @SuppressWarnings("unchecked")
     protected <T> T awaitResponse(ClientApi commandName) {
-        Command response;
-        switch (commandName) {
-            case DIRECTION_QUESTION:
-                response = dequeInputCommand(ServerApi.DIRECTION_ANSWER.toString());
-                return (T)EnumValueByString.findByString(response.getPayload().getAsJsonObject().get("direction").getAsString(), Direction.class);
-            default:
-                throw new EnumConstantNotPresentException(ClientApi.class, "Unmanaged client response");
-        }
+        Command response = dequeInputCommand(ServerApi.ANSWER.toString());
+        return (T)EnumValueByString.findByString(response.getPayload().getAsJsonObject().get("direction").getAsString(), Direction.class);
     }
 
     @Override

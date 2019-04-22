@@ -241,17 +241,17 @@ public class Board {
     }
 
     /**
-     * Clone method needed to create a new Board with the same field
+     * Copies method needed to create a new Board with the same field
      *
      * @return a new Board created with the same field
      */
-    public Board clone() {
+    public Board copy() {
 
         Block[][] fieldCopy = new Block[field.length][field[0].length];
 
         for (int r = 0; r < field.length; r++) {
             for (int c = 0; c < field[0].length; c++) {
-                fieldCopy[r][c] = field[r][c] == null ? null : field[r][c].clone();
+                fieldCopy[r][c] = field[r][c] == null ? null : field[r][c].copy();
             }
         }
 

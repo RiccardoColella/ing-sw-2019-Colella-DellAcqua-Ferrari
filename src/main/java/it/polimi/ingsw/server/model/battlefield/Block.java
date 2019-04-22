@@ -16,7 +16,7 @@ public abstract class Block {
     public enum BorderType {
         WALL,
         DOOR,
-        NONE;
+        NONE
     }
 
 
@@ -127,7 +127,7 @@ public abstract class Block {
     /**
      * Creates a copy of the current block
      *
-     * @return the clone
+     * @return the copy
      */
-    public abstract Block clone();
+    public abstract Block copy();
 }

@@ -1,9 +1,16 @@
 package it.polimi.ingsw.client;
 
-public class Main
-{
-    public static void main( String[] args )
-    {
+import it.polimi.ingsw.client.io.SocketConnector;
+import it.polimi.ingsw.client.ui.CLI;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+
+public class Main {
+    public static void main( String[] args ) throws IOException {
+
+        new CLI(
+            new SocketConnector(new InetSocketAddress("localhost", 9090))
+        );
     }
 }

@@ -41,7 +41,7 @@ public class BoardFactory {
             initialize();
         }
 
-        return boardMap.get(preset).clone();
+        return boardMap.get(preset).copy();
     }
 
     private static void initialize() {
