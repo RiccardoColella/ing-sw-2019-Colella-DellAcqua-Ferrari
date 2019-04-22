@@ -3,6 +3,7 @@ package it.polimi.ingsw.server.controller.weapons;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.view.Interviewer;
+import it.polimi.ingsw.shared.commands.ClientApi;
 import it.polimi.ingsw.utils.Tuple;
 
 import java.util.*;
@@ -30,24 +31,12 @@ public class WeaponWithAlternative extends BasicWeapon {
         this.alternativeAttack = alternativeAttack;
     }
 
-    /**
-     * This method gets the alternative attack of the weapon
-     * @return the alternative attack of the weapon
-     */
-    public Attack getAlternativeAttack() {
-        return this.alternativeAttack;
-    }
-
-
-    @Override
-    protected boolean hasAttack(Attack attack) {
-        return super.hasAttack(attack) || this.alternativeAttack.equals(attack);
-    }
-
     @Override
     public void shoot(Interviewer interviewer, Player activePlayer) {
         Attack selectedAttack;
         availableAttacks.clear();
+        executedAttacks.clear();
+        currentShooter = activePlayer;
         if (canAffordAttack(basicAttack) && canDoFirstAction(basicAttack)) {
             availableAttacks.add(basicAttack);
         }
@@ -55,11 +44,8 @@ public class WeaponWithAlternative extends BasicWeapon {
             availableAttacks.add(alternativeAttack);
         }
         if (availableAttacks.size() == 2) {
-            List<Tuple<String, List<String>>> potentialAttacks = new LinkedList<>();
-            for (Attack attack : availableAttacks) {
-                potentialAttacks.add(new Tuple<>(attack.getName(), attack.getCost().stream().map(Object::toString).collect(Collectors.toList())));
-            }
-            String selectedAttackName = interviewer.select(potentialAttacks).getItem1();
+            List<String> potentialAttacks = availableAttacks.stream().map(Attack::getName).collect(Collectors.toList());
+            String selectedAttackName = interviewer.select("Select the weapon mode", potentialAttacks, ClientApi.ATTACK_QUESTION);
             if (selectedAttackName.equals(basicAttack.getName())) {
                 selectedAttack = basicAttack;
             } else {
@@ -69,7 +55,9 @@ public class WeaponWithAlternative extends BasicWeapon {
             selectedAttack = availableAttacks.get(0);
         } else throw new IllegalStateException("No attacks available");
         handlePayment(interviewer, selectedAttack, activePlayer);
+        executedAttacks.add(selectedAttack);
         selectedAttack.execute(interviewer, this);
+        availableAttacks.remove(selectedAttack);
     }
 
     @Override

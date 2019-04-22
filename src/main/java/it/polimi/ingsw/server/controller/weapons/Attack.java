@@ -5,8 +5,12 @@ import it.polimi.ingsw.server.model.battlefield.Board;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
+import it.polimi.ingsw.shared.commands.ClientApi;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This class schematizes an attack, which is the effect that a weapon has on one or more targets
@@ -16,7 +20,7 @@ public class Attack {
     protected final String name;
     private final List<ActionConfig> actionConfigs;
     protected final Board board;
-    protected boolean basicFirst;
+    private boolean basicFirst;
     protected final List<Coin> cost;
 
     public Attack(String name, List<ActionConfig> actionConfigs, Board board, List<Coin> cost) {
@@ -48,7 +52,9 @@ public class Attack {
             Set<Block> potentialStartingPoints = getPotentialStartingPoints(actionConfig, weapon);
             Block startingPoint;
             if (potentialStartingPoints.size() > 1) {
-                startingPoint = interviewer.select(potentialStartingPoints);
+                Set<Point> points = potentialStartingPoints.stream().map(block -> new Point(block.getColumn(), block.getRow())).collect(Collectors.toSet());
+                Point chosenPoint = interviewer.select("Select the starting point for your attack", points, ClientApi.BLOCK_QUESTION);
+                startingPoint = board.getBlock(chosenPoint.y, chosenPoint.x).orElseThrow(() -> new IllegalStateException("Block at row: " + chosenPoint.y + " column: " + chosenPoint.x + " does not exist"));
             } else {
                 startingPoint = potentialStartingPoints.iterator().next();
             }
@@ -61,9 +67,13 @@ public class Attack {
             } else if (potentialTargets.isEmpty()) {
                 throw new IllegalStateException("No players to hit");
             } else if (actionConfig.isSkippable()) {
-                chosenSet = interviewer.selectOptional(potentialTargets);
+                Set<Set<String>> nicknames = mapPlayerToNickName(potentialTargets);
+                Optional<Set<String>> chosenNicknames = interviewer.selectOptional("Select the group of targets you want to hit", nicknames, ClientApi.TARGET_QUESTION);
+                chosenSet = chosenNicknames.map(strings -> findTargetByNickname(potentialTargets, strings));
             } else {
-                chosenSet = Optional.of(interviewer.select(potentialTargets));
+                Set<Set<String>> nicknames = mapPlayerToNickName(potentialTargets);
+                Set<String> chosenNicknames = interviewer.select("Select the group of targets you want to hit", nicknames, ClientApi.TARGET_QUESTION);
+                chosenSet = Optional.of(findTargetByNickname(potentialTargets, chosenNicknames));
             }
             if (!chosenSet.isPresent()) {
                 //TODO: attack is over
@@ -72,6 +82,25 @@ public class Attack {
                 weapon.addHitTargets(chosenSet.get(), this);
             }
         }
+    }
+
+    private Set<Set<String>> mapPlayerToNickName(Set<Set<Player>> potentialTargets) {
+        return  potentialTargets
+                .stream()
+                .map(set -> set
+                        .stream()
+                        .map(player -> player.getPlayerInfo().getNickname())
+                        .collect(Collectors.toSet()))
+                .collect(Collectors.toSet());
+    }
+    private Set<Player> findTargetByNickname(Set<Set<Player>> potentialTargets, Set<String> chosenNicknames) {
+        for (Set<Player> potentialSet : potentialTargets) {
+            Set<String> setNicknames = potentialSet.stream().map(player -> player.getPlayerInfo().getNickname()).collect(Collectors.toSet());
+            if (setNicknames.equals(chosenNicknames)) {
+                return potentialSet;
+            }
+        }
+        throw new IllegalStateException("No set was selected");
     }
 
     protected Set<Block> getPotentialStartingPoints(ActionConfig actionConfig, BasicWeapon weapon) {
@@ -106,6 +135,10 @@ public class Attack {
 
     List<ActionConfig> getActionConfigs() {
         return this.actionConfigs;
+    }
+
+    public boolean basicMustBeDoneFirst() {
+        return basicFirst;
     }
 }
 

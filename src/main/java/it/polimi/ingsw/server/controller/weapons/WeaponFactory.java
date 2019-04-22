@@ -13,6 +13,7 @@ import it.polimi.ingsw.server.model.player.DamageToken;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.view.Interviewer;
+import it.polimi.ingsw.shared.commands.ClientApi;
 import it.polimi.ingsw.utils.EnumValueByString;
 import it.polimi.ingsw.utils.TriConsumer;
 
@@ -444,7 +445,7 @@ public class WeaponFactory {
                 Set<Block> arrivalOptionsFromStart = board.getReachableBlocks(start, rangeFromStartingBlock);
                 arrivalOptionsFromTarget.removeIf(block -> !arrivalOptionsFromStart.contains(block));
                 Set<Point> coordinates = arrivalOptionsFromTarget.stream().map(block -> new Point(block.getColumn(), block.getRow())).collect(Collectors.toSet());
-                Point chosenPoint = interviewer.select(coordinates);
+                Point chosenPoint = interviewer.select("Select the destination of the move", coordinates, ClientApi.BLOCK_QUESTION);
                 board.teleportPlayer(target, board.getBlock(chosenPoint.y, chosenPoint.x).orElseThrow(() -> new IllegalArgumentException("Destination block does not exist")));
             }
         };
@@ -462,14 +463,14 @@ public class WeaponFactory {
 
                 Optional<Direction> chosenDirection =
                         range.getMin() > 0 ?
-                                Optional.of(interviewer.select(options)) :
-                                interviewer.selectOptional(options);
+                                Optional.of(interviewer.select("Fix the direction for the moves", options, ClientApi.DIRECTION_QUESTION)) :
+                                interviewer.selectOptional("Fix the direction for the moves", options, ClientApi.DIRECTION_QUESTION);
 
                 for (int i = 0; (i < range.getMax()) && chosenDirection.isPresent(); i++) {
                     board.movePlayer(target, chosenDirection.get());
                     chosenDirection = range.getMin() > (i + 1) ?
                             chosenDirection :
-                            interviewer.selectOptional(Collections.singleton(chosenDirection.get()));
+                            interviewer.selectOptional("Select the direction for the move", Collections.singleton(chosenDirection.get()), ClientApi.DIRECTION_QUESTION);
                 }
 
             }
@@ -490,8 +491,8 @@ public class WeaponFactory {
                             .collect(Collectors.toSet());
                     chosenDirection =
                             range.getMin() > i ?
-                                    Optional.of(interviewer.select(options)) :
-                                    interviewer.selectOptional(options);
+                                    Optional.of(interviewer.select("Select the direction for the move", options, ClientApi.DIRECTION_QUESTION)) :
+                                    interviewer.selectOptional("Select the direction for the move", options, ClientApi.DIRECTION_QUESTION);
                     chosenDirection.ifPresent(dir -> board.movePlayer(target, dir));
                     i++;
                 } while (i < range.getMax() && chosenDirection.isPresent());

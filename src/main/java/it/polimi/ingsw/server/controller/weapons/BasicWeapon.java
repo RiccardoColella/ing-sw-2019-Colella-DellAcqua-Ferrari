@@ -27,21 +27,23 @@ public class BasicWeapon {
     protected Attack activeAttack;
 
     /**
-     * This property represents the weapon's name as a String
+     * This property represents the weapon's name as a String. It is a unique identifier of the weapon
      */
-    private final Weapon.Name name;
+    private final String name;
 
     /**
-     * This property stores the targets that have been damaged during the current shoot action
+     * This property stores the targets that have been damaged during the current shoot action. Each damaged set of targets
+     * is associated with
      */
     protected List<Tuple<Set<Player>, Attack>> previouslyHit;
-
 
     protected Block startingBlock;
 
     protected Player currentShooter;
 
     protected List<Attack> availableAttacks;
+
+    protected List<Attack> executedAttacks;
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
      *
@@ -50,31 +52,12 @@ public class BasicWeapon {
      */
     public BasicWeapon(Weapon.Name name, Attack basicAttack) {
         this.basicAttack = basicAttack;
-        this.name = name;
+        this.name = name.toString();
         this.activeAttack = null;
         this.previouslyHit = new LinkedList<>();
         startingBlock = null;
         availableAttacks = new LinkedList<>();
-    }
-
-    /**
-     * This method executes the attack that is currently stored as the active attack of the weapon
-     */
-    public void executeActiveAttack() {
-        // TODO: attack execution will be implemented after weapons
-    }
-
-    /**
-     * This method sets the chosen attack as active
-     *
-     * @param attack the attack chosen by the player
-     */
-    public void chooseAttack(Attack attack) {
-        if (hasAttack(attack)) {
-            this.activeAttack = attack;
-        } else {
-            throw new MissingOwnershipException("Selected attack does not belong to this weapon");
-        }
+        executedAttacks = new LinkedList<>();
     }
 
     /**
@@ -83,29 +66,21 @@ public class BasicWeapon {
      */
 
     public String getName() {
-        return this.name.toString();
-    }
-
-    /**
-     * This method verifies whether or not the attack passed as an argument belongs to this weapon
-     *
-     * @param attack the attack
-     * @return true if the attack belongs to the weapon
-     */
-    protected boolean hasAttack(Attack attack) {
-        return basicAttack.equals(attack);
+        return this.name;
     }
 
     public void shoot(Interviewer interviewer, Player activePlayer) {
         currentShooter = activePlayer;
+        executedAttacks.clear();
         handlePayment(interviewer, activeAttack, currentShooter);
         activeAttack = basicAttack;
+        executedAttacks.add(basicAttack);
         basicAttack.execute(interviewer, this);
         previouslyHit.clear();
         activeAttack = null;
     }
 
-    public void addHitTargets(Set<Player> targets, Attack attack) {
+    protected void addHitTargets(Set<Player> targets, Attack attack) {
         previouslyHit.add(new Tuple<>(targets, attack));
     }
 
@@ -115,16 +90,8 @@ public class BasicWeapon {
         } else throw new IllegalStateException("Unaffordable attacks cannot be chosen");
     }
 
-    protected Block determineStartingBlock(Interviewer interviewer, Player activePlayer) {
-        return activePlayer.getMatch().getBoard().findPlayer(activePlayer).orElseThrow(() -> new IllegalStateException("Player is not in the board"));
-    }
-
     public Player getCurrentShooter() {
         return currentShooter;
-    }
-
-    public List<Attack> getExecutedAttacks() {
-        return new LinkedList<>();
     }
 
     public Optional<Block> getStartingPoint() {
@@ -156,6 +123,10 @@ public class BasicWeapon {
             return false;
         }
         return canDoFirstAction(basicAttack);
+    }
+
+    public List<Attack> getExecutedAttacks() {
+        return this.executedAttacks;
     }
 
     protected boolean canDoFirstAction(Attack attack) {
