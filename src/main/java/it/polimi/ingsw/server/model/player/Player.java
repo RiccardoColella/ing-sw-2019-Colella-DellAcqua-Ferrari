@@ -356,6 +356,40 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     /**
+     * This method allows the player to buy a new weapon when he already has the maximum allowed, exchanging it for one of those he owns
+     * @param weapon the Weapon that the player is buying
+     * @param coins the list of Coins the player is using to pay
+     * @param discardedWeapon the Weapon the player is giving up for the new one
+     */
+    public void grabWeapon(Weapon weapon, List<Coin> coins, Weapon discardedWeapon) {
+        if (this.weapons.size() == constraints.getMaxWeaponsForPlayer()) {
+            //the weapon should only be discarded if the player already has the maximum number available
+            if (!weapons.remove(discardedWeapon)) {
+                //if the player did not own the discarded weapon, an exception is thrown
+                throw new IllegalArgumentException("Discarded weapon does not belong to the player");
+            }
+        } else throw new IllegalArgumentException("Player should not discard a weapon if he only owns " + this.weapons.size() + " and the maximum is " + this.constraints.getMaxWeaponsForPlayer());
+
+        if (this.weapons.size() < constraints.getMaxWeaponsForPlayer()) {
+            //now the weapon can be grabbed if the player has enough money to pay for it
+            grabWeapon(weapon, coins);
+        } else {
+            //if the player could not pay for the weapon, the discarded weapon is given back to him
+            weapons.add(discardedWeapon);
+            throw new UnauthorizedExchangeException("Player already has " + constraints.getMaxWeaponsForPlayer() + " weapons and needs to drop one in order to buy one");
+        }
+
+        //the discarded weapon is put back to the spawnpoint
+        Optional<Block> spawnpoint = this.match.getBoard().findPlayer(this);
+        if (spawnpoint.isPresent()) {
+            discardedWeapon.setLoaded(false);
+            spawnpoint.get().drop(weapon);
+        } else {
+            throw new UnauthorizedExchangeException("Player is trying to put a weapon into a nonexisting block");
+        }
+    }
+
+    /**
      * This method allows the player to buy a new weapon, given that he has less than the maximum weapons allowed
      * @param weapon the Weapon that the player is buying
      * @param ammoCubes the cost the player is paying with ammoCubes
@@ -365,6 +399,20 @@ public class Player implements Damageable, MatchModeChangedListener {
         if (this.weapons.size() < constraints.getMaxWeaponsForPlayer()) {
             //if the player can grab more weapons, he pays and gets the weapon
             this.pay(ammoCubes, powerups);
+            weapon.setLoaded(true);
+            weapons.add(weapon);
+        } else throw new UnauthorizedExchangeException("Player already has " + constraints.getMaxWeaponsForPlayer() + " weapons and needs to drop one in order to buy one");
+    }
+
+    /**
+     * This method allows the player to buy a new weapon, given that he has less than the maximum weapons allowed
+     * @param weapon the Weapon that the player is buying
+     * @param coins the list of Coins the player is using to pay
+     */
+    public void grabWeapon(Weapon weapon, List<Coin> coins) {
+        if (this.weapons.size() < constraints.getMaxWeaponsForPlayer()) {
+            //if the player can grab more weapons, he pays and gets the weapon
+            this.pay(coins);
             weapon.setLoaded(true);
             weapons.add(weapon);
         } else throw new UnauthorizedExchangeException("Player already has " + constraints.getMaxWeaponsForPlayer() + " weapons and needs to drop one in order to buy one");
@@ -496,7 +544,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      * @param spentPowerups the list of powerups spent by the player
      */
     private void pay(List<AmmoCube> spentAmmoCubes, List<PowerupTile> spentPowerups) {
-        //saving the ammo cubes spent because if the player can't complete the payment correctly, the inital situation
+        //saving the ammo cubes spent because if the player can't complete the payment correctly, the initial situation
         //will be restored
         List<AmmoCube> alreadyPaidAmmoCubes = new LinkedList<>();
 
@@ -671,5 +719,13 @@ public class Player implements Damageable, MatchModeChangedListener {
 
     public Block getBlock() {
         return match.getBoard().findPlayer(this).orElseThrow(() -> new IllegalStateException("Player is not on the board"));
+    }
+
+    public List<Direction> getAvailableDirections(){
+        return match.getBoard().getAvailableDirections(this.getBlock());
+    }
+
+    public boolean isOnASpawnpoint(){
+        return match.getBoard().isOnASpawnpoint(this.getBlock());
     }
 }

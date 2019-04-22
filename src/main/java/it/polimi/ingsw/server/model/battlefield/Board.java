@@ -8,7 +8,7 @@ import it.polimi.ingsw.shared.Direction;
 import java.util.*;
 import java.util.List;
 
-import static it.polimi.ingsw.server.model.battlefield.Block.BorderType.WALL;
+import static it.polimi.ingsw.server.model.battlefield.Block.BorderType.*;
 
 /**
  * This class implements the game board
@@ -310,4 +310,26 @@ public class Board {
             }
         });
     }
+
+    /**
+     * This methods returns a list of all directions in which a player can move
+     * @param block starting block is the starting position
+     * @return list of all possible directions
+     */
+    public List<Direction> getAvailableDirections(Block block){
+        List<Direction> availableDirections = new ArrayList<>();
+        for (Direction direction : Direction.values()){
+            if (block.getBorderType(direction) == NONE ||
+                    block.getBorderType(direction) == DOOR){
+                availableDirections.add(direction);
+            }
+        }
+        return availableDirections;
+    }
+
+    public boolean isOnASpawnpoint(Block block){
+        return block instanceof SpawnpointBlock;
+    }
+
+
 }

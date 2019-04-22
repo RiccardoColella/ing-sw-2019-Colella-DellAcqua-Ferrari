@@ -57,7 +57,7 @@ public class BonusTile {
     }
 
     /**
-     * Tells all the availables AmmoCube
+     * Tells all the available AmmoCubes
      * @return the List of available AmmoCube
      */
     public List<AmmoCube> getRewards() {
