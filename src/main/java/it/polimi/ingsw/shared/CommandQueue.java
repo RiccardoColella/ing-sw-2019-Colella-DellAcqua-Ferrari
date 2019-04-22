@@ -19,7 +19,6 @@ public class CommandQueue {
         commandQueues.get(command.getName()).add(command);
     }
 
-    @SuppressWarnings("unchecked")
     public Command dequeue(String commandName) throws InterruptedException {
         if (!commandQueues.containsKey(commandName)) {
             commandQueues.put(commandName, new LinkedBlockingQueue<>());

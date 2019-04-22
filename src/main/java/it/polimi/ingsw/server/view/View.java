@@ -16,6 +16,7 @@ import it.polimi.ingsw.utils.EnumValueByString;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This class is an abstract server-side View. It contains all the methods needed for the interaction with the controller
@@ -87,18 +88,21 @@ public abstract class View implements Interviewer {
     }
 
     @Nullable
-    @SuppressWarnings("unchecked")
-    protected <T> T awaitResponse(ClientApi commandName) {
+    protected <T> T awaitResponse(ClientApi commandName, Collection<T> options) {
         Command response = dequeInputCommand(ServerApi.ANSWER.toString());
-        return (T)EnumValueByString.findByString(response.getPayload().getAsJsonObject().get("direction").getAsString(), Direction.class);
+        if (response.getPayload().getAsInt() == 0) {
+            return null;
+        } else {
+            return new ArrayList<>(options).get(response.getPayload().getAsInt() - 1);
+        }
     }
 
     @Override
     public <T> T select(String questionText, Collection<T> options, ClientApi commandName) {
         if (!options.isEmpty()) {
-            outputCommandQueue.enqueue(new Command(commandName.toString(), new Question<>(questionText, options)));
+            enqueueOutputCommand(new Command(commandName.toString(), new Question<>(questionText, options)));
 
-            T response = awaitResponse(commandName);
+            T response = awaitResponse(commandName, options);
             if (response == null || !options.contains(response)) {
                 throw new IllegalStateException("Received an invalid answer from the client");
             }
@@ -112,9 +116,9 @@ public abstract class View implements Interviewer {
     @Override
     public <T> Optional<T> selectOptional(String questionText, Collection<T> options, ClientApi commandName) {
         if (!options.isEmpty()) {
-            outputCommandQueue.enqueue(new Command(commandName.toString(), new Question<>(questionText, options, true)));
+            enqueueOutputCommand(new Command(commandName.toString(), new Question<>(questionText, options, true)));
 
-            T response = awaitResponse(commandName);
+            T response = awaitResponse(commandName, options);
             if (response != null && !options.contains(response)) {
                 throw new IllegalStateException("Received an invalid answer from the client");
             }

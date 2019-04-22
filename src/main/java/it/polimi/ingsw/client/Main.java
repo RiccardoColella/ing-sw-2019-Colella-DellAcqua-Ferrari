@@ -10,7 +10,9 @@ public class Main {
     public static void main( String[] args ) throws IOException {
 
         new CLI(
-            new SocketConnector(new InetSocketAddress("localhost", 9090))
+            new SocketConnector(new InetSocketAddress("localhost", 9090)),
+            System.in,
+            System.out
         );
     }
 }

@@ -6,6 +6,8 @@ import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.match.MatchFactory;
 import it.polimi.ingsw.server.view.View;
 import it.polimi.ingsw.server.view.remote.SocketView;
+import it.polimi.ingsw.shared.Direction;
+import it.polimi.ingsw.shared.commands.ClientApi;
 
 import java.io.File;
 import java.io.FileReader;
@@ -33,6 +35,14 @@ public class Main {
      */
     public static void main(String[] args) throws IOException, InterruptedException {
 
+        View view = new SocketView(new ServerSocket(9090).accept());
+
+        Direction direction = view.select("Scegli", Arrays.asList(Direction.EAST, Direction.NORTH), ClientApi.DIRECTION_QUESTION);
+
+
+
+
+        /*
         ServerConfig config = new Gson().fromJson(new FileReader(new File(SERVER_CONFIG_JSON_FILENAME)), ServerConfig.class);
 
         /*
@@ -44,7 +54,7 @@ public class Main {
          */
 
         // CLI argument meaning is based on its position
-        int settingCount = 0;
+        /*int settingCount = 0;
         if (args.length > settingCount) {
             config.setMaxParallelMatches(Integer.parseInt(args[settingCount]));
         }
@@ -65,6 +75,6 @@ public class Main {
             config.setMinClients(Integer.parseInt(args[settingCount]));
         }
 
-        new Server(config).start();
+        new Server(config).start();*/
     }
 }

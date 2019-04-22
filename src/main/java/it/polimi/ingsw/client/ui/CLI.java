@@ -11,16 +11,25 @@ import it.polimi.ingsw.shared.events.CommandReceived;
 import it.polimi.ingsw.shared.events.listeners.CommandReceivedListener;
 import it.polimi.ingsw.utils.EnumValueByString;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Optional;
+import java.util.Scanner;
 
 public class CLI implements CommandReceivedListener {
 
     private static final Gson gson = new Gson();
     private final Connector connector;
+    private final Scanner scanner;
+    private final PrintStream printStream;
 
-    public CLI(Connector connector) {
+
+    public CLI(Connector connector, InputStream inputStream, OutputStream outputStream) {
         this.connector = connector;
         connector.addCommandReceivedListener(this);
+        scanner = new Scanner(inputStream);
+        printStream = new PrintStream(outputStream);
     }
 
     @Override
@@ -33,28 +42,28 @@ public class CLI implements CommandReceivedListener {
 
             case BLOCK_QUESTION:
             case DIRECTION_QUESTION:
+            case ATTACK_QUESTION:
+            case TARGET_QUESTION:
                 manageQuestion(e.getCommand());
                 break;
         }
-
-
     }
 
     private void manageQuestion(Command command) {
         Question question = gson.fromJson(command.getPayload(), new TypeToken<Question>(){}.getType());
-        System.console().printf(question.getText());
         Object[] options = question.getAvailableOptions().toArray();
-        if (question.isSkippable()) {
-            System.console().printf("0) None");
-        }
-        for (int i = 0; i < options.length; i++) {
-            System.console().printf("%d) %s", (i + 1), options[i].toString());
-        }
-        int chosenIndex = Integer.parseInt(System.console().readLine());
-        if (question.isSkippable()) {
-            connector.sendCommand(new Command(ServerApi.ANSWER.toString(), chosenIndex == 0 ? Optional.empty() : Optional.of(options[chosenIndex])));
-        } else {
-            connector.sendCommand(new Command(ServerApi.ANSWER.toString(), options[chosenIndex]));
-        }
+
+        int chosenIndex;
+        do {
+            printStream.println(question.getText());
+            if (question.isSkippable()) {
+                printStream.println("0) Skip");
+            }
+            for (int i = 0; i < options.length; i++) {
+                printStream.println(String.format("%d) %s", (i + 1), options[i].toString()));
+            }
+            chosenIndex = Integer.parseInt(scanner.nextLine());
+        } while ((question.isSkippable() ? 0 : 1) <= chosenIndex && chosenIndex <= options.length);
+        connector.sendCommand(new Command(ServerApi.ANSWER.toString(), chosenIndex));
     }
 }
