@@ -215,10 +215,32 @@ public class WeaponFactory {
                     goesThroughWalls = actionObject.get("goesThroughWalls").getAsBoolean();
                 }
                 String direction = actionObject.get("targetDirection").getAsString();
-                if (direction.equals("FIXED")) {
+                if (direction.equals("FIXED") && !actionObject.has(field)) {
                     return new FixedDirectionTargetCalculator(board, goesThroughWalls);
-                } else if (direction.equals("INHERIT")) {
+                } else if (direction.equals("FIXED")) {
+                    distance = actionObject.get(field).getAsJsonObject();
+                    FixedDistanceTargetCalculator distanceTargetCalculator = new FixedDistanceTargetCalculator(board, computeRange(distance, board.getBlocks().size()));
+                    List<TargetCalculator> calculators = new ArrayList<>();
+                    calculators.add(distanceTargetCalculator);
+                    calculators.add(new FixedDirectionTargetCalculator(board, goesThroughWalls));
+                    return new CompoundTargetCalculator(calculators);
+                } else if (direction.equals("INHERIT") && !actionObject.has(field)) {
                     return lastTargetCalculator;
+                } else if (direction.equals("INHERIT")) {
+                    distance = actionObject.get(field).getAsJsonObject();
+                    FixedDistanceTargetCalculator distanceTargetCalculator = new FixedDistanceTargetCalculator(board, computeRange(distance, board.getBlocks().size()));
+                    List<TargetCalculator> calculators = new ArrayList<>();
+                    if (lastTargetCalculator != null) {
+                        for (TargetCalculator c : lastTargetCalculator.getSubCalculators()) {
+                            if (c instanceof FixedDirectionTargetCalculator) {
+                                calculators.add(c);
+                                break;
+                            }
+                        }
+                    } else throw new IncoherentConfigurationException("No last target calculator found");
+
+                    calculators.add(distanceTargetCalculator);
+                    return new CompoundTargetCalculator(calculators);
                 } else throw new IncoherentConfigurationException("Unknown value for targetDirection: " + direction);
             default:
                 throw new IncoherentConfigurationException("Unknown value for targetPosition: " + actionObject.get("targetPosition").getAsString());

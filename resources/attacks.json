@@ -378,7 +378,7 @@
         }
       ]
     },
-    "advancedAttaks": [
+    "advancedAttacks": [
       {
         "name": "with phase glide",
         "actions": [
@@ -460,7 +460,7 @@
         },
         {
           "mark": 1,
-          "targets": "INHERIT",
+          "targets": "INHERIT_LAST",
           "targetAmount": "BLOCK",
           "skippable": false
         }
@@ -481,7 +481,7 @@
         },
         {
           "mark": 2,
-          "targets": "INHERIT",
+          "targets": "INHERIT_LAST",
           "targetAmount": "BLOCK",
           "skippable": false
         }

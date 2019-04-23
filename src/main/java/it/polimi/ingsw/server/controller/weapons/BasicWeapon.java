@@ -73,8 +73,8 @@ public class BasicWeapon {
         currentShooter = activePlayer;
         executedAttacks.clear();
         previouslyHit.clear();
-        handlePayment(interviewer, activeAttack, currentShooter);
         activeAttack = basicAttack;
+        handlePayment(interviewer, activeAttack, currentShooter);
         executedAttacks.add(basicAttack);
         basicAttack.execute(interviewer, this);
         activeAttack = null;

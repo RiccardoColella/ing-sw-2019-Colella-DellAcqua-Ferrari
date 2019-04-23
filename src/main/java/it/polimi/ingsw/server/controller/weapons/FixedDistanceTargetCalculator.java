@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server.controller.weapons;
 
 import it.polimi.ingsw.server.model.battlefield.Board;
+import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.player.Player;
@@ -35,11 +36,20 @@ public class FixedDistanceTargetCalculator implements TargetCalculator {
      * @return a list of the available groups of targets, which will be empty if none are available
      */
     @Override
-    public Set<Player> computeTargets(Block startingPoint) {
+    public Set<Player> computeTargets(Block startingPoint, BasicWeapon weapon) {
         Set<Block> candidates = board.getReachableBlocks(startingPoint, range);
         candidates.removeIf(block -> block.getPlayers().isEmpty());
         return candidates.stream().flatMap(block -> block.getPlayers().stream()).collect(Collectors.toSet());
     }
 
+    @Override
+    public boolean contains(TargetCalculator calculator) {
+        return calculator == this;
+    }
+
+    @Override
+    public List<TargetCalculator> getSubCalculators() {
+        return Collections.singletonList(this);
+    }
 
 }

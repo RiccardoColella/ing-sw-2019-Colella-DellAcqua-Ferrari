@@ -4,11 +4,9 @@ import it.polimi.ingsw.server.model.battlefield.Board;
 import it.polimi.ingsw.server.model.player.Damageable;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.weapons.Weapon;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -35,7 +33,7 @@ public class FixedVisibilityTargetCalculator implements TargetCalculator {
      * @return a list of the available groups of targets, which will be empty if none are available
      */
     @Override
-    public Set<Player> computeTargets(Block startingPoint) {
+    public Set<Player> computeTargets(Block startingPoint, BasicWeapon weapon) {
         if (visible) {
             return board.getVisibleBlocks(startingPoint).stream().flatMap(block -> block.getPlayers().stream()).collect(Collectors.toSet());
         } else {
@@ -43,5 +41,15 @@ public class FixedVisibilityTargetCalculator implements TargetCalculator {
             nonVisible.removeIf(block -> board.getVisibleBlocks(startingPoint).contains(block));
             return nonVisible.stream().flatMap(block -> block.getPlayers().stream()).collect(Collectors.toSet());
         }
+    }
+
+    @Override
+    public boolean contains(TargetCalculator calculator) {
+        return calculator == this;
+    }
+
+    @Override
+    public List<TargetCalculator> getSubCalculators() {
+        return Collections.singletonList(this);
     }
 }

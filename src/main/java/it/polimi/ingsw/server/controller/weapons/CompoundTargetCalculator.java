@@ -3,6 +3,7 @@ package it.polimi.ingsw.server.controller.weapons;
 import it.polimi.ingsw.server.model.player.Damageable;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.weapons.Weapon;
 
 import java.util.*;
 
@@ -30,12 +31,22 @@ public class CompoundTargetCalculator implements TargetCalculator {
      * @return a list of the available groups of targets, which will be empty if none are available
      */
     @Override
-    public Set<Player> computeTargets(Block startingPoint) {
-        Set<Player> potentialBlocks = calculators.get(0).computeTargets(startingPoint);
+    public Set<Player> computeTargets(Block startingPoint, BasicWeapon weapon) {
+        Set<Player> potentialBlocks = calculators.get(0).computeTargets(startingPoint, weapon);
         calculators
             .stream()
-            .map(targetCalculator -> targetCalculator.computeTargets(startingPoint))
+            .map(targetCalculator -> targetCalculator.computeTargets(startingPoint, weapon))
             .forEach(potentialBlocks::retainAll);
         return potentialBlocks;
+    }
+
+    @Override
+    public boolean contains(TargetCalculator calculator) {
+        return calculator == this || this.calculators.stream().anyMatch(c -> c.contains(calculator));
+    }
+
+    @Override
+    public List<TargetCalculator> getSubCalculators() {
+        return calculators;
     }
 }

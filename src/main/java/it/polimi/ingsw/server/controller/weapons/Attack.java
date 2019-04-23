@@ -123,7 +123,7 @@ public class Attack {
         Set<Player> computedTargets = null;
         Optional<TargetCalculator> calculator = actionConfig.getCalculator();
         if (calculator.isPresent()) {
-            computedTargets = calculator.get().computeTargets(startingPoint);
+            computedTargets = calculator.get().computeTargets(startingPoint, weapon);
         }
         if (computedTargets != null) {
             Set<Player> availableTargets = actionConfig.getTargetsToChooseFrom(weapon);

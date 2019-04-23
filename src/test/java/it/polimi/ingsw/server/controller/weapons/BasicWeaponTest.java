@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -426,6 +427,242 @@ class BasicWeaponTest {
             //2 damage because they were hit by basic in the previous shooting
             assertEquals(2, target.getDamageTokens().size(), "Targets should have 2 damage");
             assertEquals(1, target.getMarks().size(), "Targets should have 1 mark");
+        }
+    }
+
+    /**
+     * Testing the weapon Plasma Gun:
+     * - Basic effect: deal 2 damage to 1 target you can see
+     * - Phase glide: Move 1 or 2 squares
+     * - Charged shot: Deal 1 additional damage to your target
+     */
+    @Test
+    void plasmaGun() {
+
+        //adding players to the board
+
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Player t2 = match.getPlayers().get(2);
+        Block b00 = board.getBlock(0, 0).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b00.addPlayer(activePlayer);
+        Block b11 = board.getBlock(1, 1).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b11.addPlayer(t1);
+        b11.addPlayer(t2);
+
+        //t1 or t2 will be the only target for this weapon (besides the active player, who will be allowed to move)
+
+        BasicWeapon plasmaGun = WeaponFactory.create(Weapon.Name.PLASMA_GUN, board);
+        plasmaGun.shoot(new MockInterviewer(0), activePlayer);
+
+        Set<Player> hitByBasic = plasmaGun.wasHitBy(plasmaGun.basicAttack);
+        Set<Player> hitByPhaseGlide = plasmaGun.wasHitBy(((WeaponWithMultipleEffects) plasmaGun).getPoweredAttacks().get(0));
+        Set<Player> hitByChargedShot = plasmaGun.wasHitBy(((WeaponWithMultipleEffects) plasmaGun).getPoweredAttacks().get(1));
+
+        //all attacks hit only one target
+
+        assertEquals(1, hitByBasic.size(), "Wrong amount of targets");
+        assertEquals(1, hitByPhaseGlide.size(), "Wrong amount of targets");
+        assertEquals(1, hitByChargedShot.size(), "Wrong amount of targets");
+
+        //the target hit by the basic attack is the same hit by charged shot, and it is not the active player
+        //the active player is hit by phase glide instead
+
+        assertEquals(hitByBasic, hitByChargedShot, "Targets should be the same");
+        assertTrue(hitByPhaseGlide.contains(activePlayer), "Phase glide should only hit the active player");
+        assertFalse(hitByBasic.contains(activePlayer), "Wrong target for basic attack");
+
+        //the active player was moved of one or 2 steps - the range is from 0 to 2 because the player could have taken
+        //one step and then another to go back to his initial position
+
+        assertTrue(board.getReachableBlocks(b00, new Range(0, 2)).contains(activePlayer.getBlock()), "Wrong active player position: " + activePlayer.getBlock().getRow() + " : " + activePlayer.getBlock().getColumn());
+
+        //the target has 3 damage total (2 given by basic, 1 given by charged shot)
+
+        for (Player target : hitByBasic) {
+            assertEquals(3, target.getDamageTokens().size(), "Wrong damage amount");
+        }
+    }
+
+    /**
+     * Testing the weapon Heatseeker:
+     * - effect: choose a target you cannot see and deal 3 damage to it
+     */
+    @Test
+    void heatseeker() {
+
+        //adding players to the board
+
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Player t2 = match.getPlayers().get(2);
+        Block b00 = board.getBlock(0, 0).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b00.addPlayer(activePlayer);
+        Block b23 = board.getBlock(2, 3).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b00.addPlayer(t1);
+        b23.addPlayer(t2);
+
+        //only t2 is a valid target for this weapon
+
+        BasicWeapon heatseeker = WeaponFactory.create(Weapon.Name.HEATSEEKER, board);
+        heatseeker.shoot(new MockInterviewer(0), activePlayer);
+
+        Set<Player> hitByBasic = heatseeker.wasHitBy(heatseeker.basicAttack);
+
+        //there is only one attack and only one target: t2, who received 3 damage
+
+        assertEquals(1, hitByBasic.size(), "Wrong amount of targets");
+        assertTrue(hitByBasic.contains(t2), "Wrong target");
+        assertEquals(3, t2.getDamageTokens().size(), "Wrong damage");
+    }
+
+    /**
+     * Testing the weapon Whisper:
+     * - effect: Deal 3 damage and 1 mark to 1 target you can see that is at least 2 moves away from you.
+     */
+    @Test
+    void whisper() {
+
+        //adding players to the board
+
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Player t2 = match.getPlayers().get(2);
+        Block b00 = board.getBlock(0, 0).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b00.addPlayer(activePlayer);
+        Block b11 = board.getBlock(1, 1).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b21 = board.getBlock(2, 1).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b11.addPlayer(t1);
+        b21.addPlayer(t2);
+
+        //both targets are at least 2 moves away from the active player, but only t1 is visible: t1 is the only available target
+
+        BasicWeapon whisper = WeaponFactory.create(Weapon.Name.WHISPER, board);
+        whisper.shoot(new MockInterviewer(0), activePlayer);
+
+        Set<Player> hitByBasic = whisper.wasHitBy(whisper.basicAttack);
+
+        //t1 is the only target and has received 3 damage
+
+        assertTrue(hitByBasic.contains(t1), "Wrong target");
+        assertEquals(1, hitByBasic.size(), "Wrong amount of targets");
+        assertEquals(3, t1.getDamageTokens().size(), "Wrong damage");
+    }
+
+    /** Testing the weapon Hellion:
+     * - Basic mode: Deal 1 damage to 1 target you can see at least 1 move away. Then give 1 mark to that target and everyone else on that square.
+     * - Nano tracer mode: Deal 1 damage to 1 target you can see at least 1 move away. Then give 2 marks to that target and everyone else on that square.
+     */
+    @Test
+    void hellion() {
+
+        //adding players to the board
+
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Player t2 = match.getPlayers().get(2);
+        Player t3 = match.getPlayers().get(3);
+        Block b00 = board.getBlock(0, 0).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b00.addPlayer(activePlayer);
+        Block b11 = board.getBlock(1, 1).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b11.addPlayer(t1);
+        b11.addPlayer(t2);
+        b11.addPlayer(t3);
+
+        //t1, t2 and t3 are all on the same square, so they will all be hit, two of them will only receive the marks and the other also the damage
+
+        BasicWeapon hellion = WeaponFactory.create(Weapon.Name.HELLION, board);
+        hellion.shoot(new MockInterviewer(0), activePlayer);
+
+        Set<Player> hitByBasic = hellion.wasHitBy(hellion.basicAttack);
+
+        //3 targets are hit by the attack, they all have a mark and one of them also has a damage
+
+        assertEquals(3, hitByBasic.size(), "Wrong amount of targets");
+        assertTrue(hitByBasic.contains(t1), "t1 should be a target");
+        assertTrue(hitByBasic.contains(t2), "t2 should be a target");
+        assertTrue(hitByBasic.contains(t3), "t3 should be a target");
+        for (Player target : hitByBasic) {
+            assertEquals(1, target.getMarks().size(), "Wrong marks");
+        }
+        assertEquals(1, hitByBasic.stream().filter(t -> t.getDamageTokens().size() == 1).count(), "Wrong amount of damaged players");
+        assertEquals(2, hitByBasic.stream().filter(t -> t.getDamageTokens().isEmpty()).count(), "Wrong amount of damaged players");
+
+        //shooting again, the targets should all receive 2 more marks and one of them will also receive a damage
+
+        hellion.shoot(new MockInterviewer(1), activePlayer);
+
+        Set<Player> hitByNanoTracer = hellion.wasHitBy(((WeaponWithAlternative) hellion).alternativeAttack);
+
+        //the targets are the same as the first attack, damage and marks are not tested because it depends on the order
+        //used to hit the players (marks turn into damage after receiving a new damage)
+        assertEquals(3, hitByNanoTracer.size(), "Wrong amount of targets");
+        assertTrue(hitByNanoTracer.containsAll(hitByBasic), "Wrong targets");
+    }
+
+    /**
+     * Testing the weapon Flamethrower:
+     * - Basic mode: Choose a square 1 move away and possibly a second square 1 more move away in the same direction. On each square, you may choose 1 target and give it 1 damage.
+     * - Barbecue mode: Choose 2 squares as above. Deal 2 damage to everyone on the first square and 1 damage to everyone on the second square.
+     */
+    @Test
+    void flamethrower() {
+
+        //adding players to the board
+
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Player t2 = match.getPlayers().get(2);
+        Player t3 = match.getPlayers().get(3);
+        Player t4 = match.getPlayers().get(4);
+        Block b11 = board.getBlock(1, 1).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b11.addPlayer(activePlayer);
+        Block b12 = board.getBlock(1, 2).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b13 = board.getBlock(1, 3).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b12.addPlayer(t1);
+        b12.addPlayer(t2);
+        b13.addPlayer(t3);
+        b13.addPlayer(t4);
+
+        //two players for the two squares, which are in the same direction and 1 and 2 moves away from the active player
+        //in basic mode, this means that 1 target for each square will be damaged
+
+        BasicWeapon flamethrower = WeaponFactory.create(Weapon.Name.FLAMETHROWER, board);
+        flamethrower.shoot(new MockInterviewer(0), activePlayer);
+
+        Set<Player> hitByBasic = flamethrower.wasHitBy(flamethrower.basicAttack);
+
+        //only two targets are hit, and they are on different squares
+        assertEquals(2, hitByBasic.size(), "Wrong target amount");
+        for (Player target : hitByBasic) {
+            assertEquals(1, target.getDamageTokens().size(), "Wrong amount of damage");
+        }
+        assertTrue(hitByBasic.contains(t1) != hitByBasic.contains(t2), "t1 and t2 can't be both targets");
+        assertTrue(hitByBasic.contains(t3) != hitByBasic.contains(t4), "t3 and t4 can't be both targets");
+
+        //shooting again, but in barbecue mode
+
+        flamethrower.shoot(new MockInterviewer(1), activePlayer);
+
+        Set<Player> hitByBarbecue = flamethrower.wasHitBy(((WeaponWithAlternative) flamethrower).alternativeAttack);
+
+        assertTrue(hitByBarbecue.containsAll(hitByBasic), "Wrong targets");
+        assertEquals(4, hitByBarbecue.size(), "Wrong amount of targets");
+        for (Player target : hitByBarbecue) {
+            //one of t1 and t2 (the one hit by basic as well) will have 3 damage, the other 2
+            //one of t3 and t4 (the one hit by basic as well) will have 2 damage, the other 1
+            if (hitByBasic.contains(target) && b12.containsPlayer(target)) {
+                assertEquals(3, target.getDamageTokens().size(), "Wrong amount of damage");
+            } else if (hitByBasic.contains(target) && b13.containsPlayer(target) || b12.containsPlayer(target)) {
+                assertEquals(2, target.getDamageTokens().size(), "Wrong amount of damage");
+            } else {
+                assertEquals(1, target.getDamageTokens().size(), "Wrong amount of damage");
+            }
         }
     }
 }
