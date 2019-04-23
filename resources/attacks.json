@@ -277,49 +277,53 @@
         }
       ]
     },
-    "advancedAttack": {
-      "name": "with black hole",
-      "cost": ["RED"],
-      "actions": [
-        {
-          "startingPoint": "INHERIT",
-          "targetPosition": "FIXED",
-          "targetDistance": {
-            "min": 0,
-            "max": 1
+    "advancedAttacks": [
+      {
+        "name": "with black hole",
+        "cost": ["RED"],
+        "actions": [
+          {
+            "startingPoint": "INHERIT",
+            "targetPosition": "FIXED",
+            "targetDistance": {
+              "min": 0,
+              "max": 1
+            },
+            "move": {"min": 0, "max": 1},
+            "targetFinalDistance": {"min": 0, "max": 0},
+            "targetFinalPosition": "FIXED",
+            "skippable": false,
+            "targetAmount": "ONE",
+            "targets": "FIND",
+            "veto": "ALL_PREVIOUS"
+          }, {
+            "startingPoint": "INHERIT",
+            "targets": "INHERIT_LAST",
+            "damage": 1,
+            "skippable": false,
+            "targetAmount": "ONE"
           },
-          "move": {"min": 0, "max": 1},
-          "targetFinalDistance": {"min": 0, "max": 0},
-          "targetFinalPosition": "FIXED",
-          "skippable": false,
-          "targetAmount": "ONE",
-          "veto": "ALL_PREVIOUS"
-        }, {
-          "startingPoint": "INHERIT",
-          "targets": "INHERIT_LAST",
-          "damage": 1,
-          "skippable": false,
-          "targetAmount": "ONE"
-        },
-        {
-          "startingPoint": "INHERIT",
-          "targetPosition": "FIXED",
-          "targetDistance": {"min": 0, "max": 1},
-          "move": {"min": 0, "max": 1},
-          "targetFinalDistance": {"min": 0, "max": 0},
-          "targetFinalPosition": "FIXED",
-          "skippable": true,
-          "canReHitSameTarget": false,
-          "targetAmount": "ONE"
-        }, {
-          "startingPoint": "INHERIT",
-          "targets": "INHERIT_LAST",
-          "damage": 1,
-          "skippable": false,
-          "targetAmount": "ONE"
-        }
-      ]
-    }
+          {
+            "startingPoint": "INHERIT",
+            "targetPosition": "FIXED",
+            "targetDistance": {"min": 0, "max": 1},
+            "move": {"min": 0, "max": 1},
+            "targetFinalDistance": {"min": 0, "max": 0},
+            "targetFinalPosition": "FIXED",
+            "skippable": true,
+            "targets": "FIND",
+            "veto": "ALL_PREVIOUS",
+            "targetAmount": "ONE"
+          }, {
+            "startingPoint": "INHERIT",
+            "targets": "INHERIT_LAST",
+            "damage": 1,
+            "skippable": false,
+            "targetAmount": "ONE"
+          }
+        ]
+      }
+    ]
   },
   {
     "weaponId": "Furnace",
@@ -348,6 +352,13 @@
           "targetAmount": "BLOCK",
           "skippable": false,
           "targets": "FIND"
+        },
+        {
+          "startingPoint": "ACTIVE_PLAYER",
+          "mark": 1,
+          "targetAmount": "BLOCK",
+          "skippable": false,
+          "targets": "INHERIT_LAST"
         }
       ]
     }

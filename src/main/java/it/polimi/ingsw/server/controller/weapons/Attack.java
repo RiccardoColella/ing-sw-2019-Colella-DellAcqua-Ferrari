@@ -80,8 +80,10 @@ public class Attack {
             }
             if (!chosenSet.isPresent()) {
                 int next = actionConfigs.indexOf(actionConfig) + 1;
-                if (next >= actionConfigs.size() || !actionConfigs.get(next).isSkippable()) {
+                if (next >= actionConfigs.size() || !actionConfigs.get(next).isSkippable() && actionConfig.isSkippable()) {
                     break;
+                } else if (!actionConfig.isSkippable()) {
+                    throw new IllegalStateException("Action was not skippable");
                 }
             } else if (chosenSet.get().isEmpty()) {
                 throw new IllegalStateException("Empty target selection");

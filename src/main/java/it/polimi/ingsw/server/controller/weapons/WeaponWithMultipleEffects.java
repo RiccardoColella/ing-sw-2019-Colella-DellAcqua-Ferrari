@@ -61,26 +61,28 @@ public class WeaponWithMultipleEffects extends BasicWeapon {
         Optional<Attack> chosenAttack;
 
         do {
-            availableAttacks = computeAvailableAttacks(allAttacks);
-            if (availableAttacks.isEmpty() && !executedAttacks.isEmpty()) {
-                chosenAttack = Optional.empty();
-            } else if (availableAttacks.isEmpty()){
-                throw new IllegalStateException("No attacks were executable, weapon should not have been picked");
-            } else if (mustExecuteInOrder) {
-                chosenAttack = forceOrder(interviewer);
+            if (mustExecuteInOrder) {
+                chosenAttack = forceOrder(interviewer, allAttacks);
             } else {
-                List<Attack> executableNow = computeNowExecutableAttacks();
-                if (executableNow.isEmpty()) {
+                availableAttacks = computeAvailableAttacks(allAttacks);
+                if (availableAttacks.isEmpty() && !executedAttacks.isEmpty()) {
                     chosenAttack = Optional.empty();
-                }
-                else if (executedAttacks.contains(basicAttack)) {
-                    List<String> attackNames = executableNow.stream().map(Attack::getName).collect(Collectors.toList());
-                    Optional<String> chosenName = interviewer.selectOptional("Select the effect", attackNames, ClientApi.ATTACK_QUESTION);
-                    chosenAttack = chosenName.map(name -> attackByName(name, executableNow));
+                } else if (availableAttacks.isEmpty()) {
+                    throw new IllegalStateException("No attacks were executable, weapon should not have been picked");
                 } else {
-                    List<String> attackNames = executableNow.stream().map(Attack::getName).collect(Collectors.toList());
-                    String chosenName = interviewer.select("Select the effect", attackNames, ClientApi.ATTACK_QUESTION);
-                    chosenAttack = Optional.of(attackByName(chosenName, executableNow));
+                    List<Attack> executableNow = computeNowExecutableAttacks();
+                    if (executableNow.isEmpty()) {
+
+                        chosenAttack = Optional.empty();
+                    } else if (executedAttacks.contains(basicAttack)) {
+                        List<String> attackNames = executableNow.stream().map(Attack::getName).collect(Collectors.toList());
+                        Optional<String> chosenName = interviewer.selectOptional("Select the effect", attackNames, ClientApi.ATTACK_QUESTION);
+                        chosenAttack = chosenName.map(name -> attackByName(name, executableNow));
+                    } else {
+                        List<String> attackNames = executableNow.stream().map(Attack::getName).collect(Collectors.toList());
+                        String chosenName = interviewer.select("Select the effect", attackNames, ClientApi.ATTACK_QUESTION);
+                        chosenAttack = Optional.of(attackByName(chosenName, executableNow));
+                    }
                 }
             }
             activeAttack = chosenAttack.orElse(null);
@@ -122,8 +124,12 @@ public class WeaponWithMultipleEffects extends BasicWeapon {
         return executableNow;
     }
 
-    private Optional<Attack> forceOrder(Interviewer interviewer) {
-        if (!executedAttacks.isEmpty()) {
+    private Optional<Attack> forceOrder(Interviewer interviewer, List<Attack> allAttacks) {
+        availableAttacks = new LinkedList<>(allAttacks);
+        availableAttacks.removeAll(executedAttacks);
+        if (availableAttacks.isEmpty()) {
+            return Optional.empty();
+        } else if (!executedAttacks.isEmpty()) {
             Optional<String> chosen = interviewer.selectOptional("Select the effect", Collections.singleton(availableAttacks.get(0).getName()), ClientApi.ATTACK_QUESTION);
             return chosen.map(name -> attackByName(name, Collections.singletonList(availableAttacks.get(0))));
         } else {

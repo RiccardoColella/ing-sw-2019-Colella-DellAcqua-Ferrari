@@ -130,12 +130,27 @@ public class BasicWeapon {
     }
 
     protected boolean canDoFirstAction(Attack attack) {
+        this.activeAttack = attack;
+        Block oldSp = this.startingBlock;
         Set<Block> startingPoints = attack.getPotentialStartingPoints(attack.getActionConfigs().get(0), this);
         for (Block startingPoint : startingPoints) {
-            if (!attack.getPotentialTargets(startingPoint, attack.getActionConfigs().get(0), this).isEmpty()) {
+            if (validStartingPoint(attack, startingPoint)) {
                 return true;
             }
         }
+        this.startingBlock = oldSp;
+        return false;
+    }
+
+    protected boolean validStartingPoint(Attack attack, Block startingPoint) {
+        Block oldSp = this.startingBlock;
+        this.startingBlock = startingPoint;
+        this.activeAttack = attack;
+        if (!attack.getPotentialTargets(startingPoint, attack.getActionConfigs().get(0), this).isEmpty()) {
+            this.startingBlock = oldSp;
+            return true;
+        }
+        this.startingBlock = oldSp;
         return false;
     }
 
@@ -149,5 +164,9 @@ public class BasicWeapon {
 
     protected void setStartingBlock(Block block) {
         this.startingBlock = block;
+    }
+
+    protected Attack getActiveAttack() {
+        return this.activeAttack;
     }
 }

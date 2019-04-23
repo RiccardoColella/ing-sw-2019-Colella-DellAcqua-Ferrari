@@ -388,10 +388,15 @@ public class WeaponFactory {
                     ));
                     break;
                 case "VISIBLE":
-                    startingPointCalculator = weapon -> weapon.getCurrentShooter().getMatch().getBoard().getVisibleBlocks(weapon.getCurrentShooter().getBlock());
+                    startingPointCalculator = weapon -> {
+                        Set<Block> visibleBlocks = weapon.getCurrentShooter().getMatch().getBoard().getVisibleBlocks(weapon.getCurrentShooter().getBlock());
+                        visibleBlocks.removeIf(block -> !weapon.validStartingPoint(weapon.getActiveAttack(), block));
+                        return visibleBlocks;
+                    };
                     if (actionObject.has("andNotStartingPoint") && actionObject.get("andNotStartingPoint").getAsString().equals("ACTIVE_PLAYER")) {
                         startingPointCalculator = weapon -> {
                             Set<Block> blocks = weapon.getCurrentShooter().getMatch().getBoard().getVisibleBlocks(weapon.getCurrentShooter().getBlock());
+                            blocks.removeIf(block -> !weapon.validStartingPoint(weapon.getActiveAttack(), block));
                             blocks.remove(weapon.getCurrentShooter().getBlock());
                             return blocks;
                         };
@@ -399,7 +404,7 @@ public class WeaponFactory {
                     break;
                 case "PREVIOUS_TARGET":
                     startingPointCalculator = weapon -> new HashSet<>(Collections.singletonList(
-                            weapon.getExecutedAttacks().get(weapon.getExecutedAttacks().size() - 1).getLastHit().iterator().next().getBlock()
+                            weapon.getAllTargets().get(weapon.getAllTargets().size() - 1).getBlock()
                     ));
                     break;
                 default:
