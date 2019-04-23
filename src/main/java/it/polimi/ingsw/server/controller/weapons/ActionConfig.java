@@ -20,7 +20,7 @@ public class ActionConfig {
     private final Function<BasicWeapon, Set<Player>> targetsToChooseFrom;
     private final Function<Set<Player>, Set<Set<Player>>> adaptToScope;
     private final BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> addToEach;
-    private final BiFunction<Set<Set<Player>>, List<Player>, Set<Set<Player>>> veto;
+    private final BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> veto;
     private final Function<BasicWeapon, Set<Block>> startingPointUpdater;
 
 
@@ -30,7 +30,7 @@ public class ActionConfig {
             Function<BasicWeapon, Set<Player>> targetsToChooseFrom,
             Function<Set<Player>, Set<Set<Player>>> adaptToScope,
             BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> addToEach,
-            BiFunction<Set<Set<Player>>, List<Player>, Set<Set<Player>>> veto,
+            BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> veto,
             boolean skippable,
             Function<BasicWeapon, Set<Block>> startingPointUpdater,
             TriConsumer<Set<Player>, Interviewer, BasicWeapon> executor) {
@@ -73,8 +73,8 @@ public class ActionConfig {
         return addToEach.apply(potentialTargets, weapon);
     }
 
-    public Set<Set<Player>> applyVeto(Set<Set<Player>> potentialTargets, List<Player> previouslyHit) {
-        return veto.apply(potentialTargets, previouslyHit);
+    public Set<Set<Player>> applyVeto(Set<Set<Player>> potentialTargets, BasicWeapon weapon) {
+        return veto.apply(potentialTargets, weapon);
     }
 
     public Set<Block> updateStartingPoint(BasicWeapon weapon) {

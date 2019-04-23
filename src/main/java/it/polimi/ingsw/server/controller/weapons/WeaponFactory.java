@@ -117,7 +117,7 @@ public class WeaponFactory {
         Function<BasicWeapon, Set<Player>> targetsToChooseFrom = readAvailableTargets(actionObject);
         Function<Set<Player>, Set<Set<Player>>> adaptToScope = readScope(actionObject);
         BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> addToEach = readMandatoryExtras(actionObject);
-        BiFunction<Set<Set<Player>>, List<Player>, Set<Set<Player>>> veto = readVeto(actionObject);
+        BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> veto = readVeto(actionObject);
         boolean skippable = actionObject.get("skippable").getAsBoolean();
         Function<BasicWeapon, Set<Block>> startingPointUpdater = readStartingPoint(actionObject);
         TriConsumer<Set<Player>, Interviewer, BasicWeapon> executor = readActionType(actionObject, board.getBlocks().size());
@@ -166,6 +166,13 @@ public class WeaponFactory {
                     return self;
                 };
                 break;
+            case "INHERIT_ALL":
+                bonusTarget = (previouslyHit, activePlayer) -> {
+                    Set<Player> available = new HashSet<>(previouslyHit);
+                    available.remove(activePlayer);
+                    return available;
+                };
+                break;
             default:
                 bonusTarget = (previouslyHit, activePlayer) -> new HashSet<>();
                 break;
@@ -174,21 +181,11 @@ public class WeaponFactory {
     }
 
     private static Function<BasicWeapon, Set<Player>> readAvailableTargets(JsonObject actionObject) {
-        Function<BasicWeapon, Set<Player>> availableTargets;
-        if ("INHERIT_ALL".equals(actionObject.get("targets").getAsString())) {
-            availableTargets = weapon -> {
-                Set<Player> available = new HashSet<>(weapon.getAllTargets());
-                available.remove(weapon.getCurrentShooter());
-                return available;
-            };
-        } else {
-            availableTargets = weapon -> {
+        return weapon -> {
                 Set<Player> nonActive = new HashSet<>(weapon.getCurrentShooter().getMatch().getPlayers());
                 nonActive.remove(weapon.getCurrentShooter());
                 return nonActive;
             };
-        }
-        return availableTargets;
     }
 
     private static @Nullable TargetCalculator elaborateFindingTarget(JsonObject actionObject, Board board, @Nullable TargetCalculator lastTargetCalculator) {
@@ -326,13 +323,14 @@ public class WeaponFactory {
         return addToEach;
     }
 
-    private static BiFunction<Set<Set<Player>>, List<Player>, Set<Set<Player>>> readVeto(JsonObject actionObject) {
-        BiFunction<Set<Set<Player>>, List<Player>, Set<Set<Player>>> veto;
+    private static BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> readVeto(JsonObject actionObject) {
+        BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> veto;
         String field = "veto";
         if (actionObject.has(field)) {
             switch (actionObject.get(field).getAsString()) {
                 case "LAST_HIT":
-                    veto = (potentialTargets, previouslyHit) -> {
+                    veto = (potentialTargets, weapon) -> {
+                        List<Player> previouslyHit = weapon.getAllTargets();
                         List<Player> vetoList = new LinkedList<>();
                         if (!previouslyHit.isEmpty()) {
                             vetoList.add(previouslyHit.get(previouslyHit.size() - 1));
@@ -341,7 +339,17 @@ public class WeaponFactory {
                     };
                     break;
                 case "ALL_PREVIOUS":
-                    veto = WeaponFactory::removeFromSet;
+                    veto = (potentialTargets, weapon) -> WeaponFactory.removeFromSet(potentialTargets, weapon.getAllTargets());
+                    break;
+                case "HIT_BY_ADVANCED":
+                    veto = (potentialTargets, weapon) -> {
+                        List<Attack> poweredAttacks = ((WeaponWithMultipleEffects) weapon).getPoweredAttacks();
+                        List<Player> vetoList = new LinkedList<>();
+                        for (Attack powered : poweredAttacks) {
+                            vetoList.addAll(weapon.wasHitBy(powered));
+                        }
+                        return WeaponFactory.removeFromSet(potentialTargets, vetoList);
+                    };
                     break;
                 default:
                     throw new IncoherentConfigurationException("Unknown veto: " + actionObject.get(field).getAsString());

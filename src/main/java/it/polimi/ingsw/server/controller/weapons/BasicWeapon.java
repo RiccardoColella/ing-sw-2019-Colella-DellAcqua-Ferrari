@@ -146,4 +146,8 @@ public class BasicWeapon {
                         execution.getItem1().stream())
                 .collect(Collectors.toSet());
     }
+
+    protected void setStartingBlock(Block block) {
+        this.startingBlock = block;
+    }
 }

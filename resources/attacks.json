@@ -95,12 +95,11 @@
           "targetPosition": "VISIBLE",
           "startingPoint": "ACTIVE_PLAYER",
           "skippable": true,
-          "canReHitSameTarget": false,
+          "veto": "ALL_PREVIOUS",
           "targets": "FIND"
         }
       ]
     },
-    "veto": "HIT_BY_ADVANCED",
     "advancedAttacks": [
       {
         "name": "with focus shot",
@@ -112,7 +111,8 @@
             "skippable": false,
             "targetAmount": "ONE",
             "startingPoint": "ACTIVE_PLAYER",
-            "targets": "INHERIT_ALL"
+            "targets": "INHERIT_ALL",
+            "veto": "HIT_BY_ADVANCED"
           }
         ]
       },
@@ -124,10 +124,11 @@
           {
             "damage": 1,
             "startingPoint": "ACTIVE_PLAYER",
-            "skippable": false,
+            "skippable": true,
             "targetAmount": "ONE",
             "targetPosition": "VISIBLE",
-            "targets": "INHERIT_ALL"
+            "targets": "INHERIT_ALL",
+            "veto": "HIT_BY_ADVANCED"
           }, {
             "damage": 1,
             "startingPoint": "ACTIVE_PLAYER",
@@ -135,7 +136,8 @@
             "targetAmount": "ONE",
             "targetPosition": "VISIBLE",
             "canReHitSameTarget": true,
-            "targets": "FIND"
+            "targets": "FIND",
+            "veto": "HIT_BY_ADVANCED"
           }
         ]
       }
@@ -383,7 +385,7 @@
         "actions": [
           {
             "damage": 1,
-            "targets": "INHERIT_ALL",
+            "targets": "INHERIT_LAST",
             "targetAmount": "ONE",
             "skippable": false
           }

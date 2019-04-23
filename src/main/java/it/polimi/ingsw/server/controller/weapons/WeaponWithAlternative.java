@@ -17,7 +17,7 @@ public class WeaponWithAlternative extends BasicWeapon {
     /**
      * This property represents the alternative attack of the weapon, which can be used in place of the basic attack
      */
-    private final Attack alternativeAttack;
+    protected final Attack alternativeAttack;
 
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought

@@ -60,6 +60,7 @@ public class Attack {
             } else {
                 startingPoint = potentialStartingPoints.iterator().next();
             }
+            weapon.setStartingBlock(startingPoint);
             Set<Set<Player>> potentialTargets = getPotentialTargets(startingPoint, actionConfig, weapon);
             Optional<Set<Player>> chosenSet;
             if (potentialTargets.isEmpty() && actionConfig.isSkippable()) {
@@ -78,8 +79,10 @@ public class Attack {
                 chosenSet = Optional.of(findTargetByNickname(potentialTargets, chosenNicknames));
             }
             if (!chosenSet.isPresent()) {
-                //TODO: attack is over
-                break;
+                int next = actionConfigs.indexOf(actionConfig) + 1;
+                if (next >= actionConfigs.size() || !actionConfigs.get(next).isSkippable()) {
+                    break;
+                }
             } else if (chosenSet.get().isEmpty()) {
                 throw new IllegalStateException("Empty target selection");
             } else {
@@ -128,7 +131,7 @@ public class Attack {
         }
         Set<Set<Player>> potentialTargets = actionConfig.adaptToScope(computedTargets);
         potentialTargets = actionConfig.addToEach(potentialTargets, weapon);
-        return actionConfig.applyVeto(potentialTargets, weapon.getAllTargets());
+        return actionConfig.applyVeto(potentialTargets, weapon);
     }
 
 
