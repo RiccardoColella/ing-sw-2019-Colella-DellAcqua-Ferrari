@@ -6,17 +6,13 @@ import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
-import it.polimi.ingsw.shared.CommandQueue;
-import it.polimi.ingsw.shared.Direction;
-import it.polimi.ingsw.shared.commands.*;
-import it.polimi.ingsw.shared.events.CommandReceived;
-import it.polimi.ingsw.shared.events.listeners.CommandReceivedListener;
-import it.polimi.ingsw.utils.EnumValueByString;
+import it.polimi.ingsw.shared.InputMessageQueue;
+import it.polimi.ingsw.shared.messages.*;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * This class is an abstract server-side View. It contains all the methods needed for the interaction with the controller
@@ -26,34 +22,8 @@ public abstract class View implements Interviewer {
 
     private boolean connected = true;
 
-    private CommandQueue inputCommandQueue = new CommandQueue();
-    private CommandQueue outputCommandQueue = new CommandQueue();
-
-    private List<CommandReceivedListener> listeners = new LinkedList<>();
-    private List<CommandReceivedListener> singleTriggerListeners = new LinkedList<>();
-
-    public void addCommandReceivedListener(CommandReceivedListener l) {
-        listeners.add(l);
-    }
-
-    public void addSingleTriggerCommandReceivedListener(CommandReceivedListener l) {
-        singleTriggerListeners.add(l);
-    }
-
-    public void removeCommandReceivedListener(CommandReceivedListener l) {
-        listeners.remove(l);
-    }
-
-    public void removeSingleTriggerCommandReceivedListener(CommandReceivedListener l) {
-        singleTriggerListeners.remove(l);
-    }
-
-    protected void notifyCommandReceived(Command command) {
-        CommandReceived e = new CommandReceived(this, command);
-        singleTriggerListeners.forEach(l -> l.onCommandReceived(e));
-        singleTriggerListeners.clear();
-        listeners.forEach(l -> l.onCommandReceived(e));
-    }
+    protected InputMessageQueue inputMessageQueue = new InputMessageQueue();
+    protected LinkedBlockingQueue<Message> outputMessageQueue = new LinkedBlockingQueue<>();
 
     public abstract PowerupTile chooseSpawnpoint(List<PowerupTile> powerups);
 
@@ -69,40 +39,32 @@ public abstract class View implements Interviewer {
 
     public abstract Match.Mode getChosenMode();
 
-    protected Command dequeInputCommand(String command) {
+    @Nullable
+    private  <T> T awaitResponse(String streamId, Collection<T> options) {
+
         try {
-            return inputCommandQueue.dequeue(command);
+            Message response = inputMessageQueue.dequeueAnswer(streamId);
+            if (response.getPayload().getAsInt() == 0) {
+                return null;
+            } else {
+                return new ArrayList<>(options).get(response.getPayload().getAsInt() - 1);
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             connected = false;
-            throw new ViewDisconnectedException("Unable to retrieve input command");
-        }
-    }
-
-    protected void enqueueInputCommand(Command command) {
-        inputCommandQueue.enqueue(command);
-    }
-
-    protected void enqueueOutputCommand(Command command) {
-        inputCommandQueue.enqueue(command);
-    }
-
-    @Nullable
-    protected <T> T awaitResponse(ClientApi commandName, Collection<T> options) {
-        Command response = dequeInputCommand(ServerApi.ANSWER.toString());
-        if (response.getPayload().getAsInt() == 0) {
-            return null;
-        } else {
-            return new ArrayList<>(options).get(response.getPayload().getAsInt() - 1);
+            throw new ViewDisconnectedException("Unable to retrieve input message");
         }
     }
 
     @Override
-    public <T> T select(String questionText, Collection<T> options, ClientApi commandName) {
+    public <T> T select(String questionText, Collection<T> options, ClientApi messageName) {
         if (!options.isEmpty()) {
-            enqueueOutputCommand(new Command(commandName.toString(), new Question<>(questionText, options)));
 
-            T response = awaitResponse(commandName, options);
+            Message message = Message.createQuestion(messageName.toString(), new Question<>(questionText, options));
+
+            outputMessageQueue.add(message);
+
+            T response = awaitResponse(message.getStreamId(), options);
             if (response == null || !options.contains(response)) {
                 throw new IllegalStateException("Received an invalid answer from the client");
             }
@@ -114,11 +76,12 @@ public abstract class View implements Interviewer {
     }
 
     @Override
-    public <T> Optional<T> selectOptional(String questionText, Collection<T> options, ClientApi commandName) {
+    public <T> Optional<T> selectOptional(String questionText, Collection<T> options, ClientApi messageName) {
         if (!options.isEmpty()) {
-            enqueueOutputCommand(new Command(commandName.toString(), new Question<>(questionText, options, true)));
+            Message message = Message.createQuestion(messageName.toString(), new Question<>(questionText, options, true));
+            outputMessageQueue.add(message);
 
-            T response = awaitResponse(commandName, options);
+            T response = awaitResponse(message.getStreamId(), options);
             if (response != null && !options.contains(response)) {
                 throw new IllegalStateException("Received an invalid answer from the client");
             }
@@ -127,15 +90,5 @@ public abstract class View implements Interviewer {
         } else {
             throw new IllegalArgumentException("No option provided");
         }
-    }
-
-    @Override
-    public <T> Optional<T> selectOptional(Collection<T> options) {
-        return selectOptional("", options, ClientApi.BLOCK_QUESTION);
-    }
-
-    @Override
-    public <T> T select(Collection<T> options) {
-        return select("", options, ClientApi.BLOCK_QUESTION);
     }
 }

@@ -1,7 +1,10 @@
 package it.polimi.ingsw.server.bootstrap;
 
 import it.polimi.ingsw.server.view.View;
+import it.polimi.ingsw.server.view.remote.RMIStreamProvider;
+import it.polimi.ingsw.server.view.remote.RMIView;
 import it.polimi.ingsw.server.view.remote.SocketView;
+import it.polimi.ingsw.server.view.remote.RMIMessageProxy;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -35,6 +38,32 @@ public class WaitingRoom implements AutoCloseable {
         @Override
         public View call() throws Exception {
             return new SocketView(socket.accept());
+        }
+    }
+
+    private class RMIAcceptor implements Callable<View>, AutoCloseable {
+
+        private int port;
+        private RMIStreamProvider provider;
+
+        public RMIAcceptor(int port) throws IOException {
+            this.port = port;
+            provider = new RMIStreamProvider();
+            java.rmi.registry.LocateRegistry.getRegistry(port).rebind("RMIConnectionEndPoint", provider);
+        }
+
+        @Override
+        public void close() throws Exception {
+        }
+
+        @Override
+        public View call() throws Exception {
+            provider.wait();
+            RMIView view = new RMIView();
+            RMIMessageProxy messageProxy = new RMIMessageProxy(view);
+            java.rmi.registry.LocateRegistry.getRegistry(port).bind(provider.getMessageProxyID(), messageProxy);
+
+            return view;
         }
     }
 

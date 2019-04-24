@@ -1,4 +1,4 @@
-package it.polimi.ingsw.shared.commands;
+package it.polimi.ingsw.shared.messages;
 
 public enum ClientApi {
 

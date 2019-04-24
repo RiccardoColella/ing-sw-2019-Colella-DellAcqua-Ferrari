@@ -5,7 +5,7 @@ import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
-import it.polimi.ingsw.shared.commands.ClientApi;
+import it.polimi.ingsw.shared.messages.ClientApi;
 
 import java.util.LinkedList;
 import java.util.List;

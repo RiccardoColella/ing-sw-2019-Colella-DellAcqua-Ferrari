@@ -5,20 +5,16 @@ import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
 import it.polimi.ingsw.server.view.View;
-import it.polimi.ingsw.shared.commands.Command;
+import it.polimi.ingsw.shared.InputMessageQueue;
+import it.polimi.ingsw.shared.messages.Message;
 
-import java.net.Socket;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import java.rmi.server.RMISocketFactory;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 /**
- * RMIConnector based implementation of the server-side SocketView
+ * RMI based implementation of the server-side View
  */
 public class RMIView extends View {
-
-    public RMIView() { }
 
     @Override
     public PowerupTile chooseSpawnpoint(List<PowerupTile> powerups) {
@@ -43,5 +39,13 @@ public class RMIView extends View {
     @Override
     public Match.Mode getChosenMode() {
         return null;
+    }
+
+    public BlockingQueue<Message> getOutputMessageQueue() {
+        return outputMessageQueue;
+    }
+
+    public InputMessageQueue getInputMessageQueue() {
+        return inputMessageQueue;
     }
 }

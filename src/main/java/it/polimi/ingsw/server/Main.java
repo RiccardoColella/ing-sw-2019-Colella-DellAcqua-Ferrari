@@ -1,25 +1,13 @@
 package it.polimi.ingsw.server;
 
-import com.google.gson.Gson;
-import it.polimi.ingsw.server.controller.Controller;
-import it.polimi.ingsw.server.model.match.Match;
-import it.polimi.ingsw.server.model.match.MatchFactory;
 import it.polimi.ingsw.server.view.View;
 import it.polimi.ingsw.server.view.remote.SocketView;
 import it.polimi.ingsw.shared.Direction;
-import it.polimi.ingsw.shared.commands.ClientApi;
+import it.polimi.ingsw.shared.messages.ClientApi;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 
 public class Main {
 
@@ -35,6 +23,7 @@ public class Main {
      */
     public static void main(String[] args) throws IOException, InterruptedException {
 
+        // Testing
         View view = new SocketView(new ServerSocket(9090).accept());
 
         Direction direction = view.select("Scegli", Arrays.asList(Direction.EAST, Direction.NORTH), ClientApi.DIRECTION_QUESTION);

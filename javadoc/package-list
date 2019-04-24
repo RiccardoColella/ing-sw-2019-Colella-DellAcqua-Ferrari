@@ -22,8 +22,9 @@ it.polimi.ingsw.server.model.weapons
 it.polimi.ingsw.server.view
 it.polimi.ingsw.server.view.remote
 it.polimi.ingsw.shared
-it.polimi.ingsw.shared.commands
 it.polimi.ingsw.shared.events
 it.polimi.ingsw.shared.events.listeners
+it.polimi.ingsw.shared.messages
+it.polimi.ingsw.shared.view.remote
 it.polimi.ingsw.utils
 it.polimi.ingsw.utils.io

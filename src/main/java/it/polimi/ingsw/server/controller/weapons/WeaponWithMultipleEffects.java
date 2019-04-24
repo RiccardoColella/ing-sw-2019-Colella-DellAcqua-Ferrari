@@ -3,7 +3,7 @@ package it.polimi.ingsw.server.controller.weapons;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.view.Interviewer;
-import it.polimi.ingsw.shared.commands.ClientApi;
+import it.polimi.ingsw.shared.messages.ClientApi;
 
 import javax.annotation.Nullable;
 import java.util.*;

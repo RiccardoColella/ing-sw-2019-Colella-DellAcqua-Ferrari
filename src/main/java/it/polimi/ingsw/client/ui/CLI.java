@@ -3,21 +3,21 @@ package it.polimi.ingsw.client.ui;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import it.polimi.ingsw.client.io.Connector;
-import it.polimi.ingsw.shared.commands.ClientApi;
-import it.polimi.ingsw.shared.commands.Command;
-import it.polimi.ingsw.shared.commands.Question;
-import it.polimi.ingsw.shared.commands.ServerApi;
-import it.polimi.ingsw.shared.events.CommandReceived;
-import it.polimi.ingsw.shared.events.listeners.CommandReceivedListener;
+import it.polimi.ingsw.shared.messages.ClientApi;
+import it.polimi.ingsw.shared.messages.Message;
+import it.polimi.ingsw.shared.messages.Question;
+import it.polimi.ingsw.shared.messages.ServerApi;
+import it.polimi.ingsw.shared.events.MessageReceived;
+import it.polimi.ingsw.shared.events.listeners.EventMessageReceivedListener;
+import it.polimi.ingsw.shared.events.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.utils.EnumValueByString;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.Optional;
 import java.util.Scanner;
 
-public class CLI implements CommandReceivedListener {
+public class CLI implements EventMessageReceivedListener, QuestionMessageReceivedListener {
 
     private static final Gson gson = new Gson();
     private final Connector connector;
@@ -27,30 +27,29 @@ public class CLI implements CommandReceivedListener {
 
     public CLI(Connector connector, InputStream inputStream, OutputStream outputStream) {
         this.connector = connector;
-        connector.addCommandReceivedListener(this);
         scanner = new Scanner(inputStream);
         printStream = new PrintStream(outputStream);
     }
 
     @Override
-    public void onCommandReceived(CommandReceived e) {
+    public void onEventMessageReceived(MessageReceived e) {
 
-        ClientApi commandType = EnumValueByString.findByString(e.getCommand().getName(), ClientApi.class);
+        ClientApi eventType = EnumValueByString.findByString(e.getMessage().getName(), ClientApi.class);
 
-        switch (commandType) {
-            //TODO case EVENT_*
-
-            case BLOCK_QUESTION:
-            case DIRECTION_QUESTION:
-            case ATTACK_QUESTION:
-            case TARGET_QUESTION:
-                manageQuestion(e.getCommand());
-                break;
+        // TODO: Manage events
+        switch (eventType) {
+            
         }
+
     }
 
-    private void manageQuestion(Command command) {
-        Question question = gson.fromJson(command.getPayload(), new TypeToken<Question>(){}.getType());
+    @Override
+    public void onQuestionMessageReceived(MessageReceived e) {
+        manageQuestion(e.getMessage());
+    }
+
+    private void manageQuestion(Message message) {
+        Question question = gson.fromJson(message.getPayload(), new TypeToken<Question>(){}.getType());
         Object[] options = question.getAvailableOptions().toArray();
 
         int chosenIndex;
@@ -64,6 +63,6 @@ public class CLI implements CommandReceivedListener {
             }
             chosenIndex = Integer.parseInt(scanner.nextLine());
         } while ((question.isSkippable() ? 0 : 1) <= chosenIndex && chosenIndex <= options.length);
-        connector.sendCommand(new Command(ServerApi.ANSWER.toString(), chosenIndex));
+        connector.sendMessage(Message.createAnswer(ServerApi.ANSWER.toString(), chosenIndex, message.getStreamId()));
     }
 }

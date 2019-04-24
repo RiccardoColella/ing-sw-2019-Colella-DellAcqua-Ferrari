@@ -99,7 +99,7 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li>it.polimi.ingsw.shared.CommandQueue</li>
+<li>it.polimi.ingsw.shared.InputMessageQueue</li>
 </ul>
 </li>
 </ul>
@@ -129,7 +129,7 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>private java.util.Map&lt;java.lang.String,java.util.concurrent.BlockingQueue&lt;<a href="../../../../it/polimi/ingsw/shared/commands/Command.html" title="class in it.polimi.ingsw.shared.commands">Command</a>&gt;&gt;</code></td>
+<td class="colFirst"><code>private java.util.Map&lt;java.lang.String,java.util.concurrent.BlockingQueue&lt;<a href="../../../../it/polimi/ingsw/shared/commands/Command.html" title="class in it.polimi.ingsw.shared.messages">Command</a>&gt;&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../it/polimi/ingsw/shared/CommandQueue.html#commandQueues">commandQueues</a></span></code>&nbsp;</td>
 </tr>
 </table>
@@ -165,12 +165,12 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="../../../../it/polimi/ingsw/shared/commands/Command.html" title="class in it.polimi.ingsw.shared.commands">Command</a></code></td>
+<td class="colFirst"><code><a href="../../../../it/polimi/ingsw/shared/commands/Command.html" title="class in it.polimi.ingsw.shared.messages">Command</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../it/polimi/ingsw/shared/CommandQueue.html#dequeue-java.lang.String-">dequeue</a></span>(java.lang.String&nbsp;commandName)</code>&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../it/polimi/ingsw/shared/CommandQueue.html#enqueue-it.polimi.ingsw.shared.commands.Command-">enqueue</a></span>(<a href="../../../../it/polimi/ingsw/shared/commands/Command.html" title="class in it.polimi.ingsw.shared.commands">Command</a>&nbsp;command)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../it/polimi/ingsw/shared/CommandQueue.html#enqueue-it.polimi.ingsw.shared.messages.Message-">enqueue</a></span>(<a href="../../../../it/polimi/ingsw/shared/commands/Command.html" title="class in it.polimi.ingsw.shared.messages">Command</a>&nbsp;message)</code>&nbsp;</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -200,7 +200,7 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>commandQueues</h4>
-<pre>private&nbsp;java.util.Map&lt;java.lang.String,java.util.concurrent.BlockingQueue&lt;<a href="../../../../it/polimi/ingsw/shared/commands/Command.html" title="class in it.polimi.ingsw.shared.commands">Command</a>&gt;&gt; commandQueues</pre>
+<pre>private&nbsp;java.util.Map&lt;java.lang.String,java.util.concurrent.BlockingQueue&lt;<a href="../../../../it/polimi/ingsw/shared/commands/Command.html" title="class in it.polimi.ingsw.shared.messages">Command</a>&gt;&gt; commandQueues</pre>
 </li>
 </ul>
 </li>
@@ -228,13 +228,13 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="enqueue-it.polimi.ingsw.shared.commands.Command-">
+<a name="enqueue-it.polimi.ingsw.shared.messages.Command-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>enqueue</h4>
-<pre>public&nbsp;void&nbsp;enqueue(<a href="../../../../it/polimi/ingsw/shared/commands/Command.html" title="class in it.polimi.ingsw.shared.commands">Command</a>&nbsp;command)</pre>
+<pre>public&nbsp;void&nbsp;enqueue(<a href="../../../../it/polimi/ingsw/shared/commands/Command.html" title="class in it.polimi.ingsw.shared.messages">Command</a>&nbsp;message)</pre>
 </li>
 </ul>
 <a name="dequeue-java.lang.String-">
@@ -243,7 +243,7 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>dequeue</h4>
-<pre>public&nbsp;<a href="../../../../it/polimi/ingsw/shared/commands/Command.html" title="class in it.polimi.ingsw.shared.commands">Command</a>&nbsp;dequeue(java.lang.String&nbsp;commandName)
+<pre>public&nbsp;<a href="../../../../it/polimi/ingsw/shared/commands/Command.html" title="class in it.polimi.ingsw.shared.messages">Command</a>&nbsp;dequeue(java.lang.String&nbsp;commandName)
                 throws java.lang.InterruptedException</pre>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>

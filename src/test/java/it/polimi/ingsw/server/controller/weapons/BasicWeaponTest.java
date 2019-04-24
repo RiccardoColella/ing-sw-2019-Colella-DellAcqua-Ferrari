@@ -13,7 +13,7 @@ import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.view.Interviewer;
-import it.polimi.ingsw.shared.commands.ClientApi;
+import it.polimi.ingsw.shared.messages.ClientApi;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,16 +52,6 @@ class BasicWeaponTest {
                 i++;
             }
             return Optional.of(optionList.get(i));
-        }
-
-        @Override
-        public <T> T select(Collection<T> options) {
-            return null;
-        }
-
-        @Override
-        public <T> Optional<T> selectOptional(Collection<T> options) {
-            return Optional.empty();
         }
     }
 
