@@ -552,7 +552,8 @@ class BasicWeaponTest {
         assertEquals(3, t1.getDamageTokens().size(), "Wrong damage");
     }
 
-    /** Testing the weapon Hellion:
+    /**
+     * Testing the weapon Hellion:
      * - Basic mode: Deal 1 damage to 1 target you can see at least 1 move away. Then give 1 mark to that target and everyone else on that square.
      * - Nano tracer mode: Deal 1 damage to 1 target you can see at least 1 move away. Then give 2 marks to that target and everyone else on that square.
      */
@@ -664,5 +665,217 @@ class BasicWeaponTest {
                 assertEquals(1, target.getDamageTokens().size(), "Wrong amount of damage");
             }
         }
+    }
+
+    /**
+     * Testing the weapon 2x-2:
+     * - Basic mode: Deal 1 damgetDamageTokensage and 2 marks to a target you can see
+     * - Scanner mode: Choose up to 3 targets you can see and deal 1 mark to each
+     */
+    @Test
+    void twoXTwo() {
+
+        //adding players to the board
+
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Player t2 = match.getPlayers().get(2);
+        Player t3 = match.getPlayers().get(3);
+        Player t4 = match.getPlayers().get(4);
+        Block b11 = board.getBlock(1, 1).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b12 = board.getBlock(1, 2).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b13 = board.getBlock(1, 3).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b12.addPlayer(activePlayer);
+        b11.addPlayer(t1);
+        b12.addPlayer(t2);
+        b13.addPlayer(t3);
+        b13.addPlayer(t4);
+
+        //all players are visible by the active player, so they are potential targets for the basic attack
+        //only one of them will actually be targeted
+
+        BasicWeapon twoXTwo = WeaponFactory.create(Weapon.Name.TWO_X_TWO, board);
+        twoXTwo.shoot(new MockInterviewer(0), activePlayer);
+
+        Set<Player> hitByBasic = twoXTwo.wasHitBy(twoXTwo.basicAttack);
+
+        //basic has hit one target and has given him 1 damage and 2 marks
+
+        assertEquals(1, hitByBasic.size(), "Wrong amount of targets");
+        for (Player t : hitByBasic) {
+            assertEquals(1, t.getDamageTokens().size(), "Wrong damage");
+            assertEquals(2, t.getMarks().size(), "Wrong marks");
+        }
+
+        //shooting again, but in scanner mode: 3 targets will receive a mark
+
+        twoXTwo.shoot(new MockInterviewer(1), activePlayer);
+
+        Set<Player> hitByScanner = twoXTwo.wasHitBy(((WeaponWithAlternative) twoXTwo).alternativeAttack);
+
+        assertEquals(3, hitByScanner.size(), "Wrong amount of targets");
+        for (Player t : hitByScanner) {
+            //target will have 3 marks if he was hit before as well, 1 mark if he was hit only by scanner
+            if (hitByBasic.contains(t)) {
+                assertEquals(3, t.getMarks().size(), "Wrong marks");
+            } else {
+                assertEquals(1, t.getMarks().size(), "Wrong marks");
+            }
+        }
+    }
+
+    /**
+     * Testing the weapon Grenade Launcher:
+     * - Basic effect: Deal 1 damage to 1 target you can see. Then you may move the target 1 square.
+     * - Extra grenade: Deal 1 damage to every player on a square you can see.
+     */
+    @Test
+    void grenadeLauncher() {
+
+        //adding players to the board
+
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Player t2 = match.getPlayers().get(2);
+        Player t3 = match.getPlayers().get(3);
+        Player t4 = match.getPlayers().get(4);
+        Block b11 = board.getBlock(1, 1).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b12 = board.getBlock(1, 2).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b13 = board.getBlock(1, 3).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b12.addPlayer(activePlayer);
+        b11.addPlayer(t1);
+        b11.addPlayer(t2);
+        b13.addPlayer(t3);
+        b13.addPlayer(t4);
+
+        //all targets are in visible squares, they are all potential targets for both effects
+
+        BasicWeapon grenadeLauncher = WeaponFactory.create(Weapon.Name.GRENADE_LAUNCHER, board);
+        grenadeLauncher.shoot(new MockInterviewer(0), activePlayer);
+
+        Set<Player> hitByBasic = grenadeLauncher.wasHitBy(grenadeLauncher.basicAttack);
+
+        //one target was hit by basic, he now has one damage and is not in the same square as before
+
+        assertEquals(1, hitByBasic.size(), "Wrong amount of targets");
+        for (Player t : hitByBasic) {
+            //damage is greater than 1 because player could have been hit by extra grenade as well
+            assertTrue(t.getDamageTokens().size() >= 1, "Wrong damage");
+            assertFalse(b11.containsPlayer(t), "Player should not be here, it has either not moved or gone too far");
+            assertFalse(b13.containsPlayer(t), "Player should not be here, it has either not moved or gone too far");
+            assertTrue(board.getReachableBlocks(t == t1 || t == t2 ? b11 : b13, new Range(1, 1)).contains(t.getBlock()), "Player should not be here");
+        }
+
+        Set<Player> hitByExtraGrenade = grenadeLauncher.wasHitBy(((WeaponWithMultipleEffects) grenadeLauncher).getPoweredAttacks().get(0));
+        assertFalse(hitByExtraGrenade.isEmpty(), "Attack extra grenade should have hit someone");
+        assertTrue(hitByExtraGrenade.iterator().next().getBlock().getPlayers().containsAll(hitByExtraGrenade), "Targets should be all in the same square");
+        assertTrue(activePlayer.getDamageTokens().isEmpty(), "Active player should not have been targeted");
+    }
+
+    /**
+     * Testing the weapon Shotgun:
+     * - Basic mode: deal 3 damage to 1 target on your square. If you want, move it one square
+     * - Long barrel mode: deal 2 damage to 1 target exactly one move away
+     */
+    @Test
+    void shotgun() {
+
+        //adding players to the board
+
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Player t2 = match.getPlayers().get(2);
+        Player t3 = match.getPlayers().get(3);
+        Player t4 = match.getPlayers().get(4);
+        Block b11 = board.getBlock(1, 1).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b12 = board.getBlock(1, 2).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b13 = board.getBlock(1, 3).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b12.addPlayer(activePlayer);
+        b11.addPlayer(t1);
+        b12.addPlayer(t2);
+        b13.addPlayer(t3);
+        b13.addPlayer(t4);
+
+        //t2 is the only target that is on the same square as the active player and can therefore be targeted
+
+        BasicWeapon shotgun = WeaponFactory.create(Weapon.Name.SHOTGUN, board);
+        shotgun.shoot(new MockInterviewer(0), activePlayer);
+
+        Set<Player> hitByBasic = shotgun.wasHitBy(shotgun.basicAttack);
+
+        //only 1 player - t2 - was hit by basic mode. t2 now should have 3 damage and be on a different square
+        assertEquals(1, hitByBasic.size(), "Wrong amount of targets");
+        assertEquals(3, t2.getDamageTokens().size(), "Wrong damage");
+        assertTrue(hitByBasic.contains(t2), "t2 should be the target");
+        assertTrue(board.getReachableBlocks(b12, new Range(1, 1)).contains(t2.getBlock()), "t2 should be 1 square away");
+
+        //shooting again, but in long barrel mode. This means that the target can be anyone (t1, t2, t3 or t4, because t2 has moved)
+        shotgun.shoot(new MockInterviewer(1), activePlayer);
+
+        Set<Player> hitByLongBarrel = shotgun.wasHitBy(((WeaponWithAlternative) shotgun).alternativeAttack);
+
+        //long barrel has hit only one target that is one move away
+        assertEquals(1, hitByLongBarrel.size(), "Wrong amount of targets");
+        assertTrue(board.getReachableBlocks(b12, new Range(1, 1)).contains(hitByLongBarrel.iterator().next().getBlock()), "target should be 1 square away");
+        if (hitByLongBarrel.contains(t2)) {
+            //2 damage + 3 damage that t2 received before
+            assertEquals(5, t2.getDamageTokens().size(), "Wrong damage");
+        } else {
+            assertEquals(2, hitByLongBarrel.iterator().next().getDamageTokens().size(), "Wrong damage");
+        }
+    }
+
+    /**
+     * Testing the weapon Rocket Launcher:
+     * - Basic effect: Deal 2 damage to 1 target you can see that is not on your square. Then you may move the target 1 square.
+     * - Rocket jump: Move 1 or 2 squares.
+     * - Fragmenting warhead: deal 1 damage to every player on your target's original square – including the target, even if you move it.
+     */
+    @Test
+    void rocketLauncher() {
+
+        //adding players to the board
+
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Player t2 = match.getPlayers().get(2);
+        Player t3 = match.getPlayers().get(3);
+        Player t4 = match.getPlayers().get(4);
+        Block b12 = board.getBlock(1, 2).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b13 = board.getBlock(1, 3).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b12.addPlayer(activePlayer);
+        b13.addPlayer(t1);
+        b13.addPlayer(t2);
+        b13.addPlayer(t3);
+        b13.addPlayer(t4);
+
+        //any of the players will be the target of the basic attack, all of them will be hit by fragmenting warhead
+
+        BasicWeapon rocketLauncher = WeaponFactory.create(Weapon.Name.ROCKET_LAUNCHER, board);
+        rocketLauncher.shoot(new MockInterviewer(0), activePlayer);
+
+        Set<Player> hitByBasic = rocketLauncher.wasHitBy(rocketLauncher.basicAttack);
+        assertEquals(1, hitByBasic.size(), "Wrong amount of targets");
+        //2 damage from basic + 1 damage from fragmenting warhead
+        assertEquals(3, hitByBasic.iterator().next().getDamageTokens().size(), "Wrong damage");
+        assertTrue(board.getReachableBlocks(b13, new Range(1, 1)).contains(hitByBasic.iterator().next().getBlock()), "Wrong target position");
+
+        //the active player is targeted by rocked jump, which allows him to move
+        Set<Player> hitByRocketJump = rocketLauncher.wasHitBy(((WeaponWithMultipleEffects) rocketLauncher).getPoweredAttacks().get(0));
+        assertEquals(1, hitByRocketJump.size(), "Wrong amount of targets");
+        assertTrue(hitByRocketJump.contains(activePlayer), "Target should be the active player");
+
+        Set<Player> hitByFragmentingWarhead = rocketLauncher.wasHitBy(((WeaponWithMultipleEffects) rocketLauncher).getPoweredAttacks().get(1));
+        assertEquals(4, hitByFragmentingWarhead.size(), "Wrong amount of targets");
+        for (Player target : hitByFragmentingWarhead) {
+            if (!hitByBasic.contains(target)) {
+                assertEquals(1, target.getDamageTokens().size(), "Wrong damage");
+            }
+        }
+
     }
 }

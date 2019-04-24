@@ -132,10 +132,12 @@ public class BasicWeapon {
     protected boolean canDoFirstAction(Attack attack) {
         this.activeAttack = attack;
         Block oldSp = this.startingBlock;
-        Set<Block> startingPoints = attack.getPotentialStartingPoints(attack.getActionConfigs().get(0), this);
-        for (Block startingPoint : startingPoints) {
-            if (validStartingPoint(attack, startingPoint)) {
-                return true;
+        if (this.getExecutedAttacks().contains(basicAttack) || !attack.basicMustBeDoneFirst()) {
+            Set<Block> startingPoints = attack.getPotentialStartingPoints(attack.getActionConfigs().get(0), this);
+            for (Block startingPoint : startingPoints) {
+                if (validStartingPoint(attack, startingPoint)) {
+                    return true;
+                }
             }
         }
         this.startingBlock = oldSp;

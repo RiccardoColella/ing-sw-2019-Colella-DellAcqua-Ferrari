@@ -80,7 +80,7 @@ public class WeaponFactory {
             List<Attack> advancedAttacks = new LinkedList<>();
             weaponObject.get("advancedAttacks").getAsJsonArray().forEach(attack -> {
                 Attack read = readAttack(attack, board);
-                boolean basicFirst = attack.getAsJsonObject().has("basicMustBeDoneFirst") && attack.getAsJsonObject().get("basicMustBeDoneFirst").getAsBoolean();
+                boolean basicFirst = attack.getAsJsonObject().has("basicMustBeFirst") && attack.getAsJsonObject().get("basicMustBeFirst").getAsBoolean();
                 Attack advanced = new Attack(read, basicFirst);
                 advancedAttacks.add(advanced);
             });
@@ -404,6 +404,11 @@ public class WeaponFactory {
                             weapon.getStartingPoint().orElseThrow(() -> new IncoherentConfigurationException("No starting point to inherit"))
                     ));
                     break;
+                case "INHERIT_IF_PRESENT":
+                    startingPointCalculator = weapon -> new HashSet<>(Collections.singletonList(
+                            weapon.getStartingPoint().orElse(weapon.getCurrentShooter().getBlock())
+                    ));
+                    break;
                 case "ACTIVE_PLAYER":
                     startingPointCalculator = weapon -> new HashSet<>(Collections.singletonList(
                             weapon.getCurrentShooter().getBlock()
@@ -425,9 +430,19 @@ public class WeaponFactory {
                     }
                     break;
                 case "PREVIOUS_TARGET":
-                    startingPointCalculator = weapon -> new HashSet<>(Collections.singletonList(
-                            weapon.getAllTargets().get(weapon.getAllTargets().size() - 1).getBlock()
-                    ));
+                    startingPointCalculator = weapon -> {
+                        Block block = null;
+                        int index = weapon.getAllTargets().size() - 1;
+                        do {
+                            block = weapon.getAllTargets().get(index) != weapon.currentShooter ? weapon.getAllTargets().get(index).getBlock() : null;
+                            index--;
+                        } while (block == null && index >= 0);
+                        if (block == null) {
+                            throw new IncoherentConfigurationException("No previous target found");
+                        }
+
+                        return new HashSet<>(Collections.singletonList(block));
+                    };
                     break;
                 default:
                     throw new IncoherentConfigurationException("Unknown startingPoint: " + actionObject.get(field).getAsString());
