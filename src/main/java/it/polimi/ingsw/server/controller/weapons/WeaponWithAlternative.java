@@ -38,6 +38,8 @@ public class WeaponWithAlternative extends BasicWeapon {
         executedAttacks.clear();
         previouslyHit.clear();
         currentShooter = activePlayer;
+        fixedDirection = null;
+
         if (canAffordAttack(basicAttack) && canDoFirstAction(basicAttack)) {
             availableAttacks.add(basicAttack);
         }

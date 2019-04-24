@@ -59,6 +59,7 @@ public class WeaponWithMultipleEffects extends BasicWeapon {
         executedAttacks.clear();
         currentShooter = activePlayer;
         Optional<Attack> chosenAttack;
+        fixedDirection = null;
 
         do {
             if (mustExecuteInOrder) {

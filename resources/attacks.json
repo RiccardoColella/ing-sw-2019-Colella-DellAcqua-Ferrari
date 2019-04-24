@@ -732,16 +732,10 @@
       "name": "basic mode",
       "actions": [
         {
-          "move": {"min": 1, "max": 1},
-          "skippable": false,
-          "targetAmount": "ONE",
-          "targets": "SELF"
-        },
-        {
           "damage": 1,
           "targets": "FIND",
           "targetPosition": "FIXED",
-          "targetDistance": {"min": 0, "max": 0},
+          "targetDistance": {"min": 1, "max": 1},
           "startingPoint": "ACTIVE_PLAYER",
           "targetAmount": "ONE",
           "skippable": false
@@ -750,7 +744,17 @@
           "mark": 2,
           "targets": "INHERIT_LAST",
           "skippable": false,
-          "targetAmount": "ONE"
+          "targetAmount": "ONE",
+          "startingPoint": "PREVIOUS_TARGET"
+        },
+        {
+          "move": {"min": 1, "max": 1},
+          "skippable": false,
+          "targetAmount": "ONE",
+          "targets": "SELF",
+          "startingPoint": "PREVIOUS_TARGET",
+          "targetFinalPosition": "FIXED",
+          "targetFinalDistance": {"min": 0, "max": 0}
         }
       ]
     },
@@ -759,17 +763,10 @@
       "cost": ["BLUE"],
       "actions": [
         {
-          "move": {"min": 1, "max": 1},
-          "skippable": false,
-          "targets": "SELF",
-          "targetAmount": "ONE",
-          "fixedDirection": true
-        },
-        {
           "damage": 2,
           "targets": "FIND",
           "targetPosition": "FIXED",
-          "targetDistance": {"min": 0, "max": 0},
+          "targetDistance": {"min": 1, "max": 1},
           "startingPoint": "ACTIVE_PLAYER",
           "targetAmount": "ONE",
           "skippable": false
@@ -779,17 +776,30 @@
           "skippable": true,
           "targets": "SELF",
           "targetAmount": "ONE",
-          "fixedDirection": true
+          "targetFinalPosition": "FIXED",
+          "targetFinalDistance": {"min": 0, "max": 0},
+          "startingPoint": "PREVIOUS_TARGET"
 
         },
         {
           "damage": 2,
           "targets": "FIND",
-          "targetPosition": "FIXED",
-          "targetDistance": {"min": 0, "max": 0},
+          "targetPosition": "STRAIGHT",
+          "targetDirection": "INHERIT",
+          "targetDistance": {"min": 1, "max": 1},
           "startingPoint": "ACTIVE_PLAYER",
           "targetAmount": "ONE",
           "skippable": false
+        },
+        {
+          "move": {"min": 1, "max": 1},
+          "skippable": true,
+          "targets": "SELF",
+          "targetAmount": "ONE",
+          "targetFinalPosition": "FIXED",
+          "targetFinalDistance": {"min": 0, "max": 0},
+          "startingPoint": "PREVIOUS_TARGET"
+
         }
       ]
     }
@@ -860,7 +870,7 @@
           "targetAmount": "ONE",
           "skippable": true,
           "startingPoint": "INHERIT",
-          "veto": "ALL_PREVIOUS"
+          "veto": "ALL_PREVIOUS_BLOCKS"
         },
         {
           "damage": 1,
@@ -870,7 +880,7 @@
           "targetAmount": "ONE",
           "skippable": true,
           "startingPoint": "INHERIT",
-          "veto": "ALL_PREVIOUS"
+          "veto": "ALL_PREVIOUS_BLOCKS"
         }
       ]
     },

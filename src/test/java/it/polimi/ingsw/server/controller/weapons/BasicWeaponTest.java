@@ -878,4 +878,236 @@ class BasicWeaponTest {
         }
 
     }
+
+    /**
+     * Testing the weapon Power Glove:
+     * - Basic mode: Choose 1 target on any square exactly 1 move away. Move onto that square and give the target 1 damage and 2 marks.
+     * - Rocket fist mode: Move onto a square 1 move away and deal 2 damage to 1 target there. If you want, you may move 1 more square in that same direction and deal 2 damage to 1 target
+     */
+    @Test
+    void powerGlove() {
+
+        //adding players to the board
+
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Player t2 = match.getPlayers().get(2);
+        Block b11 = board.getBlock(1, 1).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b12 = board.getBlock(1, 2).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b13 = board.getBlock(1, 3).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b11.addPlayer(activePlayer);
+        b11.addPlayer(t2);
+        b12.addPlayer(t1);
+
+        //basic mode can only hit t1
+
+        BasicWeapon powerGlove = WeaponFactory.create(Weapon.Name.POWER_GLOVE, board);
+        powerGlove.shoot(new MockInterviewer(0), activePlayer);
+
+        Set<Player> hitByBasic = powerGlove.wasHitBy(powerGlove.basicAttack);
+
+        //2 targets: active player, who has been moved, and t1, who received the damage and the marks
+
+        assertEquals(2, hitByBasic.size(), "Wrong amount of targets");
+        assertTrue(hitByBasic.contains(activePlayer), "Active player should be a target of this attack");
+        assertTrue(hitByBasic.contains(t1), "t1 should be a target");
+        assertEquals(1, t1.getDamageTokens().size(), "Wrong damage");
+        assertEquals(2, t1.getMarks().size(), "Wrong marks");
+        assertTrue(b12.containsPlayer(activePlayer), "Active player was not moved correctly");
+
+        //Moving active player to execute rocket fist
+        board.teleportPlayer(activePlayer, b13);
+        //the attack will hit both t1 and t2 and move the active player
+        powerGlove.shoot(new MockInterviewer(1), activePlayer);
+
+        Set<Player> hitByRocketFist = powerGlove.wasHitBy(((WeaponWithAlternative) powerGlove).alternativeAttack);
+
+        assertEquals(3, hitByRocketFist.size(), "Wrong amount of targets");
+        //5 because he had 1 damage and 2 marks from the previous attack
+        assertEquals(5, t1.getDamageTokens().size(), "Wrong damage");
+        assertEquals(2, t2.getDamageTokens().size(), "Wrong damage");
+        assertTrue(hitByRocketFist.containsAll(b11.getPlayers()), "Wrong targets");
+        assertTrue(hitByRocketFist.containsAll(b12.getPlayers()), "Wrong targets");
+
+    }
+
+    /**
+     * Testing the weapon Railgun:
+     * - Basic mode: Choose a cardinal direction and 1 target in that direction. Deal 3 damage to it.
+     * - Piercing mode: Choose a cardinal direction and 1 or 2 targets in that direction. Deal 2 damage to each.
+     */
+    @Test
+    void railgun() {
+
+        //adding players to the board
+
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Player t2 = match.getPlayers().get(2);
+        Block b02 = board.getBlock(0, 2).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b12 = board.getBlock(1, 2).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b22 = board.getBlock(2, 2).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b02.addPlayer(activePlayer);
+        b22.addPlayer(t2);
+        b12.addPlayer(t1);
+
+        //t1 and t2 are both potential targets, but only one of them will actually be hit
+
+        BasicWeapon railgun = WeaponFactory.create(Weapon.Name.RAILGUN, board);
+        railgun.shoot(new MockInterviewer(0), activePlayer);
+
+        Set<Player> hitByBasic = railgun.wasHitBy(railgun.basicAttack);
+
+        assertEquals(1, hitByBasic.size(), "Wrong amount of targets");
+        assertEquals(3, hitByBasic.iterator().next().getDamageTokens().size(), "Wrong damage tokens");
+
+        railgun.shoot(new MockInterviewer(1), activePlayer);
+
+        Set<Player> hitByPiercing = railgun.wasHitBy(((WeaponWithAlternative) railgun).alternativeAttack);
+
+        //both t1 and t2 were hit by piercing mode
+
+        assertEquals(2, hitByPiercing.size(), "Wrong amount of targets");
+        for (Player t : hitByPiercing) {
+            if (hitByBasic.contains(t)) {
+                //2 + 3 from basic
+                assertEquals(5, t.getDamageTokens().size(), "Wrong damage");
+            } else {
+                assertEquals(2, t.getDamageTokens().size(), "Wrong damage");
+            }
+        }
+    }
+
+    /**
+     * Testing the weapon Shockwave:
+     * - Basic mode: Choose up to 3 targets on different squares, each exactly 1 move away. Deal 1 damage to each target.
+     * - Tsunami mode: Deal 1 damage to all targets that are exactly 1 move away.
+     */
+    @Test
+    void shockwave() {
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Player t2 = match.getPlayers().get(2);
+        Player t3 = match.getPlayers().get(3);
+        Player t4 = match.getPlayers().get(4);
+        Block b11 = board.getBlock(1, 1).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b12 = board.getBlock(1, 2).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b13 = board.getBlock(1, 3).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b12.addPlayer(activePlayer);
+        b11.addPlayer(t2);
+        b11.addPlayer(t1);
+        b13.addPlayer(t3);
+        b13.addPlayer(t4);
+
+        //t1 and t2 (and t3 and t4) are in the same square, so only one of them will be hit
+
+        BasicWeapon shockwave = WeaponFactory.create(Weapon.Name.SHOCKWAVE, board);
+        shockwave.shoot(new MockInterviewer(0), activePlayer);
+
+        Set<Player> hitByBasic = shockwave.wasHitBy(shockwave.basicAttack);
+
+        //two targets, one from the block of t1/t2, the other from the block of t3/t4
+
+        assertEquals(2, hitByBasic.size(), "Wrong amount of targets");
+        for (Player t : hitByBasic) {
+            assertEquals(1, t.getDamageTokens().size(), "Wrong damage");
+        }
+        assertTrue(hitByBasic.contains(t1) != hitByBasic.contains(t2), "t1 and t2 can't both be hit / non hit");
+        assertTrue(hitByBasic.contains(t3) != hitByBasic.contains(t4), "t3 and t4 can't both be hit / non hit");
+
+        //tsunami mode will hit all 4 targets
+
+        shockwave.shoot(new MockInterviewer(1), activePlayer);
+
+        Set<Player> hitByTsunami = shockwave.wasHitBy(((WeaponWithAlternative) shockwave).alternativeAttack);
+        assertEquals(4, hitByTsunami.size(), "Wrong amount of targets");
+        for (Player t : hitByTsunami) {
+            if (hitByBasic.contains(t)) {
+                //1 + 1 given by basic
+                assertEquals(2, t.getDamageTokens().size(), "Wrong damage");
+            } else {
+                assertEquals(1, t.getDamageTokens().size(), "Wrong damage");
+            }
+        }
+    }
+
+    /**
+     * Testing the weapon Cyberblade:
+     * - Basic effect: Deal 2 damage to 1 target on your square.
+     * - Shadowstep: Move 1 square before or after the basic effect.
+     * - Slice and Dice: Deal 2 damage to a different target on your square.
+     */
+    @Test
+    void cyberblade() {
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Player t2 = match.getPlayers().get(2);
+        Player t3 = match.getPlayers().get(3);
+        Player t4 = match.getPlayers().get(4);
+        Block b23 = board.getBlock(2, 3).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b12 = board.getBlock(1, 2).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        Block b13 = board.getBlock(1, 3).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b13.addPlayer(activePlayer);
+        b23.addPlayer(t2);
+        b12.addPlayer(t1);
+        b13.addPlayer(t3);
+        b13.addPlayer(t4);
+
+        BasicWeapon cyberblade = WeaponFactory.create(Weapon.Name.CYBERBLADE, board);
+        cyberblade.shoot(new MockInterviewer(0), activePlayer);
+
+        Set<Player> hitByBasic = cyberblade.wasHitBy(cyberblade.basicAttack);
+        Set<Player> hitByShadowStep = cyberblade.wasHitBy(((WeaponWithMultipleEffects) cyberblade).getPoweredAttacks().get(0));
+        Set<Player> hitBySliceAndDice = cyberblade.wasHitBy(((WeaponWithMultipleEffects) cyberblade).getPoweredAttacks().get(1));
+
+        //basic attack has hit either t3 or t4, then slice and dice has hit t1 or t2, depending on where the active player moved
+
+        assertEquals(1, hitByBasic.size(), "Wrong amount of targets");
+        assertEquals(1, hitByShadowStep.size(), "Wrong amount of targets");
+        assertEquals(1, hitBySliceAndDice.size(), "Wrong amount of targets");
+
+        assertTrue(hitByBasic.contains(t3) || hitByBasic.contains(t4), "Wrong targets");
+        assertSame(hitBySliceAndDice.iterator().next().getBlock(), activePlayer.getBlock(), "Hit target should be on the same square as active player");
+        assertTrue(hitByShadowStep.contains(activePlayer), "Shadowstep should hit active player");
+        assertEquals(2, hitByBasic.iterator().next().getDamageTokens().size(), "Wrong damage");
+        assertEquals(2, hitBySliceAndDice.iterator().next().getDamageTokens().size(), "Wrong damage");
+    }
+
+    /**
+     * Testing the weapon Sledgehammer:
+     * - Basic mode: Deal 2 damage to 1 target on your square.
+     * - Pulverize mode: Deal 3 damage to 1 target on your square, then move that target 0, 1, or 2 squares in one direction.
+     */
+    @Test
+    void sledgehammer() {
+        Board board = match.getBoard();
+        Player activePlayer = match.getActivePlayer();
+        Player t1 = match.getPlayers().get(1);
+        Block b13 = board.getBlock(1, 3).orElseThrow(() -> new IllegalStateException("Block does not exist"));
+        b13.addPlayer(activePlayer);
+        b13.addPlayer(t1);
+
+        BasicWeapon sledgehammer = WeaponFactory.create(Weapon.Name.SLEDGEHAMMER, board);
+        sledgehammer.shoot(new MockInterviewer(0), activePlayer);
+
+        //basic attack hit t1, the only available target
+        Set<Player> hitByBasic = sledgehammer.wasHitBy(sledgehammer.basicAttack);
+        assertEquals(1, hitByBasic.size(), "Wrong amount of targets");
+        assertEquals(2, t1.getDamageTokens().size(), "Wrong damage");
+
+        //shooting again, but in pulverize mode: t1 will be hit again and then moved
+        sledgehammer.shoot(new MockInterviewer(1), activePlayer);
+
+        Set<Player> hitByPulverize = sledgehammer.wasHitBy(((WeaponWithAlternative) sledgehammer).alternativeAttack);
+        assertEquals(1, hitByPulverize.size(), "Wrong amount of targets");
+
+        //3 damage + 2 from basic
+        assertEquals(5, t1.getDamageTokens().size(), "Wrong damage");
+        assertFalse(b13.containsPlayer(t1), "Target was not moved at all");
+        assertTrue(t1.getBlock().getRow() == 1 || t1.getBlock().getColumn() == 3, "Move was not in the same direction");
+    }
 }

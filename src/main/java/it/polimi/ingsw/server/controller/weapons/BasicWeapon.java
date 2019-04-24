@@ -6,6 +6,7 @@ import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.view.Interviewer;
+import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.utils.Tuple;
 
 import java.util.*;
@@ -44,6 +45,9 @@ public class BasicWeapon {
     protected List<Attack> availableAttacks;
 
     protected List<Attack> executedAttacks;
+
+    protected Direction fixedDirection;
+
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
      *
@@ -58,6 +62,7 @@ public class BasicWeapon {
         startingBlock = null;
         availableAttacks = new LinkedList<>();
         executedAttacks = new LinkedList<>();
+        fixedDirection = null;
     }
 
     /**
@@ -73,6 +78,7 @@ public class BasicWeapon {
         currentShooter = activePlayer;
         executedAttacks.clear();
         previouslyHit.clear();
+        fixedDirection = null;
         activeAttack = basicAttack;
         handlePayment(interviewer, activeAttack, currentShooter);
         executedAttacks.add(basicAttack);

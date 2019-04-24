@@ -363,6 +363,9 @@ public class WeaponFactory {
                 case "ALL_PREVIOUS":
                     veto = (potentialTargets, weapon) -> WeaponFactory.removeFromSet(potentialTargets, weapon.getAllTargets());
                     break;
+                case "ALL_PREVIOUS_BLOCKS":
+                    veto = (potentialTargets, weapon) -> WeaponFactory.removeFromSet(potentialTargets, weapon.getAllTargets().stream().flatMap(p -> p.getBlock().getPlayers().stream()).collect(Collectors.toList()));
+                    break;
                 case "HIT_BY_ADVANCED":
                     veto = (potentialTargets, weapon) -> {
                         List<Attack> poweredAttacks = ((WeaponWithMultipleEffects) weapon).getPoweredAttacks();
@@ -505,6 +508,7 @@ public class WeaponFactory {
             return readStandardMoveExecutor(range);
         }
     }
+
 
     private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readFixedTargetMoveExecutor(final JsonObject actionObject, final Range range, int boardSize) {
         final Range rangeFromStartingBlock = computeRange(actionObject.get("targetFinalDistance").getAsJsonObject(), boardSize);
