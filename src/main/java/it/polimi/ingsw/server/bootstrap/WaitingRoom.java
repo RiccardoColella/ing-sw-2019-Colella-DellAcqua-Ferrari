@@ -65,7 +65,9 @@ public class WaitingRoom implements AutoCloseable {
             String id = provider.getMessageProxyID();
             RMIView view = new RMIView();
             registry.rebind(id, new RMIMessageProxy(view));
-            provider.notify();
+            synchronized (provider) {
+                provider.notify();
+            }
             return view;
         }
     }

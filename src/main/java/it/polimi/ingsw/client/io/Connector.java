@@ -1,6 +1,7 @@
 package it.polimi.ingsw.client.io;
 
 import it.polimi.ingsw.shared.InputMessageQueue;
+import it.polimi.ingsw.shared.events.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.events.MessageReceived;
 import it.polimi.ingsw.shared.events.listeners.EventMessageReceivedListener;
@@ -20,7 +21,7 @@ public abstract class Connector implements AutoCloseable {
     protected LinkedBlockingQueue<Message> outputMessageQueue = new LinkedBlockingQueue<>();
     private ExecutorService threadPool = Executors.newFixedThreadPool(2);
     private List<EventMessageReceivedListener> eventListeners = new LinkedList<>();
-    private List<EventMessageReceivedListener> questionListeners = new LinkedList<>();
+    private List<QuestionMessageReceivedListener> questionListeners = new LinkedList<>();
 
     public Connector() {
         threadPool.execute(() -> receiveAsync(Message.Type.EVENT));
@@ -52,15 +53,15 @@ public abstract class Connector implements AutoCloseable {
         outputMessageQueue.add(message);
     }
 
-    public void addQuestionMessageReceivedListener(EventMessageReceivedListener l) {
+    public void addQuestionMessageReceivedListener(QuestionMessageReceivedListener l) {
         questionListeners.add(l);
     }
-    public void removeQuestionMessageReceivedListener(EventMessageReceivedListener l) {
+    public void removeQuestionMessageReceivedListener(QuestionMessageReceivedListener l) {
         questionListeners.remove(l);
     }
     public void notifyQuestionMessageReceivedListeners(Message message) {
         MessageReceived e = new MessageReceived(this, message);
-        questionListeners.forEach(l -> l.onEventMessageReceived(e));
+        questionListeners.forEach(l -> l.onQuestionMessageReceived(e));
     }
 
     public void addEventMessageReceivedListener(EventMessageReceivedListener l) {

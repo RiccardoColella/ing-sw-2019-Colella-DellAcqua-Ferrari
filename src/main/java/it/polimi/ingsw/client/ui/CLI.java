@@ -62,7 +62,7 @@ public class CLI implements EventMessageReceivedListener, QuestionMessageReceive
                 printStream.println(String.format("%d) %s", (i + 1), options[i].toString()));
             }
             chosenIndex = Integer.parseInt(scanner.nextLine());
-        } while ((question.isSkippable() ? 0 : 1) <= chosenIndex && chosenIndex <= options.length);
+        } while (!((question.isSkippable() ? 0 : 1) <= chosenIndex && chosenIndex <= options.length));
         connector.sendMessage(Message.createAnswer(ServerApi.ANSWER.toString(), chosenIndex, message.getStreamId()));
     }
 }
