@@ -25,15 +25,10 @@ public class Treasury {
      */
     private Player owner;
 
-    /**
-     * This variable indicates the interface who can handle the payment.
-     */
-    private Interviewer payer;
 
-    public Treasury(List<AmmoCube> debt, Player owner, Interviewer payer){
+    public Treasury(List<AmmoCube> debt, Player owner){
         this.debt = new LinkedList<>(debt);
         this.owner = owner;
-        this.payer = payer;
     }
 
     public boolean canAfford(){
@@ -51,7 +46,7 @@ public class Treasury {
         return canAfford;
     }
 
-    public List<Coin> selectPaymentMethod(){
+    public List<Coin> selectPaymentMethod(Interviewer payer){
         List<Coin> paymentMeethod = new LinkedList<>();
         if (canAfford()){
             List<Coin> availableCoins = new LinkedList<>();
@@ -72,7 +67,7 @@ public class Treasury {
         return paymentMeethod;
     }
 
-    public void pay(){
+    public void pay(Interviewer payer){
         if (canAfford()){
             List<Coin> paymentMeethod = new LinkedList<>();
             List<Coin> availableCoins = new LinkedList<>();

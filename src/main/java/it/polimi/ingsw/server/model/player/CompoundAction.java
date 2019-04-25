@@ -22,8 +22,8 @@ public final class CompoundAction {
         this.actions = Collections.unmodifiableList(Arrays.asList(actions));
     }
 
-
     public List<BasicAction> getActions() {
         return actions;
     }
+
 }

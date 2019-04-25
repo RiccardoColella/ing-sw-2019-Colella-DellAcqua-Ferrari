@@ -1,20 +1,14 @@
 package it.polimi.ingsw.server.model.player;
 
 import it.polimi.ingsw.server.model.battlefield.Block;
+import it.polimi.ingsw.server.model.events.*;
+import it.polimi.ingsw.server.model.events.listeners.*;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
-import it.polimi.ingsw.server.model.events.MatchModeChanged;
-import it.polimi.ingsw.server.model.events.PlayerDied;
-import it.polimi.ingsw.server.model.events.PlayerOverkilled;
-import it.polimi.ingsw.server.model.events.PlayerReborn;
-import it.polimi.ingsw.server.model.events.listeners.MatchModeChangedListener;
-import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
-import it.polimi.ingsw.server.model.events.listeners.PlayerOverkilledListener;
-import it.polimi.ingsw.server.model.events.listeners.PlayerRebornListener;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.rewards.RewardFactory;
 import it.polimi.ingsw.server.model.rewards.Reward;
@@ -94,6 +88,11 @@ public class Player implements Damageable, MatchModeChangedListener {
      * This property stores the listeners to the PlayerReborn event
      */
     private List<PlayerRebornListener> playerRebornListeners = new ArrayList<>();
+
+    /**
+     * This property stores the listeners to the PlayerDamaged event
+     */
+    private List<PlayerDamagedListener> playerDamagedListeners = new ArrayList<>();
 
     /**
      * This property stores the match the Player is participating to
@@ -177,6 +176,8 @@ public class Player implements Damageable, MatchModeChangedListener {
                 notifyPlayerOverkilled(shooter);
             }
         }
+
+        notifyPlayerDamaged(shooter);
     }
 
     /**
@@ -498,6 +499,16 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     /**
+     * This method adds a new listener of PlayerDamaged event to the list
+     * @param listener the PlayerDiedListener to add
+     */
+    public void addPlayerDamagedListener(PlayerDamagedListener listener) {
+        if (!this.playerDamagedListeners.contains(listener)) {
+            playerDamagedListeners.add(listener);
+        }
+    }
+
+    /**
      * This method adds a new listener of PlayerOverkilled event to the list
      * @param listener the PlayerOverkilledListener to add
      */
@@ -679,6 +690,15 @@ public class Player implements Damageable, MatchModeChangedListener {
     private void notifyPlayerDied(Player killer) {
         PlayerDied e = new PlayerDied(this, killer);
         this.playerDiedListeners.forEach(listener -> listener.onPlayerDied(e));
+    }
+
+    /**
+     * This method notifies all PlayerDamagedListeners
+     * @param attacker the attacker that attacked this player
+     */
+    private void notifyPlayerDamaged(Player attacker) {
+        PlayerDamaged e = new PlayerDamaged(this, attacker);
+        this.playerDamagedListeners.forEach(listener -> listener.onPlayerDamaged(e));
     }
 
     /**

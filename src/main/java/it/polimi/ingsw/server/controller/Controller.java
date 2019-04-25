@@ -4,6 +4,8 @@ import it.polimi.ingsw.server.model.battlefield.SpawnpointBlock;
 import it.polimi.ingsw.server.model.currency.BonusTile;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
+import it.polimi.ingsw.server.model.events.PlayerDamaged;
+import it.polimi.ingsw.server.model.events.listeners.PlayerDamagedListener;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.ActionTile;
@@ -14,15 +16,17 @@ import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.server.view.View;
 import it.polimi.ingsw.shared.messages.ClientApi;
+import it.polimi.ingsw.utils.Tuple;
 
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class has the purpose of managing the game flow
  */
-public class Controller implements Runnable {
+public class Controller implements Runnable, PlayerDamagedListener {
 
     private Logger logger = Logger.getLogger(Controller.class.getName());
     private Match match;
@@ -38,6 +42,7 @@ public class Controller implements Runnable {
         this.match = match;
         this.views = views;
         this.players = match.getPlayers();
+        this.players.forEach(player -> player.addPlayerDamagedListener(this));
     }
 
     @Override
@@ -57,17 +62,19 @@ public class Controller implements Runnable {
     }
 
     private void manageActivePlayerTurn(Player activePlayer, Interviewer view) {
-        List<BasicAction> executedActions = new LinkedList<>();
-        Set<BasicAction> possibleBasicActions = getPossibleActions(activePlayer, executedActions);
-        while (!possibleBasicActions.isEmpty()){
-            logger.info("Choosing action");
-            possibleBasicActions = getPossibleActions(activePlayer, executedActions);
-            BasicAction chosenAction = view.select("Select action: ", possibleBasicActions, ClientApi.BASIC_ACTION_QUESTION);
-            manageChosenAction(chosenAction, activePlayer, view);
+        logger.info("Managing actions...");
+        manageAction(activePlayer, view);
+        logger.info("No more actions to be managed");
+        logger.info("Ending turn. Checking for died players...");
+        for (Player player : match.endTurn()) {
+            logger.info("Player " + player.getColor() + " died.");
+            //Prendi un powerUp dal deck
+            //prendi i powerUp del giocatore
+            //Offrirgli la possibilità di scartarne 1 (se la dim > 1 )
+            //con il powerup scartato ditermina il punto di resiscitazioine.
+            //Prendo il player, lo metto sullo spawnpoint (teleport) e chiamo BringBacjToLife
+            player.bringBackToLife();
         }
-        logger.info("No more actions available. Changing turn");
-
-        match.endTurn();
         match.changeTurn();
     }
 
@@ -78,25 +85,27 @@ public class Controller implements Runnable {
                 if (activePlayer.isOnASpawnpoint()){
                     //choose weapon to be picked up
                     SpawnpointBlock block =  (SpawnpointBlock) activePlayer.getBlock();
-                    List<Weapon> affordableWeapons = new LinkedList<>(block.getWeapons());
-                    affordableWeapons = affordableWeapons.stream().filter(weapon -> {
-                        Treasury bill = new Treasury(weapon.getAcquisitionCost(), activePlayer, view);
+                    List<Weapon> availableWeapons = new LinkedList<>(block.getWeapons());
+                    List<Weapon> affordableWeapons = availableWeapons.stream().filter(weapon -> {
+                        Treasury bill = new Treasury(weapon.getAcquisitionCost(), activePlayer);
                         return bill.canAfford();
                     }).collect(Collectors.toList());
-                    Weapon weapon = view.select("Which weapon you'd like to grab?",
+                    Weapon weapon = view.select("Which weapon would you like to grab?",
                             affordableWeapons, ClientApi.WEAPON_CHOICE_QUESTION);
                     //pick up
+                    logger.info("picking up weapon " + weapon.getName() + "...");
                     pickUpWeapon(weapon, activePlayer, view);
                 } else {
-                    logger.info("Grabbing some ammos...");
+                    logger.info("Grabbing some ammo...");
                     Optional<BonusTile> optionalCard = match.getBonusDeck().pick();
                     if (optionalCard.isPresent()){
                         activePlayer.grabAmmoCubes(optionalCard.get().getRewards());
+                        //Maybe here we should tell the player he got some ammos
                         if (optionalCard.get().canPickPowerup()){
                             logger.info("Grabbing power-up too...");
                             match.getPowerupDeck().pick().ifPresent(activePlayer::grabPowerup);
                         }
-                    } else throw new NullPointerException("Card from bonusDeck is Optional.empty()");
+                    } else throw new NullPointerException("Card from bonusDeck while grabbing ammo is Optional.empty()");
                 }
                 break;
             case MOVE:
@@ -110,27 +119,112 @@ public class Controller implements Runnable {
     }
 
     private void pickUpWeapon(Weapon weapon, Player activePlayer, Interviewer view){
-        Treasury bill = new Treasury(weapon.getAcquisitionCost(), activePlayer, view);
-        List<Coin> paymentMethod = bill.selectPaymentMethod();
+        Treasury bill = new Treasury(weapon.getAcquisitionCost(), activePlayer);
+        List<Coin> paymentMethod = bill.selectPaymentMethod(view);
         if (bill.canAfford()){
             try {
                 activePlayer.grabWeapon(weapon, paymentMethod);
             } catch (UnauthorizedExchangeException e){
-                Weapon weaponToDiscarde = view.select("Which weapon you want to discarde?",
+                Weapon weaponToDiscard = view.select("Which weapon do you want to discard?",
                         activePlayer.getWeapons(), ClientApi.WEAPON_CHOICE_QUESTION);
-                activePlayer.grabWeapon(weapon, paymentMethod, weaponToDiscarde);
+                activePlayer.grabWeapon(weapon, paymentMethod, weaponToDiscard);
             }
         }
     }
 
-    private Set<BasicAction> getPossibleActions(Player player, List<BasicAction> previousActions){
-        //TODO: everything
-        ActionTile actionTile = player.getAvailableMacroActions();
-        Set<BasicAction> possibleBasicActions = new HashSet<>();
-        for (CompoundAction compoundAction : actionTile.getCompoundActions().get(0)){
-            possibleBasicActions.add(compoundAction.getActions().get(0));
+    private boolean canDo(Player player, BasicAction action){
+        boolean returnValue = true;
+        switch (action){
+            case MOVE:
+                break;
+            case GRAB:
+                if (player.isOnASpawnpoint()) {
+                    SpawnpointBlock block = (SpawnpointBlock) player.getBlock();
+                    List<Weapon> availableWeapons = new LinkedList<>(block.getWeapons());
+                    List<Weapon> affordableWeapons = availableWeapons.stream().filter(weapon -> {
+                        Treasury bill = new Treasury(weapon.getAcquisitionCost(), player);
+                        return bill.canAfford();
+                    }).collect(Collectors.toList());
+                    returnValue = !affordableWeapons.isEmpty();
+                } else returnValue = true;
+                break;
+            case SHOOT:
+                Optional<Weapon> activeWeapon = player.getActiveWeapon();
+                if (!activeWeapon.isPresent() || !activeWeapon.get().isLoaded()){
+                    returnValue = false;
+                }
+                break;
+            case RELOAD:
+                break;
         }
+        return returnValue;
+    }
 
-        return possibleBasicActions;
+    private void manageAction(Player player, Interviewer view){
+        ActionTile tile = player.getAvailableMacroActions();
+        for (List<CompoundAction> compoundActions : tile.getCompoundActions()) {
+            //TODO: posso gestire power-Up qui e subito dopo il for
+            //per ogni macroazione
+            List<BasicAction> playedActions = new LinkedList<>();
+            Optional<BasicAction> move;
+            do {
+                Set<BasicAction> availableActions = candidateBasicActions(playedActions, compoundActions)
+                        .stream()
+                        .filter(basicAction -> canDo(player, basicAction))
+                        .collect(Collectors.toSet());
+                move = availableActions.isEmpty() ?
+                        Optional.empty() :
+                        view.selectOptional("Which move would you like to execute?", availableActions, ClientApi.BASIC_ACTION_QUESTION);
+                move.ifPresent(basicAction -> {
+                    manageChosenAction(basicAction, player, view);
+                    playedActions.add(basicAction);
+                });
+            } while (move.isPresent());
+        }
+    }
+
+    public Set<BasicAction> candidateBasicActions(List<BasicAction> playedActions, List<CompoundAction> compoundActions){
+        Stream<Optional<Tuple<CompoundAction, Integer>>> candidateActions = compoundActions
+                .stream()
+                .map(compoundAction -> {
+                    List<BasicAction> actions = compoundAction.getActions();
+                    for (
+                            int i = 0;
+                            i < actions.size() - playedActions.size() &&
+                                    actions.get(i) == BasicAction.MOVE;
+                            i++
+                    ){
+                        if (actions.subList(i, i+playedActions.size()).equals(playedActions))
+                            return  Optional.of(new Tuple<>(compoundAction, i));
+                    }
+                    return Optional.empty();
+                });
+        return candidateActions
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(tuple -> {
+                    int index = tuple.getItem2() + 1;
+                    List<BasicAction> compoundAction = tuple.getItem1().getActions();
+                    if (compoundAction.get(index) == BasicAction.MOVE) {
+                        Set<BasicAction> actionsSet = new HashSet<>();
+                        actionsSet.add(BasicAction.MOVE);
+                        for (int i = index + 1; i < compoundAction.size(); i++) {
+                            if (compoundAction.get(i) != BasicAction.MOVE) {
+                                actionsSet.add(compoundAction.get(i));
+                                return actionsSet;
+                            }
+                        }
+                        return actionsSet;
+                    } else {
+                        return new HashSet<>(Collections.singleton(compoundAction.get(index)));
+                    }
+                })
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public void onPlayerDamaged(PlayerDamaged e) {
+        //Gestire powerups
     }
 }

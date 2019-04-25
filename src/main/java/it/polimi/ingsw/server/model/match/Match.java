@@ -220,7 +220,6 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
             this.activePlayer.addPoints(RewardFactory.create(RewardFactory.Type.DOUBLE_KILL).getRewardFor(0));
         }
 
-        // Now we can bring back to life those players
         for (Player deadPlayer : deadPlayers) {
             scoreVictimPoints(deadPlayer);
             if (this.skulls > 0) {
