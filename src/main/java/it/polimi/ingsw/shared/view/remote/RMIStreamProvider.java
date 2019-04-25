@@ -4,5 +4,5 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface RMIStreamProvider extends Remote {
-    String connect() throws RemoteException;
+    String connect() throws RemoteException, InterruptedException;
 }

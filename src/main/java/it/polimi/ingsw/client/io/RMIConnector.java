@@ -23,7 +23,7 @@ public class RMIConnector extends Connector {
     private RMIMessageProxy messageProxy;
     private ExecutorService threadPool = Executors.newFixedThreadPool(2);
 
-    public RMIConnector(InetSocketAddress address) throws IOException, NotBoundException {
+    public RMIConnector(InetSocketAddress address) throws IOException, NotBoundException, InterruptedException {
 
         RMIStreamProvider provider = (RMIStreamProvider) LocateRegistry.getRegistry(address.getHostName(), address.getPort()).lookup("RMIConnectionEndPoint");
         messageProxy = (RMIMessageProxy) LocateRegistry.getRegistry(address.getHostName(), address.getPort()).lookup(provider.connect());

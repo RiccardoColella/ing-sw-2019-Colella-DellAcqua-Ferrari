@@ -1,15 +1,14 @@
 package it.polimi.ingsw.server.bootstrap;
 
 import it.polimi.ingsw.server.view.View;
+import it.polimi.ingsw.server.view.remote.RMIMessageProxy;
 import it.polimi.ingsw.server.view.remote.RMIStreamProvider;
 import it.polimi.ingsw.server.view.remote.RMIView;
 import it.polimi.ingsw.server.view.remote.SocketView;
-import it.polimi.ingsw.server.view.remote.RMIMessageProxy;
 
 import java.io.IOException;
 import java.net.*;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.registry.Registry;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
@@ -47,12 +46,14 @@ public class WaitingRoom implements AutoCloseable {
 
         private int port;
         private RMIStreamProvider provider;
+        private Registry registry;
 
         public RMIAcceptor(int port) throws IOException {
+            System.setProperty("java.rmi.server.hostname", "192.168.1.251");
+            registry = java.rmi.registry.LocateRegistry.createRegistry(port);
             this.port = port;
             provider = new RMIStreamProvider();
-            System.setProperty("java.rmi.server.hostname", "192.168.1.251");
-            java.rmi.registry.LocateRegistry.createRegistry(port).rebind("RMIConnectionEndPoint", provider);
+            registry.rebind("RMIConnectionEndPoint", provider);
         }
 
         @Override
@@ -61,11 +62,10 @@ public class WaitingRoom implements AutoCloseable {
 
         @Override
         public View call() throws Exception {
-            String messageProxyID = provider.getMessageProxyID();
+            String id = provider.getMessageProxyID();
             RMIView view = new RMIView();
-            RMIMessageProxy messageProxy = new RMIMessageProxy(view);
-            java.rmi.registry.LocateRegistry.getRegistry(port).bind(messageProxyID, messageProxy);
-
+            registry.rebind(id, new RMIMessageProxy(view));
+            provider.notify();
             return view;
         }
     }

@@ -17,9 +17,10 @@ public class RMIStreamProvider extends UnicastRemoteObject implements it.polimi.
         return messageProxyIDs.take();
     }
 
-    public synchronized String connect() {
+    public synchronized String connect() throws InterruptedException {
         String id = UUID.randomUUID().toString();
         messageProxyIDs.add(id);
+        wait();
         return id;
     }
 }

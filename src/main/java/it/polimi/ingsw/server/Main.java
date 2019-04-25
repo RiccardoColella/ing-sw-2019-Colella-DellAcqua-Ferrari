@@ -40,7 +40,7 @@ public class Main {
         Direction direction = view.select("Scegli", Arrays.asList(Direction.EAST, Direction.NORTH), ClientApi.DIRECTION_QUESTION);
 
 
-
+        System.out.println(direction);
 
         /*
         ServerConfig config = new Gson().fromJson(new FileReader(new File(SERVER_CONFIG_JSON_FILENAME)), ServerConfig.class);
