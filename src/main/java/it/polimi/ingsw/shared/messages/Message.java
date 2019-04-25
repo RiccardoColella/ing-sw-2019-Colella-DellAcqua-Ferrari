@@ -15,16 +15,16 @@ public class Message implements Serializable {
         EVENT
     }
 
-    private static final Gson gson = new Gson();
+    private static transient final Gson gson = new Gson();
 
     private final String name;
-    private final JsonElement payload;
+    private final String payload;
     private final String streamId;
     private final Type type;
 
     protected Message(String name, Object payload, String streamId, Type type) {
         this.name = name;
-        this.payload = new Gson().toJsonTree(payload);
+        this.payload = new Gson().toJsonTree(payload).toString();
         this.streamId = streamId;
         this.type = type;
     }
@@ -44,7 +44,7 @@ public class Message implements Serializable {
     }
 
     public JsonElement getPayload() {
-        return payload;
+        return gson.fromJson(payload, new TypeToken<JsonElement>(){}.getType());
     }
 
     public static Message fromJson(String json) {

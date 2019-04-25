@@ -2,8 +2,11 @@ package it.polimi.ingsw.shared.view.remote;
 
 import it.polimi.ingsw.shared.messages.Message;
 
-public interface RMIMessageProxy {
-    Message receiveMessage() throws InterruptedException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
-    void sendMessage(Message message);
+public interface RMIMessageProxy extends Remote {
+    Message receiveMessage() throws RemoteException, InterruptedException;
+
+    void sendMessage(Message message) throws RemoteException;
 }

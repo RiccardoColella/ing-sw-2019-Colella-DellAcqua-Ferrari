@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server;
 
+import it.polimi.ingsw.server.bootstrap.WaitingRoom;
 import it.polimi.ingsw.server.view.View;
 import it.polimi.ingsw.server.view.remote.SocketView;
 import it.polimi.ingsw.shared.Direction;
@@ -24,7 +25,17 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
 
         // Testing
-        View view = new SocketView(new ServerSocket(9090).accept());
+
+        WaitingRoom waitingRoom = new WaitingRoom(9000, 9090);
+        waitingRoom.collectAsync();
+
+
+        View view = waitingRoom.pop().orElse(null);
+        while (view == null) {
+            Thread.sleep(1000);
+            view = waitingRoom.pop().orElse(null);
+        }
+
 
         Direction direction = view.select("Scegli", Arrays.asList(Direction.EAST, Direction.NORTH), ClientApi.DIRECTION_QUESTION);
 

@@ -10,6 +10,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,7 +38,7 @@ public class RMIConnector extends Connector {
             inputMessageQueue.enqueue(
                     messageProxy.receiveMessage()
             );
-        } catch (InterruptedException e) {
+        } catch (RemoteException | InterruptedException e) {
             logger.warning("Thread interrupted " + e.toString());
             Thread.currentThread().interrupt();
         }
@@ -50,7 +51,7 @@ public class RMIConnector extends Connector {
     private void sendMessageAsync() {
         try {
             messageProxy.sendMessage(outputMessageQueue.take());
-        } catch (InterruptedException ex) {
+        } catch (RemoteException | InterruptedException ex) {
             Thread.currentThread().interrupt();
             logger.warning("Thread interrupted " + ex.toString());
         }

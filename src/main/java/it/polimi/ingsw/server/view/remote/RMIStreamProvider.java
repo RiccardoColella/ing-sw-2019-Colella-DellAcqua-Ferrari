@@ -3,22 +3,23 @@ package it.polimi.ingsw.server.view.remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.UUID;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class RMIStreamProvider extends UnicastRemoteObject implements it.polimi.ingsw.shared.view.remote.RMIStreamProvider {
 
-    private String messageProxyID = "";
+    private LinkedBlockingQueue<String> messageProxyIDs = new LinkedBlockingQueue<>();
 
     public RMIStreamProvider() throws RemoteException {
         super();
     }
 
-    public String getMessageProxyID() {
-        return messageProxyID;
+    public String getMessageProxyID() throws InterruptedException {
+        return messageProxyIDs.take();
     }
 
     public synchronized String connect() {
-        notifyAll();
-        messageProxyID = UUID.randomUUID().toString();
-        return messageProxyID;
+        String id = UUID.randomUUID().toString();
+        messageProxyIDs.add(id);
+        return id;
     }
 }
