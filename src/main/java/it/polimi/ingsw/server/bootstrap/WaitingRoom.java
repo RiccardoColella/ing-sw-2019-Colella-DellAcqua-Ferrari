@@ -100,14 +100,12 @@ public class WaitingRoom implements AutoCloseable {
         removeDisconnectedViews();
         try {
             Thread.sleep(SCHEDULED_TASK_PERIOD);
+            if (!threadPool.isShutdown()) {
+                // Scheduling future execution
+                threadPool.execute(this::scheduledTask);
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        }
-
-
-        if (!threadPool.isShutdown()) {
-            // Scheduling future execution
-            threadPool.execute(this::scheduledTask);
         }
     }
 

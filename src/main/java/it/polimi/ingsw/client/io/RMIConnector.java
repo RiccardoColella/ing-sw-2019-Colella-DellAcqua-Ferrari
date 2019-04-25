@@ -38,26 +38,26 @@ public class RMIConnector extends Connector {
             inputMessageQueue.enqueue(
                     messageProxy.receiveMessage()
             );
+
+            if (!threadPool.isShutdown()) {
+                threadPool.execute(this::receiveMessageAsync);
+            }
         } catch (RemoteException | InterruptedException e) {
             logger.warning("Thread interrupted " + e.toString());
             Thread.currentThread().interrupt();
-        }
-
-        if (!threadPool.isShutdown()) {
-            threadPool.execute(this::receiveMessageAsync);
         }
     }
 
     private void sendMessageAsync() {
         try {
             messageProxy.sendMessage(outputMessageQueue.take());
+
+            if (!threadPool.isShutdown()) {
+                threadPool.execute(this::sendMessageAsync);
+            }
         } catch (RemoteException | InterruptedException ex) {
             Thread.currentThread().interrupt();
             logger.warning("Thread interrupted " + ex.toString());
-        }
-
-        if (!threadPool.isShutdown()) {
-            threadPool.execute(this::sendMessageAsync);
         }
     }
 

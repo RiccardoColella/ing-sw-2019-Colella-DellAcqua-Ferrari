@@ -61,13 +61,15 @@ public class SocketMessageManager implements AutoCloseable {
             byte[] content = gson.toJson(outputMessageQueue.take()).getBytes(StandardCharsets.UTF_8);
             outputStream.writeInt(content.length);
             outputStream.writeBytes(content);
+
+
+
+            if (!threadPool.isShutdown()) {
+                threadPool.execute(this::sendMessageAsync);
+            }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             logger.warning("Thread interrupted " + ex.toString());
-        }
-
-        if (!threadPool.isShutdown()) {
-            threadPool.execute(this::sendMessageAsync);
         }
     }
 
