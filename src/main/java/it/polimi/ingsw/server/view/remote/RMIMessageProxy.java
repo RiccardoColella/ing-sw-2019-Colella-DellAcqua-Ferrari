@@ -14,7 +14,7 @@ import java.util.concurrent.TimeoutException;
  *
  * @author Carlo Dell'Acqua
  */
-public class RMIMessageProxy extends UnicastRemoteObject implements it.polimi.ingsw.shared.view.remote.RMIMessageProxy {
+public class RMIMessageProxy extends UnicastRemoteObject implements it.polimi.ingsw.shared.view.remote.RMIMessageProxy, AutoCloseable {
 
     private final Runnable closeCallback;
     private RMIView rmiView;
@@ -39,6 +39,7 @@ public class RMIMessageProxy extends UnicastRemoteObject implements it.polimi.in
 
     @Override
     public void close() throws Exception {
+        UnicastRemoteObject.unexportObject(this, true);
         closeCallback.run();
     }
 }

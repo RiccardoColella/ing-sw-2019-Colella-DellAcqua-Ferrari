@@ -17,6 +17,7 @@ import java.net.Socket;
  */
 public class SocketConnector extends Connector {
 
+    private final InputStreamMessageSupplier inputMessageStreamSupplier;
     private MessageDispatcher messageDispatcher;
     private Socket socket;
 
@@ -25,10 +26,12 @@ public class SocketConnector extends Connector {
         socket = new Socket();
         socket.connect(address);
 
+        inputMessageStreamSupplier = new InputStreamMessageSupplier(new DataInputStream(socket.getInputStream()));
+
         messageDispatcher = new MessageDispatcher(
                 inputMessageQueue,
                 outputMessageQueue,
-                new InputStreamMessageSupplier(new DataInputStream(socket.getInputStream())),
+                inputMessageStreamSupplier,
                 new OutputStreamMessageConsumer(new DataOutputStream(socket.getOutputStream()))
         );
     }
@@ -36,6 +39,7 @@ public class SocketConnector extends Connector {
     @Override
     public void close() throws Exception {
         super.close();
+        inputMessageStreamSupplier.close();
         messageDispatcher.close();
         socket.close();
     }

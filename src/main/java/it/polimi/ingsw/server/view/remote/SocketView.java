@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class SocketView extends View implements AutoCloseable {
 
 
+    private final InputStreamMessageSupplier inputMessageStreamSupplier;
     private Socket socket;
     private MessageDispatcher messageDispatcher;
 
@@ -31,10 +32,13 @@ public class SocketView extends View implements AutoCloseable {
         super(answerTimeout, answerTimeoutUnit);
 
         this.socket = socket;
+
+        inputMessageStreamSupplier = new InputStreamMessageSupplier(new DataInputStream(socket.getInputStream()));
+
         messageDispatcher = new MessageDispatcher(
                 inputMessageQueue,
                 outputMessageQueue,
-                new InputStreamMessageSupplier(new DataInputStream(socket.getInputStream())),
+                inputMessageStreamSupplier,
                 new OutputStreamMessageConsumer(new DataOutputStream(socket.getOutputStream()))
         );
     }
@@ -73,7 +77,8 @@ public class SocketView extends View implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        messageDispatcher.close();
         socket.close();
+        inputMessageStreamSupplier.close();
+        messageDispatcher.close();
     }
 }

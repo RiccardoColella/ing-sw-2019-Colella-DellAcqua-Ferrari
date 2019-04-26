@@ -97,7 +97,7 @@ public abstract class Connector implements AutoCloseable {
         synchronized (threadPool) {
             threadPool.shutdown();
         }
-        while (!threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
+        while (!threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
             logger.warning("Thread pool hasn't shut down yet, waiting...");
         }
     }

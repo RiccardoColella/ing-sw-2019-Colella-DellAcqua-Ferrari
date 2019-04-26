@@ -55,4 +55,9 @@ public class RMIView extends View {
     public InputMessageQueue getInputMessageQueue() {
         return inputMessageQueue;
     }
+
+    @Override
+    public void close() throws Exception {
+        
+    }
 }

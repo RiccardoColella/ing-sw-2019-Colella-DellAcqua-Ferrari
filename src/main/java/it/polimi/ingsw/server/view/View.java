@@ -25,7 +25,7 @@ import java.util.concurrent.TimeoutException;
  *
  * @author Carlo Dell'Acqua
  */
-public abstract class View implements Interviewer {
+public abstract class View implements Interviewer, AutoCloseable {
 
     private boolean connected = true;
 

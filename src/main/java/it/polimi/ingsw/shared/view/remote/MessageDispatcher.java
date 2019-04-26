@@ -96,8 +96,13 @@ public class MessageDispatcher implements AutoCloseable {
         synchronized (threadPool) {
             threadPool.shutdown();
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        stop();
         try {
-            while (!threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
+            while (!threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
                 logger.warning("Thread pool hasn't shut down yet, waiting...");
             }
             notifyMessageDispatcherStopped();
@@ -105,10 +110,5 @@ public class MessageDispatcher implements AutoCloseable {
             logger.warning("Unexpected thread interruption, unable to correctly shutdown the threadPool and notify this to listeners");
             Thread.currentThread().interrupt();
         }
-    }
-
-    @Override
-    public void close() throws Exception {
-        stop();
     }
 }

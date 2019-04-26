@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Carlo Dell'Acqua
  */
-public class RMIStreamProvider extends UnicastRemoteObject implements it.polimi.ingsw.shared.view.remote.RMIStreamProvider {
+public class RMIStreamProvider extends UnicastRemoteObject implements it.polimi.ingsw.shared.view.remote.RMIStreamProvider, AutoCloseable {
 
     private LinkedBlockingQueue<String> messageProxyIds = new LinkedBlockingQueue<>();
 
@@ -30,5 +30,11 @@ public class RMIStreamProvider extends UnicastRemoteObject implements it.polimi.
         messageProxyIds.add(id);
         wait();
         return id;
+    }
+
+
+    @Override
+    public void close() throws Exception {
+        UnicastRemoteObject.unexportObject(this, true);
     }
 }

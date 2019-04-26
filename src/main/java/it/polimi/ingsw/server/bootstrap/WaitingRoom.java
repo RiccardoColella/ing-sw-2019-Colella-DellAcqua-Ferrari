@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 public class WaitingRoom implements AutoCloseable {
 
     private static final int ACCEPT_TIMEOUT = 1000;
-    private static final int SCHEDULED_TASK_PERIOD = 10000;
+    private static final int SCHEDULED_TASK_PERIOD = 1000;
 
 
     private class SocketAcceptor implements Callable<View>, AutoCloseable {
@@ -59,6 +59,7 @@ public class WaitingRoom implements AutoCloseable {
         public RMIAcceptor(int port) throws IOException {
             System.setProperty("java.rmi.server.hostname", "192.168.1.251");
             registry = java.rmi.registry.LocateRegistry.createRegistry(port);
+
             provider = new RMIStreamProvider();
             registry.rebind(RMI_CONNECTION_END_POINT, provider);
         }
@@ -66,6 +67,7 @@ public class WaitingRoom implements AutoCloseable {
         @Override
         public void close() throws Exception {
             registry.unbind(RMI_CONNECTION_END_POINT);
+            provider.close();
             closed = true;
         }
 
@@ -98,7 +100,7 @@ public class WaitingRoom implements AutoCloseable {
     private SocketAcceptor socketAcceptor;
     private RMIAcceptor rmiAcceptor;
     private final Queue<View> connectedViews = new LinkedList<>();
-    private ExecutorService threadPool;
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(3);
     private Future<View> currentRMITask;
     private Future<View> currentSocketTask;
     private int socketPort;
@@ -114,16 +116,11 @@ public class WaitingRoom implements AutoCloseable {
     public void collectAsync() throws IOException {
         rmiAcceptor = new RMIAcceptor(rmiPort);
         socketAcceptor = new SocketAcceptor(socketPort);
-        threadPool = Executors.newFixedThreadPool(3);
         // We prepare the task to get our first Future, it will then be overwritten once we get the promised result
         currentRMITask = threadPool.submit(rmiAcceptor);
         currentSocketTask = threadPool.submit(socketAcceptor);
 
-        synchronized (threadPool) {
-            if (!threadPool.isShutdown()) {
-                threadPool.execute(this::scheduledTask);
-            }
-        }
+        threadPool.execute(this::scheduledTask);
     }
 
     private void scheduledTask() {
@@ -154,10 +151,18 @@ public class WaitingRoom implements AutoCloseable {
                     );
 
                     // The previous task has been consumed, we can now submit a new task for waiting new views
-                    currentSocketTask = threadPool.submit(socketAcceptor);
+                    synchronized (threadPool) {
+                        if (!threadPool.isShutdown()) {
+                            currentSocketTask = threadPool.submit(socketAcceptor);
+                        }
+                    }
                 }
             } catch (ExecutionException ex) {
-                currentSocketTask = threadPool.submit(socketAcceptor);
+                synchronized (threadPool) {
+                    if (!threadPool.isShutdown()) {
+                        currentSocketTask = threadPool.submit(socketAcceptor);
+                    }
+                }
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
@@ -170,10 +175,18 @@ public class WaitingRoom implements AutoCloseable {
                     );
 
                     // The previous task has been consumed, we can now submit a new task for waiting new views
-                    currentRMITask = threadPool.submit(rmiAcceptor);
+                    synchronized (threadPool) {
+                        if (!threadPool.isShutdown()) {
+                            currentRMITask = threadPool.submit(rmiAcceptor);
+                        }
+                    }
                 }
             } catch (ExecutionException ex) {
-                currentRMITask = threadPool.submit(rmiAcceptor);
+                synchronized (threadPool) {
+                    if (!threadPool.isShutdown()) {
+                        currentRMITask = threadPool.submit(rmiAcceptor);
+                    }
+                }
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
@@ -199,13 +212,16 @@ public class WaitingRoom implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
+
+        socketAcceptor.close();
+        rmiAcceptor.close();
+        connectedViews.clear();
+
         synchronized (threadPool) {
             threadPool.shutdown();
         }
-        while (!threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
+        while (!threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
             logger.warning("Thread pool hasn't shut down yet, waiting...");
         }
-        socketAcceptor.close();
-        connectedViews.clear();
     }
 }
