@@ -1,11 +1,9 @@
 package it.polimi.ingsw.server.controller.weapons;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.battlefield.Board;
+import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.server.model.currency.AmmoCubeFactory;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
@@ -15,7 +13,6 @@ import it.polimi.ingsw.server.model.player.DamageToken;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.view.Interviewer;
-import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.utils.EnumValueByString;
 import it.polimi.ingsw.utils.TriConsumer;
@@ -25,14 +22,29 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class WeaponFactory {
     private static final String WEAPON_JSON_PATH = "./resources/attacks.json";
+
+    private static final String FIXED = "FIXED";
+    private static final String STRAIGHT = "STRAIGHT";
+    private static final String INHERIT = "INHERIT";
+    private static final String STARTING_POINT = "startingPoint";
+    private static final String VISIBLE = "VISIBLE";
+    private static final String ACTIVE_PLAYER = "ACTIVE_PLAYER";
+    private static final String SELF = "SELF";
+    private static final String INHERIT_ALL = "INHERIT_ALL";
+    private static final String INHERIT_LAST = "INHERIT_LAST";
+    private static final String INHERIT_IF_PRESENT = "INHERIT_IF_PRESENT";
+    private static final String TARGET_DISTANCE = "targetDistance";
+    private static final String TARGET_DIRECTION = "targetDirection";
+    private static final String TARGET_POSITION = "targetPosition";
+
 
     private static Map<Weapon.Name, JsonObject> weaponMap;
 
@@ -117,7 +129,7 @@ public class WeaponFactory {
         JsonObject actionObject = action.getAsJsonObject();
         TargetCalculator targetCalculator = readTargetCalculator(actionObject, lastTargetCalculator, board);
         BiFunction<List<Player>, Player, Set<Player>> bonusTargets = readBonusTarget(actionObject);
-        Function<BasicWeapon, Set<Player>> targetsToChooseFrom = readAvailableTargets(actionObject);
+        Function<BasicWeapon, Set<Player>> targetsToChooseFrom = readAvailableTargets();
         Function<Set<Player>, Set<Set<Player>>> adaptToScope = readScope(actionObject);
         BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> addToEach = readMandatoryExtras(actionObject);
         BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> veto = readVeto(actionObject);
@@ -137,6 +149,19 @@ public class WeaponFactory {
         );
     }
 
+    /**
+     * This method reads the {@code JsonObject} and looks for the property {@code targets}: if it is set to {@code FIND},
+     * it calls {@link #elaborateFindingTarget(JsonObject, Board, TargetCalculator) elaborateFindingTarget}, in all
+     * other cases it returns {@code null}. It is required for the {@code JsonObject} to have a property named {@code targets},
+     * see {@see jsonAttacks.md} for further info
+     *
+     * @author Adriana Ferrari
+     * @param actionObject the {@code JsonObject} corresponding to the analyzed action
+     * @param lastTargetCalculator the last {@code TargetCalculator} computed while scanning the current attack, or
+     * {@code null} if none has yet been computed
+     * @param board the {@code Board} on which the target analyses will be made
+     * @return the computed {@code TargetCalculator}, or {@code null} if none was appliable to the action
+     */
     private static @Nullable TargetCalculator readTargetCalculator(JsonObject actionObject, @Nullable TargetCalculator lastTargetCalculator, Board board) {
 
         if ("FIND".equals(actionObject.get("targets").getAsString())) {
@@ -145,11 +170,26 @@ public class WeaponFactory {
         return null;
     }
 
+    /**
+     * This method is used to retrieve the bonus targets from the given {@code JsonObject}. The bonus targets are those
+     * players that are going to be targeted by the attack independently from their position on the board (for those,
+     * see {@link #readTargetCalculator(JsonObject, TargetCalculator, Board) readTargetCalculator}). It is required for
+     * the {@code JsonObject} to have a property named {@code targets}, see {@see jsonAttacks.md} for further info
+     *
+     * @author Adriana Ferrari
+     * @param actionObject the {@code JsonObject} to analyze
+     * @return a {@code BiFunction} that takes {@code List<Player>}, the players that were previously hit by the weapon,
+     * and a {@code Player}, the active player, as arguments and returns the {@code Set<Player>} representing the bonus
+     * targets, which will be empty if none are present
+     */
     private static BiFunction<List<Player>, Player, Set<Player>> readBonusTarget(JsonObject actionObject) {
         BiFunction<List<Player>, Player, Set<Player>> bonusTarget;
+
+        //The field targets of actionObject is analyzed
         switch (actionObject.get("targets").getAsString()) {
-            case "INHERIT_LAST":
+            case INHERIT_LAST:
                 bonusTarget = (previouslyHit, activePlayer) -> {
+                    //scanning the targets previously hit by the weapon and retrieving the last that is not the active player
                     Set<Player> last = new HashSet<>();
                     int index = previouslyHit.size() - 1;
                     while (index >= 0) {
@@ -159,17 +199,20 @@ public class WeaponFactory {
                         }
                         index--;
                     }
+                    //last will be empty if no previous target was different from the active player
                     return last;
                 };
                 break;
-            case "SELF":
+            case SELF:
+                //the active player is added to the set
                 bonusTarget = (previouslyHit, activePlayer) -> {
                     Set<Player> self = new HashSet<>();
                     self.add(activePlayer);
                     return self;
                 };
                 break;
-            case "INHERIT_ALL":
+            case INHERIT_ALL:
+                //all the previous targets but the active player are added to the set
                 bonusTarget = (previouslyHit, activePlayer) -> {
                     Set<Player> available = new HashSet<>(previouslyHit);
                     available.remove(activePlayer);
@@ -177,13 +220,21 @@ public class WeaponFactory {
                 };
                 break;
             default:
+                //no bonus targets
                 bonusTarget = (previouslyHit, activePlayer) -> new HashSet<>();
                 break;
         }
         return bonusTarget;
     }
 
-    private static Function<BasicWeapon, Set<Player>> readAvailableTargets(JsonObject actionObject) {
+    /**
+     * This method restricts the hittable targets
+     *
+     * @author Adriana Ferrari
+     * @return a {@code Function} that takes {@code BasicWeapon}, the weapon that is being used, and returns a {@code Set<Player>},
+     * the available targets
+     */
+    private static Function<BasicWeapon, Set<Player>> readAvailableTargets() {
         return weapon -> {
                 Set<Player> nonActive = new HashSet<>(weapon.getCurrentShooter().getMatch().getPlayers());
                 nonActive.remove(weapon.getCurrentShooter());
@@ -191,62 +242,96 @@ public class WeaponFactory {
             };
     }
 
+    /**
+     * This method returns the appropriate {@code TargetCalculator} for the occasion. It is required that {@code actionObject}
+     * has the property {@code targetPosition}, see {@see jsonAttacks.md} for further info
+     *
+     * @author Adriana Ferrari
+     * @param actionObject the {@code JsonObject} to analyze
+     * @param board the {@code Board} on which the targets will be found
+     * @param lastTargetCalculator the previous {@code TargetCalculator} for this attack, which can be {@code null}
+     * @return the new {@code TargetCalculator}, which might be {@code null} if {@code lastTargetCalculator} was null
+     * @throws IncoherentConfigurationException if the value of {@code targetPosition} is not supported
+     */
     private static @Nullable TargetCalculator elaborateFindingTarget(JsonObject actionObject, Board board, @Nullable TargetCalculator lastTargetCalculator) {
-        String field = "targetDistance";
-        switch (actionObject.get("targetPosition").getAsString()) {
-            case "FIXED":
-                JsonObject distance = actionObject.get(field).getAsJsonObject();
-                return new FixedDistanceTargetCalculator(board, computeRange(distance, board.getBlocks().size()));
-            case "VISIBLE":
-                boolean isVisible = true;
-                if (actionObject.has("visibility")) {
-                    isVisible = actionObject.get("visibility").getAsBoolean();
-                }
-                FixedVisibilityTargetCalculator visibilityTargetCalculator = new FixedVisibilityTargetCalculator(board, isVisible);
-                if (actionObject.has(field)) {
-                    distance = actionObject.get(field).getAsJsonObject();
-                    FixedDistanceTargetCalculator distanceTargetCalculator = new FixedDistanceTargetCalculator(board, computeRange(distance, board.getBlocks().size()));
-                    List<TargetCalculator> calculators = new ArrayList<>();
-                    calculators.add(visibilityTargetCalculator);
-                    calculators.add(distanceTargetCalculator);
-                    return new CompoundTargetCalculator(calculators);
-                }
-                return visibilityTargetCalculator;
-            case "STRAIGHT":
-                boolean goesThroughWalls = false;
-                if (actionObject.has("goesThroughWalls")) {
-                    goesThroughWalls = actionObject.get("goesThroughWalls").getAsBoolean();
-                }
-                String direction = actionObject.get("targetDirection").getAsString();
-                if (direction.equals("FIXED") && !actionObject.has(field)) {
-                    return new FixedDirectionTargetCalculator(board, goesThroughWalls);
-                } else if (direction.equals("FIXED")) {
-                    distance = actionObject.get(field).getAsJsonObject();
-                    FixedDistanceTargetCalculator distanceTargetCalculator = new FixedDistanceTargetCalculator(board, computeRange(distance, board.getBlocks().size()));
-                    List<TargetCalculator> calculators = new ArrayList<>();
-                    calculators.add(distanceTargetCalculator);
-                    calculators.add(new FixedDirectionTargetCalculator(board, goesThroughWalls));
-                    return new CompoundTargetCalculator(calculators);
-                } else if (direction.equals("INHERIT") && !actionObject.has(field)) {
-                    return lastTargetCalculator;
-                } else if (direction.equals("INHERIT")) {
-                    distance = actionObject.get(field).getAsJsonObject();
-                    FixedDistanceTargetCalculator distanceTargetCalculator = new FixedDistanceTargetCalculator(board, computeRange(distance, board.getBlocks().size()));
-                    List<TargetCalculator> calculators = new ArrayList<>();
-                    if (lastTargetCalculator != null) {
-                        for (TargetCalculator c : lastTargetCalculator.getSubCalculators()) {
-                            if (c instanceof FixedDirectionTargetCalculator) {
-                                calculators.add(c);
-                                break;
-                            }
-                        }
-                    } else throw new IncoherentConfigurationException("No last target calculator found");
-
-                    calculators.add(distanceTargetCalculator);
-                    return new CompoundTargetCalculator(calculators);
-                } else throw new IncoherentConfigurationException("Unknown value for targetDirection: " + direction);
+        switch (actionObject.get(TARGET_POSITION).getAsString()) {
+            case FIXED:
+                return fixedDistanceTargetCalculator(actionObject, board);
+            case VISIBLE:
+                return fixedVisibilityTargetCalculator(actionObject, board);
+            case STRAIGHT:
+                return straightTargetCalculator(actionObject, board, lastTargetCalculator);
             default:
-                throw new IncoherentConfigurationException("Unknown value for targetPosition: " + actionObject.get("targetPosition").getAsString());
+                throw new IncoherentConfigurationException("Unknown value for targetPosition: " + actionObject.get(TARGET_POSITION).getAsString());
+        }
+    }
+
+    private static TargetCalculator fixedDistanceTargetCalculator(JsonObject actionObject, Board board) {
+        JsonObject distance = actionObject.get(TARGET_DISTANCE).getAsJsonObject();
+        return new FixedDistanceTargetCalculator(board, computeRange(distance, board.getBlocks().size()));
+    }
+
+    private static TargetCalculator fixedVisibilityTargetCalculator(JsonObject actionObject, Board board) {
+        boolean isVisible = true;
+        if (actionObject.has("visibility")) {
+            isVisible = actionObject.get("visibility").getAsBoolean();
+        }
+        FixedVisibilityTargetCalculator visibilityTargetCalculator = new FixedVisibilityTargetCalculator(board, isVisible);
+        if (actionObject.has(TARGET_DISTANCE)) {
+            JsonObject distance = actionObject.get(TARGET_DISTANCE).getAsJsonObject();
+            FixedDistanceTargetCalculator distanceTargetCalculator = new FixedDistanceTargetCalculator(board, computeRange(distance, board.getBlocks().size()));
+            List<TargetCalculator> calculators = new ArrayList<>();
+            calculators.add(visibilityTargetCalculator);
+            calculators.add(distanceTargetCalculator);
+            return new CompoundTargetCalculator(calculators);
+        }
+        return visibilityTargetCalculator;
+    }
+
+    private static @Nullable TargetCalculator straightTargetCalculator(JsonObject actionObject, Board board, @Nullable TargetCalculator lastTargetCalculator) {
+        boolean goesThroughWalls = false;
+        if (actionObject.has("goesThroughWalls")) {
+            goesThroughWalls = actionObject.get("goesThroughWalls").getAsBoolean();
+        }
+        String direction = actionObject.get(TARGET_DIRECTION).getAsString();
+        if (direction.equals(FIXED)) {
+            return fixedDirectionTargetCalculator(actionObject, board, goesThroughWalls);
+        } else if (direction.equals(INHERIT)) {
+            return inheritedTargetCalculator(actionObject, board, lastTargetCalculator);
+        } else throw new IncoherentConfigurationException("Unknown value for targetDirection: " + direction);
+    }
+
+    private static TargetCalculator fixedDirectionTargetCalculator(JsonObject actionObject, Board board, boolean goesThroughWalls) {
+        if (!actionObject.has(TARGET_DISTANCE)) {
+            return new FixedDirectionTargetCalculator(board, goesThroughWalls);
+        } else {
+            JsonObject distance = actionObject.get(TARGET_DISTANCE).getAsJsonObject();
+            FixedDistanceTargetCalculator distanceTargetCalculator = new FixedDistanceTargetCalculator(board, computeRange(distance, board.getBlocks().size()));
+            List<TargetCalculator> calculators = new ArrayList<>();
+            calculators.add(distanceTargetCalculator);
+            calculators.add(new FixedDirectionTargetCalculator(board, goesThroughWalls));
+            return new CompoundTargetCalculator(calculators);
+        }
+    }
+
+    private static @Nullable TargetCalculator inheritedTargetCalculator(JsonObject actionObject, Board board, @Nullable TargetCalculator lastTargetCalculator) {
+        if (!actionObject.has(TARGET_DISTANCE)) {
+            return lastTargetCalculator;
+        } else {
+            JsonObject distance = actionObject.get(TARGET_DISTANCE).getAsJsonObject();
+            FixedDistanceTargetCalculator distanceTargetCalculator = new FixedDistanceTargetCalculator(board, computeRange(distance, board.getBlocks().size()));
+            List<TargetCalculator> calculators = new ArrayList<>();
+            if (lastTargetCalculator != null) {
+                for (TargetCalculator c : lastTargetCalculator.getSubCalculators()) {
+                    if (c instanceof FixedDirectionTargetCalculator) {
+                        calculators.add(c);
+                        break;
+                    }
+                }
+            } else throw new IncoherentConfigurationException("No last target calculator found");
+
+            calculators.add(distanceTargetCalculator);
+            return new CompoundTargetCalculator(calculators);
         }
     }
 
@@ -402,31 +487,30 @@ public class WeaponFactory {
 
     private static Function<BasicWeapon, Set<Block>> readStartingPoint(JsonObject actionObject) {
         Function<BasicWeapon, Set<Block>> startingPointCalculator;
-        String field = "startingPoint";
-        if (actionObject.has(field)) {
-            switch (actionObject.get(field).getAsString()) {
-                case "INHERIT":
+        if (actionObject.has(STARTING_POINT)) {
+            switch (actionObject.get(STARTING_POINT).getAsString()) {
+                case INHERIT:
                     startingPointCalculator = weapon -> new HashSet<>(Collections.singletonList(
                             weapon.getStartingPoint().orElseThrow(() -> new IncoherentConfigurationException("No starting point to inherit"))
                     ));
                     break;
-                case "INHERIT_IF_PRESENT":
+                case INHERIT_IF_PRESENT:
                     startingPointCalculator = weapon -> new HashSet<>(Collections.singletonList(
                             weapon.getStartingPoint().orElse(weapon.getCurrentShooter().getBlock())
                     ));
                     break;
-                case "ACTIVE_PLAYER":
+                case ACTIVE_PLAYER:
                     startingPointCalculator = weapon -> new HashSet<>(Collections.singletonList(
                             weapon.getCurrentShooter().getBlock()
                     ));
                     break;
-                case "VISIBLE":
+                case VISIBLE:
                     startingPointCalculator = weapon -> {
                         Set<Block> visibleBlocks = weapon.getCurrentShooter().getMatch().getBoard().getVisibleBlocks(weapon.getCurrentShooter().getBlock());
                         visibleBlocks.removeIf(block -> !weapon.validStartingPoint(weapon.getActiveAttack(), block));
                         return visibleBlocks;
                     };
-                    if (actionObject.has("andNotStartingPoint") && actionObject.get("andNotStartingPoint").getAsString().equals("ACTIVE_PLAYER")) {
+                    if (actionObject.has("andNotStartingPoint") && actionObject.get("andNotStartingPoint").getAsString().equals(ACTIVE_PLAYER)) {
                         startingPointCalculator = weapon -> {
                             Set<Block> blocks = weapon.getCurrentShooter().getMatch().getBoard().getVisibleBlocks(weapon.getCurrentShooter().getBlock());
                             blocks.removeIf(block -> !weapon.validStartingPoint(weapon.getActiveAttack(), block));
@@ -451,7 +535,7 @@ public class WeaponFactory {
                     };
                     break;
                 default:
-                    throw new IncoherentConfigurationException("Unknown startingPoint: " + actionObject.get(field).getAsString());
+                    throw new IncoherentConfigurationException("Unknown startingPoint: " + actionObject.get(STARTING_POINT).getAsString());
             }
         } else {
             startingPointCalculator = weapon -> new HashSet<>(Collections.singletonList(
@@ -500,9 +584,9 @@ public class WeaponFactory {
         if (actionObject.has("targetFinalPosition")) {
             String position = actionObject.get("targetFinalPosition").getAsString();
             switch (position) {
-                case "FIXED":
+                case FIXED:
                     return readFixedTargetMoveExecutor(actionObject, range, boardSize);
-                case "STRAIGHT":
+                case STRAIGHT:
                     return readStraightTargetMoveExecutor(range, boardSize);
                 default:
                     throw new IncoherentConfigurationException("Unrecognized targetFinalPosition: " + position);

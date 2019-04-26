@@ -77,7 +77,6 @@
   },
   {
     "weaponId": "Machine Gun",
-    "basicMustBeFirst": true,
     "basicAttack": {
       "name": "basic effect",
       "actions": [
