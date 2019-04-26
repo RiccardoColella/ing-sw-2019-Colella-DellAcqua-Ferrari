@@ -2,6 +2,8 @@ package it.polimi.ingsw.server;
 
 /**
  * This class represents the initial configuration of the game server
+ *
+ * @author Carlo Dell'Acqua
  */
 public class ServerConfig {
     private int maxParallelMatches;

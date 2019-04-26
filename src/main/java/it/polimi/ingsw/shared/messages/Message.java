@@ -29,7 +29,7 @@ public class Message implements Serializable {
         this.type = type;
     }
 
-    public static Message createQuestion(String name, Object payload) {
+    public static Message createQuestion(String name, Question payload) {
         return new Message(name, payload, UUID.randomUUID().toString(), Type.QUESTION);
     }
     public static Message createAnswer(String name, Object payload, String streamId) {

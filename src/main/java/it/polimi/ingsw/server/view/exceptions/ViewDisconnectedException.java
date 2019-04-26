@@ -1,4 +1,4 @@
-package it.polimi.ingsw.server.controller.exceptions;
+package it.polimi.ingsw.server.view.exceptions;
 
 /**
  * This exception should be thrown if a client view disconnects (logically) from the server

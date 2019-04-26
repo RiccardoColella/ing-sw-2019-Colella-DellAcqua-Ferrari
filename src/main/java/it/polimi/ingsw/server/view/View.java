@@ -1,10 +1,10 @@
 package it.polimi.ingsw.server.view;
 
-import it.polimi.ingsw.server.controller.exceptions.ViewDisconnectedException;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
+import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
 import it.polimi.ingsw.shared.InputMessageQueue;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.shared.messages.Message;
@@ -17,10 +17,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * This class is an abstract server-side View. It contains all the methods needed for the interaction with the controller
  * and implements all the listeners needed to receive information from the model
+ *
+ * @author Carlo Dell'Acqua
  */
 public abstract class View implements Interviewer {
 
@@ -65,7 +68,10 @@ public abstract class View implements Interviewer {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             connected = false;
-            throw new ViewDisconnectedException("Unable to retrieve input message");
+            throw new ViewDisconnectedException("Unable to retrieve input message", e);
+        } catch (TimeoutException e) {
+            connected = false;
+            throw new ViewDisconnectedException("Unable to retrieve input message", e);
         }
     }
 

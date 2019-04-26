@@ -10,6 +10,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+/**
+ * This class is the concrete connector implemented with classic socket IO
+ *
+ * @author Carlo Dell'Acqua
+ */
 public class SocketConnector extends Connector {
 
     private MessageDispatcher messageDispatcher;

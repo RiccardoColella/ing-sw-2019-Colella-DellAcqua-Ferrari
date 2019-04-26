@@ -18,6 +18,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Socket based implementation of the server-side View
+ *
+ * @author Carlo Dell'Acqua
  */
 public class SocketView extends View implements AutoCloseable {
 

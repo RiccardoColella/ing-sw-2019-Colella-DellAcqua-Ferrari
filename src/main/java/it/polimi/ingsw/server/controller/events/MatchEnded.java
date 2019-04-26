@@ -6,6 +6,8 @@ import java.util.EventObject;
 
 /**
  * Match ended class from the controller perspective
+ *
+ * @author Carlo Dell'Acqua
  */
 public class MatchEnded extends EventObject {
 

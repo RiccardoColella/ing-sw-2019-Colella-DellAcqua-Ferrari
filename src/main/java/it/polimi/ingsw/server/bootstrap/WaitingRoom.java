@@ -18,8 +18,10 @@ import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 /**
- * This class is used to create a virtual waiting room in which RMIConnector and Socket clients will wait until a virtual
+ * This class is used to create a virtual waiting room in which RMI and Socket clients will wait until a virtual
  * game room is available
+ *
+ * @author Carlo Dell'Acqua
  */
 public class WaitingRoom implements AutoCloseable {
 
@@ -52,6 +54,7 @@ public class WaitingRoom implements AutoCloseable {
 
         private final RMIStreamProvider provider;
         private Registry registry;
+        private boolean closed = false;
 
         public RMIAcceptor(int port) throws IOException {
             System.setProperty("java.rmi.server.hostname", "192.168.1.251");
@@ -63,23 +66,31 @@ public class WaitingRoom implements AutoCloseable {
         @Override
         public void close() throws Exception {
             registry.unbind(RMI_CONNECTION_END_POINT);
+            closed = true;
         }
 
         @Override
         public View call() throws Exception {
-            String id = provider.getMessageProxyId();
-            RMIView view = new RMIView(answerTimeoutMilliseconds, TimeUnit.MILLISECONDS);
-            registry.rebind(id, new RMIMessageProxy(view, () -> {
-                try {
-                    registry.unbind(id);
-                } catch (RemoteException|NotBoundException e) {
-                    logger.warning("Unable to unbind " + id + " " + e);
+            Optional<String> idOptional;
+            do {
+                idOptional = provider.getMessageProxyId(ACCEPT_TIMEOUT, TimeUnit.MILLISECONDS);
+            } while (!idOptional.isPresent() && !closed);
+            if (idOptional.isPresent()) {
+                String id = idOptional.get();
+                RMIView view = new RMIView(answerTimeoutMilliseconds, TimeUnit.MILLISECONDS);
+                registry.rebind(id, new RMIMessageProxy(view, () -> {
+                    try {
+                        // TODO: verify that the default RMI policy does not prevent this registry call from a remote object callback
+                        registry.unbind(id);
+                    } catch (RemoteException | NotBoundException e) {
+                        logger.warning("Unable to unbind " + id + " " + e);
+                    }
+                }));
+                synchronized (provider) {
+                    provider.notifyAll();
                 }
-            }));
-            synchronized (provider) {
-                provider.notifyAll();
-            }
-            return view;
+                return view;
+            } else throw new InterruptedException("RMIAcceptor stopped");
         }
     }
 
@@ -107,7 +118,12 @@ public class WaitingRoom implements AutoCloseable {
         // We prepare the task to get our first Future, it will then be overwritten once we get the promised result
         currentRMITask = threadPool.submit(rmiAcceptor);
         currentSocketTask = threadPool.submit(socketAcceptor);
-        threadPool.execute(this::scheduledTask);
+
+        synchronized (threadPool) {
+            if (!threadPool.isShutdown()) {
+                threadPool.execute(this::scheduledTask);
+            }
+        }
     }
 
     private void scheduledTask() {
@@ -116,7 +132,12 @@ public class WaitingRoom implements AutoCloseable {
         try {
             Thread.sleep(SCHEDULED_TASK_PERIOD);
             // Scheduling future execution
-            threadPool.execute(this::scheduledTask);
+
+            synchronized (threadPool) {
+                if (!threadPool.isShutdown()) {
+                    threadPool.execute(this::scheduledTask);
+                }
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -178,7 +199,9 @@ public class WaitingRoom implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        threadPool.shutdown();
+        synchronized (threadPool) {
+            threadPool.shutdown();
+        }
         while (!threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
             logger.warning("Thread pool hasn't shut down yet, waiting...");
         }

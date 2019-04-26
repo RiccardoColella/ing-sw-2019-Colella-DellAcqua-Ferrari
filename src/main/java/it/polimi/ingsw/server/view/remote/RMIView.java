@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * RMI based implementation of the server-side View
+ *
+ * @author Carlo Dell'Acqua
  */
 public class RMIView extends View {
 

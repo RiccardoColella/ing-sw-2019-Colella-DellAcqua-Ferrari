@@ -4,22 +4,27 @@ import it.polimi.ingsw.shared.InputMessageQueue;
 import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.view.remote.events.MessageDispatcherStopped;
 import it.polimi.ingsw.shared.view.remote.events.listeners.MessageDispatcherStoppedListener;
-import it.polimi.ingsw.utils.function.UnsafeConsumer;
-import it.polimi.ingsw.utils.function.UnsafeSupplier;
-import it.polimi.ingsw.utils.function.exceptions.UnsafeSupplierException;
+import it.polimi.ingsw.utils.function.TimeoutConsumer;
+import it.polimi.ingsw.utils.function.TimeoutSupplier;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 
+
+/**
+ * This class dispatches the messages from the input and output queues provided a supplier and a consumer
+ *
+ * @author Carlo Dell'Acqua
+ */
 public class MessageDispatcher implements AutoCloseable {
 
-    private final UnsafeSupplier<Message> inputMessageSupplier;
-    private final UnsafeConsumer<Message> outputMessageConsumer;
+    private static final int TAKE_TIMEOUT_MILLISECONDS = 1000;
+
+    private final TimeoutSupplier<Message> inputMessageSupplier;
+    private final TimeoutConsumer<Message> outputMessageConsumer;
     private Logger logger = Logger.getLogger(this.getClass().getName());
     private InputMessageQueue inputMessageQueue;
     private BlockingQueue<Message> outputMessageQueue;
@@ -27,7 +32,7 @@ public class MessageDispatcher implements AutoCloseable {
 
     private List<MessageDispatcherStoppedListener> stoppedListeners = new LinkedList<>();
 
-    public MessageDispatcher(InputMessageQueue inputMessageQueue, BlockingQueue<Message> outputMessageQueue, UnsafeSupplier<Message> inputMessageSupplier, UnsafeConsumer<Message> outputMessageConsumer) {
+    public MessageDispatcher(InputMessageQueue inputMessageQueue, BlockingQueue<Message> outputMessageQueue, TimeoutSupplier<Message> inputMessageSupplier, TimeoutConsumer<Message> outputMessageConsumer) {
         this.inputMessageQueue = inputMessageQueue;
         this.outputMessageQueue = outputMessageQueue;
         this.inputMessageSupplier = inputMessageSupplier;
@@ -39,24 +44,37 @@ public class MessageDispatcher implements AutoCloseable {
     private void receiveMessageAsync() {
         try {
             inputMessageQueue.enqueue(
-                    inputMessageSupplier.get()
+                    inputMessageSupplier.get(TAKE_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS)
             );
-            threadPool.execute(this::receiveMessageAsync);
-        } catch (UnsafeSupplierException e) {
+        } catch (IOException e) {
+            logger.warning("Unable to receive data " + e);
             stop();
+        } catch (TimeoutException ignored) { }
+
+        synchronized (threadPool) {
+            if (!threadPool.isShutdown()) {
+                threadPool.execute(this::receiveMessageAsync);
+            }
         }
     }
 
     private void sendMessageAsync() {
         try {
-            outputMessageConsumer.accept(outputMessageQueue.take());
-            threadPool.execute(this::sendMessageAsync);
+            Message message = outputMessageQueue.poll(TAKE_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS);
+            if (message != null) {
+                outputMessageConsumer.accept(message);
+            }
+            synchronized (threadPool) {
+                if (!threadPool.isShutdown()) {
+                    threadPool.execute(this::sendMessageAsync);
+                }
+            }
         } catch (InterruptedException e) {
             logger.warning("Thread interrupted " + e);
             stop();
             Thread.currentThread().interrupt();
-        } catch (UnsafeSupplierException e) {
-            logger.warning("Unable to send message " + e);
+        } catch (IOException e) {
+            logger.warning("Unable to send data " + e);
             stop();
         }
     }
@@ -75,7 +93,9 @@ public class MessageDispatcher implements AutoCloseable {
     }
 
     private void stop() {
-        threadPool.shutdown();
+        synchronized (threadPool) {
+            threadPool.shutdown();
+        }
         try {
             while (!threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
                 logger.warning("Thread pool hasn't shut down yet, waiting...");

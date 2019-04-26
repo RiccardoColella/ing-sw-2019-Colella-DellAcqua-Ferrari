@@ -13,8 +13,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
+
 /**
  * This class is the Server, the core of the application
+ *
+ * @author Carlo Dell'Acqua
  */
 public class Server implements ControllerListener {
 
@@ -56,7 +59,12 @@ public class Server implements ControllerListener {
             Controller controller = initializer.initialize();
             activeRooms.add(controller);
             logger.info("Room setup completed, starting the match controller...");
-            threadPool.execute(controller);
+
+            synchronized (threadPool) {
+                if (!threadPool.isShutdown()) {
+                    threadPool.execute(controller);
+                }
+            }
         }
     }
 

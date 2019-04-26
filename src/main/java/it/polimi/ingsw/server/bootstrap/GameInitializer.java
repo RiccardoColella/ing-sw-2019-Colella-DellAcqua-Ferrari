@@ -14,7 +14,9 @@ import java.util.stream.Stream;
 
 /**
  * This class initializes a Game waiting for the correct amount of views from the waiting room
- * and creating a controller which will handle the match
+ * to create a controller which will handle the match
+ *
+ * @author Carlo Dell'Acqua
  */
 public class GameInitializer {
 

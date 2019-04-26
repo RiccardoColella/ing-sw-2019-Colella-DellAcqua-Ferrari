@@ -8,13 +8,18 @@ import it.polimi.ingsw.shared.messages.Message;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 
+/**
+ * This class represents the entity which manages the IO of messages between
+ * the client and the server
+ *
+ * @author Carlo Dell'Acqua
+ */
 public abstract class Connector implements AutoCloseable {
+
+    protected static final int DEQUEUE_TIMEOUT_MILLISECONDS = 1000;
 
     private Logger logger = Logger.getLogger(this.getClass().getName());
     protected InputMessageQueue inputMessageQueue = new InputMessageQueue();
@@ -33,14 +38,28 @@ public abstract class Connector implements AutoCloseable {
         try {
             switch (type) {
                 case EVENT:
-                    notifyEventMessageReceivedListeners(inputMessageQueue.dequeueEvent());
+                    try {
+                        notifyEventMessageReceivedListeners(
+                            inputMessageQueue
+                                    .dequeueEvent(DEQUEUE_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS)
+                        );
+                    } catch (TimeoutException ignored) { }
                     break;
                 case QUESTION:
-                    notifyQuestionMessageReceivedListeners(inputMessageQueue.dequeueQuestion());
+                    try {
+                        notifyQuestionMessageReceivedListeners(
+                                inputMessageQueue
+                                        .dequeueQuestion(DEQUEUE_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS)
+                        );
+                    } catch (TimeoutException ignored) { }
                     break;
             }
 
-            threadPool.execute(() -> receiveAsync(type));
+            synchronized (threadPool) {
+                if (!threadPool.isShutdown()) {
+                    threadPool.execute(() -> receiveAsync(type));
+                }
+            }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             logger.warning("Thread interrupted " + ex);
@@ -75,7 +94,9 @@ public abstract class Connector implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        threadPool.shutdown();
+        synchronized (threadPool) {
+            threadPool.shutdown();
+        }
         while (!threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
             logger.warning("Thread pool hasn't shut down yet, waiting...");
         }

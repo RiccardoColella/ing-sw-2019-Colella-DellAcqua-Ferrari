@@ -5,7 +5,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 /**
- * Class to manages cards of generic types T
+ * This class implements a virtual Deck of generic items of type T
+ *
+ * @author Carlo Dell'Acqua
  * @param <T> generic type of the deck
  */
 public class Deck<T> implements Collection<T> {

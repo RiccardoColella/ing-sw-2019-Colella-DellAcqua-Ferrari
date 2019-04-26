@@ -1,10 +1,9 @@
 package it.polimi.ingsw.client.io;
 
+import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
 import it.polimi.ingsw.shared.view.remote.MessageDispatcher;
 import it.polimi.ingsw.shared.view.remote.RMIMessageProxy;
 import it.polimi.ingsw.shared.view.remote.RMIStreamProvider;
-import it.polimi.ingsw.utils.function.exceptions.UnsafeConsumerException;
-import it.polimi.ingsw.utils.function.exceptions.UnsafeSupplierException;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,6 +11,11 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 
+/**
+ * This class is the concrete connector implemented with the RMI technology
+ *
+ * @author Carlo Dell'Acqua
+ */
 public class RMIConnector extends Connector {
 
     private final MessageDispatcher messageDispatcher;
@@ -25,21 +29,21 @@ public class RMIConnector extends Connector {
         messageDispatcher = new MessageDispatcher(
                 inputMessageQueue,
                 outputMessageQueue,
-                () -> {
+                (timeout, unit) -> {
                     try {
-                        return messageProxy.receiveMessage();
+                        return messageProxy.receiveMessage(timeout, unit);
                     } catch (RemoteException e) {
-                        throw new UnsafeSupplierException("Remote exception occurred " + e);
+                        throw new ViewDisconnectedException("Remote exception occurred " + e);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        throw new UnsafeSupplierException("Thread interrupted " + e);
+                        throw new ViewDisconnectedException("Remote exception occurred " + e);
                     }
                 },
                 (message) -> {
                     try {
                         messageProxy.sendMessage(message);
                     } catch (RemoteException e) {
-                        throw new UnsafeConsumerException("Unable to read data " + e);
+                        throw new ViewDisconnectedException("Remote exception occurred " + e);
                     }
                 }
         );
