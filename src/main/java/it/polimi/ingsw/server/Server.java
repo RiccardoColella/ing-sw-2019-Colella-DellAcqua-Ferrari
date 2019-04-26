@@ -9,7 +9,7 @@ import it.polimi.ingsw.server.controller.events.listeners.ControllerListener;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
@@ -21,18 +21,18 @@ public class Server implements ControllerListener {
     private Logger logger = Logger.getLogger(Server.class.getName());
     private final ServerConfig config;
     private WaitingRoom waitingRoom;
-    private Executor threadPool;
+    private ExecutorService threadPool;
     private List<Controller> activeRooms = new LinkedList<>();
 
     public Server(ServerConfig config) {
         this.config = config;
-        waitingRoom = new WaitingRoom(config.getSocketPort(), config.getRMIPort());
+        waitingRoom = new WaitingRoom(config.getSocketPort(), config.getRMIPort(), config.getClientAnswerTimeout());
         threadPool = Executors.newFixedThreadPool(config.getMaxParallelMatches());
     }
 
     public void start() throws IOException, InterruptedException {
         logger.info("Server started!");
-        logger.info("Opening the waiting room");
+        logger.info("Opening the waiting room...");
 
         waitingRoom.collectAsync();
 
@@ -40,7 +40,7 @@ public class Server implements ControllerListener {
             createRoom();
         }
 
-        logger.info("Reached the maximum amount of parallel matches, waiting for a room to free up");
+        logger.info("Reached the maximum amount of parallel matches, waiting for a room to free up...");
     }
 
     private void createRoom() throws InterruptedException {
@@ -55,13 +55,14 @@ public class Server implements ControllerListener {
             );
             Controller controller = initializer.initialize();
             activeRooms.add(controller);
+            logger.info("Room setup completed, starting the match controller...");
             threadPool.execute(controller);
         }
     }
 
     @Override
     public void onMatchEnd(MatchEnded e) {
-        logger.info("Room available, waiting for new clients");
+        logger.info("Room available, waiting for new clients...");
         try {
             createRoom();
         } catch (InterruptedException ex) {

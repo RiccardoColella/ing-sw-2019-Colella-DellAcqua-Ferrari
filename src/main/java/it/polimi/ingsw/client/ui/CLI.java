@@ -3,13 +3,13 @@ package it.polimi.ingsw.client.ui;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import it.polimi.ingsw.client.io.Connector;
+import it.polimi.ingsw.shared.events.MessageReceived;
+import it.polimi.ingsw.shared.events.listeners.EventMessageReceivedListener;
+import it.polimi.ingsw.shared.events.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.messages.Question;
 import it.polimi.ingsw.shared.messages.ServerApi;
-import it.polimi.ingsw.shared.events.MessageReceived;
-import it.polimi.ingsw.shared.events.listeners.EventMessageReceivedListener;
-import it.polimi.ingsw.shared.events.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.utils.EnumValueByString;
 
 import java.io.InputStream;

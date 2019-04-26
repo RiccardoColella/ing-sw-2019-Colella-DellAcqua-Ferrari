@@ -2,7 +2,6 @@ package it.polimi.ingsw.client;
 
 import it.polimi.ingsw.client.io.Connector;
 import it.polimi.ingsw.client.io.RMIConnector;
-import it.polimi.ingsw.client.io.SocketConnector;
 import it.polimi.ingsw.client.ui.CLI;
 
 import java.io.IOException;

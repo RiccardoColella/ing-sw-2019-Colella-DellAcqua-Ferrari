@@ -1,12 +1,25 @@
 package it.polimi.ingsw.server.model.exceptions;
 
+/**
+ * This exception should be thrown if the expected configuration file has not been found
+ *
+ * @author Carlo Dell'Acqua
+ */
 public class MissingConfigurationFileException extends RuntimeException {
     /**
-     * This constructor generates an Exception with only a string
-     *
+     * @author Carlo Dell'Acqua
      * @param reason the reason why the exception has been thrown
      */
     public MissingConfigurationFileException(String reason) {
         super(reason);
+    }
+
+    /**
+     * @author Carlo Dell'Acqua
+     * @param reason the reason why the exception has been thrown
+     * @param cause the previous exception
+     */
+    public MissingConfigurationFileException(String reason, Throwable cause) {
+        super(reason, cause);
     }
 }

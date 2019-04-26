@@ -7,19 +7,19 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class RMIStreamProvider extends UnicastRemoteObject implements it.polimi.ingsw.shared.view.remote.RMIStreamProvider {
 
-    private LinkedBlockingQueue<String> messageProxyIDs = new LinkedBlockingQueue<>();
+    private LinkedBlockingQueue<String> messageProxyIds = new LinkedBlockingQueue<>();
 
     public RMIStreamProvider() throws RemoteException {
         super();
     }
 
-    public String getMessageProxyID() throws InterruptedException {
-        return messageProxyIDs.take();
+    public String getMessageProxyId() throws InterruptedException {
+        return messageProxyIds.take();
     }
 
     public synchronized String connect() throws InterruptedException {
         String id = UUID.randomUUID().toString();
-        messageProxyIDs.add(id);
+        messageProxyIds.add(id);
         wait();
         return id;
     }

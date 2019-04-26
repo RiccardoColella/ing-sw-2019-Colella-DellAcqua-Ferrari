@@ -3,10 +3,13 @@ package it.polimi.ingsw.server.model.weapons;
 import com.google.gson.Gson;
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.*;
+import java.util.EnumMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * This class creates all the 21 weapons of the game
@@ -38,7 +41,7 @@ public final class WeaponFactory {
                         Weapon[].class
                 );
             } catch (FileNotFoundException e) {
-                throw new MissingConfigurationFileException("Weapon configuration file not found");
+                throw new MissingConfigurationFileException("Weapon configuration file not found", e);
             }
 
             for (Weapon weapon: weapons) {

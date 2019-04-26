@@ -1,10 +1,8 @@
 package it.polimi.ingsw.server.model.player;
 
-import it.polimi.ingsw.server.model.player.ActionTile;
-import it.polimi.ingsw.server.model.player.ActionTileFactory;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ActionTileFactoryTest {
 

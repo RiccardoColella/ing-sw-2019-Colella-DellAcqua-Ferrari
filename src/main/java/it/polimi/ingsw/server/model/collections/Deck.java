@@ -64,10 +64,6 @@ public class Deck<T> implements Collection<T> {
         }
     }
 
-    public T pickUnsafe() {
-        return pick().orElseThrow(() -> new NullPointerException("Cannot pick from an empty deck"));
-    }
-
     private void recycleIfNeeded() {
         if (cards.isEmpty() && recycleDiscarded) {
             cards.addAll(discarded);

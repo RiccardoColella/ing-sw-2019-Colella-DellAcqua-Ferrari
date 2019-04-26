@@ -2,6 +2,9 @@
   "maxParallelMatches": 10,
   "matchStartTimeout": 60000,
   "clientAcceptTimeout": 1000,
+  "clientAnswerTimeout": 1000,
   "minClients": 3,
-  "maxClients": 5
+  "maxClients": 5,
+  "rmiPort": 9000,
+  "socketPort": 9090
 }

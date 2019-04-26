@@ -1,11 +1,10 @@
 package it.polimi.ingsw.server.controller.weapons;
 
-import it.polimi.ingsw.server.model.player.Damageable;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.player.Player;
-import it.polimi.ingsw.server.model.weapons.Weapon;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This class uses other classes implementing TargetCalculator in order to cover more complex target position requirements

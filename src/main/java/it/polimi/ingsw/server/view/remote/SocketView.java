@@ -5,24 +5,36 @@ import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
 import it.polimi.ingsw.server.view.View;
-import it.polimi.ingsw.shared.view.remote.SocketMessageManager;
+import it.polimi.ingsw.shared.view.remote.InputStreamMessageSupplier;
+import it.polimi.ingsw.shared.view.remote.MessageDispatcher;
+import it.polimi.ingsw.shared.view.remote.OutputStreamMessageConsumer;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Socket based implementation of the server-side SocketView
+ * Socket based implementation of the server-side View
  */
 public class SocketView extends View implements AutoCloseable {
 
-    private Socket socket;
-    private SocketMessageManager socketMessageManager;
 
-    public SocketView(Socket socket) throws IOException {
+    private Socket socket;
+    private MessageDispatcher messageDispatcher;
+
+    public SocketView(Socket socket, int answerTimeout, TimeUnit answerTimeoutUnit) throws IOException {
+        super(answerTimeout, answerTimeoutUnit);
+
         this.socket = socket;
-        socketMessageManager = new SocketMessageManager(socket, inputMessageQueue, outputMessageQueue);
+        messageDispatcher = new MessageDispatcher(
+                inputMessageQueue,
+                outputMessageQueue,
+                new InputStreamMessageSupplier(new DataInputStream(socket.getInputStream())),
+                new OutputStreamMessageConsumer(new DataOutputStream(socket.getOutputStream()))
+        );
     }
 
     @Override
@@ -59,7 +71,7 @@ public class SocketView extends View implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        socketMessageManager.close();
+        messageDispatcher.close();
         socket.close();
     }
 }

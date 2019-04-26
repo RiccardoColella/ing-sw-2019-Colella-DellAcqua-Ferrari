@@ -1,6 +1,9 @@
 package it.polimi.ingsw.server.model.rewards;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.utils.EnumValueByString;
 
@@ -41,7 +44,7 @@ public final class RewardFactory {
             try {
                 jsonElement = new JsonParser().parse(new FileReader(new File(REWARDS_JSON_FILENAME)));
             } catch (IOException e) {
-                throw new MissingConfigurationFileException("Unable to read Rewards configuration file");
+                throw new MissingConfigurationFileException("Unable to read Rewards configuration file", e);
             }
 
 

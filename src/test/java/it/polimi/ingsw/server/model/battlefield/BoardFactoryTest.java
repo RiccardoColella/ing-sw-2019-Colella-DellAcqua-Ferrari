@@ -1,9 +1,8 @@
 package it.polimi.ingsw.server.model.battlefield;
 
-import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class BoardFactoryTest {
 

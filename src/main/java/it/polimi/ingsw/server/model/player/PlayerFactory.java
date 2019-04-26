@@ -1,6 +1,5 @@
 package it.polimi.ingsw.server.model.player;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -10,7 +9,8 @@ import it.polimi.ingsw.server.model.match.Match;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class PlayerFactory {
     private static final String CONSTRAINTS_JSON_FILENAME = "./resources/playerConstraints.json";
@@ -36,7 +36,7 @@ public final class PlayerFactory {
         try {
             jsonElement = new JsonParser().parse(new FileReader(new File(CONSTRAINTS_JSON_FILENAME)));
         } catch (IOException e) {
-            throw new MissingConfigurationFileException("Unable to read Rewards configuration file");
+            throw new MissingConfigurationFileException("Unable to read Rewards configuration file", e);
         }
         JsonObject constraints = jsonElement.getAsJsonObject();
         constraints.keySet().forEach(k -> constraintsMap.put(k, constraints.get(k).getAsInt()));

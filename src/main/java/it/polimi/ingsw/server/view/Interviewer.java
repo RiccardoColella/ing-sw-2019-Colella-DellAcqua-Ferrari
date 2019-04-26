@@ -2,7 +2,8 @@ package it.polimi.ingsw.server.view;
 
 import it.polimi.ingsw.shared.messages.ClientApi;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Optional;
 
 public interface Interviewer {
 

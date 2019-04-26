@@ -7,9 +7,13 @@ import it.polimi.ingsw.server.view.remote.RMIView;
 import it.polimi.ingsw.server.view.remote.SocketView;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.ServerSocket;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
@@ -38,35 +42,42 @@ public class WaitingRoom implements AutoCloseable {
 
         @Override
         public View call() throws Exception {
-            return new SocketView(socket.accept());
+            return new SocketView(socket.accept(), answerTimeoutMilliseconds, TimeUnit.MILLISECONDS);
         }
     }
 
     private class RMIAcceptor implements Callable<View>, AutoCloseable {
 
-        private int port;
-        private RMIStreamProvider provider;
+        private static final String RMI_CONNECTION_END_POINT = "RMIConnectionEndPoint";
+
+        private final RMIStreamProvider provider;
         private Registry registry;
 
         public RMIAcceptor(int port) throws IOException {
             System.setProperty("java.rmi.server.hostname", "192.168.1.251");
             registry = java.rmi.registry.LocateRegistry.createRegistry(port);
-            this.port = port;
             provider = new RMIStreamProvider();
-            registry.rebind("RMIConnectionEndPoint", provider);
+            registry.rebind(RMI_CONNECTION_END_POINT, provider);
         }
 
         @Override
         public void close() throws Exception {
+            registry.unbind(RMI_CONNECTION_END_POINT);
         }
 
         @Override
         public View call() throws Exception {
-            String id = provider.getMessageProxyID();
-            RMIView view = new RMIView();
-            registry.rebind(id, new RMIMessageProxy(view));
+            String id = provider.getMessageProxyId();
+            RMIView view = new RMIView(answerTimeoutMilliseconds, TimeUnit.MILLISECONDS);
+            registry.rebind(id, new RMIMessageProxy(view, () -> {
+                try {
+                    registry.unbind(id);
+                } catch (RemoteException|NotBoundException e) {
+                    logger.warning("Unable to unbind " + id + " " + e);
+                }
+            }));
             synchronized (provider) {
-                provider.notify();
+                provider.notifyAll();
             }
             return view;
         }
@@ -81,10 +92,12 @@ public class WaitingRoom implements AutoCloseable {
     private Future<View> currentSocketTask;
     private int socketPort;
     private int rmiPort;
+    private int answerTimeoutMilliseconds;
 
-    public WaitingRoom(int socketPort, int rmiPort) {
+    public WaitingRoom(int socketPort, int rmiPort, int answerTimeoutMilliseconds) {
         this.socketPort = socketPort;
         this.rmiPort = rmiPort;
+        this.answerTimeoutMilliseconds = answerTimeoutMilliseconds;
     }
 
     public void collectAsync() throws IOException {
@@ -102,10 +115,8 @@ public class WaitingRoom implements AutoCloseable {
         removeDisconnectedViews();
         try {
             Thread.sleep(SCHEDULED_TASK_PERIOD);
-            if (!threadPool.isShutdown()) {
-                // Scheduling future execution
-                threadPool.execute(this::scheduledTask);
-            }
+            // Scheduling future execution
+            threadPool.execute(this::scheduledTask);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -122,14 +133,10 @@ public class WaitingRoom implements AutoCloseable {
                     );
 
                     // The previous task has been consumed, we can now submit a new task for waiting new views
-                    if (!threadPool.isShutdown()) {
-                        currentSocketTask = threadPool.submit(socketAcceptor);
-                    }
-                }
-            } catch (ExecutionException ex) {
-                if (!threadPool.isShutdown()) {
                     currentSocketTask = threadPool.submit(socketAcceptor);
                 }
+            } catch (ExecutionException ex) {
+                currentSocketTask = threadPool.submit(socketAcceptor);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
@@ -142,14 +149,10 @@ public class WaitingRoom implements AutoCloseable {
                     );
 
                     // The previous task has been consumed, we can now submit a new task for waiting new views
-                    if (!threadPool.isShutdown()) {
-                        currentRMITask = threadPool.submit(rmiAcceptor);
-                    }
-                }
-            } catch (ExecutionException ex) {
-                if (!threadPool.isShutdown()) {
                     currentRMITask = threadPool.submit(rmiAcceptor);
                 }
+            } catch (ExecutionException ex) {
+                currentRMITask = threadPool.submit(rmiAcceptor);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
@@ -177,7 +180,7 @@ public class WaitingRoom implements AutoCloseable {
     public void close() throws Exception {
         threadPool.shutdown();
         while (!threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
-            logger.warning("Thread pool did not shutdown yet, waiting...");
+            logger.warning("Thread pool hasn't shut down yet, waiting...");
         }
         socketAcceptor.close();
         connectedViews.clear();

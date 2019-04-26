@@ -1,18 +1,14 @@
 package it.polimi.ingsw.server;
 
-import it.polimi.ingsw.server.bootstrap.WaitingRoom;
-import it.polimi.ingsw.server.view.View;
-import it.polimi.ingsw.server.view.remote.SocketView;
-import it.polimi.ingsw.shared.Direction;
-import it.polimi.ingsw.shared.messages.ClientApi;
+import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.Arrays;
 
 public class Main {
 
-    private final static String SERVER_CONFIG_JSON_FILENAME = "./resources/server-config.json";
+    private static final String SERVER_CONFIG_JSON_FILENAME = "./resources/server-config.json";
 
     /**
      * This method is the entry-point of our application. After reading the basic configuration file, command line
@@ -24,57 +20,39 @@ public class Main {
      */
     public static void main(String[] args) throws IOException, InterruptedException {
 
-        // Testing
-
-        WaitingRoom waitingRoom = new WaitingRoom(9000, 9090);
-        waitingRoom.collectAsync();
-
-
-        View view = waitingRoom.pop().orElse(null);
-        while (view == null) {
-            Thread.sleep(1000);
-            view = waitingRoom.pop().orElse(null);
-        }
-
-
-        Direction direction = view.select("Scegli", Arrays.asList(Direction.EAST, Direction.NORTH), ClientApi.DIRECTION_QUESTION);
-
-
-        System.out.println(direction);
-
-        /*
-        ServerConfig config = new Gson().fromJson(new FileReader(new File(SERVER_CONFIG_JSON_FILENAME)), ServerConfig.class);
-
         /*
          * "maxParallelMatches"
          * "matchStartTimeout"
          * "clientAcceptTimeout"
+         * "clientAnswerTimeout"
          * "minClients"
          * "maxClients"
+         * "rmiPort"
+         * "socketPort"
          */
 
-        // CLI argument meaning is based on its position
-        /*int settingCount = 0;
-        if (args.length > settingCount) {
-            config.setMaxParallelMatches(Integer.parseInt(args[settingCount]));
-        }
-        settingCount++;
-        if (args.length > settingCount) {
-            config.setMatchStartTimeout(Integer.parseInt(args[settingCount]));
-        }
-        settingCount++;
-        if (args.length > settingCount) {
-            config.setClientAcceptTimeout(Integer.parseInt(args[settingCount]));
-        }
-        settingCount++;
-        if (args.length > settingCount) {
-            config.setMinClients(Integer.parseInt(args[settingCount]));
-        }
-        settingCount++;
-        if (args.length > settingCount) {
-            config.setMinClients(Integer.parseInt(args[settingCount]));
-        }
+        ServerConfig config = new Gson().fromJson(new FileReader(new File(SERVER_CONFIG_JSON_FILENAME)), ServerConfig.class);
 
-        new Server(config).start();*/
+        // CLI argument meaning is based on its position
+        int settingCount = 0;
+
+        if (args.length > settingCount++)
+            config.setMaxParallelMatches(Integer.parseInt(args[settingCount]));
+        if (args.length > settingCount++)
+            config.setMatchStartTimeout(Integer.parseInt(args[settingCount]));
+        if (args.length > settingCount++)
+            config.setClientAcceptTimeout(Integer.parseInt(args[settingCount]));
+        if (args.length > settingCount++)
+            config.setClientAnswerTimeout(Integer.parseInt(args[settingCount]));
+        if (args.length > settingCount++)
+            config.setMinClients(Integer.parseInt(args[settingCount]));
+        if (args.length > settingCount++)
+            config.setMaxClients(Integer.parseInt(args[settingCount]));
+        if (args.length > settingCount++)
+            config.setRMIPort(Integer.parseInt(args[settingCount]));
+        if (args.length > settingCount++)
+            config.setSocketPort(Integer.parseInt(args[settingCount]));
+
+        new Server(config).start();
     }
 }

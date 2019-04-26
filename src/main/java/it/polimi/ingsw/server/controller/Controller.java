@@ -36,7 +36,7 @@ public class Controller implements Runnable, PlayerDamagedListener {
     public Controller(Match match, List<View> views) {
 
         if (views.size() != match.getPlayers().size()) {
-            throw new IllegalArgumentException("SocketView number does not match player number");
+            throw new IllegalArgumentException("View number does not match player number");
         }
 
         this.match = match;
@@ -49,7 +49,16 @@ public class Controller implements Runnable, PlayerDamagedListener {
     public void run() {
         Player activePlayer;
         for (Player player : players) {
-            List<PowerupTile> powerups = Arrays.asList(match.getPowerupDeck().pickUnsafe(), match.getPowerupDeck().pickUnsafe());
+            List<PowerupTile> powerups = Arrays.asList(
+                    match
+                            .getPowerupDeck()
+                            .pick()
+                            .orElseThrow(() -> new IllegalStateException("Empty deck")),
+                    match
+                            .getPowerupDeck()
+                            .pick()
+                            .orElseThrow(() -> new IllegalStateException("Empty deck"))
+            );
             PowerupTile discardedPowerup = views.get(players.indexOf(player)).select("Select Spawnpoint: ", powerups, ClientApi.SPAWNPOINT_QUESTION);
             match.getBoard().getSpawnpoint(discardedPowerup.getColor()).addPlayer(match.getActivePlayer());
             manageActivePlayerTurn(player, views.get(players.indexOf(player)));

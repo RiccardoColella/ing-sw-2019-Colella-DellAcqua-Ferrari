@@ -7,16 +7,11 @@ public class ServerConfig {
     private int maxParallelMatches;
     private int matchStartTimeout;
     private int clientAcceptTimeout;
+    private int clientAnswerTimeout;
     private int minClients;
     private int maxClients;
-
-    public ServerConfig(int maxParallelMatches, int matchStartTimeout, int clientAcceptTimeout, int minClients, int maxClients) {
-        this.maxParallelMatches = maxParallelMatches;
-        this.matchStartTimeout = matchStartTimeout;
-        this.clientAcceptTimeout = clientAcceptTimeout;
-        this.minClients = minClients;
-        this.maxClients = maxClients;
-    }
+    private int rmiPort;
+    private int socketPort;
 
     public int getMaxParallelMatches() {
         return maxParallelMatches;
@@ -58,11 +53,27 @@ public class ServerConfig {
         this.maxClients = maxClients;
     }
 
+    public int getClientAnswerTimeout() {
+        return clientAnswerTimeout;
+    }
+
+    public void setClientAnswerTimeout(int clientAnswerTimeout) {
+        this.clientAnswerTimeout = clientAnswerTimeout;
+    }
+
     public int getRMIPort() {
-        return 0;
+        return rmiPort;
+    }
+
+    public void setRMIPort(int rmiPort) {
+        this.rmiPort = rmiPort;
     }
 
     public int getSocketPort() {
-        return 0;
+        return socketPort;
+    }
+
+    public void setSocketPort(int socketPort) {
+        this.socketPort = socketPort;
     }
 }

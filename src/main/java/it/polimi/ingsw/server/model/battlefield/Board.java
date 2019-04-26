@@ -6,7 +6,6 @@ import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.shared.Direction;
 
 import java.util.*;
-import java.util.List;
 
 import static it.polimi.ingsw.server.model.battlefield.Block.BorderType.*;
 

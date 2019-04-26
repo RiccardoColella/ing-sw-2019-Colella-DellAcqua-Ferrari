@@ -1,15 +1,13 @@
 package it.polimi.ingsw.server.controller.weapons;
 
-import it.polimi.ingsw.server.model.battlefield.Board;
-import it.polimi.ingsw.server.model.weapons.Weapon;
-import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.server.model.battlefield.Block;
+import it.polimi.ingsw.server.model.battlefield.Board;
 import it.polimi.ingsw.server.model.player.Player;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static it.polimi.ingsw.server.model.battlefield.Block.BorderType.WALL;
 
 /**
  * This class is a TargetCalculator that finds targets that is in a fixed range of moves away from the starting point

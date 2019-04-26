@@ -1,9 +1,9 @@
 package it.polimi.ingsw.server.controller.powerupeffects;
 
-import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.shared.Direction;
 
 public class NewtonEffect extends PowerupEffect {
 

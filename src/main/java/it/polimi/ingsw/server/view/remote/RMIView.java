@@ -10,11 +10,16 @@ import it.polimi.ingsw.shared.messages.Message;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * RMI based implementation of the server-side View
  */
 public class RMIView extends View {
+
+    public RMIView(int answerTimeout, TimeUnit answerTimeoutUnit) {
+        super(answerTimeout, answerTimeoutUnit);
+    }
 
     @Override
     public PowerupTile chooseSpawnpoint(List<PowerupTile> powerups) {

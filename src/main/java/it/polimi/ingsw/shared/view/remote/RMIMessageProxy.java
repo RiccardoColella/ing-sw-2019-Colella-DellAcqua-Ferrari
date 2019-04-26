@@ -5,7 +5,7 @@ import it.polimi.ingsw.shared.messages.Message;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-public interface RMIMessageProxy extends Remote {
+public interface RMIMessageProxy extends Remote, AutoCloseable {
     Message receiveMessage() throws RemoteException, InterruptedException;
 
     void sendMessage(Message message) throws RemoteException;

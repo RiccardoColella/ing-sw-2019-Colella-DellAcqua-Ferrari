@@ -1,10 +1,10 @@
 package it.polimi.ingsw.client.io;
 
 import it.polimi.ingsw.shared.InputMessageQueue;
-import it.polimi.ingsw.shared.events.listeners.QuestionMessageReceivedListener;
-import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.events.MessageReceived;
 import it.polimi.ingsw.shared.events.listeners.EventMessageReceivedListener;
+import it.polimi.ingsw.shared.events.listeners.QuestionMessageReceivedListener;
+import it.polimi.ingsw.shared.messages.Message;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -40,12 +40,10 @@ public abstract class Connector implements AutoCloseable {
                     break;
             }
 
-            if (!threadPool.isShutdown()) {
-                threadPool.execute(() -> receiveAsync(type));
-            }
+            threadPool.execute(() -> receiveAsync(type));
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            logger.warning("Thread interrupted " + ex.toString());
+            logger.warning("Thread interrupted " + ex);
         }
     }
 
@@ -79,7 +77,7 @@ public abstract class Connector implements AutoCloseable {
     public void close() throws Exception {
         threadPool.shutdown();
         while (!threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
-            logger.warning("Thread pool did not shutdown yet, waiting...");
+            logger.warning("Thread pool hasn't shut down yet, waiting...");
         }
     }
 }

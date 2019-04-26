@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class InputMessageQueue {
 
@@ -32,6 +33,23 @@ public class InputMessageQueue {
         }
     }
 
+    public Message dequeueEvent(int timeout, TimeUnit unit) throws InterruptedException {
+        return eventMessageQueues.poll(timeout, unit);
+    }
+
+    public Message dequeueQuestion(int timeout, TimeUnit unit) throws InterruptedException {
+        return questionMessageQueues.poll(timeout, unit);
+    }
+
+    public Message dequeueAnswer(String sessionId, int timeout, TimeUnit unit) throws InterruptedException {
+        Message response = getAnswerQueue(sessionId).poll(timeout, unit);
+        if (answerMessageQueues.get(sessionId).isEmpty()) {
+            answerMessageQueues.remove(sessionId);
+        }
+
+        return response;
+    }
+
     public Message dequeueEvent() throws InterruptedException {
         return eventMessageQueues.take();
     }
@@ -41,15 +59,20 @@ public class InputMessageQueue {
     }
 
     public Message dequeueAnswer(String sessionId) throws InterruptedException {
-        if (!answerMessageQueues.containsKey(sessionId)) {
-            answerMessageQueues.put(sessionId, new LinkedBlockingQueue<>());
-        }
-        Message response = answerMessageQueues.get(sessionId).take();
+        Message response = getAnswerQueue(sessionId).take();
         if (answerMessageQueues.get(sessionId).isEmpty()) {
             answerMessageQueues.remove(sessionId);
         }
 
         return response;
+    }
+
+    private BlockingQueue<Message> getAnswerQueue(String sessionId) {
+        if (!answerMessageQueues.containsKey(sessionId)) {
+            answerMessageQueues.put(sessionId, new LinkedBlockingQueue<>());
+        }
+
+        return answerMessageQueues.get(sessionId);
     }
 
 }

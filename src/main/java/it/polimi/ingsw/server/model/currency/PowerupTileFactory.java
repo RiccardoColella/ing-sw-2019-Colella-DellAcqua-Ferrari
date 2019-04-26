@@ -66,7 +66,7 @@ public final class PowerupTileFactory {
         try {
             jsonElement = new JsonParser().parse(new FileReader(new File(POWERUP_DECK_JSON_FILENAME)));
         } catch (IOException e) {
-            throw new MissingConfigurationFileException("Unable to read Powerup Deck configuration file");
+            throw new MissingConfigurationFileException("Unable to read Powerup Deck configuration file", e);
         }
         JsonArray jsonTileArray = jsonElement.getAsJsonArray();
         jsonTileArray.forEach(
