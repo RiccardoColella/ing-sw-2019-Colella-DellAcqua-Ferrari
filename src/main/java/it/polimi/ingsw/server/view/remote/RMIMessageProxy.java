@@ -22,6 +22,7 @@ public class RMIMessageProxy extends UnicastRemoteObject implements it.polimi.in
     public RMIMessageProxy(RMIView view, Runnable closeCallback) throws RemoteException {
         rmiView = view;
         this.closeCallback = closeCallback;
+        view.setMessageProxy(this);
     }
 
     @Override

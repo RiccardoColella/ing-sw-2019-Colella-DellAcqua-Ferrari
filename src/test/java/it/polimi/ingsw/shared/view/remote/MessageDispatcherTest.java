@@ -7,8 +7,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Carlo Dell'Acqua
@@ -26,12 +28,32 @@ class MessageDispatcherTest {
         inputQueue = new InputMessageQueue();
         outputQueue = new LinkedBlockingQueue<>();
         testMessage = Message.createEvent("Test", new Object());
-        dispatcher = new MessageDispatcher(inputQueue, outputQueue, (timeout, unit) -> testMessage, (message) -> {});
+        dispatcher = new MessageDispatcher(
+                inputQueue,
+                outputQueue,
+                (timeout, unit) -> {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new TimeoutException();
+                    }
+                    return testMessage;
+                },
+                (message) -> {
+                    assertEquals(testMessage, message, "Expected testMessage, got something different");
+                }
+        );
     }
 
     @Test
     void dispatch() {
-        // TODO: Test
+        outputQueue.add(testMessage);
+
+        try {
+            assertEquals(testMessage, inputQueue.dequeueEvent(1, TimeUnit.SECONDS));
+        } catch (InterruptedException | TimeoutException e) {
+            fail();
+        }
     }
 
     @Test

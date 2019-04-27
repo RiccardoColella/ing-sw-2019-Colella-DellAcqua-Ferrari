@@ -54,45 +54,104 @@ public class WaitingRoom implements AutoCloseable {
 
         private final RMIStreamProvider provider;
         private Registry registry;
-        private boolean closed = false;
+        private boolean closing = false;
+        private final ExecutorService threadPool = Executors.newFixedThreadPool(1);
+
+        private class RMIMessageProxyRegisterTask implements Runnable {
+
+            private final String messageProxyId;
+            private final RMIView view;
+
+            public RMIMessageProxyRegisterTask(String messageProxyId, RMIView view) {
+                this.messageProxyId = messageProxyId;
+                this.view = view;
+            }
+
+            @Override
+            public void run() {
+                try {
+                    registry.rebind(messageProxyId, new RMIMessageProxy(view, () -> {
+                        synchronized (threadPool) {
+                            if (!threadPool.isShutdown()) {
+                                threadPool.submit(new RMIMessageProxyUnregisterTask(messageProxyId));
+                            }
+                        }
+                    }));
+                } catch (RemoteException e) {
+                    throw new IllegalStateException("Cannot create a message proxy for a disconnected client " + e);
+                }
+            }
+        }
+
+        private class RMIMessageProxyUnregisterTask implements Runnable {
+
+            private final String messageProxyId;
+
+            public RMIMessageProxyUnregisterTask(String messageProxyId) {
+                this.messageProxyId = messageProxyId;
+            }
+
+            @Override
+            public void run() {
+                try {
+                    registry.unbind(messageProxyId);
+                } catch (RemoteException | NotBoundException e) {
+                    logger.warning("Unable to unbind " + messageProxyId + " " + e);
+                }
+            }
+        }
 
         public RMIAcceptor(int port) throws IOException {
-            System.setProperty("java.rmi.server.hostname", "192.168.1.251");
+            System.setProperty("java.rmi.server.hostname", "diemisto");
+
             registry = java.rmi.registry.LocateRegistry.createRegistry(port);
 
-            provider = new RMIStreamProvider();
+            provider = new RMIStreamProvider(id -> {
+                RMIView view = new RMIView(answerTimeoutMilliseconds, TimeUnit.MILLISECONDS);
+                try {
+                    Future messageProxyTask = null;
+                    synchronized (threadPool) {
+                        if (!threadPool.isShutdown()) {
+                            messageProxyTask = threadPool.submit(new RMIMessageProxyRegisterTask(id, view));
+                        }
+                    }
+                    if (messageProxyTask != null) {
+                        messageProxyTask.get();
+                    } else throw new InterruptedException("Thread pool interrupted");
+
+                } catch (ExecutionException e) {
+                    logger.warning("Unable to instantiate a valid message proxy " + e);
+                } catch (InterruptedException e) {
+                    logger.warning("Unable to instantiate a valid message proxy " + e);
+                    Thread.currentThread().interrupt();
+                }
+
+                return view;
+            });
             registry.rebind(RMI_CONNECTION_END_POINT, provider);
         }
 
         @Override
         public void close() throws Exception {
+            closing = true;
             registry.unbind(RMI_CONNECTION_END_POINT);
             provider.close();
-            closed = true;
+            synchronized (threadPool) {
+                threadPool.shutdown();
+            }
+            while (!threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
+                logger.warning("Thread pool hasn't shut down yet, waiting...");
+            }
         }
 
         @Override
         public View call() throws Exception {
-            Optional<String> idOptional;
             do {
-                idOptional = provider.getMessageProxyId(ACCEPT_TIMEOUT, TimeUnit.MILLISECONDS);
-            } while (!idOptional.isPresent() && !closed);
-            if (idOptional.isPresent()) {
-                String id = idOptional.get();
-                RMIView view = new RMIView(answerTimeoutMilliseconds, TimeUnit.MILLISECONDS);
-                registry.rebind(id, new RMIMessageProxy(view, () -> {
-                    try {
-                        // TODO: verify that the default RMI policy does not prevent this registry call from a remote object callback
-                        registry.unbind(id);
-                    } catch (RemoteException | NotBoundException e) {
-                        logger.warning("Unable to unbind " + id + " " + e);
-                    }
-                }));
-                synchronized (provider) {
-                    provider.notifyAll();
-                }
-                return view;
-            } else throw new InterruptedException("RMIAcceptor stopped");
+                try {
+                    return provider.getMessageProxy(ACCEPT_TIMEOUT, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException ignored) { }
+            } while (!closing);
+            throw new InterruptedException("RMIAcceptor stopped");
         }
     }
 

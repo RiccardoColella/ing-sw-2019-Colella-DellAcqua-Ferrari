@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class RMIView extends View {
 
+    private RMIMessageProxy messageProxy = null;
+
     public RMIView(int answerTimeout, TimeUnit answerTimeoutUnit) {
         super(answerTimeout, answerTimeoutUnit);
     }
@@ -56,8 +58,14 @@ public class RMIView extends View {
         return inputMessageQueue;
     }
 
+    public void setMessageProxy(RMIMessageProxy messageProxy) {
+        this.messageProxy = messageProxy;
+    }
+
     @Override
     public void close() throws Exception {
-        
+        if (messageProxy != null) {
+            messageProxy.close();
+        }
     }
 }
