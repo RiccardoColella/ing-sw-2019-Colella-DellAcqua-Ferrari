@@ -30,7 +30,7 @@ public class WeaponWithMultipleEffects extends BasicWeapon {
      * @param basicAttack           the basic attack of the weapon
      * @param poweredAttacks        a non-empty map of the powered attacks of the weapon with their relative cost
      */
-    public WeaponWithMultipleEffects(Weapon.Name name, Attack basicAttack, List<Attack> poweredAttacks, boolean mustExecuteInOrder) {
+    public WeaponWithMultipleEffects(String name, Attack basicAttack, List<Attack> poweredAttacks, boolean mustExecuteInOrder) {
         super(name, basicAttack);
         this.poweredAttacks = Collections.unmodifiableList(poweredAttacks);
         this.mustExecuteInOrder = mustExecuteInOrder;

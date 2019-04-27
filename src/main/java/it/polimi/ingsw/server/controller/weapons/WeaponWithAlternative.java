@@ -25,7 +25,7 @@ public class WeaponWithAlternative extends BasicWeapon {
      * @param basicAttack           the basic attack of the weapon
      * @param alternativeAttack     the alternative attack of the weapon
      */
-    public WeaponWithAlternative(Weapon.Name name, Attack basicAttack, Attack alternativeAttack) {
+    public WeaponWithAlternative(String name, Attack basicAttack, Attack alternativeAttack) {
         super(name, basicAttack);
         this.alternativeAttack = alternativeAttack;
     }
