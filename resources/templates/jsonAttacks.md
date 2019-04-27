@@ -97,3 +97,5 @@ compute the right direction. Supported values are:
     * `ALL_PREVIOUS_BLOCKS`: the blocks of all the targets that were previously hit
     * `HIT_BY_ADVANCED`: all the targets that were hit by the advanced attacks (so it only makes sense to have this value _if_ an advanced attack is present)
     
+* `andTargets`: used to add some specific targets to the pre-computed groups of targets. The only admissible value is `INCLUDE_LAST`
+    

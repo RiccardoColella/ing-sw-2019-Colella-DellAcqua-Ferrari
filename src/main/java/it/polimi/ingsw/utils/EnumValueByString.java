@@ -1,6 +1,8 @@
 package it.polimi.ingsw.utils;
 
-public class EnumValueByString {
+public final class EnumValueByString {
+
+    private EnumValueByString() { }
 
     public static <T extends Enum<T>> T findByString(String s, Class<T> enumType) {
         for (T enumValue: enumType.getEnumConstants()) {
@@ -9,6 +11,6 @@ public class EnumValueByString {
             }
         }
 
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException(s + " is not a valid element of " + enumType.toString());
     }
 }

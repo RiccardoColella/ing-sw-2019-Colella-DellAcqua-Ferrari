@@ -14,9 +14,9 @@ import java.rmi.NotBoundException;
  * @author Carlo Dell'Acqua
  */
 public class Main {
-    public static void main( String[] args ) throws IOException, NotBoundException, InterruptedException {
+    public static void main( String[] args ) throws Exception {
 
-        Connector rmiConnector = new RMIConnector(new InetSocketAddress("adri-HP", 9090));
+        Connector rmiConnector = new RMIConnector(new InetSocketAddress("diemisto", 9090));
 
         CLI cli = new CLI(
             rmiConnector,

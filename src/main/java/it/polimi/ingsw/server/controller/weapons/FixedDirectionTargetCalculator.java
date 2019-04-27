@@ -6,10 +6,7 @@ import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.shared.Direction;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -48,24 +45,33 @@ public class FixedDirectionTargetCalculator implements TargetCalculator {
     @Override
     public Set<Player> computeTargets(Block startingPoint, BasicWeapon weapon) {
         updateDirection(startingPoint, weapon);
-        List<Block> possibleBlocks = new LinkedList<>();
-        if (this.direction != null) {
-            possibleBlocks = evalDirection(this.direction, startingPoint);
-            if (!goesThroughWalls) {
-                stopAtWalls(this.direction, possibleBlocks);
+
+        Set<Block> blocks = new HashSet<>(Collections.singletonList(startingPoint));
+
+        if (this.direction == null) {
+            for (Direction dir : Direction.values()) {
+                addBlocks(startingPoint, blocks, goesThroughWalls, dir);
             }
         } else {
-            List<Block> toAdd;
-            for (Direction dir : Direction.values()) {
-                toAdd = evalDirection(dir, startingPoint);
-                if (!goesThroughWalls) {
-                    stopAtWalls(dir, toAdd);
-                }
-                possibleBlocks.addAll(toAdd);
-            }
+            addBlocks(startingPoint, blocks, goesThroughWalls, this.direction);
         }
-        possibleBlocks.removeIf(block -> block.getPlayers().isEmpty());
-        return possibleBlocks.stream().flatMap(block -> block.getPlayers().stream()).collect(Collectors.toSet());
+
+        return blocks
+                .stream()
+                .flatMap(block -> block.getPlayers().stream())
+                .collect(Collectors.toSet());
+    }
+
+    private void addBlocks(Block startingPoint, Set<Block> blocks, boolean ignoreWalls, Direction direction) {
+        Block neighbor = startingPoint;
+        do {
+            neighbor = !ignoreWalls && neighbor.getBorderType(direction) == Block.BorderType.WALL ?
+                    null :
+                    board.getBlockNeighbor(neighbor, direction).orElse(null);
+            if (neighbor != null) {
+                blocks.add(neighbor);
+            }
+        } while (neighbor  != null);
     }
 
     @Override
@@ -76,32 +82,6 @@ public class FixedDirectionTargetCalculator implements TargetCalculator {
     @Override
     public List<TargetCalculator> getSubCalculators() {
         return Collections.singletonList(this);
-    }
-
-    private List<Block> evalDirection(Direction dir, Block startingPoint) {
-        List<Block> possibleBlocks = new LinkedList<>();
-        List<Block> bothDirections;
-        switch (dir) {
-            case NORTH:
-                bothDirections = board.getColumn(startingPoint);
-                possibleBlocks.addAll(bothDirections.subList(0, bothDirections.indexOf(startingPoint) + 1));
-                break;
-            case EAST:
-                bothDirections = board.getRow(startingPoint);
-                possibleBlocks.addAll(bothDirections.subList(bothDirections.indexOf(startingPoint), bothDirections.size()));
-                break;
-            case SOUTH:
-                bothDirections = board.getColumn(startingPoint);
-                possibleBlocks.addAll(bothDirections.subList(bothDirections.indexOf(startingPoint), bothDirections.size()));
-                break;
-            case WEST:
-                bothDirections = board.getRow(startingPoint);
-                possibleBlocks.addAll(bothDirections.subList(0, bothDirections.indexOf(startingPoint) + 1));
-                break;
-            default:
-                throw new EnumConstantNotPresentException(Direction.class, "Unknown direction: " + dir);
-        }
-        return possibleBlocks;
     }
 
     /**
@@ -141,21 +121,5 @@ public class FixedDirectionTargetCalculator implements TargetCalculator {
                 }
             }
         }
-    }
-
-    private void stopAtWalls(Direction direction, List<Block> possibleBlocks) {
-        boolean wallFound = false;
-        List<Block> toRemove = new LinkedList<>();
-        if (this.direction == Direction.NORTH || this.direction == Direction.EAST) {
-            Collections.reverse(possibleBlocks);
-        }
-        for (Block block : possibleBlocks) {
-            if (wallFound) {
-                toRemove.add(block);
-            } else if (block.getBorderType(direction) == Block.BorderType.WALL) {
-                wallFound = true;
-            }
-        }
-        possibleBlocks.removeAll(toRemove);
     }
 }
