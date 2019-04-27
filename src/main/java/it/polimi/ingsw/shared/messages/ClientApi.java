@@ -1,5 +1,11 @@
 package it.polimi.ingsw.shared.messages;
 
+/**
+ * A list of all the available messages supported by the client.
+ * This enum is translated into the message name
+ *
+ * @author Carlo Dell'Acqua
+ */
 public enum ClientApi {
 
     DIRECTION_QUESTION,

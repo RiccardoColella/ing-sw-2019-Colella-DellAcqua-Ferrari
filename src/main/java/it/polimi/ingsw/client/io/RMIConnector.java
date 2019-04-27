@@ -5,7 +5,6 @@ import it.polimi.ingsw.shared.view.remote.MessageDispatcher;
 import it.polimi.ingsw.shared.view.remote.RMIMessageProxy;
 import it.polimi.ingsw.shared.view.remote.RMIStreamProvider;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -17,11 +16,25 @@ import java.rmi.registry.LocateRegistry;
  * @author Carlo Dell'Acqua
  */
 public class RMIConnector extends Connector {
-
+    /**
+     * Message dispatching utility for IO
+     */
     private final MessageDispatcher messageDispatcher;
+
+    /**
+     * The object that represents the connection between the client and the server used to send and receive messages
+     */
     private final RMIMessageProxy messageProxy;
 
-    public RMIConnector(InetSocketAddress address) throws IOException, NotBoundException, InterruptedException {
+    /**
+     * Constructs the RMI-based implementation of the Connector
+     *
+     * @param address the remote address the client needs to connect to
+     * @throws RemoteException if the RMI registry cannot be reached
+     * @throws NotBoundException if the server couldn't provide a valid RMIMessageProxy
+     * @throws InterruptedException if the server couldn't provide a valid RMIMessageProxy
+     */
+    public RMIConnector(InetSocketAddress address) throws RemoteException, NotBoundException, InterruptedException {
 
         RMIStreamProvider provider = (RMIStreamProvider) LocateRegistry.getRegistry(address.getHostName(), address.getPort()).lookup("RMIConnectionEndPoint");
         messageProxy = (RMIMessageProxy) LocateRegistry.getRegistry(address.getHostName(), address.getPort()).lookup(provider.connect());
@@ -49,8 +62,14 @@ public class RMIConnector extends Connector {
         );
     }
 
+    /**
+     * Closes this object and stops the background threads execution
+     *
+     * @throws Exception if the closing process is forced to stop or the remote resources are unable to correctly close
+     */
     @Override
     public void close() throws Exception {
+        super.close();
         messageDispatcher.close();
         messageProxy.close();
     }

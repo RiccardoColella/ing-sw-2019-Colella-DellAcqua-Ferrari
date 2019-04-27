@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class OutputStreamMessageConsumer implements TimeoutConsumer<Message> {
-
+    /**
+     * JSON conversion utility
+     */
     private final Gson gson = new Gson();
     private final DataOutputStream outputStream;
 
@@ -22,7 +24,7 @@ public class OutputStreamMessageConsumer implements TimeoutConsumer<Message> {
     public void accept(Message message) throws IOException {
         // Fixed charset shared with the client configuration to prevent incompatibility that
         // can be caused by different defaults
-        byte[] content = gson.toJson(message).getBytes(StandardCharsets.UTF_8);
+        byte[] content = message.toJson().getBytes(StandardCharsets.UTF_8);
         outputStream.writeInt(content.length);
         outputStream.write(content);
     }

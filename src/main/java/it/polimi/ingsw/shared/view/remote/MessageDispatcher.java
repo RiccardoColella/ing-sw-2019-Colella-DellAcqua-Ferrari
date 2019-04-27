@@ -20,15 +20,21 @@ import java.util.logging.Logger;
  * @author Carlo Dell'Acqua
  */
 public class MessageDispatcher implements AutoCloseable {
-
+    /**
+     * Timeout needed to prevent deadlocks
+     */
     private static final int TAKE_TIMEOUT_MILLISECONDS = 1000;
+
+    /**
+     * Logging utility
+     */
+    protected final Logger logger = Logger.getLogger(this.getClass().getName());
 
     private final TimeoutSupplier<Message> inputMessageSupplier;
     private final TimeoutConsumer<Message> outputMessageConsumer;
-    private Logger logger = Logger.getLogger(this.getClass().getName());
     private InputMessageQueue inputMessageQueue;
     private BlockingQueue<Message> outputMessageQueue;
-    private ExecutorService threadPool = Executors.newFixedThreadPool(2);
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(2);
 
     private List<MessageDispatcherStoppedListener> stoppedListeners = new LinkedList<>();
 
@@ -49,7 +55,9 @@ public class MessageDispatcher implements AutoCloseable {
         } catch (IOException e) {
             logger.warning("Unable to receive data " + e);
             stop();
-        } catch (TimeoutException ignored) { }
+        } catch (TimeoutException ignored) {
+            // No data received within the timeout
+        }
 
         synchronized (threadPool) {
             if (!threadPool.isShutdown()) {
@@ -99,16 +107,16 @@ public class MessageDispatcher implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws InterruptedException {
         stop();
         try {
-            while (!threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
+            while (!threadPool.awaitTermination(5, TimeUnit.SECONDS)) {
                 logger.warning("Thread pool hasn't shut down yet, waiting...");
             }
             notifyMessageDispatcherStopped();
         } catch (InterruptedException ex) {
-            logger.warning("Unexpected thread interruption, unable to correctly shutdown the threadPool and notify this to listeners");
-            Thread.currentThread().interrupt();
+            logger.warning("Unexpected thread interruption, unable to correctly shut down the threadPool and notify this to listeners");
+            throw ex;
         }
     }
 }

@@ -23,19 +23,44 @@ import java.util.Scanner;
  * @author Carlo Dell'Acqua
  */
 public class CLI implements EventMessageReceivedListener, QuestionMessageReceivedListener {
-
+    /**
+     * JSON conversion utility
+     */
     private static final Gson gson = new Gson();
+
+    /**
+     * The mediator between the client-side View and the server-side View
+     */
     private final Connector connector;
+
+    /**
+     * Scanner of the System.in user input
+     */
     private final Scanner scanner;
+
+    /**
+     * Printer for writing to System.out
+     */
     private final PrintStream printStream;
 
-
+    /**
+     * Constructs a UI based on the command line
+     *
+     * @param connector a concrete connector implementation
+     * @param inputStream a stream used to retrieve user input data
+     * @param outputStream a stream used to write output data
+     */
     public CLI(Connector connector, InputStream inputStream, OutputStream outputStream) {
         this.connector = connector;
         scanner = new Scanner(inputStream);
         printStream = new PrintStream(outputStream);
     }
 
+    /**
+     * Manages events
+     *
+     * @param e the MessageReceived event
+     */
     @Override
     public void onEventMessageReceived(MessageReceived e) {
 
@@ -48,11 +73,22 @@ public class CLI implements EventMessageReceivedListener, QuestionMessageReceive
 
     }
 
+    /**
+     * Manages questions
+     *
+     * @param e the MessageReceived event
+     */
     @Override
     public void onQuestionMessageReceived(MessageReceived e) {
         manageQuestion(e.getMessage());
     }
 
+    /**
+     * Given a question message it shows it to the user and ask for a selection. Once
+     * a valid selection has been made by the user, the answer is forwarded through the connector
+     *
+     * @param message a question message
+     */
     private void manageQuestion(Message message) {
         Question question = gson.fromJson(message.getPayload(), new TypeToken<Question>(){}.getType());
         Object[] options = question.getAvailableOptions().toArray();

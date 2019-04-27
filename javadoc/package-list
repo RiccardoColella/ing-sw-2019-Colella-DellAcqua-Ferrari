@@ -3,6 +3,8 @@ it.polimi.ingsw.client.io
 it.polimi.ingsw.client.ui
 it.polimi.ingsw.server
 it.polimi.ingsw.server.bootstrap
+it.polimi.ingsw.server.bootstrap.acceptors
+it.polimi.ingsw.server.bootstrap.factories
 it.polimi.ingsw.server.controller
 it.polimi.ingsw.server.controller.events
 it.polimi.ingsw.server.controller.events.listeners

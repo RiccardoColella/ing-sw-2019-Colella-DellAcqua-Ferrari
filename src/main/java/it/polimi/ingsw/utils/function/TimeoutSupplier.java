@@ -12,7 +12,7 @@ public interface TimeoutSupplier<T> {
      *
      * @return a result
      * @throws TimeoutException thrown if the supplier is interrupted by an internal exception
-     * @throws IOException
+     * @throws IOException if the supplier couldn't read from the resource
      */
     T get(int timeout, TimeUnit unit) throws TimeoutException, IOException;
 }

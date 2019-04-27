@@ -7,7 +7,6 @@ package it.polimi.ingsw.server.view.exceptions;
  */
 public class ViewDisconnectedException extends RuntimeException {
     /**
-     * @author Carlo Dell'Acqua
      * @param reason the reason why the exception has been thrown
      */
     public ViewDisconnectedException(String reason) {
@@ -15,7 +14,6 @@ public class ViewDisconnectedException extends RuntimeException {
     }
 
     /**
-     * @author Carlo Dell'Acqua
      * @param reason the reason why the exception has been thrown
      * @param cause the previous exception
      */

@@ -10,7 +10,7 @@ public interface TimeoutConsumer<T> {
      *
      * @param t the input argument
      * @throws TimeoutException thrown if the consumer is interrupted by an internal exception
-     * @throws IOException
+     * @throws IOException if the consumer couldn't write result
      */
     void accept(T t) throws IOException;
 }

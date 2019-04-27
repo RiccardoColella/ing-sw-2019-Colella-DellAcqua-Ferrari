@@ -7,7 +7,6 @@ package it.polimi.ingsw.server.model.exceptions;
  */
 public class MissingOwnershipException extends RuntimeException {
     /**
-     * @author Carlo Dell'Acqua
      * @param reason the reason why the exception has been thrown
      */
     public MissingOwnershipException(String reason) {
@@ -15,7 +14,6 @@ public class MissingOwnershipException extends RuntimeException {
     }
 
     /**
-     * @author Carlo Dell'Acqua
      * @param reason the reason why the exception has been thrown
      * @param cause the previous exception
      */

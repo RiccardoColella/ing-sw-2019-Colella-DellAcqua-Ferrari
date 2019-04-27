@@ -27,8 +27,11 @@ import java.util.stream.Stream;
  * This class has the purpose of managing the game flow
  */
 public class Controller implements Runnable, PlayerDamagedListener {
+    /**
+     * Logging utility
+     */
+    protected final Logger logger = Logger.getLogger(this.getClass().getName());
 
-    private Logger logger = Logger.getLogger(Controller.class.getName());
     private Match match;
     private List<View> views;
     private List<Player> players;

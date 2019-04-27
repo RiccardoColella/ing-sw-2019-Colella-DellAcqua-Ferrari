@@ -23,7 +23,6 @@ public class Main {
         /*
          * "maxParallelMatches"
          * "matchStartTimeout"
-         * "clientAcceptTimeout"
          * "clientAnswerTimeout"
          * "minClients"
          * "maxClients"
@@ -40,8 +39,6 @@ public class Main {
             config.setMaxParallelMatches(Integer.parseInt(args[settingCount]));
         if (args.length > settingCount++)
             config.setMatchStartTimeout(Integer.parseInt(args[settingCount]));
-        if (args.length > settingCount++)
-            config.setClientAcceptTimeout(Integer.parseInt(args[settingCount]));
         if (args.length > settingCount++)
             config.setClientAnswerTimeout(Integer.parseInt(args[settingCount]));
         if (args.length > settingCount++)

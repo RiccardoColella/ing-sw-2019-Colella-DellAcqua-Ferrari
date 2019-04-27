@@ -6,13 +6,39 @@ package it.polimi.ingsw.server;
  * @author Carlo Dell'Acqua
  */
 public class ServerConfig {
+    /**
+     * Maximum number of parallel matches
+     */
     private int maxParallelMatches;
+
+    /**
+     * Time to wait before starting a match with at least the minimum amount of participants
+     */
     private int matchStartTimeout;
-    private int clientAcceptTimeout;
+
+    /**
+     * The maximum time to wait before considering the client disconnected
+     */
     private int clientAnswerTimeout;
+
+    /**
+     * The minimum amount of participants needed for a match
+     */
     private int minClients;
+
+    /**
+     * The maximum amount of participants that a match can support
+     */
     private int maxClients;
+
+    /**
+     * RMI listening port
+     */
     private int rmiPort;
+
+    /**
+     * Socket listening port
+     */
     private int socketPort;
 
     public int getMaxParallelMatches() {
@@ -29,14 +55,6 @@ public class ServerConfig {
 
     public void setMatchStartTimeout(int matchStartTimeout) {
         this.matchStartTimeout = matchStartTimeout;
-    }
-
-    public int getClientAcceptTimeout() {
-        return clientAcceptTimeout;
-    }
-
-    public void setClientAcceptTimeout(int clientAcceptTimeout) {
-        this.clientAcceptTimeout = clientAcceptTimeout;
     }
 
     public int getMinClients() {
