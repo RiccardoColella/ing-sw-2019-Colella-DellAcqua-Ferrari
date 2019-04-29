@@ -16,7 +16,7 @@ public interface TargetCalculator {
      * @param startingPoint the Block relative to which the targets should be
      * @return a list of the available groups of targets, which will be empty if none are available
      */
-    Set<Player> computeTargets(Block startingPoint, BasicWeapon weapon);
+    Set<Player> computeTargets(Block startingPoint, Weapon weapon);
 
     boolean contains(TargetCalculator calculator);
 

@@ -11,7 +11,7 @@ import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.rewards.Reward;
 import it.polimi.ingsw.server.model.rewards.RewardFactory;
-import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.shared.Direction;
 
 import java.util.*;
@@ -37,7 +37,7 @@ public class Player implements Damageable, MatchModeChangedListener {
     /**
      * This property stores the weapons owned by the player
      */
-    private List<Weapon> weapons = new LinkedList<>();
+    private List<WeaponTile> weapons = new LinkedList<>();
 
     /**
      * This property stores the points earned by the player
@@ -72,7 +72,7 @@ public class Player implements Damageable, MatchModeChangedListener {
     /**
      * This property stores the weapon the player is currently using
      */
-    private Weapon activeWeapon;
+    private WeaponTile activeWeapon;
 
     /**
      * This property stores the listeners to the PlayerDied event
@@ -202,7 +202,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      * This method returns the weapons owned by this player
      * @return a list of the weapons owned by this player
      */
-    public List<Weapon> getWeapons() {
+    public List<WeaponTile> getWeapons() {
         return this.weapons;
     }
 
@@ -218,7 +218,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      * This method selects a weapon from the loaded ones owned by the player and sets it as active
      * @param weapon a loaded weapon owned by the player
      */
-    public void chooseWeapon(Weapon weapon) {
+    public void chooseWeapon(WeaponTile weapon) {
         //the weapon will be set as active only if it is loaded and it belongs to the player
         if (this.weapons.contains(weapon) && weapon.isLoaded()) {
             this.activeWeapon = weapon;
@@ -236,7 +236,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      * This method shows the weapon currently used by the player
      * @return the weapon currently used by the player, null if the player is not shooting
      */
-    public Optional<Weapon> getActiveWeapon() {
+    public Optional<WeaponTile> getActiveWeapon() {
         return Optional.ofNullable(this.activeWeapon);
     }
 
@@ -322,13 +322,13 @@ public class Player implements Damageable, MatchModeChangedListener {
 
     /**
      * This method allows the player to buy a new weapon when he already has the maximum allowed, exchanging it for one of those he owns
-     * @param weapon the Weapon that the player is buying
+     * @param weapon the WeaponTile that the player is buying
      * @param ammoCubes the cost the player is paying with ammoCubes
      * @param powerups the cost the player is paying with powerups
-     * @param discardedWeapon the Weapon the player is giving up for the new one
+     * @param discardedWeapon the WeaponTile the player is giving up for the new one
      *
      */
-    public void grabWeapon(Weapon weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups, Weapon discardedWeapon) {
+    public void grabWeapon(WeaponTile weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups, WeaponTile discardedWeapon) {
         if (this.weapons.size() == constraints.getMaxWeaponsForPlayer()) {
             //the weapon should only be discarded if the player already has the maximum number available
             if (!weapons.remove(discardedWeapon)) {
@@ -358,11 +358,11 @@ public class Player implements Damageable, MatchModeChangedListener {
 
     /**
      * This method allows the player to buy a new weapon when he already has the maximum allowed, exchanging it for one of those he owns
-     * @param weapon the Weapon that the player is buying
+     * @param weapon the WeaponTile that the player is buying
      * @param coins the list of Coins the player is using to pay
-     * @param discardedWeapon the Weapon the player is giving up for the new one
+     * @param discardedWeapon the WeaponTile the player is giving up for the new one
      */
-    public void grabWeapon(Weapon weapon, List<Coin> coins, Weapon discardedWeapon) {
+    public void grabWeapon(WeaponTile weapon, List<Coin> coins, WeaponTile discardedWeapon) {
         if (this.weapons.size() == constraints.getMaxWeaponsForPlayer()) {
             //the weapon should only be discarded if the player already has the maximum number available
             if (!weapons.remove(discardedWeapon)) {
@@ -392,11 +392,11 @@ public class Player implements Damageable, MatchModeChangedListener {
 
     /**
      * This method allows the player to buy a new weapon, given that he has less than the maximum weapons allowed
-     * @param weapon the Weapon that the player is buying
+     * @param weapon the WeaponTile that the player is buying
      * @param ammoCubes the cost the player is paying with ammoCubes
      * @param powerups the cost the player is paying with powerups
      */
-    public void grabWeapon(Weapon weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
+    public void grabWeapon(WeaponTile weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
         if (this.weapons.size() < constraints.getMaxWeaponsForPlayer()) {
             //if the player can grab more weapons, he pays and gets the weapon
             this.pay(ammoCubes, powerups);
@@ -407,10 +407,10 @@ public class Player implements Damageable, MatchModeChangedListener {
 
     /**
      * This method allows the player to buy a new weapon, given that he has less than the maximum weapons allowed
-     * @param weapon the Weapon that the player is buying
+     * @param weapon the WeaponTile that the player is buying
      * @param coins the list of Coins the player is using to pay
      */
-    public void grabWeapon(Weapon weapon, List<Coin> coins) {
+    public void grabWeapon(WeaponTile weapon, List<Coin> coins) {
         if (this.weapons.size() < constraints.getMaxWeaponsForPlayer()) {
             //if the player can grab more weapons, he pays and gets the weapon
             this.pay(coins);
@@ -447,15 +447,15 @@ public class Player implements Damageable, MatchModeChangedListener {
 
     /**
      * This method allows the player to reload a weapon it owns
-     * @param weapon the Weapon that shall be reloaded
+     * @param weapon the WeaponTile that shall be reloaded
      * @param ammoCubes the cost the player is paying with ammoCubes
      * @param powerups the cost the player is paying with powerups
      */
-    public void reload(Weapon weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
+    public void reload(WeaponTile weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
         if (!weapon.isLoaded() && this.getWeapons().contains(weapon)) {
             pay(ammoCubes, powerups);
             weapon.setLoaded(true);
-        } else throw new IllegalArgumentException("Weapon could not be loaded");
+        } else throw new IllegalArgumentException("WeaponTile could not be loaded");
     }
 
     /**

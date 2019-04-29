@@ -30,7 +30,7 @@ public class CompoundTargetCalculator implements TargetCalculator {
      * @return a list of the available groups of targets, which will be empty if none are available
      */
     @Override
-    public Set<Player> computeTargets(Block startingPoint, BasicWeapon weapon) {
+    public Set<Player> computeTargets(Block startingPoint, Weapon weapon) {
         Set<Player> potentialBlocks = calculators.get(0).computeTargets(startingPoint, weapon);
         calculators
             .stream()

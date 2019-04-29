@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class WeaponFactoryTest {
+class WeaponTileFactoryTest {
 
     @BeforeEach
     void setUp() {
@@ -23,8 +23,8 @@ class WeaponFactoryTest {
      */
     @Test
     void create() {
-        for (Weapon.Name name : Weapon.Name.values()) {
-            assertNotNull(WeaponFactory.create(name), "Weapon JSON file did not provide a valid configuration for weapon " + name);
+        for (WeaponTile.Name name : WeaponTile.Name.values()) {
+            assertNotNull(WeaponTileFactory.create(name), "WeaponTile JSON file did not provide a valid configuration for weapon " + name);
         }
     }
 
@@ -33,7 +33,7 @@ class WeaponFactoryTest {
      */
     @Test
     void createDeck() {
-        Deck<Weapon> deck = WeaponFactory.createDeck();
+        Deck<WeaponTile> deck = WeaponTileFactory.createDeck();
         assertEquals(21, deck.size(), "Not all 21 weapons were loaded");
     }
 }

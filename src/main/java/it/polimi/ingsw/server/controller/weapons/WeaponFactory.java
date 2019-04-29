@@ -157,7 +157,7 @@ public class WeaponFactory {
      * @param name the enum corresponding to the desired weapon
      * @return the weapon, ready to be bought
      */
-    public static BasicWeapon create(String name, Board board) {
+    public static Weapon create(String name, Board board) {
         if (weaponMap == null) {
             readFromFile();
         }
@@ -174,7 +174,7 @@ public class WeaponFactory {
         try {
             jsonElement = new JsonParser().parse(new FileReader(new File(WEAPON_JSON_PATH)));
         } catch (FileNotFoundException e) {
-            throw new MissingConfigurationFileException("Weapon configuration file not found");
+            throw new MissingConfigurationFileException("WeaponTile configuration file not found");
         }
 
         jsonElement.getAsJsonArray().forEach(weaponJson -> {
@@ -191,9 +191,9 @@ public class WeaponFactory {
      * right type and attacks
      * @param weaponObject the {@code JsonObject} representing the weapon
      * @param board the {@code Board} that is being used
-     * @return the corresponding {@code BasicWeapon}
+     * @return the corresponding {@code Weapon}
      */
-    private static BasicWeapon readWeapon(JsonObject weaponObject, Board board) {
+    private static Weapon readWeapon(JsonObject weaponObject, Board board) {
 
         String weaponId = weaponObject.get(Property.WEAPON_ID.toString()).getAsString();
         Attack basicAttack = readAttack(weaponObject.get(Property.BASIC_ATTACK.toString()).getAsJsonObject(), board);
@@ -211,7 +211,7 @@ public class WeaponFactory {
             boolean mustExecuteInOrder = weaponObject.has(Property.MUST_EXECUTE_IN_ORDER.toString()) && weaponObject.get(Property.MUST_EXECUTE_IN_ORDER.toString()).getAsBoolean();
             return new WeaponWithMultipleEffects(weaponId, basicAttack, advancedAttacks, mustExecuteInOrder);
         } else {
-            return new BasicWeapon(weaponId, basicAttack);
+            return new Weapon(weaponId, basicAttack);
         }
     }
 
@@ -251,13 +251,13 @@ public class WeaponFactory {
         JsonObject actionObject = action.getAsJsonObject();
         TargetCalculator targetCalculator = readTargetCalculator(actionObject, lastTargetCalculator, board);
         BiFunction<List<Player>, Player, Set<Player>> bonusTargets = readBonusTarget(actionObject);
-        Function<BasicWeapon, Set<Player>> targetsToChooseFrom = readAvailableTargets();
+        Function<Weapon, Set<Player>> targetsToChooseFrom = readAvailableTargets();
         Function<Set<Player>, Set<Set<Player>>> adaptToScope = readScope(actionObject);
-        BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> addToEach = readMandatoryExtras(actionObject);
-        BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> veto = readVeto(actionObject);
+        BiFunction<Set<Set<Player>>, Weapon, Set<Set<Player>>> addToEach = readMandatoryExtras(actionObject);
+        BiFunction<Set<Set<Player>>, Weapon, Set<Set<Player>>> veto = readVeto(actionObject);
         boolean skippable = actionObject.get(Property.SKIPPABLE.toString()).getAsBoolean();
-        Function<BasicWeapon, Set<Block>> startingPointUpdater = readStartingPoint(actionObject);
-        TriConsumer<Set<Player>, Interviewer, BasicWeapon> executor = readActionType(actionObject, board.getBlocks().size());
+        Function<Weapon, Set<Block>> startingPointUpdater = readStartingPoint(actionObject);
+        TriConsumer<Set<Player>, Interviewer, Weapon> executor = readActionType(actionObject, board.getBlocks().size());
         return new ActionConfig(
             targetCalculator,
             bonusTargets,
@@ -345,10 +345,10 @@ public class WeaponFactory {
 
     /**
      * This method restricts the hittable targets
-     * @return a {@code Function} that takes {@code BasicWeapon}, the weapon that is being used, and returns a {@code Set<Player>},
+     * @return a {@code Function} that takes {@code Weapon}, the weapon that is being used, and returns a {@code Set<Player>},
      * the available targets
      */
-    private static Function<BasicWeapon, Set<Player>> readAvailableTargets() {
+    private static Function<Weapon, Set<Player>> readAvailableTargets() {
         return weapon -> {
                 Set<Player> nonActive = new HashSet<>(weapon.getCurrentShooter().getMatch().getPlayers());
                 nonActive.remove(weapon.getCurrentShooter());
@@ -595,11 +595,11 @@ public class WeaponFactory {
      * This method reads the property {@code andTargets}, if it is present, and adds those targets to each set.
      * See {@code jsonAttacks.md} for further info about this property
      * @param actionObject the {@code JsonObject} to analyze
-     * @return a {@code BiFunction} taking a {@code Set<Set<Player>>}, the pre-computed targets, and a {@code BasicWeapon},
+     * @return a {@code BiFunction} taking a {@code Set<Set<Player>>}, the pre-computed targets, and a {@code Weapon},
      * the weapon this attacks belongs to, and returns the updated {@code Set<Set<Player>>}
      */
-    private static BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> readMandatoryExtras(JsonObject actionObject) {
-        BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> addToEach;
+    private static BiFunction<Set<Set<Player>>, Weapon, Set<Set<Player>>> readMandatoryExtras(JsonObject actionObject) {
+        BiFunction<Set<Set<Player>>, Weapon, Set<Set<Player>>> addToEach;
         if (actionObject.has(Property.AND_TARGETS.toString())) {
             addToEach = readCompoundTargetRequirements(actionObject);
         } else {
@@ -612,12 +612,12 @@ public class WeaponFactory {
      * This method, assuming that the field {@code andTargets} exists, reads its value and updates the targets accordingly.
      * See {@code jsonAttacks.md} for the supported values
      * @param actionObject the {@code JsonObject} to analyze
-     * @return a {@code BiFunction} taking a {@code Set<Set<Player>>}, the pre-computed targets, and a {@code BasicWeapon},
+     * @return a {@code BiFunction} taking a {@code Set<Set<Player>>}, the pre-computed targets, and a {@code Weapon},
      * the weapon this attacks belongs to, and returns the updated {@code Set<Set<Player>>}
      * @throws IncoherentConfigurationException if the value of {@code andTargets} is not supported
      */
-    private static BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> readCompoundTargetRequirements(JsonObject actionObject) {
-        BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> addToEach;
+    private static BiFunction<Set<Set<Player>>, Weapon, Set<Set<Player>>> readCompoundTargetRequirements(JsonObject actionObject) {
+        BiFunction<Set<Set<Player>>, Weapon, Set<Set<Player>>> addToEach;
         if (Field.INCLUDE_LAST.toString().equals(actionObject.get(Property.AND_TARGETS.toString()).getAsString())) {
             addToEach = (potentialTargets, weapon) -> {
                 Set<Set<Player>> result = new HashSet<>(potentialTargets);
@@ -662,12 +662,12 @@ public class WeaponFactory {
      * This method creates a {@code BiFunction} that will remove some targets from the pre-computed {@code Set} of potential targets
      * See {@code jsonAttacks.md} to view the supported values for the {@code veto} property
      * @param actionObject the {@code JsonObject} to analyze
-     * @return a {@code BiFunction} that takes a {@code Set<Set<Player>>}, the pre-computed targets, and a {@code BasicWeapon}
+     * @return a {@code BiFunction} that takes a {@code Set<Set<Player>>}, the pre-computed targets, and a {@code Weapon}
      * and returns the updated {@code Set<Set<Player>>}
      * @throws IncoherentConfigurationException if the value of {@code veto} is not supported
      */
-    private static BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> readVeto(JsonObject actionObject) {
-        BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> veto;
+    private static BiFunction<Set<Set<Player>>, Weapon, Set<Set<Player>>> readVeto(JsonObject actionObject) {
+        BiFunction<Set<Set<Player>>, Weapon, Set<Set<Player>>> veto;
         if (actionObject.has(Property.VETO.toString())) {
             Field value = EnumValueByString.findByString(actionObject.get(Property.VETO.toString()).getAsString(), Field.class);
             switch (value) {
@@ -735,11 +735,11 @@ public class WeaponFactory {
      * about the supported values
      * @param actionObject the {@code JsonObject} to analyze
      * @return a {@code Function} that appropriately computes a {@code Set<Block>} representing the possible starting points,
-     * taking a {@code BasicWeapon}, the current weapon, as a parameter
+     * taking a {@code Weapon}, the current weapon, as a parameter
      * @throws IncoherentConfigurationException if the value of {@code startingPoint} is not supported
      */
-    private static Function<BasicWeapon, Set<Block>> readStartingPoint(JsonObject actionObject) {
-        Function<BasicWeapon, Set<Block>> startingPointCalculator;
+    private static Function<Weapon, Set<Block>> readStartingPoint(JsonObject actionObject) {
+        Function<Weapon, Set<Block>> startingPointCalculator;
         if (actionObject.has(Property.STARTING_POINT.toString())) {
             Field value = EnumValueByString
                     .findByString(
@@ -778,10 +778,10 @@ public class WeaponFactory {
      * This method returns a {@code Function} that inherits the previous starting point, which must be present
      *
      * @return a {@code Function} that appropriately computes a {@code Set<Block>} representing the possible starting points,
-     * taking a {@code BasicWeapon}, the current weapon, as a parameter
+     * taking a {@code Weapon}, the current weapon, as a parameter
      * @throws IncoherentConfigurationException if there was no previous starting point
      */
-    private static Function<BasicWeapon, Set<Block>> inheritStartingPoint() {
+    private static Function<Weapon, Set<Block>> inheritStartingPoint() {
         return weapon -> new HashSet<>(Collections.singletonList(
                 weapon.getStartingPoint().orElseThrow(() -> new IncoherentConfigurationException("No starting point to inherit"))
         ));
@@ -792,9 +792,9 @@ public class WeaponFactory {
      * default value (the {@code Block} of the active player)
      *
      * @return a {@code Function} that appropriately computes a {@code Set<Block>} representing the possible starting points,
-     * taking a {@code BasicWeapon}, the current weapon, as a parameter
+     * taking a {@code Weapon}, the current weapon, as a parameter
      */
-    private static Function<BasicWeapon, Set<Block>> inheritStartingPointIfPresent() {
+    private static Function<Weapon, Set<Block>> inheritStartingPointIfPresent() {
         return weapon -> new HashSet<>(Collections.singletonList(
                 weapon.getStartingPoint().orElse(weapon.getCurrentShooter().getBlock())
         ));
@@ -804,9 +804,9 @@ public class WeaponFactory {
      * This method returns a {@code Function} that sets the starting point as the {@code Block} of the active player
      *
      * @return a {@code Function} that appropriately computes a {@code Set<Block>} representing the possible starting points,
-     * taking a {@code BasicWeapon}, the current weapon, as a parameter
+     * taking a {@code Weapon}, the current weapon, as a parameter
      */
-    private static Function<BasicWeapon, Set<Block>> activePlayerStartingPoint() {
+    private static Function<Weapon, Set<Block>> activePlayerStartingPoint() {
         return weapon -> new HashSet<>(Collections.singletonList(
                 weapon.getCurrentShooter().getBlock()
         ));
@@ -818,20 +818,22 @@ public class WeaponFactory {
      *
      * @param actionObject the {@code JsonObject} to analyze
      * @return a {@code Function} that appropriately computes a {@code Set<Block>} representing the possible starting points,
-     * taking a {@code BasicWeapon}, the current weapon, as a parameter
+     * taking a {@code Weapon}, the current weapon, as a parameter
      */
-    private static Function<BasicWeapon, Set<Block>> visibleStartingPoint(JsonObject actionObject) {
+    private static Function<Weapon, Set<Block>> visibleStartingPoint(JsonObject actionObject) {
         if (actionObject.has("andNotStartingPoint") && actionObject.get("andNotStartingPoint").getAsString().equals(Field.ACTIVE_PLAYER.toString())) {
             return weapon -> {
                 Set<Block> blocks = weapon.getCurrentShooter().getMatch().getBoard().getVisibleBlocks(weapon.getCurrentShooter().getBlock());
-                blocks.removeIf(block -> !weapon.validStartingPoint(weapon.getActiveAttack(), block));
+                Attack attack = weapon.getActiveAttack();
+                blocks.removeIf(block -> !attack.isValidStartingPoint(block, weapon));
                 blocks.remove(weapon.getCurrentShooter().getBlock());
                 return blocks;
             };
         } else {
             return weapon -> {
                 Set<Block> visibleBlocks = weapon.getCurrentShooter().getMatch().getBoard().getVisibleBlocks(weapon.getCurrentShooter().getBlock());
-                visibleBlocks.removeIf(block -> !weapon.validStartingPoint(weapon.getActiveAttack(), block));
+                Attack attack = weapon.getActiveAttack();
+                visibleBlocks.removeIf(block -> !attack.isValidStartingPoint(block, weapon));
                 return visibleBlocks;
             };
         }
@@ -842,10 +844,10 @@ public class WeaponFactory {
      * (different from the active player) can be found
      *
      * @return a {@code Function} that appropriately computes a {@code Set<Block>} representing the possible starting points,
-     * taking a {@code BasicWeapon}, the current weapon, as a parameter
+     * taking a {@code Weapon}, the current weapon, as a parameter
      * @throws IncoherentConfigurationException if no previous target could be found
      */
-    private static Function<BasicWeapon, Set<Block>> previousTargetStartingPoint() {
+    private static Function<Weapon, Set<Block>> previousTargetStartingPoint() {
         return weapon -> {
             Block block;
             int index = weapon.getAllTargets().size() - 1;
@@ -867,11 +869,11 @@ public class WeaponFactory {
      * @param actionObject the {@code JsonObject} to analyze
      * @param boardSize the dimension of the {@code Board}
      * @return a {@code TriConsumer} that handles the execution of the given action, given the targets (a {@code Set<Player}),
-     * an {@code Interviewer} used to ask for eventual feedback and the {@code BasicWeapon}
+     * an {@code Interviewer} used to ask for eventual feedback and the {@code Weapon}
      * @throws IncoherentConfigurationException if none of the supported actions was found
      */
-    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readActionType(final JsonObject actionObject, int boardSize) {
-        TriConsumer<Set<Player>, Interviewer, BasicWeapon> executor;
+    private static TriConsumer<Set<Player>, Interviewer, Weapon> readActionType(final JsonObject actionObject, int boardSize) {
+        TriConsumer<Set<Player>, Interviewer, Weapon> executor;
         if (actionObject.has(Property.DAMAGE.toString())) {
             executor = readDamageExecutor(actionObject);
         } else if (actionObject.has(Property.MARK.toString())) {
@@ -887,9 +889,9 @@ public class WeaponFactory {
      *
      * @param actionObject the {@code JsonObject} to analyze
      * @return a {@code TriConsumer} that handles the execution of a damage action, given the targets (a {@code Set<Player}),
-     * an {@code Interviewer} used to ask for eventual feedback and the {@code BasicWeapon}
+     * an {@code Interviewer} used to ask for eventual feedback and the {@code Weapon}
      */
-    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readDamageExecutor(final JsonObject actionObject) {
+    private static TriConsumer<Set<Player>, Interviewer, Weapon> readDamageExecutor(final JsonObject actionObject) {
         return  (targets, interviewer, weapon) -> {
             int damageAmount = actionObject.get(Property.DAMAGE.toString()).getAsInt();
             List<DamageToken> tokens = new ArrayList<>();
@@ -905,9 +907,9 @@ public class WeaponFactory {
      *
      * @param actionObject the {@code JsonObject} to analyze
      * @return a {@code TriConsumer} that handles the execution of a mark action, given the targets (a {@code Set<Player}),
-     * an {@code Interviewer} used to ask for eventual feedback and the {@code BasicWeapon}
+     * an {@code Interviewer} used to ask for eventual feedback and the {@code Weapon}
      */
-    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readMarkExecutor(final JsonObject actionObject) {
+    private static TriConsumer<Set<Player>, Interviewer, Weapon> readMarkExecutor(final JsonObject actionObject) {
         return (targets, interviewer, weapon) -> {
             int markAmount = actionObject.get(Property.MARK.toString()).getAsInt();
             List<DamageToken> marks = new ArrayList<>();
@@ -924,10 +926,10 @@ public class WeaponFactory {
      * @param actionObject the {@code JsonObject} to analyze
      * @param boardSize the size of the {@code Board}
      * @return a {@code TriConsumer} that handles the execution of a move action, given the targets (a {@code Set<Player}),
-     * an {@code Interviewer} used to ask for eventual feedback and the {@code BasicWeapon}
+     * an {@code Interviewer} used to ask for eventual feedback and the {@code Weapon}
      * @throws IncoherentConfigurationException if a {@code targetFinalPosition} is specified with a non-valid value (see {@code jsonAttacks.md} for info)
      */
-    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readMoveExecutor(final JsonObject actionObject, int boardSize) {
+    private static TriConsumer<Set<Player>, Interviewer, Weapon> readMoveExecutor(final JsonObject actionObject, int boardSize) {
         final Range range = computeRange(actionObject.get(Property.MOVE.toString()).getAsJsonObject(), boardSize);
         if (actionObject.has(Property.TARGET_FINAL_POSITION.toString())) {
             Field position = EnumValueByString.findByString(actionObject.get(Property.TARGET_FINAL_POSITION.toString()).getAsString(), Field.class);
@@ -952,9 +954,9 @@ public class WeaponFactory {
      * @param boardSize the size of the {@code Board}
      * @param range the {@code Range} of possible moves
      * @return a {@code TriConsumer} that handles the execution of a move action, given the targets (a {@code Set<Player}),
-     * an {@code Interviewer} used to ask for eventual feedback and the {@code BasicWeapon}
+     * an {@code Interviewer} used to ask for eventual feedback and the {@code Weapon}
      */
-    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readFixedTargetMoveExecutor(final JsonObject actionObject, final Range range, int boardSize) {
+    private static TriConsumer<Set<Player>, Interviewer, Weapon> readFixedTargetMoveExecutor(final JsonObject actionObject, final Range range, int boardSize) {
         final Range rangeFromStartingBlock = computeRange(actionObject.get(Property.TARGET_FINAL_DISTANCE.toString()).getAsJsonObject(), boardSize);
         return (targets, interviewer, weapon) -> {
             for (Player target : targets) {
@@ -976,9 +978,9 @@ public class WeaponFactory {
      *
      * @param range the {@code Range} of possible moves
      * @return a {@code TriConsumer} that handles the execution of a move action, given the targets (a {@code Set<Player}),
-     * an {@code Interviewer} used to ask for eventual feedback and the {@code BasicWeapon}
+     * an {@code Interviewer} used to ask for eventual feedback and the {@code Weapon}
      */
-    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readStraightTargetMoveExecutor(final Range range) {
+    private static TriConsumer<Set<Player>, Interviewer, Weapon> readStraightTargetMoveExecutor(final Range range) {
         return (targets, interviewer, weapon) -> {
             for (Player target : targets) {
                 Block start = target.getBlock();
@@ -1009,9 +1011,9 @@ public class WeaponFactory {
      *
      * @param range the {@code Range} of possible moves
      * @return a {@code TriConsumer} that handles the execution of a move action, given the targets (a {@code Set<Player}),
-     * an {@code Interviewer} used to ask for eventual feedback and the {@code BasicWeapon}
+     * an {@code Interviewer} used to ask for eventual feedback and the {@code Weapon}
      */
-    private static TriConsumer<Set<Player>, Interviewer, BasicWeapon> readStandardMoveExecutor(final Range range) {
+    private static TriConsumer<Set<Player>, Interviewer, Weapon> readStandardMoveExecutor(final Range range) {
         return (targets, interviewer, weapon) -> {
             for (Player target : targets) {
                 Board board = target.getMatch().getBoard();

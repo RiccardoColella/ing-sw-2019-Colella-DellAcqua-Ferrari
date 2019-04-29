@@ -1,6 +1,6 @@
 package it.polimi.ingsw.server.model.battlefield;
 import it.polimi.ingsw.server.model.player.Player;
-import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.shared.Direction;
 
 import java.util.*;
@@ -118,11 +118,11 @@ public abstract class Block {
     }
 
     /**
-     * On spawnpoints this method drops a Weapon
+     * On spawnpoints this method drops a WeaponTile
      *
      * @param weapon the weapon to drop
      */
-    public abstract void drop(Weapon weapon);
+    public abstract void drop(WeaponTile weapon);
 
     /**
      * Creates a copy of the current block

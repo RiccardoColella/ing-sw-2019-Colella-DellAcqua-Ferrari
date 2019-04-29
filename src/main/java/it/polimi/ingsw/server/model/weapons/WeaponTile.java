@@ -5,7 +5,7 @@ import it.polimi.ingsw.server.model.currency.AmmoCube;
 import java.util.Collections;
 import java.util.List;
 
-public class Weapon {
+public class WeaponTile {
     /**
      * This enum cathegorizes the 21 different weapons
      */
@@ -56,13 +56,13 @@ public class Weapon {
     private final List<AmmoCube> reloadCost;
 
     /**
-     * This constructor creates a Weapon with initial values
+     * This constructor creates a WeaponTile with initial values
      *
      * @param name the name of the weapon
      * @param acquisitionCost a list of AmmoCube used to determine the acquisition cost
      * @param reloadCost a list of AmmoCube used to determine the reload cost
      */
-    public Weapon(Name name, List<AmmoCube> acquisitionCost, List<AmmoCube> reloadCost) {
+    public WeaponTile(Name name, List<AmmoCube> acquisitionCost, List<AmmoCube> reloadCost) {
         this.name = name;
         this.acquisitionCost = Collections.unmodifiableList(acquisitionCost);
         this.reloadCost = Collections.unmodifiableList(reloadCost);
@@ -73,7 +73,7 @@ public class Weapon {
      *
      * @param weapon the weapon to copy values from
      */
-    public Weapon(Weapon weapon) {
+    public WeaponTile(WeaponTile weapon) {
         this(weapon.name, weapon.acquisitionCost, weapon.reloadCost);
     }
 

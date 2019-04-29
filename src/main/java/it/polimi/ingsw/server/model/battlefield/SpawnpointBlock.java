@@ -1,7 +1,7 @@
 package it.polimi.ingsw.server.model.battlefield;
 
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
-import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.shared.Direction;
 
 import java.util.LinkedList;
@@ -21,7 +21,7 @@ public class SpawnpointBlock extends Block {
     /**
      * This property stores the weapons that are currently available in the spawnpoint
      */
-    private final List<Weapon> weapons;
+    private final List<WeaponTile> weapons;
 
     /**
      * Class constructor given the position in the board, every BoarderType, the color of the spawnpoint and the weapons it contains
@@ -45,7 +45,7 @@ public class SpawnpointBlock extends Block {
      * This method gets the weapons that are available in the spawnpoint
      * @return a list of the available weapons
      */
-    public List<Weapon> getWeapons() {
+    public List<WeaponTile> getWeapons() {
         return this.weapons;
     }
 
@@ -53,7 +53,7 @@ public class SpawnpointBlock extends Block {
      * This method allows for a weapon to be grabbed from the spawnpoint
      * @param weapon the weapon to grab
      */
-    public void grabWeapon(Weapon weapon) {
+    public void grabWeapon(WeaponTile weapon) {
         if (this.getWeapons().contains(weapon)){
             this.weapons.remove(weapon);
         } else throw new IllegalArgumentException("Grabbing was not possible, the weapon is not in this spawnpoint");
@@ -72,7 +72,7 @@ public class SpawnpointBlock extends Block {
      * @param weapon the weapon to drop
      */
     @Override
-    public void drop(Weapon weapon) {
+    public void drop(WeaponTile weapon) {
         if (this.getWeapons().size() < maxWeapons){
             this.weapons.add(weapon);
         } else throw new IllegalStateException("Dropping was not possible, the spawnpoint is full");

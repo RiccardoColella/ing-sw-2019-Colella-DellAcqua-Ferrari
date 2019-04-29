@@ -34,7 +34,7 @@ public class FixedDistanceTargetCalculator implements TargetCalculator {
      * @return a list of the available groups of targets, which will be empty if none are available
      */
     @Override
-    public Set<Player> computeTargets(Block startingPoint, BasicWeapon weapon) {
+    public Set<Player> computeTargets(Block startingPoint, Weapon weapon) {
         Set<Block> candidates = board.getReachableBlocks(startingPoint, range);
         candidates.removeIf(block -> block.getPlayers().isEmpty());
         return candidates.stream().flatMap(block -> block.getPlayers().stream()).collect(Collectors.toSet());

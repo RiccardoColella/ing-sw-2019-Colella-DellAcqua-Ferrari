@@ -9,7 +9,7 @@ import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.match.MatchFactory;
-import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -141,7 +141,7 @@ class PlayerTest {
         //making sure the player under test actually owns a weapon
         player = match.getActivePlayer();
         while (player.getWeapons().isEmpty()) {
-            Optional<Weapon> weapon = match.getWeaponDeck().pick();
+            Optional<WeaponTile> weapon = match.getWeaponDeck().pick();
             if (weapon.isPresent()) {
                 player.grabAmmoCubes(weapon.get().getAcquisitionCost());
                 player.grabWeapon(weapon.get(), weapon.get().getAcquisitionCost(), new ArrayList<>());
@@ -164,7 +164,7 @@ class PlayerTest {
         assertNull(player.getActiveWeapon().orElse(null), "Unloaded weapon cannot be chosen"); // the weapon can't be active because it is not loaded
 
         //CHOOSING A WEAPON THAT DOES NOT BELONG TO THE PLAYER
-        Optional<Weapon> notOwnedWeapon = match.getWeaponDeck().pick();
+        Optional<WeaponTile> notOwnedWeapon = match.getWeaponDeck().pick();
         if (!notOwnedWeapon.isPresent()) { //if the deck was empty, someone else has the weapons
             for (Player p : match.getPlayers()) {
                 if (p != player && !p.getWeapons().isEmpty()) {
@@ -190,7 +190,7 @@ class PlayerTest {
     @Test
     void grabWeapon() {
         // FILLING UP THE WALLET SO THAT THE PLAYER CAN BUY A WEAPON
-        Optional<Weapon> currentWeapon = match.getWeaponDeck().pick();
+        Optional<WeaponTile> currentWeapon = match.getWeaponDeck().pick();
         int playerAmmoCubes = player.getAmmoCubes().size();
 
         //if there is a weapon available to buy and the player can buy more, let's buy one
@@ -215,7 +215,7 @@ class PlayerTest {
 
         //if a non-free weapon was found and the player can buy more, the player will try to buy a new weapon without paying
         if (currentWeapon.isPresent() && player.getConstraints().getMaxWeaponsForPlayer() >= player.getWeapons().size() + 1) {
-            Weapon costlyWeapon = currentWeapon.get();
+            WeaponTile costlyWeapon = currentWeapon.get();
             assertThrows(MissingOwnershipException.class,
                     () -> player.grabWeapon(
                             costlyWeapon,
@@ -226,7 +226,7 @@ class PlayerTest {
             assertEquals(playerAmmoCubes, player.getAmmoCubes().size(), "Player lost some ammo even if the purchase did not happen");
 
             //trying to discard a weapon while having less than the maximum allowed
-            Weapon ownedWeapon = player.getWeapons().get(0);
+            WeaponTile ownedWeapon = player.getWeapons().get(0);
             assertThrows(IllegalArgumentException.class,
                     () -> player.grabWeapon(
                             costlyWeapon,
@@ -236,7 +236,7 @@ class PlayerTest {
                     ), "Player discarded a weapon when he did not have the maximum allowed");
             assertFalse(player.getWeapons().contains(costlyWeapon), "Player got the weapon although he did not pay for it");
             assertEquals(playerAmmoCubes, player.getAmmoCubes().size(), "Player lost some ammo even if the purchase did not happen");
-            assertTrue(player.getWeapons().contains(ownedWeapon), "Weapon should not have been discarded");
+            assertTrue(player.getWeapons().contains(ownedWeapon), "WeaponTile should not have been discarded");
 
             //FILLING UP THE WALLET TO BUY MORE WEAPONS
             player.grabAmmoCubes(costlyWeapon.getAcquisitionCost());
@@ -280,7 +280,7 @@ class PlayerTest {
             // PLAYER CAN'T BUY ANY MORE WEAPONS WITHOUT DISCARDING AN OLD ONE
             player.grabAmmoCubes(currentWeapon.get().getAcquisitionCost());
             playerAmmoCubes += currentWeapon.get().getAcquisitionCost().size();
-            Weapon extraWeapon = currentWeapon.get();
+            WeaponTile extraWeapon = currentWeapon.get();
             //not discarding a weapon at this point will result in an exception
             assertThrows(UnauthorizedExchangeException.class, () -> player.grabWeapon(extraWeapon, extraWeapon.getAcquisitionCost(), new LinkedList<>()), "Player grabbed a weapon exceeding his limit");
             assertFalse(player.getWeapons().contains(extraWeapon), "The weapon was grabbed even if the purchase did not end correctly");
@@ -291,7 +291,7 @@ class PlayerTest {
             assertThrows(IllegalArgumentException.class, () -> player.grabWeapon(extraWeapon, new LinkedList<>(), new LinkedList<>(), extraWeapon), "Player grabbed a fourth weapon");
 
             //the player follows the rules and discards a weapon
-            Weapon toDiscard = player.getWeapons().get(0);
+            WeaponTile toDiscard = player.getWeapons().get(0);
             player.grabWeapon(
                     extraWeapon,
                     extraWeapon.getAcquisitionCost(),
@@ -387,7 +387,7 @@ class PlayerTest {
         //making sure the player has a weapon
         player = match.getActivePlayer();
         while (player.getWeapons().isEmpty()) {
-            Optional<Weapon> weapon = match.getWeaponDeck().pick();
+            Optional<WeaponTile> weapon = match.getWeaponDeck().pick();
             if (weapon.isPresent()) {
                 player.grabAmmoCubes(weapon.get().getAcquisitionCost());
                 player.grabWeapon(weapon.get(), weapon.get().getAcquisitionCost(), new ArrayList<>());
@@ -398,7 +398,7 @@ class PlayerTest {
             }
         }
 
-        Weapon toBeLoaded = player.getWeapons().get(0);
+        WeaponTile toBeLoaded = player.getWeapons().get(0);
         //making sure the weapon is not loaded
         toBeLoaded.setLoaded(false);
 

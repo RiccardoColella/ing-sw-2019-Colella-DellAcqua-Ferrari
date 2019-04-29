@@ -14,26 +14,26 @@ import java.util.function.Function;
 
 public class ActionConfig {
     private final TargetCalculator calculator;
-    private final TriConsumer<Set<Player>, Interviewer, BasicWeapon> executor;
+    private final TriConsumer<Set<Player>, Interviewer, Weapon> executor;
     private final boolean skippable;
     private final BiFunction<List<Player>, Player, Set<Player>> bonusTargets;
-    private final Function<BasicWeapon, Set<Player>> targetsToChooseFrom;
+    private final Function<Weapon, Set<Player>> targetsToChooseFrom;
     private final Function<Set<Player>, Set<Set<Player>>> adaptToScope;
-    private final BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> addToEach;
-    private final BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> veto;
-    private final Function<BasicWeapon, Set<Block>> startingPointUpdater;
+    private final BiFunction<Set<Set<Player>>, Weapon, Set<Set<Player>>> addToEach;
+    private final BiFunction<Set<Set<Player>>, Weapon, Set<Set<Player>>> veto;
+    private final Function<Weapon, Set<Block>> startingPointUpdater;
 
 
     public ActionConfig(
             @Nullable TargetCalculator calculator,
             BiFunction<List<Player>, Player, Set<Player>> bonusTargets,
-            Function<BasicWeapon, Set<Player>> targetsToChooseFrom,
+            Function<Weapon, Set<Player>> targetsToChooseFrom,
             Function<Set<Player>, Set<Set<Player>>> adaptToScope,
-            BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> addToEach,
-            BiFunction<Set<Set<Player>>, BasicWeapon, Set<Set<Player>>> veto,
+            BiFunction<Set<Set<Player>>, Weapon, Set<Set<Player>>> addToEach,
+            BiFunction<Set<Set<Player>>, Weapon, Set<Set<Player>>> veto,
             boolean skippable,
-            Function<BasicWeapon, Set<Block>> startingPointUpdater,
-            TriConsumer<Set<Player>, Interviewer, BasicWeapon> executor) {
+            Function<Weapon, Set<Block>> startingPointUpdater,
+            TriConsumer<Set<Player>, Interviewer, Weapon> executor) {
         this.calculator = calculator;
         this.executor = executor;
         this.skippable = skippable;
@@ -49,7 +49,7 @@ public class ActionConfig {
         return Optional.ofNullable(calculator);
     }
 
-    public void execute(Set<Player> targets, Interviewer interviewer, BasicWeapon weapon) {
+    public void execute(Set<Player> targets, Interviewer interviewer, Weapon weapon) {
         executor.apply(targets, interviewer, weapon);
     }
 
@@ -61,7 +61,7 @@ public class ActionConfig {
         return bonusTargets.apply(previouslyHit, activePlayer);
     }
 
-    public Set<Player> getTargetsToChooseFrom(BasicWeapon currentWeapon) {
+    public Set<Player> getTargetsToChooseFrom(Weapon currentWeapon) {
         return targetsToChooseFrom.apply(currentWeapon);
     }
 
@@ -69,15 +69,15 @@ public class ActionConfig {
         return adaptToScope.apply(potentialTargets);
     }
 
-    public Set<Set<Player>> addToEach(Set<Set<Player>> potentialTargets, BasicWeapon weapon) {
+    public Set<Set<Player>> addToEach(Set<Set<Player>> potentialTargets, Weapon weapon) {
         return addToEach.apply(potentialTargets, weapon);
     }
 
-    public Set<Set<Player>> applyVeto(Set<Set<Player>> potentialTargets, BasicWeapon weapon) {
+    public Set<Set<Player>> applyVeto(Set<Set<Player>> potentialTargets, Weapon weapon) {
         return veto.apply(potentialTargets, weapon);
     }
 
-    public Set<Block> updateStartingPoint(BasicWeapon weapon) {
+    public Set<Block> updateStartingPoint(Weapon weapon) {
         return startingPointUpdater.apply(weapon);
     }
 }

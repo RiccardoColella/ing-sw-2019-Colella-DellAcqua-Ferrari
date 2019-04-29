@@ -12,7 +12,7 @@ import it.polimi.ingsw.server.model.player.ActionTile;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.server.model.player.CompoundAction;
 import it.polimi.ingsw.server.model.player.Player;
-import it.polimi.ingsw.server.model.weapons.Weapon;
+import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.server.view.View;
 import it.polimi.ingsw.shared.messages.ClientApi;
@@ -97,12 +97,12 @@ public class Controller implements Runnable, PlayerDamagedListener {
                 if (activePlayer.isOnASpawnpoint()){
                     //choose weapon to be picked up
                     SpawnpointBlock block =  (SpawnpointBlock) activePlayer.getBlock();
-                    List<Weapon> availableWeapons = new LinkedList<>(block.getWeapons());
-                    List<Weapon> affordableWeapons = availableWeapons.stream().filter(weapon -> {
+                    List<WeaponTile> availableWeapons = new LinkedList<>(block.getWeapons());
+                    List<WeaponTile> affordableWeapons = availableWeapons.stream().filter(weapon -> {
                         Treasury bill = new Treasury(weapon.getAcquisitionCost(), activePlayer);
                         return bill.canAfford();
                     }).collect(Collectors.toList());
-                    Weapon weapon = view.select("Which weapon would you like to grab?",
+                    WeaponTile weapon = view.select("Which weapon would you like to grab?",
                             affordableWeapons, ClientApi.WEAPON_CHOICE_QUESTION);
                     //pick up
                     logger.info("picking up weapon " + weapon.getName() + "...");
@@ -130,14 +130,14 @@ public class Controller implements Runnable, PlayerDamagedListener {
         }
     }
 
-    private void pickUpWeapon(Weapon weapon, Player activePlayer, Interviewer view){
+    private void pickUpWeapon(WeaponTile weapon, Player activePlayer, Interviewer view){
         Treasury bill = new Treasury(weapon.getAcquisitionCost(), activePlayer);
         List<Coin> paymentMethod = bill.selectPaymentMethod(view);
         if (bill.canAfford()){
             try {
                 activePlayer.grabWeapon(weapon, paymentMethod);
             } catch (UnauthorizedExchangeException e){
-                Weapon weaponToDiscard = view.select("Which weapon do you want to discard?",
+                WeaponTile weaponToDiscard = view.select("Which weapon do you want to discard?",
                         activePlayer.getWeapons(), ClientApi.WEAPON_CHOICE_QUESTION);
                 activePlayer.grabWeapon(weapon, paymentMethod, weaponToDiscard);
             }
@@ -152,8 +152,8 @@ public class Controller implements Runnable, PlayerDamagedListener {
             case GRAB:
                 if (player.isOnASpawnpoint()) {
                     SpawnpointBlock block = (SpawnpointBlock) player.getBlock();
-                    List<Weapon> availableWeapons = new LinkedList<>(block.getWeapons());
-                    List<Weapon> affordableWeapons = availableWeapons.stream().filter(weapon -> {
+                    List<WeaponTile> availableWeapons = new LinkedList<>(block.getWeapons());
+                    List<WeaponTile> affordableWeapons = availableWeapons.stream().filter(weapon -> {
                         Treasury bill = new Treasury(weapon.getAcquisitionCost(), player);
                         return bill.canAfford();
                     }).collect(Collectors.toList());
@@ -161,7 +161,7 @@ public class Controller implements Runnable, PlayerDamagedListener {
                 } else returnValue = true;
                 break;
             case SHOOT:
-                Optional<Weapon> activeWeapon = player.getActiveWeapon();
+                Optional<WeaponTile> activeWeapon = player.getActiveWeapon();
                 if (!activeWeapon.isPresent() || !activeWeapon.get().isLoaded()){
                     returnValue = false;
                 }

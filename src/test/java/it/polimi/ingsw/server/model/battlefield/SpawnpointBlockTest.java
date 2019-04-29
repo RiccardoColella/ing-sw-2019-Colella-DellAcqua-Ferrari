@@ -2,8 +2,8 @@ package it.polimi.ingsw.server.model.battlefield;
 
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
-import it.polimi.ingsw.server.model.weapons.Weapon;
-import it.polimi.ingsw.server.model.weapons.WeaponFactory;
+import it.polimi.ingsw.server.model.weapons.WeaponTile;
+import it.polimi.ingsw.server.model.weapons.WeaponTileFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,14 +14,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class SpawnpointBlockTest {
 
     private SpawnpointBlock block;
-    private Deck<Weapon> weapons;
+    private Deck<WeaponTile> weapons;
 
     @BeforeEach
     void setUp() {
         //Creating a blue spawnpoint with max number of weapons 3
         block = new SpawnpointBlock(0,0, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.NONE, Block.BorderType.NONE, CurrencyColor.BLUE, 3);
         //Creating a weapon deck
-        weapons = WeaponFactory.createDeck();
+        weapons = WeaponTileFactory.createDeck();
     }
 
     /**
@@ -31,7 +31,7 @@ class SpawnpointBlockTest {
      */
     @Test
     void grabWeapon() {
-        Optional<Weapon> weapon = weapons.pick();
+        Optional<WeaponTile> weapon = weapons.pick();
         //making sure the deck returned an actual weapon
         assertTrue(weapon.isPresent());
         //adding a weapon to the block
@@ -58,10 +58,10 @@ class SpawnpointBlockTest {
     @Test
     void drop() {
         //picking 4 weapons from the deck, and making sure they exist
-        Optional<Weapon> weapon1 = weapons.pick();
-        Optional<Weapon> weapon2 = weapons.pick();
-        Optional<Weapon> weapon3 = weapons.pick();
-        Optional<Weapon> weapon4 = weapons.pick();
+        Optional<WeaponTile> weapon1 = weapons.pick();
+        Optional<WeaponTile> weapon2 = weapons.pick();
+        Optional<WeaponTile> weapon3 = weapons.pick();
+        Optional<WeaponTile> weapon4 = weapons.pick();
         assertTrue(weapon1.isPresent());
         assertTrue(weapon2.isPresent());
         assertTrue(weapon3.isPresent());

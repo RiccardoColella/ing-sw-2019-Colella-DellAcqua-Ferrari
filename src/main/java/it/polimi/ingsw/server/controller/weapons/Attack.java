@@ -48,7 +48,7 @@ public class Attack {
         return this.name;
     }
 
-    public final void execute(Interviewer interviewer, BasicWeapon weapon) {
+    public final void execute(Interviewer interviewer, Weapon weapon) {
 
         for (ActionConfig actionConfig : actionConfigs) {
             Set<Block> potentialStartingPoints = getPotentialStartingPoints(actionConfig, weapon);
@@ -115,11 +115,11 @@ public class Attack {
         throw new IllegalStateException("No set was selected");
     }
 
-    protected Set<Block> getPotentialStartingPoints(ActionConfig actionConfig, BasicWeapon weapon) {
+    protected Set<Block> getPotentialStartingPoints(ActionConfig actionConfig, Weapon weapon) {
         return actionConfig.updateStartingPoint(weapon);
     }
 
-    protected Set<Set<Player>> getPotentialTargets(Block startingPoint, ActionConfig actionConfig, BasicWeapon weapon) {
+    protected Set<Set<Player>> getPotentialTargets(Block startingPoint, ActionConfig actionConfig, Weapon weapon) {
         Set<Player> computedTargets = null;
         Optional<TargetCalculator> calculator = actionConfig.getCalculator();
         if (calculator.isPresent()) {
@@ -136,7 +136,20 @@ public class Attack {
         return actionConfig.applyVeto(potentialTargets, weapon);
     }
 
+    protected boolean isExecutable(Weapon weapon) {
+        if (weapon.getExecutedAttacks().contains(weapon.basicAttack) || !this.basicFirst) {
+            boolean executable = false;
+            for (Block sp : this.getPotentialStartingPoints(actionConfigs.get(0), weapon)) {
+                executable |= isValidStartingPoint(sp, weapon);
+            }
+            return executable;
+        }
+        return false;
+    }
 
+    protected boolean isValidStartingPoint(Block sp, Weapon weapon) {
+        return !this.getPotentialTargets(sp, actionConfigs.get(0), weapon).isEmpty();
+    }
     public Set<Player> getLastHit() {
         return lastHit;
     }

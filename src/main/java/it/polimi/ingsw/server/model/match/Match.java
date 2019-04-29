@@ -19,8 +19,8 @@ import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
 import it.polimi.ingsw.server.model.rewards.Reward;
 import it.polimi.ingsw.server.model.rewards.RewardFactory;
-import it.polimi.ingsw.server.model.weapons.Weapon;
-import it.polimi.ingsw.server.model.weapons.WeaponFactory;
+import it.polimi.ingsw.server.model.weapons.WeaponTile;
+import it.polimi.ingsw.server.model.weapons.WeaponTileFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,7 +79,7 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
     /**
      * This property stores the deck of weapons, which might run out during the match because all weapons are either on spawnpoints or owned by players
      */
-    private final Deck<Weapon> weaponDeck;
+    private final Deck<WeaponTile> weaponDeck;
 
     /**
      * This property stores the deck of powerups, which will never run out during the match
@@ -116,7 +116,7 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
         this.activePlayer = this.players.get(0);
         this.killshots = new LinkedList<>();
         this.bonusDeck = BonusTileFactory.createDeck();
-        this.weaponDeck = WeaponFactory.createDeck();
+        this.weaponDeck = WeaponTileFactory.createDeck();
         this.powerupDeck = PowerupTileFactory.createDeck();
         this.mode = mode;
         this.matchEndedListeners = new ArrayList<>();
@@ -135,9 +135,9 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
 
     /**
      * This method gets the weapon deck
-     * @return the Deck of Weapon
+     * @return the Deck of WeaponTile
      */
-    public Deck<Weapon> getWeaponDeck() {
+    public Deck<WeaponTile> getWeaponDeck() {
         return this.weaponDeck;
     }
 

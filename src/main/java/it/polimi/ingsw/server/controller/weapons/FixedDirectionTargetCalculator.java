@@ -43,7 +43,7 @@ public class FixedDirectionTargetCalculator implements TargetCalculator {
      * @return a list of the available groups of targets, which will be empty if none are available
      */
     @Override
-    public Set<Player> computeTargets(Block startingPoint, BasicWeapon weapon) {
+    public Set<Player> computeTargets(Block startingPoint, Weapon weapon) {
         updateDirection(startingPoint, weapon);
 
         Set<Block> blocks = new HashSet<>(Collections.singletonList(startingPoint));
@@ -92,7 +92,7 @@ public class FixedDirectionTargetCalculator implements TargetCalculator {
         this.direction = direction;
     }
 
-    private void updateDirection(Block startingPoint, BasicWeapon weapon) {
+    private void updateDirection(Block startingPoint, Weapon weapon) {
         boolean toSet = false;
         Attack attack = null;
         for (Attack a : weapon.getExecutedAttacks()) {

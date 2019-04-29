@@ -33,7 +33,7 @@ public class FixedVisibilityTargetCalculator implements TargetCalculator {
      * @return a list of the available groups of targets, which will be empty if none are available
      */
     @Override
-    public Set<Player> computeTargets(Block startingPoint, BasicWeapon weapon) {
+    public Set<Player> computeTargets(Block startingPoint, Weapon weapon) {
         if (visible) {
             return board.getVisibleBlocks(startingPoint).stream().flatMap(block -> block.getPlayers().stream()).collect(Collectors.toSet());
         } else {

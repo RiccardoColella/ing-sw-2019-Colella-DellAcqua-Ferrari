@@ -11,7 +11,6 @@ import it.polimi.ingsw.server.model.match.MatchFactory;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
-import it.polimi.ingsw.server.model.weapons.Weapon;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import org.junit.jupiter.api.AfterEach;
@@ -22,7 +21,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BasicWeaponTest {
+class WeaponTest {
 
     private Match match;
 
@@ -98,7 +97,7 @@ class BasicWeaponTest {
         //in this configuration, both b01 e b02 are visible from b00, so the active player can see both t1 and t2
         //one target will be hit by the basic attack, the other by the powered attack
 
-        BasicWeapon lockRifle = WeaponFactory.create("Lock Rifle", board);
+        Weapon lockRifle = WeaponFactory.create("Lock Rifle", board);
         lockRifle.shoot(new MockInterviewer(0), activePlayer);
         assertEquals(1, lockRifle.wasHitBy(lockRifle.basicAttack).size());
         t1 = lockRifle.wasHitBy(lockRifle.basicAttack).iterator().next();
@@ -128,7 +127,7 @@ class BasicWeaponTest {
         b00.addPlayer(activePlayer);
         b00.addPlayer(t1);
         b00.addPlayer(t2);
-        BasicWeapon electroscythe = WeaponFactory.create("Electroscythe", board);
+        Weapon electroscythe = WeaponFactory.create("Electroscythe", board);
 
         //in this configuration, t1 and t2 are both on b00: they will both be hit by basic attack
 
@@ -181,7 +180,7 @@ class BasicWeaponTest {
         Block b02 = board.getBlock(0, 2).orElseThrow(() -> new IllegalStateException("Block does not exist"));
         b02.addPlayer(t2);
         b00.addPlayer(t3);
-        BasicWeapon machineGun = WeaponFactory.create("Machine Gun", board);
+        Weapon machineGun = WeaponFactory.create("Machine Gun", board);
 
         //in this configuration, all 3 targets are visible from b00
         //two targets will receive 1 damage from the basic attack, then the alternative attacks will give an extra
@@ -250,7 +249,7 @@ class BasicWeaponTest {
         b00.addPlayer(activePlayer);
         Block b21 = board.getBlock(2, 1).orElseThrow(() -> new IllegalStateException("Block does not exist"));
         b21.addPlayer(t1);
-        BasicWeapon tractorBeam = WeaponFactory.create("Tractor Beam", board);
+        Weapon tractorBeam = WeaponFactory.create("Tractor Beam", board);
         tractorBeam.shoot(new MockInterviewer(0), activePlayer);
 
         //in this configuration, t1 is the only target on the board and hittable by the weapon
@@ -297,7 +296,7 @@ class BasicWeaponTest {
 
         //once the vortex is set, all targets can be moved to it and then hit using the two attacks
 
-        BasicWeapon vortexCannon = WeaponFactory.create("Vortex Cannon", board);
+        Weapon vortexCannon = WeaponFactory.create("Vortex Cannon", board);
         vortexCannon.shoot(new MockInterviewer(0), activePlayer);
 
         Block vortex = t1.getBlock();
@@ -346,7 +345,7 @@ class BasicWeaponTest {
 
         //in this configuration, there are 3 players this weapon can hit
 
-        BasicWeapon thor = WeaponFactory.create("T.H.O.R.", board);
+        Weapon thor = WeaponFactory.create("T.H.O.R.", board);
         thor.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = thor.wasHitBy(thor.basicAttack);
@@ -391,7 +390,7 @@ class BasicWeaponTest {
         b12.addPlayer(t2);
         b12.addPlayer(t3);
         b00.addPlayer(t4);
-        BasicWeapon furnace = WeaponFactory.create("Furnace", board);
+        Weapon furnace = WeaponFactory.create("Furnace", board);
         furnace.shoot(new MockInterviewer(0), activePlayer);
 
         //t1, t2 and t3 are hit: they are all in the same room which is visible by the active player, but not his own
@@ -442,7 +441,7 @@ class BasicWeaponTest {
 
         //t1 or t2 will be the only target for this weapon (besides the active player, who will be allowed to move)
 
-        BasicWeapon plasmaGun = WeaponFactory.create("Plasma Gun", board);
+        Weapon plasmaGun = WeaponFactory.create("Plasma Gun", board);
         plasmaGun.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = plasmaGun.wasHitBy(plasmaGun.basicAttack);
@@ -495,7 +494,7 @@ class BasicWeaponTest {
 
         //only t2 is a valid target for this weapon
 
-        BasicWeapon heatseeker = WeaponFactory.create("Heatseeker", board);
+        Weapon heatseeker = WeaponFactory.create("Heatseeker", board);
         heatseeker.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = heatseeker.wasHitBy(heatseeker.basicAttack);
@@ -529,7 +528,7 @@ class BasicWeaponTest {
 
         //both targets are at least 2 moves away from the active player, but only t1 is visible: t1 is the only available target
 
-        BasicWeapon whisper = WeaponFactory.create("Whisper", board);
+        Weapon whisper = WeaponFactory.create("Whisper", board);
         whisper.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = whisper.wasHitBy(whisper.basicAttack);
@@ -565,7 +564,7 @@ class BasicWeaponTest {
 
         //t1, t2 and t3 are all on the same square, so they will all be hit, two of them will only receive the marks and the other also the damage
 
-        BasicWeapon hellion = WeaponFactory.create("Hellion", board);
+        Weapon hellion = WeaponFactory.create("Hellion", board);
         hellion.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = hellion.wasHitBy(hellion.basicAttack);
@@ -622,7 +621,7 @@ class BasicWeaponTest {
         //two players for the two squares, which are in the same direction and 1 and 2 moves away from the active player
         //in basic mode, this means that 1 target for each square will be damaged
 
-        BasicWeapon flamethrower = WeaponFactory.create("Flamethrower", board);
+        Weapon flamethrower = WeaponFactory.create("Flamethrower", board);
         flamethrower.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = flamethrower.wasHitBy(flamethrower.basicAttack);
@@ -684,7 +683,7 @@ class BasicWeaponTest {
         //all players are visible by the active player, so they are potential targets for the basic attack
         //only one of them will actually be targeted
 
-        BasicWeapon twoXTwo = WeaponFactory.create("2x-2", board);
+        Weapon twoXTwo = WeaponFactory.create("2x-2", board);
         twoXTwo.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = twoXTwo.wasHitBy(twoXTwo.basicAttack);
@@ -741,7 +740,7 @@ class BasicWeaponTest {
 
         //all targets are in visible squares, they are all potential targets for both effects
 
-        BasicWeapon grenadeLauncher = WeaponFactory.create("Grenade Launcher", board);
+        Weapon grenadeLauncher = WeaponFactory.create("Grenade Launcher", board);
         grenadeLauncher.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = grenadeLauncher.wasHitBy(grenadeLauncher.basicAttack);
@@ -790,7 +789,7 @@ class BasicWeaponTest {
 
         //t2 is the only target that is on the same square as the active player and can therefore be targeted
 
-        BasicWeapon shotgun = WeaponFactory.create("Shotgun", board);
+        Weapon shotgun = WeaponFactory.create("Shotgun", board);
         shotgun.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = shotgun.wasHitBy(shotgun.basicAttack);
@@ -844,7 +843,7 @@ class BasicWeaponTest {
 
         //any of the players will be the target of the basic attack, all of them will be hit by fragmenting warhead
 
-        BasicWeapon rocketLauncher = WeaponFactory.create("Rocket Launcher", board);
+        Weapon rocketLauncher = WeaponFactory.create("Rocket Launcher", board);
         rocketLauncher.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = rocketLauncher.wasHitBy(rocketLauncher.basicAttack);
@@ -891,7 +890,7 @@ class BasicWeaponTest {
 
         //basic mode can only hit t1
 
-        BasicWeapon powerGlove = WeaponFactory.create("Power Glove", board);
+        Weapon powerGlove = WeaponFactory.create("Power Glove", board);
         powerGlove.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = powerGlove.wasHitBy(powerGlove.basicAttack);
@@ -944,7 +943,7 @@ class BasicWeaponTest {
 
         //t1 and t2 are both potential targets, but only one of them will actually be hit
 
-        BasicWeapon railgun = WeaponFactory.create("Railgun", board);
+        Weapon railgun = WeaponFactory.create("Railgun", board);
         railgun.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = railgun.wasHitBy(railgun.basicAttack);
@@ -993,7 +992,7 @@ class BasicWeaponTest {
 
         //t1 and t2 (and t3 and t4) are in the same square, so only one of them will be hit
 
-        BasicWeapon shockwave = WeaponFactory.create("Shockwave", board);
+        Weapon shockwave = WeaponFactory.create("Shockwave", board);
         shockwave.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = shockwave.wasHitBy(shockwave.basicAttack);
@@ -1046,7 +1045,7 @@ class BasicWeaponTest {
         b13.addPlayer(t3);
         b13.addPlayer(t4);
 
-        BasicWeapon cyberblade = WeaponFactory.create("Cyberblade", board);
+        Weapon cyberblade = WeaponFactory.create("Cyberblade", board);
         cyberblade.shoot(new MockInterviewer(0), activePlayer);
 
         Set<Player> hitByBasic = cyberblade.wasHitBy(cyberblade.basicAttack);
@@ -1080,7 +1079,7 @@ class BasicWeaponTest {
         b13.addPlayer(activePlayer);
         b13.addPlayer(t1);
 
-        BasicWeapon sledgehammer = WeaponFactory.create("Sledgehammer", board);
+        Weapon sledgehammer = WeaponFactory.create("Sledgehammer", board);
         sledgehammer.shoot(new MockInterviewer(0), activePlayer);
 
         //basic attack hit t1, the only available target
