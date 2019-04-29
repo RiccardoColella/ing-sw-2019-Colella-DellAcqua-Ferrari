@@ -459,6 +459,18 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     /**
+     * This method allows the player to reload a weapon it owns
+     * @param weapon the Weapon that shall be reloaded
+     * @param coins the cost the player is paying with ammoCubes and powerups
+     */
+    public void reload(Weapon weapon, List<Coin> coins) {
+        if (!weapon.isLoaded() && this.getWeapons().contains(weapon)) {
+            pay(coins);
+            weapon.setLoaded(true);
+        } else throw new IllegalArgumentException("Weapon could not be loaded");
+    }
+
+    /**
      * This method adds a skull to the player
      */
     public void addSkull() {

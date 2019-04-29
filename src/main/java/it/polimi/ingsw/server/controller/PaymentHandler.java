@@ -13,25 +13,22 @@ import java.util.List;
 /**
  * This class handle all payments
  */
-public class Treasury {
+public class PaymentHandler {
 
     /**
-     * Debt that needs to be payed.
+     * Private constructor. This class has no values and doesn't need to be constructed
      */
-    private List<Coin> debt;
-
-    /**
-     * This variable indicates the player who own the debt.
-     */
-    private Player owner;
-
-
-    public Treasury(List<AmmoCube> debt, Player owner){
-        this.debt = new LinkedList<>(debt);
-        this.owner = owner;
+    private PaymentHandler(){
+        throw new IllegalStateException("Class doesn't need to be constructed");
     }
 
-    public boolean canAfford(){
+    /**
+     * This methods returns true if the player has enough coin to afford the bill.
+     * @param debt Is the due bill
+     * @param owner is the player who has to pay
+     * @return true if the player can afford the debt
+     */
+    public static boolean canAfford(List<? extends Coin> debt, Player owner){
         List<AmmoCube> ownerAmmoCubes = new LinkedList<>(owner.getAmmoCubes());
         List<PowerupTile> ownerPowerps = new LinkedList<>(owner.getPowerups());
         boolean canAfford = true;
@@ -46,9 +43,16 @@ public class Treasury {
         return canAfford;
     }
 
-    public List<Coin> selectPaymentMethod(Interviewer payer){
-        List<Coin> paymentMeethod = new LinkedList<>();
-        if (canAfford()){
+    /**
+     * This methods let the player to choose what payment method to use
+     * @param debt is the amount of coin the player needs to pay
+     * @param owner is the player who has to pay
+     * @param payer is the interface who will be asked to choose how to manage owner's debt
+     * @return the selected Coin chosen to pay the debt
+     */
+    public static List<Coin> selectPaymentMethod(List<? extends Coin> debt, Player owner, Interviewer payer){
+        List<Coin> paymentMethod = new LinkedList<>();
+        if (canAfford(debt, owner)){
             List<Coin> availableCoins = new LinkedList<>();
             availableCoins.addAll(owner.getAmmoCubes());
             availableCoins.addAll(owner.getPowerups());
@@ -61,31 +65,9 @@ public class Treasury {
                 Coin choose = payer.select("How do you want to pay this " + coinDue.getColor().toString() + " debt?",
                         rightColourCoins, ClientApi.PAYMENT_QUESTION);
                 availableCoins.remove(choose);
-                paymentMeethod.add(choose);
+                paymentMethod.add(choose);
             }
         } else throw new IllegalStateException("Cannot afford this payment!");
-        return paymentMeethod;
-    }
-
-    public void pay(Interviewer payer){
-        if (canAfford()){
-            List<Coin> paymentMeethod = new LinkedList<>();
-            List<Coin> availableCoins = new LinkedList<>();
-            availableCoins.addAll(owner.getAmmoCubes());
-            availableCoins.addAll(owner.getPowerups());
-            for (Coin coinDue : debt){
-                List<Coin> rightColourCoins = new LinkedList<>();
-                availableCoins.stream()
-                        .filter(ammoCube -> ammoCube.hasSameValueAs(coinDue))
-                        .forEach(rightColourCoins::add);
-
-                Coin choose = payer.select("How do you want to pay this " + coinDue.getColor().toString() + " debt?",
-                        rightColourCoins, ClientApi.PAYMENT_QUESTION);
-                availableCoins.remove(choose);
-                paymentMeethod.add(choose);
-            }
-            owner.pay(paymentMeethod);
-            debt.clear();
-        } else throw new IllegalStateException("Cannot afford this payment!");
+        return paymentMethod;
     }
 }
