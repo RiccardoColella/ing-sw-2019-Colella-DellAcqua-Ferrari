@@ -4,6 +4,8 @@ import java.util.EventObject;
 
 /**
  * Creates a MessageDispatcherStopped event to enable attached objects to manage the associated resources
+ *
+ * @author Carlo Dell'Acqua
  */
 public class MessageDispatcherStopped extends EventObject {
     /**

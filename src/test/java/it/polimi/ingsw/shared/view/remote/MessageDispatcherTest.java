@@ -39,9 +39,7 @@ class MessageDispatcherTest {
                     }
                     return testMessage;
                 },
-                (message) -> {
-                    assertEquals(testMessage, message, "Expected testMessage, got something different");
-                }
+                (message) -> assertEquals(testMessage, message, "Expected testMessage, got something different")
         );
     }
 

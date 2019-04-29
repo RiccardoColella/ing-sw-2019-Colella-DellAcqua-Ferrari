@@ -1,7 +1,7 @@
 package it.polimi.ingsw.shared.view.remote;
 
 import it.polimi.ingsw.shared.messages.Message;
-import it.polimi.ingsw.utils.function.TimeoutSupplier;
+import it.polimi.ingsw.utils.function.IOSupplier;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  *
  * @author Carlo Dell'Acqua
  */
-public class InputStreamMessageSupplier implements TimeoutSupplier<Message>, AutoCloseable {
+public class InputStreamMessageSupplier implements IOSupplier<Message>, AutoCloseable {
     /**
      * Logging utility
      */

@@ -32,6 +32,7 @@ public class SocketViewFactory {
      *
      * @param socket the socket that is associated with the SocketView
      * @return a SocketView
+     * @throws IOException if a network error occurs
      */
     public static SocketView createSocketView(Socket socket) throws IOException {
         return new SocketView(socket, answerTimeoutMilliseconds, TimeUnit.MILLISECONDS);
