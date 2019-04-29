@@ -447,7 +447,7 @@ public class Player implements Damageable, MatchModeChangedListener {
 
     /**
      * This method allows the player to reload a weapon it owns
-     * @param weapon the WeaponTile that shall be reloaded
+     * @param weapon the Weapon that shall be reloaded
      * @param ammoCubes the cost the player is paying with ammoCubes
      * @param powerups the cost the player is paying with powerups
      */
@@ -455,7 +455,19 @@ public class Player implements Damageable, MatchModeChangedListener {
         if (!weapon.isLoaded() && this.getWeapons().contains(weapon)) {
             pay(ammoCubes, powerups);
             weapon.setLoaded(true);
-        } else throw new IllegalArgumentException("WeaponTile could not be loaded");
+        } else throw new IllegalArgumentException("Weapon could not be loaded");
+    }
+
+    /**
+     * This method allows the player to reload a weapon it owns
+     * @param weapon the Weapon that shall be reloaded
+     * @param coins the cost the player is paying with ammoCubes and powerups
+     */
+    public void reload(WeaponTile weapon, List<Coin> coins) {
+        if (!weapon.isLoaded() && this.getWeapons().contains(weapon)) {
+            pay(coins);
+            weapon.setLoaded(true);
+        } else throw new IllegalArgumentException("Weapon could not be loaded");
     }
 
     /**
