@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 /**
  * This class is a TargetCalculator that finds targets that is in a fixed range of moves away from the starting point
+ *
+ * @author Adriana Ferrari
  */
 public class FixedDistanceTargetCalculator implements TargetCalculator {
 
@@ -18,7 +20,12 @@ public class FixedDistanceTargetCalculator implements TargetCalculator {
      * This property represents the range of moves away the target can be from the starting point
      */
     private final Range range;
+
+    /**
+     * The {@code Board} on which distances are computed
+     */
     private final Board board;
+
     /**
      * This constructor sets the range of moves that will be used during computations
      * @param range the range of moves away that will be considered for potential targets
@@ -29,7 +36,7 @@ public class FixedDistanceTargetCalculator implements TargetCalculator {
     }
 
     /**
-     * This method returns the groups of Damageable that can be targeted by the Attack solely based on how many moves away they are from the starting point
+     * This method returns the groups of players that can be targeted by the Attack solely based on how many moves away they are from the starting point
      * @param startingPoint the Block relative to which the targets should be
      * @return a list of the available groups of targets, which will be empty if none are available
      */
@@ -40,11 +47,17 @@ public class FixedDistanceTargetCalculator implements TargetCalculator {
         return candidates.stream().flatMap(block -> block.getPlayers().stream()).collect(Collectors.toSet());
     }
 
+    /**
+     * @inheritDoc TargetCalculator
+     */
     @Override
     public boolean contains(TargetCalculator calculator) {
         return calculator == this;
     }
 
+    /**
+     * @inheritDoc TargetCalculator
+     */
     @Override
     public List<TargetCalculator> getSubCalculators() {
         return Collections.singletonList(this);

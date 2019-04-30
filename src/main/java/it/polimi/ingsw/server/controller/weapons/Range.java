@@ -1,7 +1,10 @@
 package it.polimi.ingsw.server.controller.weapons;
 
 /**
- * This class represents a range of admissible int values
+ * This class represents a range of {@code int} values. It is an inclusive range, so both minimum and maximum are admissible
+ * values.
+ *
+ * @author Adriana Ferrari
  */
 public class Range {
     /**
@@ -16,6 +19,7 @@ public class Range {
 
     /**
      * This constructor creates a range knowing the two extremes
+     *
      * @param min the minimum admissible value
      * @param max the maximum admissible value
      */
@@ -26,6 +30,7 @@ public class Range {
 
     /**
      * This method gets the minimum value of the range
+     *
      * @return an int representing the minimum value of the range
      */
     public int getMin() {
@@ -34,6 +39,7 @@ public class Range {
 
     /**
      * This method gets the maximum value of the range
+     *
      * @return an int representing the maximum value of the range
      */
     public int getMax() {

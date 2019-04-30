@@ -27,10 +27,6 @@ public class WeaponWithMultipleEffects extends Weapon {
      */
     private final boolean mustExecuteInOrder;
 
-    /**
-     * All the attacks of this weapon
-     */
-    private List<Attack> allAttacks;
 
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
@@ -45,6 +41,7 @@ public class WeaponWithMultipleEffects extends Weapon {
         this.mustExecuteInOrder = mustExecuteInOrder;
         this.allAttacks = new LinkedList<>(poweredAttacks);
         this.allAttacks.add(0, this.basicAttack);
+        this.allAttacks = Collections.unmodifiableList(allAttacks);
     }
 
     /**
