@@ -155,13 +155,35 @@ public class WeaponFactory {
     /**
      * This method is used to create any weapon
      * @param name the enum corresponding to the desired weapon
+     * @param board the {@code Board} on which the weapons will be used
      * @return the weapon, ready to be bought
      */
-    public static Weapon create(String name, Board board) {
+    static Weapon create(String name, Board board) {
         if (weaponMap == null) {
             readFromFile();
         }
         return readWeapon(weaponMap.get(name), board);
+    }
+
+    /**
+     * Creates a dictionary associating a ready to use {@code Weapon} to its name
+     *
+     * @param board the {@code Board} on which the weapons will be used
+     * @return a {@code Map<String, Weapon>} that associates the name to the relative {@code Weapon}
+     */
+    public static Map<String, Weapon> createWeaponDictionary(Board board) {
+        if (weaponMap == null) {
+            readFromFile();
+        }
+        return weaponMap
+                .entrySet()
+                .stream()
+                .collect(
+                        Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> readWeapon(e.getValue(), board)
+                        )
+                );
     }
 
     /**
@@ -258,13 +280,39 @@ public class WeaponFactory {
         boolean skippable = actionObject.get(Property.SKIPPABLE.toString()).getAsBoolean();
         Function<Weapon, Set<Block>> startingPointUpdater = readStartingPoint(actionObject);
         TriConsumer<Set<Player>, Interviewer, Weapon> executor = readActionType(actionObject, board.getBlocks().size());
+        TargetFinder targetFinder = new TargetFinder() {
+            @Override
+            public Optional<TargetCalculator> getCalculator() {
+                return Optional.ofNullable(targetCalculator);
+            }
+
+            @Override
+            public Set<Player> getBonusTargets(List<Player> previouslyHit, Player activePlayer) {
+                return bonusTargets.apply(previouslyHit, activePlayer);
+            }
+
+            @Override
+            public Set<Player> getTargetsToChooseFrom(Weapon currentWeapon) {
+                return targetsToChooseFrom.apply(currentWeapon);
+            }
+
+            @Override
+            public Set<Set<Player>> adaptToScope(Set<Player> potentialTargets) {
+                return adaptToScope.apply(potentialTargets);
+            }
+
+            public Set<Set<Player>> addToEach(Set<Set<Player>> potentialTargets, Weapon weapon) {
+                return addToEach.apply(potentialTargets, weapon);
+            }
+
+            @Override
+            public Set<Set<Player>> applyVeto(Set<Set<Player>> potentialTargets, Weapon weapon) {
+                return veto.apply(potentialTargets, weapon);
+            }
+        };
+
         return new ActionConfig(
-            targetCalculator,
-            bonusTargets,
-            targetsToChooseFrom,
-            adaptToScope,
-            addToEach,
-            veto,
+            targetFinder,
             skippable,
             startingPointUpdater,
             executor

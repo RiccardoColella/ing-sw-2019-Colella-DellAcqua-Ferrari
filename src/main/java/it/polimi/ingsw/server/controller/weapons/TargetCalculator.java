@@ -17,6 +17,7 @@ public interface TargetCalculator {
      * This method returns the groups of {@code Player} that can be targeted by the Attack solely based on their position relative to the starting point
      *
      * @param startingPoint the {@code Block} relative to which the targets should be
+     * @param weapon the {@code Weapon} that will be used to shoot
      * @return a list of the available groups of targets, which will be empty if none are available
      */
     Set<Player> computeTargets(Block startingPoint, Weapon weapon);
