@@ -14,33 +14,66 @@ import java.util.stream.Collectors;
 
 /**
  * This class schematizes an attack, which is the effect that a weapon has on one or more targets
+ *
+ * @author Adriana Ferrari
  */
 public class Attack {
 
+    /**
+     * The name of the attack represented with a {@code String}
+     */
     protected final String name;
-    private final List<ActionConfig> actionConfigs;
-    protected final Board board;
-    private boolean basicFirst;
-    protected final List<Coin> cost;
-    private Set<Player> lastHit;
 
+    /**
+     * The configurations of this attack
+     */
+    private final List<ActionConfig> actionConfigs;
+
+    /**
+     * The {@code Board} this attack can be executed on
+     */
+    protected final Board board;
+
+    /**
+     * {@code true} if this attack needs the basic attack to be executed before it, {@code false} otherwise
+     */
+    private boolean basicFirst;
+
+    /**
+     * The cost of this attack in {@code Coin}
+     */
+    protected final List<Coin> cost;
+
+    /**
+     * Creates a new {@code Attack}
+     *
+     * @param name {@code String} representing the name of the attack
+     * @param actionConfigs the list of the configurations for this attack
+     * @param board the {@code Board} this attack can be used on
+     * @param cost the price to pay to use this attack
+     */
     public Attack(String name, List<ActionConfig> actionConfigs, Board board, List<Coin> cost) {
         this.name = name;
         this.actionConfigs = Collections.unmodifiableList(actionConfigs);
         this.board = board;
         this.basicFirst = false;
         this.cost = cost;
-        this.lastHit = new HashSet<>();
     }
 
+    /**
+     * Copies an existing {@code Attack}, allowing to change {@code basicFirst}
+     *
+     * @param toCopy the {@code Attack} to copy
+     * @param basicFirst whether the attack requires that the basic attack has already been executed
+     */
     public Attack(Attack toCopy, boolean basicFirst) {
         this(toCopy.name, toCopy.actionConfigs, toCopy.board, toCopy.cost);
         this.basicFirst = basicFirst;
     }
 
     /**
-     * This method returns a String representing the name of the Attack
-     * The name is a Unique Identifier for the attack and must be used to implement hashCode and equals in classes which implement this interface
+     * This method returns a {@code String} representing the name of the {@code Attack}
+     * The name is a Unique Identifier for the attack whithin a {@code Weapon}
      *
      * @return the name of the attack
      */
@@ -90,10 +123,8 @@ public class Attack {
             } else {
                 actionConfig.execute(chosenSet.get(), interviewer, weapon);
                 weapon.addHitTargets(chosenSet.get(), this);
-                lastHit = chosenSet.get();
             }
         }
-        lastHit.clear();
     }
 
     private Set<Set<String>> mapPlayerToNickName(Set<Set<Player>> potentialTargets) {
@@ -149,9 +180,6 @@ public class Attack {
 
     protected boolean isValidStartingPoint(Block sp, Weapon weapon) {
         return !this.getPotentialTargets(sp, actionConfigs.get(0), weapon).isEmpty();
-    }
-    public Set<Player> getLastHit() {
-        return lastHit;
     }
 
     public List<Coin> getCost() {

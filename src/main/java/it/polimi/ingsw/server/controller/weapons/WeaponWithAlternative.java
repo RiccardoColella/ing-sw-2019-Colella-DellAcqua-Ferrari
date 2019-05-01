@@ -4,6 +4,7 @@ import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.shared.messages.ClientApi;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,8 +21,6 @@ public class WeaponWithAlternative extends Weapon {
      */
     protected final Attack alternativeAttack;
 
-    private List<Attack> allAttacks;
-
     /**
      * This constructor assignes all the final values to the weapon, making it ready to be bought
      *
@@ -35,6 +34,7 @@ public class WeaponWithAlternative extends Weapon {
         allAttacks = new LinkedList<>();
         this.allAttacks.add(basicAttack);
         this.allAttacks.add(this.alternativeAttack);
+        this.allAttacks = Collections.unmodifiableList(allAttacks);
     }
 
     /**

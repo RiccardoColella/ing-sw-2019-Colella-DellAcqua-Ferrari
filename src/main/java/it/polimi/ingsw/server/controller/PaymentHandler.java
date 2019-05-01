@@ -29,6 +29,7 @@ public class PaymentHandler {
      * @return true if the player can afford the debt
      */
     public static boolean canAfford(List<? extends Coin> debt, Player owner){
+        //TODO: make this function work correctly
         List<AmmoCube> ownerAmmoCubes = new LinkedList<>(owner.getAmmoCubes());
         List<PowerupTile> ownerPowerps = new LinkedList<>(owner.getPowerups());
         boolean canAfford = true;
@@ -52,7 +53,7 @@ public class PaymentHandler {
      */
     public static List<Coin> selectPaymentMethod(List<? extends Coin> debt, Player owner, Interviewer payer){
         List<Coin> paymentMethod = new LinkedList<>();
-        if (canAfford(debt, owner)){
+        //if (canAfford(debt, owner)){
             List<Coin> availableCoins = new LinkedList<>();
             availableCoins.addAll(owner.getAmmoCubes());
             availableCoins.addAll(owner.getPowerups());
@@ -67,7 +68,7 @@ public class PaymentHandler {
                 availableCoins.remove(choose);
                 paymentMethod.add(choose);
             }
-        } else throw new IllegalStateException("Cannot afford this payment!");
+        //} else throw new IllegalStateException("Cannot afford this payment!");
         return paymentMethod;
     }
 }

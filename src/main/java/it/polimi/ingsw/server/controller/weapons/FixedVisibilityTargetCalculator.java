@@ -11,12 +11,18 @@ import java.util.stream.Collectors;
 
 /**
  * This class is a TargetCalculator that finds targets that are (or are not) visible from the starting point
+ *
+ * @author Adriana Ferrari
  */
 public class FixedVisibilityTargetCalculator implements TargetCalculator {
     /**
      * This property states whether the computed targets are the visible ones (true) or non visible ones (false)
      */
     private final boolean visible;
+
+    /**
+     * The {@code Board} on which the targets are found
+     */
     private final Board board;
     /**
      * This constructor sets the type of visibility that will be considered
@@ -28,7 +34,7 @@ public class FixedVisibilityTargetCalculator implements TargetCalculator {
     }
 
     /**
-     * This method returns the groups of Damageable that can be targeted by the Attack solely based on whether they can be seen from the starting point
+     * This method returns the groups of players that can be targeted by the Attack solely based on whether they can be seen from the starting point
      * @param startingPoint the Block relative to which the targets should be
      * @return a list of the available groups of targets, which will be empty if none are available
      */
@@ -43,11 +49,17 @@ public class FixedVisibilityTargetCalculator implements TargetCalculator {
         }
     }
 
+    /**
+     * @inheritDoc TargetCalculator
+     */
     @Override
     public boolean contains(TargetCalculator calculator) {
         return calculator == this;
     }
 
+    /**
+     * @inheritDoc TargetCalculator
+     */
     @Override
     public List<TargetCalculator> getSubCalculators() {
         return Collections.singletonList(this);

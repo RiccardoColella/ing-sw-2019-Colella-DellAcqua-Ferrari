@@ -5,6 +5,7 @@ import it.polimi.ingsw.server.model.battlefield.Board;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.AmmoCubeFactory;
+import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.match.MatchFactory;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -107,6 +109,11 @@ class WeaponTest {
         t2 = lockRifle.wasHitBy(powered).iterator().next();
         assertEquals(0, t2.getDamageTokens().size());
         assertEquals(1, t2.getMarks().size());
+
+        int paid = lockRifle.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -155,6 +162,11 @@ class WeaponTest {
             assertEquals(3, target.getDamageTokens().size(), "Wrong number of damage tokens");
         }
         assertEquals(2, hit.size(), "Wrong number of targets");
+
+        int paid = electroscythe.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -213,6 +225,11 @@ class WeaponTest {
         Block b21 = board.getBlock(2, 1).orElseThrow(() -> new IllegalStateException("Block does not exist"));
         board.teleportPlayer(t3, b21);
 
+        int paid = machineGun.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
+
         machineGun.shoot(new MockInterviewer(0), activePlayer);
 
         //basic attack hits 2 targets as before
@@ -230,6 +247,10 @@ class WeaponTest {
         assertFalse(hitByTurretTripod.containsAll(hitByFocusShot)); //the target hit by focus shot must not be hit again
         assertTrue(hitByBasic.containsAll(hitByTurretTripod));
 
+        paid += machineGun.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -270,6 +291,11 @@ class WeaponTest {
 
         assertEquals(3, t2.getDamageTokens().size());
         assertTrue(board.getReachableBlocks(b00, new Range(0, 2)).contains(t2.getBlock())); //t2 is from 0 to 2 moves away from the active player
+
+        int paid = tractorBeam.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -316,6 +342,11 @@ class WeaponTest {
         for (Player target : hitByBlackHole) {
            assertEquals(1, target.getDamageTokens().size(), "Player should have 1 damage");
         }
+
+        int paid = vortexCannon.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -363,6 +394,11 @@ class WeaponTest {
         assertEquals(2, t1.getDamageTokens().size());
         assertEquals(1, t2.getDamageTokens().size());
         assertEquals(2, t3.getDamageTokens().size());
+
+        int paid = thor.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
 
     }
 
@@ -416,6 +452,11 @@ class WeaponTest {
             assertEquals(2, target.getDamageTokens().size(), "Targets should have 2 damage");
             assertEquals(1, target.getMarks().size(), "Targets should have 1 mark");
         }
+
+        int paid = furnace.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -471,6 +512,11 @@ class WeaponTest {
         for (Player target : hitByBasic) {
             assertEquals(3, target.getDamageTokens().size(), "Wrong damage amount");
         }
+
+        int paid = plasmaGun.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -504,6 +550,11 @@ class WeaponTest {
         assertEquals(1, hitByBasic.size(), "Wrong amount of targets");
         assertTrue(hitByBasic.contains(t2), "Wrong target");
         assertEquals(3, t2.getDamageTokens().size(), "Wrong damage");
+
+        int paid = heatseeker.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -538,6 +589,11 @@ class WeaponTest {
         assertTrue(hitByBasic.contains(t1), "Wrong target");
         assertEquals(1, hitByBasic.size(), "Wrong amount of targets");
         assertEquals(3, t1.getDamageTokens().size(), "Wrong damage");
+
+        int paid = whisper.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -591,6 +647,11 @@ class WeaponTest {
         //used to hit the players (marks turn into damage after receiving a new damage)
         assertEquals(3, hitByNanoTracer.size(), "Wrong amount of targets");
         assertTrue(hitByNanoTracer.containsAll(hitByBasic), "Wrong targets");
+
+        int paid = hellion.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -653,6 +714,11 @@ class WeaponTest {
                 assertEquals(1, target.getDamageTokens().size(), "Wrong amount of damage");
             }
         }
+
+        int paid = flamethrower.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -711,6 +777,11 @@ class WeaponTest {
                 assertEquals(1, t.getMarks().size(), "Wrong marks");
             }
         }
+
+        int paid = twoXTwo.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -760,6 +831,11 @@ class WeaponTest {
         assertFalse(hitByExtraGrenade.isEmpty(), "Attack extra grenade should have hit someone");
         assertTrue(hitByExtraGrenade.iterator().next().getBlock().getPlayers().containsAll(hitByExtraGrenade), "Targets should be all in the same square");
         assertTrue(activePlayer.getDamageTokens().isEmpty(), "Active player should not have been targeted");
+
+        int paid = grenadeLauncher.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -814,6 +890,11 @@ class WeaponTest {
         } else {
             assertEquals(2, hitByLongBarrel.iterator().next().getDamageTokens().size(), "Wrong damage");
         }
+
+        int paid = shotgun.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -865,6 +946,10 @@ class WeaponTest {
             }
         }
 
+        int paid = rocketLauncher.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -918,6 +1003,10 @@ class WeaponTest {
         assertTrue(hitByRocketFist.containsAll(b11.getPlayers()), "Wrong targets");
         assertTrue(hitByRocketFist.containsAll(b12.getPlayers()), "Wrong targets");
 
+        int paid = powerGlove.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -966,6 +1055,11 @@ class WeaponTest {
                 assertEquals(2, t.getDamageTokens().size(), "Wrong damage");
             }
         }
+
+        int paid = railgun.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -1020,6 +1114,11 @@ class WeaponTest {
                 assertEquals(1, t.getDamageTokens().size(), "Wrong damage");
             }
         }
+
+        int paid = shockwave.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -1063,6 +1162,11 @@ class WeaponTest {
         assertTrue(hitByShadowStep.contains(activePlayer), "Shadowstep should hit active player");
         assertEquals(2, hitByBasic.iterator().next().getDamageTokens().size(), "Wrong damage");
         assertEquals(2, hitBySliceAndDice.iterator().next().getDamageTokens().size(), "Wrong damage");
+
+        int paid = cyberblade.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 
     /**
@@ -1097,5 +1201,10 @@ class WeaponTest {
         assertEquals(5, t1.getDamageTokens().size(), "Wrong damage");
         assertFalse(b13.containsPlayer(t1), "Target was not moved at all");
         assertTrue(t1.getBlock().getRow() == 1 || t1.getBlock().getColumn() == 3, "Move was not in the same direction");
+
+        int paid = sledgehammer.allAttacks.stream()
+                .mapToInt(attack -> attack.getCost().size())
+                .sum();
+        assertEquals(9, activePlayer.getAmmoCubes().size() + paid, "Wrong payment");
     }
 }

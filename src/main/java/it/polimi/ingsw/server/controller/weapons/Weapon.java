@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.controller.weapons;
 
+import it.polimi.ingsw.server.controller.PaymentHandler;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.player.Player;
@@ -68,6 +69,11 @@ public class Weapon {
     protected Interviewer interviewer;
 
     /**
+     * All the attacks of this weapon
+     */
+    protected List<Attack> allAttacks;
+
+    /**
      * This constructor prepares the weapon so that it can be used
      *
      * @param name the name of the weapon as a {@code String}
@@ -83,6 +89,7 @@ public class Weapon {
         executedAttacks = new LinkedList<>();
         fixedDirection = null;
         interviewer = null;
+        allAttacks = Collections.singletonList(basicAttack);
     }
 
     /**
@@ -104,7 +111,7 @@ public class Weapon {
         do {
             attackSelection();
             if (activeAttack != null) {
-                handlePayment(interviewer, activeAttack);
+                handlePayment(interviewer);
                 attackExecution();
             }
         } while (activeAttack != null);
@@ -156,11 +163,12 @@ public class Weapon {
      * Handles the payment of the selected attack
      *
      * @param interviewer the {@code Interviewer} that should make the decisions when multiple choices are available
-     * @param chosenAttack the {@code Attack} that is being "bought"
+     * @throws IllegalStateException if the current shooter cannot afford the chosen attack
      */
-    protected final void handlePayment(Interviewer interviewer, Attack chosenAttack) {
-        if (canAffordAttack(chosenAttack)) {
-            //TODO: integrate payment handling
+    protected final void handlePayment(Interviewer interviewer) {
+        if (canAffordAttack(activeAttack)) {
+            List<Coin> toPay = PaymentHandler.selectPaymentMethod(activeAttack.getCost(), currentShooter, interviewer);
+            currentShooter.pay(toPay);
         } else throw new IllegalStateException("Unaffordable attacks cannot be chosen");
     }
 

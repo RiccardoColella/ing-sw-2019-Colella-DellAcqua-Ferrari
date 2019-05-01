@@ -8,6 +8,8 @@ import java.util.Set;
 
 /**
  * This class uses other classes implementing TargetCalculator in order to cover more complex target position requirements
+ *
+ * @author Adriana Ferrari
  */
 public class CompoundTargetCalculator implements TargetCalculator {
 
@@ -18,6 +20,7 @@ public class CompoundTargetCalculator implements TargetCalculator {
 
     /**
      * This constructors builds a CompoundTargetCalculator given the target calculators it needs
+     *
      * @param calculators the necessary target calculators
      */
     public CompoundTargetCalculator(List<TargetCalculator> calculators) {
@@ -25,8 +28,9 @@ public class CompoundTargetCalculator implements TargetCalculator {
     }
 
     /**
-     * This method returns the groups of Damageable that can be targeted by the Attack solely based on their position relative to the starting point
-     * @param startingPoint the Block relative to which the targets should be
+     * This method returns the groups of players that can be targeted by the Attack solely based on their position relative to the starting point
+     *
+     * @param startingPoint the {@code Block} relative to which the targets should be
      * @return a list of the available groups of targets, which will be empty if none are available
      */
     @Override
@@ -39,11 +43,17 @@ public class CompoundTargetCalculator implements TargetCalculator {
         return potentialBlocks;
     }
 
+    /**
+     * @inheritDoc TargetCalculator
+     */
     @Override
     public boolean contains(TargetCalculator calculator) {
         return calculator == this || this.calculators.stream().anyMatch(c -> c.contains(calculator));
     }
 
+    /**
+     * @inheritDoc TargetCalculator
+     */
     @Override
     public List<TargetCalculator> getSubCalculators() {
         return calculators;
