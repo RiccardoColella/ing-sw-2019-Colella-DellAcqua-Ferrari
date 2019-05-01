@@ -1,6 +1,6 @@
 [{
   "loaded": true,
-  "name": "LOCK_RIFLE",
+  "name": "Lock Rifle",
   "acquisitionCost": [{
     "color": "BLUE"
   }],
@@ -12,7 +12,7 @@
 },
   {
     "loaded": true,
-    "name": "ELECTROSCYTHE",
+    "name": "Electroscythe",
     "acquisitionCost": [],
     "reloadCost": [{
       "color": "BLUE"
@@ -20,7 +20,7 @@
   },
   {
     "loaded": true,
-    "name": "MACHINE_GUN",
+    "name": "Machine Gun",
     "acquisitionCost": [{
       "color": "RED"
     }],
@@ -32,7 +32,7 @@
   },
   {
     "loaded": true,
-    "name": "TRACTOR_BEAM",
+    "name": "Tractor Beam",
     "acquisitionCost": [],
     "reloadCost": [{
       "color": "BLUE"
@@ -40,7 +40,7 @@
   },
   {
     "loaded": true,
-    "name": "THOR",
+    "name": "T.H.O.R.",
     "acquisitionCost": [{
       "color": "RED"
     }],
@@ -54,7 +54,7 @@
   },
   {
     "loaded": true,
-    "name": "VORTEX_CANNON",
+    "name": "Vortex Cannon",
     "acquisitionCost": [{
       "color": "BLUE"
     }],
@@ -68,7 +68,7 @@
   },
   {
     "loaded": true,
-    "name": "FURNACE",
+    "name": "Furnace",
     "acquisitionCost": [{
       "color": "BLUE"
     }],
@@ -82,7 +82,7 @@
   },
   {
     "loaded": true,
-    "name": "PLASMA_GUN",
+    "name": "Plasma Gun",
     "acquisitionCost": [{
       "color": "YELLOW"
     }],
@@ -96,7 +96,7 @@
   },
   {
     "loaded": true,
-    "name": "HEATSEEKER",
+    "name": "Heatseeker",
     "acquisitionCost": [{
       "color": "RED"
     },
@@ -114,7 +114,7 @@
   },
   {
     "loaded": true,
-    "name": "WHISPER",
+    "name": "Whisper",
     "acquisitionCost": [{
       "color": "BLUE"
     },
@@ -134,7 +134,7 @@
   },
   {
     "loaded": true,
-    "name": "HELLION",
+    "name": "Hellion",
     "acquisitionCost": [{
       "color": "YELLOW"
     }],
@@ -146,7 +146,7 @@
   },
   {
     "loaded": true,
-    "name": "FLAMETHROWER",
+    "name": "Flamethrower",
     "acquisitionCost": [],
     "reloadCost": [{
       "color": "RED"
@@ -154,7 +154,7 @@
   },
   {
     "loaded": true,
-    "name": "TWO_X_TWO",
+    "name": "2x-2",
     "acquisitionCost": [{
       "color": "RED"
     }],
@@ -166,7 +166,7 @@
   },
   {
     "loaded": true,
-    "name": "GRENADE_LAUNCHER",
+    "name": "Grenade Launcher",
     "acquisitionCost": [],
     "reloadCost": [{
       "color": "RED"
@@ -174,7 +174,7 @@
   },
   {
     "loaded": true,
-    "name": "SHOTGUN",
+    "name": "Shotgun",
     "acquisitionCost": [{
       "color": "YELLOW"
     }],
@@ -186,7 +186,7 @@
   },
   {
     "loaded": true,
-    "name": "ROCKET_LAUNCHER",
+    "name": "Rocket Launcher",
     "acquisitionCost": [{
       "color": "RED"
     }],
@@ -200,7 +200,7 @@
   },
   {
     "loaded": true,
-    "name": "POWER_GLOVE",
+    "name": "Power Glove",
     "acquisitionCost": [{
       "color": "BLUE"
     }],
@@ -212,7 +212,7 @@
   },
   {
     "loaded": true,
-    "name": "RAILGUN",
+    "name": "Railgun",
     "acquisitionCost": [{
       "color": "YELLOW"
     }, {
@@ -228,7 +228,7 @@
   },
   {
     "loaded": true,
-    "name": "SHOCKWAVE",
+    "name": "Shockwave",
     "acquisitionCost": [],
     "reloadCost": [{
       "color": "YELLOW"
@@ -236,7 +236,7 @@
   },
   {
     "loaded": true,
-    "name": "CYBERBLADE",
+    "name": "Cyberblade",
     "acquisitionCost": [{
       "color": "RED"
     }],
@@ -248,7 +248,7 @@
   },
   {
     "loaded": true,
-    "name": "SLEDGEHAMMER",
+    "name": "Sledgehammer",
     "acquisitionCost": [],
     "reloadCost": [{
       "color": "YELLOW"

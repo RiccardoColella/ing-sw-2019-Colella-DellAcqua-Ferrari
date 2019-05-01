@@ -16,7 +16,7 @@ class AmmoCubeTest {
     @BeforeEach
     void setUp() {
         this.redAmmo = AmmoCubeFactory.create(CurrencyColor.RED);
-        this.redPowerup = PowerupTileFactory.create(PowerupTile.Type.TELEPORTER, CurrencyColor.RED);
+        this.redPowerup = PowerupTileFactory.create("Teleporter", CurrencyColor.RED);
         this.anotherRedAmmo = AmmoCubeFactory.create(CurrencyColor.RED);
         this.blueAmmo = AmmoCubeFactory.create(CurrencyColor.BLUE);
     }

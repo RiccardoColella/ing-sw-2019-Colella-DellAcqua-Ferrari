@@ -14,6 +14,7 @@ import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.utils.EnumValueByString;
+import it.polimi.ingsw.utils.Range;
 import it.polimi.ingsw.utils.TriConsumer;
 
 import javax.annotation.Nullable;
@@ -1043,11 +1044,11 @@ public class WeaponFactory {
                                 Optional.of(interviewer.select("Fix the direction for the moves", options, ClientApi.DIRECTION_QUESTION)) :
                                 interviewer.selectOptional("Fix the direction for the moves", options, ClientApi.DIRECTION_QUESTION);
 
-                for (int i = 0; (i < range.getMax()) && chosenDirection.isPresent(); i++) {
+                for (int i = 0; (i < range.getMax()) && chosenDirection.isPresent() && target.getBlock().getBorderType(chosenDirection.get()) != Block.BorderType.WALL; i++) {
                     board.movePlayer(target, chosenDirection.get());
                     chosenDirection = range.getMin() > (i + 1) ?
                             chosenDirection :
-                            interviewer.selectOptional("Select the direction for the move", Collections.singleton(chosenDirection.get()), ClientApi.DIRECTION_QUESTION);
+                            interviewer.selectOptional("Continue?", Collections.singleton(chosenDirection.get()), ClientApi.DIRECTION_QUESTION);
                 }
 
             }

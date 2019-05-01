@@ -19,16 +19,6 @@ class WeaponTileFactoryTest {
     }
 
     /**
-     * This test verifies that all weapon names correspond to an actual weapon
-     */
-    @Test
-    void create() {
-        for (WeaponTile.Name name : WeaponTile.Name.values()) {
-            assertNotNull(WeaponTileFactory.create(name), "WeaponTile JSON file did not provide a valid configuration for weapon " + name);
-        }
-    }
-
-    /**
      * This test verifies that a deck is created with all the 21 expected weapons
      */
     @Test

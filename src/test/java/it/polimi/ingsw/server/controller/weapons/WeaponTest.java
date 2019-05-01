@@ -5,7 +5,6 @@ import it.polimi.ingsw.server.model.battlefield.Board;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.AmmoCubeFactory;
-import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.match.MatchFactory;
@@ -14,12 +13,12 @@ import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.shared.messages.ClientApi;
+import it.polimi.ingsw.utils.Range;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 

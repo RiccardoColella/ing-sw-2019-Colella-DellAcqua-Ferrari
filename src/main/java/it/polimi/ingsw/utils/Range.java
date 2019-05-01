@@ -1,4 +1,4 @@
-package it.polimi.ingsw.server.controller.weapons;
+package it.polimi.ingsw.utils;
 
 /**
  * This class represents a range of {@code int} values. It is an inclusive range, so both minimum and maximum are admissible

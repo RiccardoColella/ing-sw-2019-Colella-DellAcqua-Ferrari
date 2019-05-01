@@ -167,7 +167,7 @@ public class Weapon {
      */
     protected final void handlePayment(Interviewer interviewer) {
         if (canAffordAttack(activeAttack)) {
-            List<Coin> toPay = PaymentHandler.selectPaymentMethod(activeAttack.getCost(), currentShooter, interviewer);
+            List<Coin> toPay = PaymentHandler.collectCoins(activeAttack.getCost(), currentShooter, interviewer);
             currentShooter.pay(toPay);
         } else throw new IllegalStateException("Unaffordable attacks cannot be chosen");
     }
@@ -213,16 +213,7 @@ public class Weapon {
      * @return {@code true} if the {@code Attack} is affordable, {@code false} if it isn't
      */
     protected final boolean canAffordAttack(Attack attack) {
-        List<Coin> activePlayerWallet = this.currentShooter.getAmmoCubes().stream().map(ammoCube -> (Coin) ammoCube).collect(Collectors.toCollection(LinkedList::new));
-        activePlayerWallet.addAll(this.currentShooter.getPowerups().stream().map(powerupTile -> (Coin) powerupTile).collect(Collectors.toList()));
-        for (Coin coin : attack.getCost()) {
-            if (activePlayerWallet.stream().anyMatch(playerCoin -> playerCoin.hasSameValueAs(coin))) {
-                activePlayerWallet.remove(coin);
-            } else {
-                return false;
-            }
-        }
-        return true;
+        return PaymentHandler.canAfford(attack.getCost(), this.currentShooter);
     }
 
     /**

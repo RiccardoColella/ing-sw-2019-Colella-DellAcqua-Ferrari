@@ -17,10 +17,10 @@ class PowerupTileTest {
     @BeforeEach
     void setUp() {
         this.redAmmo = AmmoCubeFactory.create(CurrencyColor.RED);
-        this.redTeleporterPowerup = PowerupTileFactory.create(PowerupTile.Type.TELEPORTER, CurrencyColor.RED);
-        this.redNewtonPowerup = PowerupTileFactory.create(PowerupTile.Type.NEWTON, CurrencyColor.RED);
-        this.blueTeleporterPowerup = PowerupTileFactory.create(PowerupTile.Type.TELEPORTER, CurrencyColor.BLUE);
-        this.anotherRedTeleporterPowerup = PowerupTileFactory.create(PowerupTile.Type.TELEPORTER, CurrencyColor.RED);
+        this.redTeleporterPowerup = PowerupTileFactory.create("Teleporter", CurrencyColor.RED);
+        this.redNewtonPowerup = PowerupTileFactory.create("Newton", CurrencyColor.RED);
+        this.blueTeleporterPowerup = PowerupTileFactory.create("Teleporter", CurrencyColor.BLUE);
+        this.anotherRedTeleporterPowerup = PowerupTileFactory.create("Teleporter", CurrencyColor.RED);
     }
 
     /**

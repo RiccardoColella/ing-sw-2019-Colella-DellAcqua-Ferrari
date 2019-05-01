@@ -6,28 +6,6 @@ package it.polimi.ingsw.server.model.currency;
 public class PowerupTile implements Coin {
 
     /**
-     * This enum differentiates the 4 possible powerup options
-     */
-    public enum Type {
-        NEWTON("Newton"),
-        TAGBACK_GRENADE("Tagback Grenade"),
-        TARGETING_SCOPE("Targeting Scope"),
-        TELEPORTER("Teleporter");
-
-        private String name;
-
-        Type(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-
-    /**
      * This property represents the color of the powerup tile
      */
     private final CurrencyColor color;
@@ -35,16 +13,16 @@ public class PowerupTile implements Coin {
     /**
      * This property represents the type of the powerup tile
      */
-    private final Type type;
+    private final String name;
 
     /**
-     * This constructor creates a powerup tile given its color, name and type
+     * This constructor creates a powerup tile given its color, name and name
      * @param color a value of CurrencyColor representing the color
-     * @param type a value representing the type
+     * @param name a value representing the name
      */
-    public PowerupTile(CurrencyColor color, Type type) {
+    public PowerupTile(CurrencyColor color, String name) {
         this.color = color;
-        this.type = type;
+        this.name = name;
     }
 
     /**
@@ -52,7 +30,7 @@ public class PowerupTile implements Coin {
      * @param copy the powerup tile to copy
      */
     public PowerupTile(PowerupTile copy) {
-        this(copy.color, copy.type);
+        this(copy.color, copy.name);
     }
 
     /**
@@ -76,7 +54,7 @@ public class PowerupTile implements Coin {
         return
                 that instanceof PowerupTile &&
                 this.color == that.getColor() &&
-                this.getType() == ((PowerupTile) that).getType();
+                this.getName().equals(((PowerupTile) that).getName());
     }
 
     /**
@@ -91,10 +69,10 @@ public class PowerupTile implements Coin {
     }
 
     /**
-     * This method returns the type of the powerup tile
-     * @return the enum representing the type
+     * This method returns the name of the powerup tile
+     * @return the string representing the name
      */
-    public Type getType() {
-        return this.type;
+    public String getName() {
+        return this.name;
     }
 }

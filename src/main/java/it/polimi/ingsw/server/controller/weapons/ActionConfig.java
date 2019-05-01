@@ -73,7 +73,7 @@ public class ActionConfig {
      * @param weapon the weapon that is shooting
      */
     public void execute(Set<Player> targets, Interviewer interviewer, Weapon weapon) {
-        executor.apply(targets, interviewer, weapon);
+        executor.accept(targets, interviewer, weapon);
     }
 
     /**

@@ -3,6 +3,7 @@ package it.polimi.ingsw.server.controller.weapons;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.battlefield.Board;
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.utils.Range;
 
 import java.util.Collections;
 import java.util.List;

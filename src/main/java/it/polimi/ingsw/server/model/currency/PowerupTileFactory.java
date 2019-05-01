@@ -26,9 +26,7 @@ public final class PowerupTileFactory {
     /**
      * Private empty constructor because this class should not have instances
      */
-    private PowerupTileFactory() {
-
-    }
+    private PowerupTileFactory() { }
 
     /**
      * This method creates a new powerup tile given its type and its color
@@ -36,7 +34,7 @@ public final class PowerupTileFactory {
      * @param color a value of the CurrencyColor enum
      * @return a new powerup tile with the given characteristics
      */
-    public static PowerupTile create(PowerupTile.Type type, CurrencyColor color) {
+    public static PowerupTile create(String type, CurrencyColor color) {
         return new PowerupTile(color, type);
     }
 
@@ -73,7 +71,7 @@ public final class PowerupTileFactory {
             tile -> tileQuantityMap.put(
                 new PowerupTile(
                     EnumValueByString.findByString(tile.getAsJsonObject().get("color").getAsString(), CurrencyColor.class),
-                    EnumValueByString.findByString(tile.getAsJsonObject().get("name").getAsString(), PowerupTile.Type.class)
+                    tile.getAsJsonObject().get("name").getAsString()
                 ),
                 tile.getAsJsonObject().get("quantity").getAsInt()
             )

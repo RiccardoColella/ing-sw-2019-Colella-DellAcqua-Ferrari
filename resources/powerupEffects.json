@@ -1,0 +1,48 @@
+[
+  {
+    "name": "Newton",
+    "trigger": "IN_BETWEEN_ACTIONS",
+    "cost": 0,
+    "effects": [
+      {
+        "type": "MOVE_IN_DIRECTION",
+        "range": {
+          "min": 1,
+          "max": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "Tagback Grenade",
+    "trigger": "ON_DAMAGE_RECEIVED",
+    "cost": 0,
+    "effects": [
+      {
+        "type": "MARK",
+        "quantity": 1
+      }
+    ]
+  },
+  {
+    "name": "Teleporter",
+    "trigger": "IN_BETWEEN_ACTIONS",
+    "cost": 0,
+    "effects": [
+      {
+        "type": "TELEPORT"
+      }
+    ]
+  },
+  {
+    "name": "Targeting Scope",
+    "trigger": "ON_DAMAGE_GIVEN",
+    "cost": 1,
+    "effects": [
+      {
+        "type": "DAMAGE",
+        "quantity": 1
+      }
+    ]
+  }
+]

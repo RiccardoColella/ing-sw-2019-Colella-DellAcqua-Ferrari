@@ -6,52 +6,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class WeaponTile {
-    /**
-     * This enum cathegorizes the 21 different weapons
-     */
-    public enum Name {
-        LOCK_RIFLE("Lock Rifle"),
-        ELECTROSCYTHE("Electroscythe"),
-        MACHINE_GUN("Machine Gun"),
-        TRACTOR_BEAM("Tractor Beam"),
-        THOR("T.H.O.R."),
-        VORTEX_CANNON("Vortex Cannon"),
-        FURNACE("Furnace"),
-        PLASMA_GUN("Plasma Gun"),
-        HEATSEEKER("Heatseeker"),
-        WHISPER("Whisper"),
-        HELLION("Hellion"),
-        FLAMETHROWER("Flamethrower"),
-        TWO_X_TWO("2x-2"),
-        GRENADE_LAUNCHER("Grenade Launcher"),
-        SHOTGUN("Shotgun"),
-        ROCKET_LAUNCHER("Rocket Launcher"),
-        POWER_GLOVE("Power Glove"),
-        RAILGUN("Railgun"),
-        SHOCKWAVE("Shockwave"),
-        CYBERBLADE("Cyberblade"),
-        SLEDGEHAMMER("Sledgehammer");
-
-        private String humanReadableName;
-
-        /**
-         * Constructs the enum associated with a human readable name
-         *
-         *
-         * @param humanReadableName a human readable name for the weapon
-         */
-        Name(String humanReadableName) {
-            this.humanReadableName = humanReadableName;
-        }
-
-        @Override
-        public String toString() {
-            return humanReadableName;
-        }
-    }
-
     private boolean loaded = true;
-    private final Name name;
+    private final String name;
     private final List<AmmoCube> acquisitionCost;
     private final List<AmmoCube> reloadCost;
 
@@ -62,7 +18,7 @@ public class WeaponTile {
      * @param acquisitionCost a list of AmmoCube used to determine the acquisition cost
      * @param reloadCost a list of AmmoCube used to determine the reload cost
      */
-    public WeaponTile(Name name, List<AmmoCube> acquisitionCost, List<AmmoCube> reloadCost) {
+    public WeaponTile(String name, List<AmmoCube> acquisitionCost, List<AmmoCube> reloadCost) {
         this.name = name;
         this.acquisitionCost = Collections.unmodifiableList(acquisitionCost);
         this.reloadCost = Collections.unmodifiableList(reloadCost);
@@ -81,7 +37,7 @@ public class WeaponTile {
         return loaded;
     }
 
-    public Name getName() {
+    public String getName() {
         return name;
     }
 

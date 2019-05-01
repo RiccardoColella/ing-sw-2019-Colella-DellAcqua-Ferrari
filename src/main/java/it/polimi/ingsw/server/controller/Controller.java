@@ -212,7 +212,7 @@ public class Controller implements Runnable, PlayerDamagedListener {
     private void pickUpWeapon(WeaponTile weapon, Player activePlayer, Interviewer view){
         List<AmmoCube> acquisitionCost = weapon.getAcquisitionCost();
         if (PaymentHandler.canAfford(acquisitionCost, activePlayer)){
-            List<Coin> paymentMethod = PaymentHandler.selectPaymentMethod(acquisitionCost, activePlayer, view);
+            List<Coin> paymentMethod = PaymentHandler.collectCoins(acquisitionCost, activePlayer, view);
             try {
                 activePlayer.grabWeapon(weapon, paymentMethod);
             } catch (UnauthorizedExchangeException e){
@@ -232,7 +232,7 @@ public class Controller implements Runnable, PlayerDamagedListener {
     private void reloadWeapon(WeaponTile weapon, Player activePlayer, Interviewer view){
         List<AmmoCube> reloadCost = weapon.getReloadCost();
         if (PaymentHandler.canAfford(reloadCost, activePlayer)){
-            List<Coin> paymentMethod = PaymentHandler.selectPaymentMethod(reloadCost, activePlayer, view);
+            List<Coin> paymentMethod = PaymentHandler.collectCoins(reloadCost, activePlayer, view);
             activePlayer.reload(weapon, paymentMethod);
         }
     }

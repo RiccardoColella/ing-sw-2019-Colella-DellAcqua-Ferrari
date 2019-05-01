@@ -1,6 +1,6 @@
 package it.polimi.ingsw.server.model.battlefield;
 
-import it.polimi.ingsw.server.controller.weapons.Range;
+import it.polimi.ingsw.utils.Range;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.shared.Direction;

@@ -9,9 +9,12 @@ import it.polimi.ingsw.shared.messages.ClientApi;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This class handle all payments
+ *
+ * @author Riccardo Colella, Carlo Dell'Acqua
  */
 public class PaymentHandler {
 
@@ -29,46 +32,57 @@ public class PaymentHandler {
      * @return true if the player can afford the debt
      */
     public static boolean canAfford(List<? extends Coin> debt, Player owner){
-        //TODO: make this function work correctly
-        List<AmmoCube> ownerAmmoCubes = new LinkedList<>(owner.getAmmoCubes());
-        List<PowerupTile> ownerPowerps = new LinkedList<>(owner.getPowerups());
-        boolean canAfford = true;
-        for (Coin coinDue : debt){
-            int ammo = (int) ownerAmmoCubes.stream().filter(ammoCube -> ammoCube.hasSameValueAs(coinDue)).count();
-            int powerups = (int) ownerPowerps.stream().filter(powerup -> powerup.hasSameValueAs(coinDue)).count();
-            int totCoinDue = (int) debt.stream().filter(coin -> coin.hasSameValueAs(coinDue)).count();
-            if (totCoinDue < ammo + powerups){
-                canAfford = false;
+        List<Coin> activePlayerWallet = owner.getAmmoCubes().stream().map(ammoCube -> (Coin) ammoCube).collect(Collectors.toList());
+        activePlayerWallet.addAll(owner.getPowerups().stream().map(powerupTile -> (Coin) powerupTile).collect(Collectors.toList()));
+        for (Coin coin : debt) {
+            if (activePlayerWallet.stream().anyMatch(playerCoin -> playerCoin.hasSameValueAs(coin))) {
+                activePlayerWallet.remove(coin);
+            } else {
+                return false;
             }
         }
-        return canAfford;
+        return true;
     }
+
+    /**
+     * This methods let the player to choose what payment method to use
+     *
+     * @param debt is the amount of coin the player needs to pay
+     * @param owner is the player who has to pay. He MUST have sufficient coins to cover his debt
+     * @param payer is the interface who will be asked to choose how to manage owner's debt
+     * @return the selected Coin chosen to pay the debt
+     */
+    public static List<Coin> collectCoins(List<? extends Coin> debt, Player owner, Interviewer payer){
+        List<Coin> coins = new LinkedList<>();
+        List<Coin> availableCoins = new LinkedList<>();
+        availableCoins.addAll(owner.getAmmoCubes());
+        availableCoins.addAll(owner.getPowerups());
+        for (Coin coinDue : debt){
+            List<Coin> rightColourCoins = new LinkedList<>();
+            availableCoins.stream()
+                    .filter(ammoCube -> ammoCube.hasSameValueAs(coinDue))
+                    .forEach(rightColourCoins::add);
+
+            Coin choose = payer.select("How do you want to pay this " + coinDue.getColor().toString() + " debt?",
+                    rightColourCoins, ClientApi.PAYMENT_QUESTION);
+            availableCoins.remove(choose);
+            coins.add(choose);
+        }
+        return coins;
+    }
+
+
 
     /**
      * This methods let the player to choose what payment method to use
      * @param debt is the amount of coin the player needs to pay
      * @param owner is the player who has to pay
      * @param payer is the interface who will be asked to choose how to manage owner's debt
-     * @return the selected Coin chosen to pay the debt
      */
-    public static List<Coin> selectPaymentMethod(List<? extends Coin> debt, Player owner, Interviewer payer){
-        List<Coin> paymentMethod = new LinkedList<>();
-        //if (canAfford(debt, owner)){
-            List<Coin> availableCoins = new LinkedList<>();
-            availableCoins.addAll(owner.getAmmoCubes());
-            availableCoins.addAll(owner.getPowerups());
-            for (Coin coinDue : debt){
-                List<Coin> rightColourCoins = new LinkedList<>();
-                availableCoins.stream()
-                        .filter(ammoCube -> ammoCube.hasSameValueAs(coinDue))
-                        .forEach(rightColourCoins::add);
-
-                Coin choose = payer.select("How do you want to pay this " + coinDue.getColor().toString() + " debt?",
-                        rightColourCoins, ClientApi.PAYMENT_QUESTION);
-                availableCoins.remove(choose);
-                paymentMethod.add(choose);
-            }
-        //} else throw new IllegalStateException("Cannot afford this payment!");
-        return paymentMethod;
+    public static void pay(List<? extends Coin> debt, Player owner, Interviewer payer) {
+        List<Coin> coins = collectCoins(debt, owner, payer);
+        owner.pay(coins);
     }
+
+
 }

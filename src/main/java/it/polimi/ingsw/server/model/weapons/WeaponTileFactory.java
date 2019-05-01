@@ -8,17 +8,19 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * This class creates all the 21 weapons of the game
+ * This class creates all the weapons of the game
  */
 public final class WeaponTileFactory {
 
     private static final String WEAPON_JSON_PATH = "./resources/weapons.json";
 
-    private static Map<WeaponTile.Name, WeaponTile> weaponMap;
+    private static Map<String, WeaponTile> weaponMap;
 
     /**
      * Private empty constructor because this class should not have instances
@@ -26,14 +28,31 @@ public final class WeaponTileFactory {
     private WeaponTileFactory() { }
 
     /**
-     * This method is used to create any weapon
-     * @param name the enum corresponding to the desired weapon
-     * @return the weapon, ready to be bought
+     * This method initialize a new Deck containing all the known weapons
+     *
+     * @return a deck containing the supported weapons
      */
-    public static WeaponTile create(WeaponTile.Name name) {
+    public static Deck<WeaponTile> createDeck() {
+
+
+        return new Deck<>(
+                getMap()
+                        .values()
+                        .stream()
+                        .map(WeaponTile::new)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    /**
+     * Lazy loader for the weapon map
+     *
+     * @return the loaded weapon map
+     */
+    private static Map<String, WeaponTile> getMap() {
 
         if (weaponMap == null) {
-            weaponMap = new EnumMap<>(WeaponTile.Name.class);
+            weaponMap = new HashMap<>();
             WeaponTile[] weapons;
             try {
                 weapons = new Gson().fromJson(
@@ -49,20 +68,6 @@ public final class WeaponTileFactory {
             }
         }
 
-        return new WeaponTile(weaponMap.get(name));
-    }
-
-    /**
-     * This method initialize a new Deck containing all the known weapons
-     *
-     * @return a deck containing the supported weapons
-     */
-    public static Deck<WeaponTile> createDeck() {
-        LinkedList<WeaponTile> weapons = new LinkedList<>();
-        for (WeaponTile.Name name : WeaponTile.Name.values()) {
-            WeaponTile weapon = create(name);
-            weapons.add(weapon);
-        }
-        return new Deck<>(weapons);
+        return weaponMap;
     }
 }

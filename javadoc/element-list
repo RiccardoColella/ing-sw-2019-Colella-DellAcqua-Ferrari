@@ -8,7 +8,7 @@ it.polimi.ingsw.server.bootstrap.factories
 it.polimi.ingsw.server.controller
 it.polimi.ingsw.server.controller.events
 it.polimi.ingsw.server.controller.events.listeners
-it.polimi.ingsw.server.controller.powerupeffects
+it.polimi.ingsw.server.controller.powerup
 it.polimi.ingsw.server.controller.weapons
 it.polimi.ingsw.server.model.battlefield
 it.polimi.ingsw.server.model.collections
