@@ -2,6 +2,8 @@
   {
     "name": "Newton",
     "trigger": "IN_BETWEEN_ACTIONS",
+    "target": "OTHERS",
+    "targetConstraint": "NONE",
     "cost": 0,
     "effects": [
       {
@@ -16,6 +18,8 @@
   {
     "name": "Tagback Grenade",
     "trigger": "ON_DAMAGE_RECEIVED",
+    "target": "ATTACKER",
+    "targetConstraint": "VISIBLE",
     "cost": 0,
     "effects": [
       {
@@ -27,6 +31,8 @@
   {
     "name": "Teleporter",
     "trigger": "IN_BETWEEN_ACTIONS",
+    "target": "SELF",
+    "targetConstraint": "NONE",
     "cost": 0,
     "effects": [
       {
@@ -37,6 +43,8 @@
   {
     "name": "Targeting Scope",
     "trigger": "ON_DAMAGE_GIVEN",
+    "target": "DAMAGED",
+    "targetConstraint": "NONE",
     "cost": 1,
     "effects": [
       {

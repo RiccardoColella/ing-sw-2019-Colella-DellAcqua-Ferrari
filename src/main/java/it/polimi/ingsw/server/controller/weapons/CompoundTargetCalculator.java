@@ -44,7 +44,7 @@ public class CompoundTargetCalculator implements TargetCalculator {
     }
 
     /**
-     * @inheritDoc TargetCalculator
+     * {@inheritDoc}
      */
     @Override
     public boolean contains(TargetCalculator calculator) {
@@ -52,7 +52,7 @@ public class CompoundTargetCalculator implements TargetCalculator {
     }
 
     /**
-     * @inheritDoc TargetCalculator
+     * {@inheritDoc}
      */
     @Override
     public List<TargetCalculator> getSubCalculators() {

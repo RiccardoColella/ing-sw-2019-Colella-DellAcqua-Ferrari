@@ -38,7 +38,7 @@ public class WeaponWithAlternative extends Weapon {
     }
 
     /**
-     * @inheritDoc Weapon
+     * {@inheritDoc}
      */
     @Override
     protected void attackSelection() {
@@ -70,7 +70,7 @@ public class WeaponWithAlternative extends Weapon {
     }
 
     /**
-     * @inheritDoc Weapon
+     * {@inheritDoc}
      */
     @Override
     public boolean hasAvailableAttacks(Player activePlayer) {

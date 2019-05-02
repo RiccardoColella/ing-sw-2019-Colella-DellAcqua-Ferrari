@@ -23,6 +23,24 @@ public class Powerup {
     }
 
     /**
+     * Enum containing the different target types that the controller should use to determine which players can be affected by this powerup
+     */
+    public enum Target {
+        OTHERS,
+        ATTACKER,
+        SELF,
+        DAMAGED
+    }
+
+    /**
+     * Enum containing the different constraints a target must satisfy to be affected by the powerup effect
+     */
+    public enum TargetConstraint {
+        NONE,
+        VISIBLE
+    }
+
+    /**
      * Powerup name
      */
     private final String name;
@@ -30,6 +48,14 @@ public class Powerup {
      * Powerup trigger
      */
     private final Trigger trigger;
+    /**
+     * Powerup target
+     */
+    private final Target target;
+    /**
+     * Powerup target constraint
+     */
+    private final TargetConstraint targetConstraint;
     /**
      * A powerup can have a cost, expressed as an integer because any Coin color is valid
      */
@@ -44,13 +70,17 @@ public class Powerup {
      *
      * @param name the powerup name associated with this powerup
      * @param trigger the kind of trigger that makes this powerup available for the player
+     * @param target the kind of target this powerup effect can affect
+     * @param targetConstraint the kind of constraint a target must satisfy
      * @param cost the cost of the effect that the powerup owner should pay before the activation
      * @param effect the consumer that will manage the powerup effect
      */
-    public Powerup(String name, Trigger trigger, int cost, TriConsumer<Player, Player, Interviewer> effect) {
+    public Powerup(String name, Trigger trigger, Target target, TargetConstraint targetConstraint, int cost, TriConsumer<Player, Player, Interviewer> effect) {
 
         this.name = name;
         this.trigger = trigger;
+        this.target = target;
+        this.targetConstraint = targetConstraint;
         this.cost = cost;
         this.effect = effect;
     }
@@ -86,5 +116,19 @@ public class Powerup {
      */
     public Trigger getTrigger() {
         return trigger;
+    }
+
+    /**
+     * @return the target that can be affected by this powerup
+     */
+    public Target getTarget() {
+        return target;
+    }
+
+    /**
+     * @return the constraint the target must satisfy to be affected by the powerup effect
+     */
+    public TargetConstraint getTargetConstraint() {
+        return targetConstraint;
     }
 }

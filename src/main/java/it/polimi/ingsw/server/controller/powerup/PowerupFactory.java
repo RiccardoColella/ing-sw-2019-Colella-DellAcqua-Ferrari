@@ -46,6 +46,14 @@ public class PowerupFactory {
          */
         public Powerup.Trigger trigger;
         /**
+         * Powerup target
+         */
+        public Powerup.Target target;
+        /**
+         * Powerup target constraint
+         */
+        public Powerup.TargetConstraint targetConstraint;
+        /**
          * Powerup cost
          */
         public int cost;
@@ -109,14 +117,13 @@ public class PowerupFactory {
             }
 
             for (PowerupConfig config: powerupConfigs) {
-                powerupMap.put(config.name, new Powerup(config.name, config.trigger, config.cost, ((owner, target, interviewer) -> {
+                powerupMap.put(config.name, new Powerup(config.name, config.trigger, config.target, config.targetConstraint, config.cost, ((owner, target, interviewer) -> {
                     for (JsonObject effect : config.effects) {
-                        switch (
-                                EnumValueByString.findByString(
-                                        effect.get("type").getAsString(),
-                                        EffectType.class
-                                )
-                        ) {
+                        EffectType type = EnumValueByString.findByString(
+                                effect.get("type").getAsString(),
+                                EffectType.class
+                        );
+                        switch (type) {
                             case MARK:
                                 manageDamageToken(target, new DamageToken(owner), true);
                                 break;
@@ -129,6 +136,8 @@ public class PowerupFactory {
                             case TELEPORT:
                                 manageTeleport(target, interviewer);
                                 break;
+                            default:
+                                throw new UnsupportedOperationException("Effect type " + type + " not supported");
                         }
                     }
                 })));

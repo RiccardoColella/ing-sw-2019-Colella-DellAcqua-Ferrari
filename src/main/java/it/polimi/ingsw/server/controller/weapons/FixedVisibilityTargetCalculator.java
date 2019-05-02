@@ -50,7 +50,7 @@ public class FixedVisibilityTargetCalculator implements TargetCalculator {
     }
 
     /**
-     * @inheritDoc TargetCalculator
+     * {@inheritDoc}
      */
     @Override
     public boolean contains(TargetCalculator calculator) {
@@ -58,7 +58,7 @@ public class FixedVisibilityTargetCalculator implements TargetCalculator {
     }
 
     /**
-     * @inheritDoc TargetCalculator
+     * {@inheritDoc}
      */
     @Override
     public List<TargetCalculator> getSubCalculators() {
