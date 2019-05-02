@@ -95,7 +95,7 @@ public class PowerupFactory {
      *
      * @return the loaded powerup map
      */
-    private static Map<String, Powerup> getPowerupMap() {
+    public static Map<String, Powerup> getPowerupMap() {
         if (powerupMap == null) {
             powerupMap = new HashMap<>();
             PowerupConfig[] powerupConfigs;

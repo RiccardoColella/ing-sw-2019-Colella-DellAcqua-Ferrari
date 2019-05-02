@@ -1,8 +1,6 @@
 package it.polimi.ingsw.server.controller;
 
-import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.Coin;
-import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.shared.messages.ClientApi;
@@ -27,7 +25,7 @@ public class PaymentHandler {
 
     /**
      * This methods returns true if the player has enough coin to afford the bill.
-     * @param debt Is the due bill
+     * @param debt Is the due coin
      * @param owner is the player who has to pay
      * @return true if the player can afford the debt
      */
@@ -35,13 +33,25 @@ public class PaymentHandler {
         List<Coin> activePlayerWallet = owner.getAmmoCubes().stream().map(ammoCube -> (Coin) ammoCube).collect(Collectors.toList());
         activePlayerWallet.addAll(owner.getPowerups().stream().map(powerupTile -> (Coin) powerupTile).collect(Collectors.toList()));
         for (Coin coin : debt) {
-            if (activePlayerWallet.stream().anyMatch(playerCoin -> playerCoin.hasSameValueAs(coin))) {
+            if (activePlayerWallet.stream().anyMatch(coin::hasSameValueAs)) {
                 activePlayerWallet.remove(coin);
             } else {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * This methods returns true if the player has enough coin to afford the bill.
+     * @param debt is the amount of due coin of non specified colour
+     * @param owner is the player who has to pay
+     * @return true if the player can afford the debt
+     */
+    public static boolean canAfford(int debt, Player owner){
+        List<Coin> activePlayerWallet = owner.getAmmoCubes().stream().map(ammoCube -> (Coin) ammoCube).collect(Collectors.toList());
+        activePlayerWallet.addAll(owner.getPowerups().stream().map(powerupTile -> (Coin) powerupTile).collect(Collectors.toList()));
+        return activePlayerWallet.size() >= debt;
     }
 
     /**
@@ -71,7 +81,27 @@ public class PaymentHandler {
         return coins;
     }
 
-
+    /**
+     * This methods let the player to choose what payment method to use
+     *
+     * @param debt is the amount of coin of non specified colour the player needs to pay
+     * @param owner is the player who has to pay. He MUST have sufficient coins to cover his debt
+     * @param payer is the interface who will be asked to choose how to manage owner's debt
+     * @return the selected Coin chosen to pay the debt
+     */
+    public static List<Coin> collectCoins(int debt, Player owner, Interviewer payer){
+        List<Coin> coins = new LinkedList<>();
+        List<Coin> availableCoins = new LinkedList<>();
+        availableCoins.addAll(owner.getAmmoCubes());
+        availableCoins.addAll(owner.getPowerups());
+        for (int i = 0; i < debt; i++){
+            Coin choose = payer.select("How do you want to pay this general-colour debt?",
+                    availableCoins, ClientApi.PAYMENT_QUESTION);
+            availableCoins.remove(choose);
+            coins.add(choose);
+        }
+        return coins;
+    }
 
     /**
      * This methods let the player to choose what payment method to use
@@ -80,6 +110,17 @@ public class PaymentHandler {
      * @param payer is the interface who will be asked to choose how to manage owner's debt
      */
     public static void pay(List<? extends Coin> debt, Player owner, Interviewer payer) {
+        List<Coin> coins = collectCoins(debt, owner, payer);
+        owner.pay(coins);
+    }
+
+    /**
+     * This methods let the player to choose what payment method to use
+     * @param debt is the amount of coin of non specified colour the player needs to pay
+     * @param owner is the player who has to pay
+     * @param payer is the interface who will be asked to choose how to manage owner's debt
+     */
+    public static void pay(int debt, Player owner, Interviewer payer) {
         List<Coin> coins = collectCoins(debt, owner, payer);
         owner.pay(coins);
     }

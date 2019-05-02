@@ -616,7 +616,7 @@ public class Player implements Damageable, MatchModeChangedListener {
                         .filter(coin -> coin instanceof PowerupTile)
                         .map(coin -> (PowerupTile) coin)
                         .collect(Collectors.toList())
-                );
+        );
     }
 
     /**

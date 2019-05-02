@@ -1,5 +1,9 @@
 package it.polimi.ingsw.server.controller;
 
+import it.polimi.ingsw.server.controller.powerup.Powerup;
+import it.polimi.ingsw.server.controller.powerup.PowerupFactory;
+import it.polimi.ingsw.server.controller.weapons.Weapon;
+import it.polimi.ingsw.server.controller.weapons.WeaponFactory;
 import it.polimi.ingsw.server.model.battlefield.SpawnpointBlock;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.BonusTile;
@@ -24,6 +28,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static it.polimi.ingsw.server.controller.powerup.PowerupFactory.getPowerupMap;
+
 /**
  * This class has the purpose of managing the game flow
  */
@@ -36,6 +42,7 @@ public class Controller implements Runnable, PlayerDamagedListener {
     private Match match;
     private List<View> views;
     private List<Player> players;
+    private final Map<String, Weapon> weaponMap;
 
     public Controller(Match match, List<View> views) {
 
@@ -47,6 +54,7 @@ public class Controller implements Runnable, PlayerDamagedListener {
         this.views = views;
         this.players = match.getPlayers();
         this.players.forEach(player -> player.addPlayerDamagedListener(this));
+        this.weaponMap = WeaponFactory.createWeaponDictionary(match.getBoard());
     }
 
     /**
@@ -89,7 +97,7 @@ public class Controller implements Runnable, PlayerDamagedListener {
         logger.info("Ending turn. Checking for died players...");
         for (Player player : match.endTurn()) {
             logger.info("Player " + player.getColor() + " died.");
-            //Se il deck è vuoto che succede?
+            //What happens if the Deck is empty?
             Optional<PowerupTile> powerupTile = match.getPowerupDeck().pick();
             List<PowerupTile> playerPowerups = new LinkedList<>(player.getPowerups());
             //If the player had at least one powerup in his hand he can choose what power-up to discard
@@ -130,11 +138,15 @@ public class Controller implements Runnable, PlayerDamagedListener {
             case RELOAD:
                 executeReload(activePlayer, view);
                 break;
+            default:
+                throw new IllegalStateException("No valid action selected!");
+
+
         }
     }
 
     /**
-     * This funtions manage the action of grabbing if the player is on a spawnpoint
+     * This functions manage the action of grabbing if the player is on a spawnpoint
      * @param activePlayer the player who is grabbing
      * @param view the interface that manage the action of grabbing
      */
@@ -174,13 +186,16 @@ public class Controller implements Runnable, PlayerDamagedListener {
      * @param view the interface that manages the shooting action
      */
     private void executeShoot(Player activePlayer, Interviewer view){
-        Optional<WeaponTile> activeWeapon = activePlayer.getActiveWeapon();
-        if (activeWeapon.isPresent()){
-            WeaponTile weapon = activeWeapon.get();
-            if (weapon.isLoaded()) {
-                //weapon should shoot... if has targets
-            }
-        }
+        List<WeaponTile> playerWeapons = activePlayer.getWeapons();
+        List<WeaponTile> loadedPlayerWeapons = playerWeapons
+                .stream()
+                .filter(WeaponTile::isLoaded)
+                .collect(Collectors.toList());
+        if (!loadedPlayerWeapons.isEmpty()){
+            WeaponTile selectedWeapon = view.select("Which weapon do you want to use for shooting?", loadedPlayerWeapons, ClientApi.WEAPON_CHOICE_QUESTION);
+            Weapon weapon = weaponMap.get(selectedWeapon.getName());
+            weapon.shoot(view, activePlayer);
+        } else throw new IllegalStateException("Shoot executed while no weapon is loaded");
     }
 
     /**
@@ -277,8 +292,8 @@ public class Controller implements Runnable, PlayerDamagedListener {
     private void manageAction(Player player, Interviewer view){
         ActionTile tile = player.getAvailableMacroActions();
         for (List<CompoundAction> compoundActions : tile.getCompoundActions()) {
-            //TODO: posso gestire power-Up qui e subito dopo il for
-            //per ogni macroazione
+            managePowerupBetweenActions(player, view);
+            //per every macro action
             List<BasicAction> playedActions = new LinkedList<>();
             Optional<BasicAction> move;
             do {
@@ -295,6 +310,7 @@ public class Controller implements Runnable, PlayerDamagedListener {
                 });
             } while (move.isPresent());
         }
+        managePowerupBetweenActions(player, view);
     }
 
     /**
@@ -356,8 +372,86 @@ public class Controller implements Runnable, PlayerDamagedListener {
                 .collect(Collectors.toSet());
     }
 
+    private void managePowerupBetweenActions(Player activePlayer, Interviewer view){
+        Map<String, Powerup>  powerupMap = PowerupFactory.getPowerupMap();
+        List<PowerupTile> playerPowerupTiles = activePlayer.getPowerups();
+        List<Powerup> playerPowerups = new LinkedList<>();
+        Optional<Powerup> selectedPowerup;
+        for (PowerupTile powerupTile : playerPowerupTiles){
+            playerPowerups.add(powerupMap.get(powerupTile.getName()));
+        }
+        playerPowerups = playerPowerups
+                .stream()
+                .filter(powerup -> powerup.getTrigger() == Powerup.Trigger.IN_BETWEEN_ACTIONS)
+                .filter(powerup -> PaymentHandler.canAfford(powerup.getCost(), activePlayer))
+                .collect(Collectors.toList());
+        if (!playerPowerups.isEmpty()){
+            Player target;
+            selectedPowerup = view.selectOptional("Do you want to use a powerup?", playerPowerups, ClientApi.POWERUP_QUESTION);
+            if (selectedPowerup.isPresent()){
+                Powerup powerup = selectedPowerup.get();
+                //Getting target...
+                if (powerup.getName().equals("Newton")){
+                    List<Player> possibleTargets = new LinkedList<>(players);
+                    possibleTargets.remove(activePlayer);
+                    target = view.select("Which target do you select", possibleTargets, ClientApi.TARGET_QUESTION);
+                } else if (powerup.getName().equals("Teleporter")){
+                    target = activePlayer;
+                } else throw new IllegalStateException("Target not associated to any player... Cannot activate powerup");
+                PaymentHandler.pay(powerup.getCost(), activePlayer, view);
+                powerup.activate(activePlayer, target, view);
+            }
+        }
+    }
+
     @Override
     public void onPlayerDamaged(PlayerDamaged e) {
-        //Gestire powerups
+        manageAttackerPowerups(e.getAttacker(), e.getVictim());
+        manageVictimPowerups(e.getVictim(), e.getAttacker());
+    }
+
+    private void manageAttackerPowerups(Player attacker, Player victim){
+        Interviewer attackerView = views.get(players.indexOf(attacker));
+        List<PowerupTile> availablePowerupTiles = new LinkedList<>(attacker.getPowerups());
+        if (!availablePowerupTiles.isEmpty()){
+            Map<String, Powerup> powerupMap = PowerupFactory.getPowerupMap();
+            List<Powerup> availablePowerups = availablePowerupTiles
+                    .stream()
+                    .map(powerupTile -> powerupMap.get(powerupTile.getName()))
+                    .filter(powerup -> powerup.getTrigger() == Powerup.Trigger.ON_DAMAGE_GIVEN)
+                    .filter(powerup -> PaymentHandler.canAfford(powerup.getCost(), attacker))
+                    .collect(Collectors.toList());
+            while (!availablePowerups.isEmpty()){
+                Optional<Powerup> selectedPowerup = attackerView.selectOptional("Do you want to use a powerup?", availablePowerups, ClientApi.POWERUP_QUESTION);
+                if (selectedPowerup.isPresent()){
+                    Powerup powerup = selectedPowerup.get();
+                    PaymentHandler.pay(powerup.getCost(), attacker, attackerView);
+                    powerup.activate(attacker, victim, attackerView);
+                } else availablePowerups.clear();
+            }
+
+        }
+    }
+
+    private void manageVictimPowerups(Player victim, Player attacker){
+        Interviewer victimView = views.get(players.indexOf(victim));
+        List<PowerupTile> availablePowerupTiles = new LinkedList<>(victim.getPowerups());
+        if (!availablePowerupTiles.isEmpty()){
+            Map<String, Powerup> powerupMap = PowerupFactory.getPowerupMap();
+            List<Powerup> availablePowerups = availablePowerupTiles
+                    .stream()
+                    .map(powerupTile -> powerupMap.get(powerupTile.getName()))
+                    .filter(powerup -> powerup.getTrigger() == Powerup.Trigger.ON_DAMAGE_RECEIVED)
+                    .filter(powerup -> PaymentHandler.canAfford(powerup.getCost(), attacker))
+                    .collect(Collectors.toList());
+            while (!availablePowerups.isEmpty()){
+                Optional<Powerup> selectedPowerup = victimView.selectOptional("Do you want to use a powerup?", availablePowerups, ClientApi.POWERUP_QUESTION);
+                if (selectedPowerup.isPresent()){
+                    Powerup powerup = selectedPowerup.get();
+                    PaymentHandler.pay(powerup.getCost(), victim, victimView);
+                    powerup.activate(attacker, attacker, victimView);
+                } else availablePowerups.clear();
+            }
+        }
     }
 }
