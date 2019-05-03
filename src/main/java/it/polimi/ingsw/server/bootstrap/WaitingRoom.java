@@ -3,6 +3,7 @@ package it.polimi.ingsw.server.bootstrap;
 import it.polimi.ingsw.server.bootstrap.acceptors.RMIAcceptor;
 import it.polimi.ingsw.server.bootstrap.acceptors.SocketAcceptor;
 import it.polimi.ingsw.server.view.View;
+import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -121,55 +122,47 @@ public class WaitingRoom implements AutoCloseable {
      * it to the queue
      */
     private void connectToNewViews() {
-        synchronized (connectedViews) {
-            try {
+        try {
 
-                if (currentSocketTask.isDone()) {
-                    connectedViews.add(
-                            currentSocketTask
-                                    .get()
-                    );
+            if (currentSocketTask.isDone()) {
+                addNewView(currentSocketTask.get());
 
-                    // The previous task has been consumed, we can now submit a new task for waiting new views
-                    synchronized (threadPool) {
-                        if (!threadPool.isShutdown()) {
-                            currentSocketTask = threadPool.submit(socketAcceptor);
-                        }
-                    }
-                }
-            } catch (ExecutionException ex) {
+                // The previous task has been consumed, we can now submit a new task for waiting new views
                 synchronized (threadPool) {
                     if (!threadPool.isShutdown()) {
                         currentSocketTask = threadPool.submit(socketAcceptor);
                     }
                 }
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
             }
-
-            try {
-                if (currentRMITask.isDone()) {
-                    connectedViews.add(
-                            currentRMITask
-                                    .get()
-                    );
-
-                    // The previous task has been consumed, we can now submit a new task for waiting new views
-                    synchronized (threadPool) {
-                        if (!threadPool.isShutdown()) {
-                            currentRMITask = threadPool.submit(rmiAcceptor);
-                        }
-                    }
+        } catch (ExecutionException ex) {
+            synchronized (threadPool) {
+                if (!threadPool.isShutdown()) {
+                    currentSocketTask = threadPool.submit(socketAcceptor);
                 }
-            } catch (ExecutionException ex) {
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+
+        try {
+            if (currentRMITask.isDone()) {
+                addNewView(currentRMITask.get());
+
+                // The previous task has been consumed, we can now submit a new task for waiting new views
                 synchronized (threadPool) {
                     if (!threadPool.isShutdown()) {
                         currentRMITask = threadPool.submit(rmiAcceptor);
                     }
                 }
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
             }
+        } catch (ExecutionException ex) {
+            synchronized (threadPool) {
+                if (!threadPool.isShutdown()) {
+                    currentRMITask = threadPool.submit(rmiAcceptor);
+                }
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -179,6 +172,30 @@ public class WaitingRoom implements AutoCloseable {
     private void removeDisconnectedViews() {
         synchronized (connectedViews) {
             connectedViews.removeIf(view -> !view.isConnected());
+        }
+    }
+
+    private void addNewView(View view) {
+
+        try {
+            view.initialize();
+            synchronized (connectedViews) {
+                if (connectedViews.stream().anyMatch(v -> v.getNickname().equals(view.getNickname()))) {
+                    logger.info("Cannot add player. Duplicated nickname " + view.getNickname());
+                    try {
+                        view.close();
+                    } catch (Exception e) {
+                        logger.warning("Unable to close view " + e);
+                    }
+                } else {
+                    connectedViews.add(view);
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warning("Thread stopped " + e);
+        } catch (ViewDisconnectedException e) {
+            logger.warning("View disconnected during initialization");
         }
     }
 

@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class Main {
 
-    private static final String SERVER_CONFIG_JSON_FILENAME = "./resources/server-config.json";
+    private static final String SERVER_CONFIG_JSON_FILENAME = "./resources/serverConfig.json";
 
     /**
      * This method is the entry-point of our application. After reading the basic configuration file, command line

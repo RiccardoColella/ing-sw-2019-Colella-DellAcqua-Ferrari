@@ -10,6 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,7 +32,6 @@ class BoardTest {
     private Board board3;
     private Board board4;
 
-    private List<PlayerInfo> playerInfos = new LinkedList<>();
     private List<Player> players = new LinkedList<>();
 
     /**
@@ -43,11 +44,16 @@ class BoardTest {
         board2 = BoardFactory.create(BoardFactory.Preset.BOARD_2);
         board3 = BoardFactory.create(BoardFactory.Preset.BOARD_3);
         board4 = BoardFactory.create(BoardFactory.Preset.BOARD_4);
-        //Creating players
-        for (int i = 0; i < 5; i++) {
-            playerInfos.add(new PlayerInfo("Player" + i, PlayerColor.values()[i]));
-        }
-        this.players = MatchFactory.create(playerInfos, BoardFactory.Preset.BOARD_1, 1, Match.Mode.STANDARD).getPlayers();
+        this.players = MatchFactory.create(
+                IntStream
+                        .range(0, 5)
+                        .boxed()
+                        .map(i -> "Player" + i)
+                        .collect(Collectors.toList()),
+                BoardFactory.Preset.BOARD_1,
+                1,
+                Match.Mode.STANDARD
+        ).getPlayers();
 
     }
 

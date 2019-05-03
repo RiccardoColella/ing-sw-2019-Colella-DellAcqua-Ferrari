@@ -15,7 +15,7 @@ import java.util.function.Function;
  *
  * @author Carlo Dell'Acqua
  */
-public class RMIStreamProvider extends UnicastRemoteObject implements it.polimi.ingsw.shared.view.remote.RMIStreamProvider, AutoCloseable {
+public class RMIStreamProvider extends UnicastRemoteObject implements it.polimi.ingsw.shared.rmi.RMIStreamProvider, AutoCloseable {
     /**
      * A queue of RMIViews waiting to be taken out
      */
@@ -58,9 +58,8 @@ public class RMIStreamProvider extends UnicastRemoteObject implements it.polimi.
      * Method called by the client who wants to connect to the server
      *
      * @return a unique identifier of the message proxy that will enable the IO stream of messages
-     * @throws InterruptedException if the thread is forced to stop
      */
-    public synchronized String connect() throws InterruptedException {
+    public synchronized String connect() {
         String id = UUID.randomUUID().toString();
         rmiViews.add(rmiViewSupplier.apply(id));
         return id;

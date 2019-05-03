@@ -14,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,11 +53,16 @@ class PowerupFactoryTest {
 
     @BeforeEach
     void setUp() {
-        List<PlayerInfo> playerInfos = new LinkedList<>();
-        for (int i = 0; i < 5; i++) {
-            playerInfos.add(new PlayerInfo("Player" + i, PlayerColor.values()[i]));
-        }
-        match = MatchFactory.create(playerInfos, BoardFactory.Preset.BOARD_1, 5, Match.Mode.STANDARD);
+        match = MatchFactory.create(
+                IntStream
+                    .range(0, 5)
+                    .boxed()
+                    .map(i -> "Player" + i)
+                    .collect(Collectors.toList()),
+                BoardFactory.Preset.BOARD_1,
+                5,
+                Match.Mode.STANDARD
+        );
         this.match.getPlayers().forEach(p -> this.match.getBoard().getSpawnpoint(CurrencyColor.BLUE).addPlayer(p));
     }
 

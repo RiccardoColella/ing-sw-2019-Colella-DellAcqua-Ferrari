@@ -29,6 +29,8 @@ public class FixedDistanceTargetCalculator implements TargetCalculator {
 
     /**
      * This constructor sets the range of moves that will be used during computations
+     *
+     * @param board the board on which the calculation will be done
      * @param range the range of moves away that will be considered for potential targets
      */
     public FixedDistanceTargetCalculator(Board board, Range range) {

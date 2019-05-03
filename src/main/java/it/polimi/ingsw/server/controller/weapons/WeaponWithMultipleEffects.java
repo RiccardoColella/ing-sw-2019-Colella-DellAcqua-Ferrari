@@ -34,6 +34,7 @@ public class WeaponWithMultipleEffects extends Weapon {
      * @param name                  the name of the weapon
      * @param basicAttack           the basic attack of the weapon
      * @param poweredAttacks        a non-empty map of the powered attacks of the weapon with their relative cost
+     * @param mustExecuteInOrder    specifies whether or not the poweredAttacks must be executed in order
      */
     public WeaponWithMultipleEffects(String name, Attack basicAttack, List<Attack> poweredAttacks, boolean mustExecuteInOrder) {
         super(name, basicAttack);

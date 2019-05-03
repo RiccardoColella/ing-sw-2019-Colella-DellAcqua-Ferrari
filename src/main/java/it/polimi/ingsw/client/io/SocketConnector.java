@@ -1,8 +1,8 @@
 package it.polimi.ingsw.client.io;
 
-import it.polimi.ingsw.shared.view.remote.InputStreamMessageSupplier;
-import it.polimi.ingsw.shared.view.remote.MessageDispatcher;
-import it.polimi.ingsw.shared.view.remote.OutputStreamMessageConsumer;
+import it.polimi.ingsw.shared.InputStreamMessageSupplier;
+import it.polimi.ingsw.shared.MessageDispatcher;
+import it.polimi.ingsw.shared.OutputStreamMessageConsumer;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

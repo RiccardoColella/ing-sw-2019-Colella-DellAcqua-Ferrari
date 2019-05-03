@@ -91,7 +91,7 @@ public class GameInitializer {
         return new Controller(
                 MatchFactory.create(
                         participants.stream()
-                                .map(View::getPlayerInfo)
+                                .map(View::getNickname)
                                 .collect(Collectors.toList()),
                         playersChoice(participants.stream().map(View::getChosenPreset)),
                         playersChoice(participants.stream().map(View::getChosenSkulls)),

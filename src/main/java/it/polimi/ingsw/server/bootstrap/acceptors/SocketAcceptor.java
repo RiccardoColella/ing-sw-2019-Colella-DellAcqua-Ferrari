@@ -5,6 +5,7 @@ import it.polimi.ingsw.server.view.View;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.logging.Logger;
 
 /**
@@ -56,6 +57,8 @@ public class SocketAcceptor implements Acceptor, AutoCloseable {
      */
     @Override
     public View call() throws IOException {
-        return SocketViewFactory.createSocketView(socket.accept());
+        Socket clientSocket = socket.accept();
+        logger.info("New socket client connected");
+        return SocketViewFactory.createSocketView(clientSocket);
     }
 }

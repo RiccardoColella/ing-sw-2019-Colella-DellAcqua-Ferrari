@@ -33,6 +33,9 @@ public class FixedDirectionTargetCalculator implements TargetCalculator {
 
     /**
      * This constructor does not set a specific direction
+     *
+     * @param board the board on which the calculation will be done
+     * @param goesThroughWalls specifies whether or not the calculation should stop when a wall is encountered
      */
     public FixedDirectionTargetCalculator(Board board, boolean goesThroughWalls) {
         this(board, goesThroughWalls,null);
@@ -41,6 +44,8 @@ public class FixedDirectionTargetCalculator implements TargetCalculator {
     /**
      * This constructor sets the direction that shall be considered when computing the target
      *
+     * @param board the board on which the calculation will be done
+     * @param goesThroughWalls specifies whether or not the calculation should stop when a wall is encountered
      * @param direction the desired Direction
      */
     public FixedDirectionTargetCalculator(Board board, boolean goesThroughWalls, @Nullable Direction direction) {

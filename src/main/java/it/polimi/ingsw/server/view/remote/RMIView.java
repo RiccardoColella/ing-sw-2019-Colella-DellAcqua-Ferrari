@@ -25,31 +25,6 @@ public class RMIView extends View {
         super(answerTimeout, answerTimeoutUnit);
     }
 
-    @Override
-    public PowerupTile chooseSpawnpoint(List<PowerupTile> powerups) {
-        return null;
-    }
-
-    @Override
-    public PlayerInfo getPlayerInfo() {
-        return null;
-    }
-
-    @Override
-    public BoardFactory.Preset getChosenPreset() {
-        return null;
-    }
-
-    @Override
-    public int getChosenSkulls() {
-        return 0;
-    }
-
-    @Override
-    public Match.Mode getChosenMode() {
-        return null;
-    }
-
     public BlockingQueue<Message> getOutputMessageQueue() {
         return outputMessageQueue;
     }

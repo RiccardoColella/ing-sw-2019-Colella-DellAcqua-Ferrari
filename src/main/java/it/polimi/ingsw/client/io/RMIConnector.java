@@ -1,9 +1,9 @@
 package it.polimi.ingsw.client.io;
 
 import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
-import it.polimi.ingsw.shared.view.remote.MessageDispatcher;
-import it.polimi.ingsw.shared.view.remote.RMIMessageProxy;
-import it.polimi.ingsw.shared.view.remote.RMIStreamProvider;
+import it.polimi.ingsw.shared.MessageDispatcher;
+import it.polimi.ingsw.shared.rmi.RMIMessageProxy;
+import it.polimi.ingsw.shared.rmi.RMIStreamProvider;
 
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;

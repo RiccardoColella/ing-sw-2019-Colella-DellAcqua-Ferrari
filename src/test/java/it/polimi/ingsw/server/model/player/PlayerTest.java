@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,12 +28,17 @@ class PlayerTest {
 
     @BeforeEach
     void setUp() {
-        List<PlayerInfo> playerInfos = new LinkedList<>();
-        for (int i = 0; i < 5; i++) {
-            playerInfos.add(new PlayerInfo("Player" + i, PlayerColor.values()[i]));
-        }
         //creating a match with 5 skulls in standard mode with 5 players
-        this.match = MatchFactory.create(playerInfos, BoardFactory.Preset.BOARD_1, 5, Match.Mode.STANDARD);
+        this.match = MatchFactory.create(
+                IntStream
+                        .range(0, 5)
+                        .boxed()
+                        .map(i -> "Player" + i)
+                        .collect(Collectors.toList()),
+                BoardFactory.Preset.BOARD_1,
+                5,
+                Match.Mode.STANDARD
+        );
         this.player = match.getPlayers().get(4); //setting a default player
         this.match.getPlayers().forEach(p -> this.match.getBoard().getSpawnpoint(CurrencyColor.BLUE).addPlayer(p));
     }

@@ -158,6 +158,8 @@ public class RMIAcceptor implements Acceptor, AutoCloseable {
                 Thread.currentThread().interrupt();
             }
 
+            logger.info("New RMI client connected");
+
             return view;
         });
         registry.rebind(RMI_CONNECTION_END_POINT, provider);

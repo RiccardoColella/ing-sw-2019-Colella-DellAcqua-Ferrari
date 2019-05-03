@@ -117,18 +117,6 @@
                         <target>12</target>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.openjfx</groupId>
-                    <artifactId>javafx-maven-plugin</artifactId>
-                    <version>0.0.2</version>
-                    <configuration>
-                        <source>12</source>
-                        <target>12</target>
-                        <release>12</release>
-                        <mainClass>it.polimi.ingsw.client.Main</mainClass>
-                    </configuration>
-                </plugin>
-
             </plugins>
         </pluginManagement>
     </build>

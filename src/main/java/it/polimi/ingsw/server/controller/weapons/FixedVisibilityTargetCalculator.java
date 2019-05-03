@@ -26,6 +26,8 @@ public class FixedVisibilityTargetCalculator implements TargetCalculator {
     private final Board board;
     /**
      * This constructor sets the type of visibility that will be considered
+     *
+     * @param board the board on which the calculation will be done
      * @param visible true if targets are the visible ones, false if targets are the non visible ones
      */
     public FixedVisibilityTargetCalculator(Board board, boolean visible) {

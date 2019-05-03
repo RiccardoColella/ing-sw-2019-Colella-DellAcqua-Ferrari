@@ -30,7 +30,16 @@ class MatchTest {
             playerInfos.add(new PlayerInfo("Player" + i, PlayerColor.values()[i]));
         }
         // Calling the factory which will setup a match and connect the needed event listeners
-        this.match = MatchFactory.create(playerInfos, BoardFactory.Preset.BOARD_1, 5, Match.Mode.STANDARD);
+        this.match = MatchFactory.create(
+                IntStream
+                    .range(0, 5)
+                    .boxed()
+                    .map(i -> "Player" + i)
+                    .collect(Collectors.toList()),
+                BoardFactory.Preset.BOARD_1,
+                5,
+                Match.Mode.STANDARD
+        );
     }
 
     @AfterEach

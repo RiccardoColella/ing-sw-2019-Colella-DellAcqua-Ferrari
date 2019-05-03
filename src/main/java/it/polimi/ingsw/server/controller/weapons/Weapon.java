@@ -140,6 +140,7 @@ public class Weapon {
      * Prepares the weapon for a new shooting session
      *
      * @param activePlayer the {@code Player} that is going to use this weapon
+     * @param interviewer the interviewer needed to manage the interactivity
      */
     protected void resetStatus(Player activePlayer, Interviewer interviewer) {
         currentShooter = activePlayer;
