@@ -1,6 +1,7 @@
 package it.polimi.ingsw.client;
 
 import it.polimi.ingsw.client.ui.GUI;
+import javafx.fxml.FXMLLoader;
 
 /**
  * Debugging Main
@@ -8,7 +9,10 @@ import it.polimi.ingsw.client.ui.GUI;
  * @author Carlo Dell'Acqua
  */
 public class MainDebug {
-    public static void main( String[] args ) throws Exception {
+    public static void main( String[] args ) {
+
+
+        FXMLLoader.setDefaultClassLoader(MainDebug.class.getClassLoader());
 
         /*Connector rmiConnector = new RMIConnector(new InetSocketAddress("diemisto", 9090));
 
@@ -19,7 +23,8 @@ public class MainDebug {
         );
 
         rmiConnector.addQuestionMessageReceivedListener(cli);*/
-
+        //new LoginController().init();
         new GUI().start();
+
     }
 }

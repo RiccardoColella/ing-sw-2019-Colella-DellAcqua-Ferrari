@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+
+<FlowPane
+    xmlns="http://javafx.com/javafx"
+    xmlns:fx="http://javafx.com/fxml"
+    fx:id="window" fx:controller="it.polimi.ingsw.client.ui.LoginController"
+    prefHeight="400.0" prefWidth="600.0"
+    maxHeight="600" maxWidth="800">
+    <properties padding-h="10vw" padding-v="10vh" wrap="80%" vgap="7vh" hgap="5vw"/>
+
+    <Label  fx:id="title">
+        <properties width="80vw" />
+    </Label>
+    <FlowPane fx:id="usernamePane" maxWidth="800">
+        <properties width="80vw" wrap="80%" hgap="0vw" vgap="1vh"/>
+        <Label fx:id="username" styleClass="fieldDescriptor">
+            <properties width="40%"  />
+            Username:
+        </Label>
+        <TextField fx:id="usernameField">
+            <properties width="40%" />
+        </TextField>
+    </FlowPane>
+
+    <FlowPane fx:id="connectionPane" maxWidth="800">
+        <properties width="80vw" wrap="80%" hgap="0vw" vgap="1vh"/>
+        <Label fx:id="connection" styleClass="fieldDescriptor">
+            <properties width="40%" />
+            Connection:
+        </Label>
+        <FlowPane fx:id="choices">
+            <properties width="40%" wrap="40%" hgap="5vw" vgap="1vh"/>
+            <RadioButton fx:id="socket" text="socket">
+                <properties width="50%" />
+            </RadioButton>
+            <RadioButton fx:id="rmi" text="RMI">
+                <properties width="50%" />
+            </RadioButton>
+        </FlowPane>
+    </FlowPane>
+
+    <FlowPane fx:id="serverAddressPane" maxWidth="800">
+        <properties width="80vw" wrap="80%" hgap="0vw" vgap="1vh" />
+        <Label fx:id="serverAddress" styleClass="fieldDescriptor">
+            <properties width="40%" />
+            Server Address:
+        </Label>
+        <TextField fx:id="serverAddressField">
+            <properties width="40%" />
+        </TextField>
+    </FlowPane>
+
+    <FlowPane maxWidth="600">
+        <properties width="80vw" padding-h="40vw"/>
+        <Button text="connect to the server" onMouseClicked="#onSend" maxWidth="200">
+            <properties width="40%" />
+        </Button>
+    </FlowPane>
+
+</FlowPane>

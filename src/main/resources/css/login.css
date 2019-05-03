@@ -1,0 +1,56 @@
+@font-face {
+    src: url("../fonts/ethnocentric.ttf");
+}
+
+@font-face {
+    src: url("../fonts/Audiowide-Regular.ttf");
+}
+
+@font-face {
+    src: url("../fonts/RobotoMono-Regular.ttf");
+}
+
+#title {
+    -fx-text-fill: rgb(194, 194, 214);
+    -fx-font-family: "Ethnocentric Rg", monospace;
+    -fx-font-size: 3.5em;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+}
+
+.fieldDescriptor {
+    -fx-font-family: "Audiowide", monospace;
+    -fx-text-alignment: center;
+    -fx-alignment: center-left;
+    -fx-text-fill: rgb(194, 194, 214);
+    -fx-font-size: 1.2em;
+}
+
+#window {
+    -fx-font-family: "Roboto Mono", monospace;
+    -fx-alignment: center;
+    -fx-row-valignment: center;
+    -fx-column-halignment: right;
+    -fx-background-color: black;
+    -fx-opacity: 1;
+}
+
+#window FlowPane {
+    -fx-alignment: center;
+    -fx-column-halignment: left;
+}
+
+#choices {
+    -fx-alignment: center-left;
+
+}
+
+RadioButton {
+    -fx-text-fill: rgb(194, 194, 214);
+}
+
+
+
+TextField {
+    -fx-background-color: rgb(194, 194, 214);
+}
