@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<fx:root type="it.polimi.ingsw.client.ui.gui.BoardPane" xmlns:fx="http://javafx.com/fxml" fx:controller="it.polimi.ingsw.client.ui.gui.BoardPane">
+    <columnConstraints>
+        <ColumnConstraints percentWidth="46.75" />
+        <ColumnConstraints percentWidth="52.45" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints percentHeight="100" />
+    </rowConstraints>
+    <FlowPane fx:id="boardLeft" GridPane.columnIndex="0"/>
+    <FlowPane fx:id="boardRight" GridPane.columnIndex="1"/>
+</fx:root>

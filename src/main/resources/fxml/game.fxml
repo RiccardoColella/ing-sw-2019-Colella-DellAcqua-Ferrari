@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.image.ImageView?>
+<?import it.polimi.ingsw.client.ui.gui.BoardPane?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="it.polimi.ingsw.client.ui.gui.GameController"
+            fx:id="window"
+            prefHeight="768.0" prefWidth="1366.0">
+    <FlowPane fx:id="container">
+        <properties width="100vw" height="100vh" wrap="100vw"/>
+        <FlowPane fx:id="left">
+            <properties width="50%" height="100%" />
+            <BoardPane fx:id="board">
+                <properties width="100%" height="80%" />
+            </BoardPane>
+            <FlowPane fx:id="tile">
+                <properties width="100%" height="20%" />
+            </FlowPane>
+        </FlowPane>
+        <FlowPane fx:id="right">
+            <properties width="47%" height="100%" padding-h="1%" padding-v="1%" />
+            <FlowPane fx:id="others">
+                <properties width="100%" height="30%" padding-h="1%" vgap="1%" hgap="2%" wrap="50%"/>
+                <FlowPane>
+                    <properties width="45%" height="45%" vgap="2%"/>
+                    <Label>
+                        <properties height="8%"/>
+                        p1
+                    </Label>
+                    <FlowPane>
+                        <properties width="100%" height="90%"/>
+                    </FlowPane>
+                </FlowPane>
+                <FlowPane>
+                    <properties width="45%" height="45%" vgap="2%" />
+                    <Label>
+                        <properties height="8%"/>
+                        p2
+                    </Label>
+                    <FlowPane>
+                        <properties width="100%" height="90%" />
+                    </FlowPane>
+                </FlowPane>
+                <FlowPane>
+                    <properties width="45%" height="45%" vgap="2%"/>
+                    <Label>
+                        <properties height="8%"/>
+                        p3
+                    </Label>
+                    <FlowPane>
+                        <properties width="100%" height="90%" />
+                    </FlowPane>
+                </FlowPane>
+                <FlowPane>
+                    <properties width="45%" height="45%" vgap="2%" />
+                    <Label>
+                        <properties height="8%"/>
+                        p4
+                    </Label>
+                    <FlowPane>
+                        <properties width="100%" height="90%" />
+                    </FlowPane>
+                </FlowPane>
+            </FlowPane>
+
+            <FlowPane fx:id="stuff">
+                <properties width="100%" height="70%" />
+            </FlowPane>
+        </FlowPane>
+
+    </FlowPane>
+</AnchorPane>

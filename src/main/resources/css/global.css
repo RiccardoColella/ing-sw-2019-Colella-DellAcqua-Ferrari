@@ -20,16 +20,26 @@ Button:hover {
     -fx-effect: dropshadow(three-pass-box, white, 5, 0, 0, 0);
     -fx-scale-x: 1.01;
     -fx-scale-y: 1.01;
-}
+}}
 
 Button:pressed {
     -fx-scale-x: 0.99;
     -fx-scale-y: 0.99;
 }
 
+RadioButton {
+    -fx-cursor: hand;
+}
+
 DialogPane {
     -fx-background-color: black;
     -fx-font-family: "Roboto Mono", monospace;
+}
+
+DialogPane:header *.header-panel *.label {
+    -ft-font-size: 2em;
+    -ft-font-family: "Audiowide", monospace;
+
 }
 
 .warning * {
@@ -40,18 +50,29 @@ DialogPane {
     -fx-background-color: white;
     -fx-text-fill: rgb(230, 119, 0);
 }
-DialogPane:header *.header-panel *.label {
-    -ft-font-size: 2em;
-    -ft-font-family: "Audiowide", monospace;
+
+
+.warning:header *.header-panel {
+
 }
 
-.alert.warning.dialog-pane {
+warning:header *.header-panel *.label {
+    -fx-background-color: green;
     -fx-mid-text-color: white;
 }
 
+.alert.warning.dialog-pane {
+    -fx-background-color: rgb(230, 119, 0);
+    -fx-mid-text-color: white;
+}
+
+.dialog-pane > * {
+    -fx-background-color: white, rgb(230, 119, 0), white, rgb(230, 119, 0);
+    -fx-padding: 5px 12px 5px 12px;
+}
 
 .error * {
-    -fx-background-color: rgb(153, 0, 0);
+    -fx-background-color: white, rgb(153, 0, 0);
 }
 
 .error * Button {
@@ -60,4 +81,8 @@ DialogPane:header *.header-panel *.label {
 }
 .alert.error.dialog-pane {
     -fx-mid-text-color: white;
+}
+
+.alert.dialog-pane {
+    -fx-alignment: left;
 }

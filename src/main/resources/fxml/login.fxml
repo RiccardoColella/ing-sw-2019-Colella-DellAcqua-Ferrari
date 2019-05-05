@@ -1,68 +1,122 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
+<?import it.polimi.ingsw.client.ui.gui.BoardPane?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<?import javafx.geometry.Insets?>
-
-<FlowPane
+<?import java.lang.*?>
+<AnchorPane
     xmlns="http://javafx.com/javafx"
     xmlns:fx="http://javafx.com/fxml"
-    fx:id="window" fx:controller="it.polimi.ingsw.client.ui.LoginController"
-    prefHeight="400.0" prefWidth="600.0"
-    maxHeight="600" maxWidth="800">
-    <properties padding-h="10vw" padding-v="10vh" wrap="80%" vgap="7vh" hgap="5vw"/>
+    fx:id="window"
+    fx:controller="it.polimi.ingsw.client.ui.gui.LoginController"
+    prefHeight="600.0" prefWidth="600.0"
+    maxHeight="1200" maxWidth="800">
+    <FlowPane fx:id="container">
+        <properties padding-h="10vw" padding-v="5%" width="100vw" height="100vh"  wrap="80%" vgap="1%" hgap="5vw"/>
 
-    <Label  fx:id="title">
-        <properties width="80vw" />
-    </Label>
-    <FlowPane fx:id="usernamePane" maxWidth="800">
-        <properties width="80vw" wrap="80%" hgap="0vw" vgap="1vh"/>
-        <Label fx:id="username" styleClass="fieldDescriptor">
-            <properties width="40%"  />
-            Username:
+        <Label  fx:id="title">
+            <properties width="80vw" height="10%" />
         </Label>
-        <TextField fx:id="usernameField">
-            <properties width="40%" />
-        </TextField>
-    </FlowPane>
 
-    <FlowPane fx:id="connectionPane" maxWidth="800">
-        <properties width="80vw" wrap="80%" hgap="0vw" vgap="1vh"/>
-        <Label fx:id="connection" styleClass="fieldDescriptor">
-            <properties width="40%" />
-            Connection:
-        </Label>
-        <FlowPane fx:id="choices">
-            <properties width="40%" wrap="40%" hgap="5vw" vgap="1vh"/>
-            <RadioButton fx:id="socket" text="socket">
-                <properties width="50%" />
-            </RadioButton>
-            <RadioButton fx:id="rmi" text="RMI">
-                <properties width="50%" />
-            </RadioButton>
+        <FlowPane fx:id="serverAddressPane" maxWidth="800">
+            <properties width="80%" height="5%" wrap="80%" hgap="0vw" vgap="1%" />
+            <Label fx:id="serverAddress" styleClass="fieldDescriptor">
+                <properties width="40%" />
+                Server Address:
+            </Label>
+            <TextField fx:id="serverAddressField">
+                <properties width="40%" />
+            </TextField>
         </FlowPane>
-    </FlowPane>
 
-    <FlowPane fx:id="serverAddressPane" maxWidth="800">
-        <properties width="80vw" wrap="80%" hgap="0vw" vgap="1vh" />
-        <Label fx:id="serverAddress" styleClass="fieldDescriptor">
-            <properties width="40%" />
-            Server Address:
-        </Label>
-        <TextField fx:id="serverAddressField">
-            <properties width="40%" />
-        </TextField>
-    </FlowPane>
+        <FlowPane fx:id="connectionPane" maxWidth="800">
+            <properties width="80%" height="15%" wrap="80%" hgap="0vw" vgap="1%"/>
+            <Label fx:id="connection" styleClass="fieldDescriptor">
+                <properties width="40%" />
+                Connection:
+            </Label>
+            <FlowPane fx:id="choices">
+                <properties width="40%" wrap="40%" hgap="5vw" vgap="1%"/>
+                <RadioButton fx:id="socket" text="socket">
+                    <properties width="50%" />
+                </RadioButton>
+                <RadioButton fx:id="rmi" text="RMI">
+                    <properties width="50%" />
+                </RadioButton>
+            </FlowPane>
+        </FlowPane>
 
-    <FlowPane maxWidth="600">
-        <properties width="80vw" padding-h="40vw"/>
-        <Button text="connect to the server" onMouseClicked="#onSend" maxWidth="200">
-            <properties width="40%" />
-        </Button>
-    </FlowPane>
 
-</FlowPane>
+        <FlowPane fx:id="usernamePane" maxWidth="800">
+            <properties width="80%" height="10%" wrap="80%" hgap="0vw" vgap="1%"/>
+            <Label fx:id="username" styleClass="fieldDescriptor">
+                <properties width="40%"  />
+                Username:
+            </Label>
+            <TextField fx:id="usernameField">
+                <properties width="40%" />
+            </TextField>
+        </FlowPane>
+        <FlowPane fx:id="boardPane" maxWidth="800">
+            <properties width="80%" height="30%" />
+            <Label fx:id="board" styleClass="fieldDescriptor">
+                Board:
+            </Label>
+            <GridPane>
+                <properties width="100%" height="100%" vgap="1%"/>
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="10" />
+                    <ColumnConstraints percentWidth="40" />
+                    <ColumnConstraints percentWidth="10" />
+                    <ColumnConstraints percentWidth="40" />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints percentHeight="49" />
+                    <RowConstraints percentHeight="49" />
+                </rowConstraints>
+                <RadioButton fx:id="b1" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <BoardPane preset="BOARD_1" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                <RadioButton fx:id="b2" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                <BoardPane preset="BOARD_2" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                <RadioButton fx:id="b3" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <BoardPane preset="BOARD_3" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <RadioButton fx:id="b4" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                <BoardPane preset="BOARD_4" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+            </GridPane>
+        </FlowPane>
+
+        <FlowPane fx:id="skullsPane" maxWidth="800">
+            <Label fx:id="skulls" styleClass="fieldDescriptor" >
+                Skulls:
+            </Label>
+            <ChoiceBox value="8">
+                <String fx:value="1" />
+                <String fx:value="2" />
+                <String fx:value="3" />
+                <String fx:value="4" />
+                <String fx:value="5" />
+                <String fx:value="6" />
+                <String fx:value="7" />
+                <String fx:value="8" />
+            </ChoiceBox>
+        </FlowPane>
+        <FlowPane fx:id="modePane" maxWidth="800">
+            <Label fx:id="mode" styleClass="fieldDescriptor" >
+                Match mode:
+            </Label>
+            <ChoiceBox value="STANDARD">
+                <String fx:value="STANDARD" />
+                <String fx:value="SUDDEN DEATH" />
+            </ChoiceBox>
+        </FlowPane>
+
+
+        <FlowPane maxWidth="600">
+            <properties width="80%" padding-h="40vw"/>
+            <Button text="connect to the server" onMouseClicked="#onSend" maxWidth="200">
+                <properties width="40%" />
+            </Button>
+        </FlowPane>
+
+    </FlowPane>
+</AnchorPane>

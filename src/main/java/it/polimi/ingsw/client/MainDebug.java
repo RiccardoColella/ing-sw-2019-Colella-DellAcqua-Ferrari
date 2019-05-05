@@ -1,6 +1,6 @@
 package it.polimi.ingsw.client;
 
-import it.polimi.ingsw.client.ui.GUI;
+import it.polimi.ingsw.client.ui.gui.GUI;
 import javafx.fxml.FXMLLoader;
 
 /**

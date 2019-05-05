@@ -1,0 +1,27 @@
+#container {
+
+}
+
+#board {
+    -fx-alignment: center-left;
+    -fx-hgap: 0;
+}
+
+#container #others FlowPane FlowPane {
+    -fx-background-color: blue;
+}
+
+#others {
+    -fx-orientation: horizontal;
+}
+
+#stuff {
+    -fx-background-color: pink;
+}
+
+#tile {
+    -fx-background-color: green;
+}
+
+
+
