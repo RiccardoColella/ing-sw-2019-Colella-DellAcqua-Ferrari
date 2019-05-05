@@ -760,4 +760,11 @@ public class Player implements Damageable, MatchModeChangedListener {
     public boolean isOnASpawnpoint(){
         return match.getBoard().isOnASpawnpoint(this.getBlock());
     }
+
+    public boolean sees(Player otherPlayer){
+        Block myPosition = getBlock();
+        Block otherPlayerPosition = match.getBoard().findPlayer(otherPlayer).orElseThrow(() -> new IllegalStateException("otherPlayer is not on the board"));
+        Set<Block> visibleBlocks = match.getBoard().getVisibleBlocks(myPosition);
+        return visibleBlocks.contains(otherPlayerPosition);
+    }
 }

@@ -28,8 +28,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static it.polimi.ingsw.server.controller.powerup.PowerupFactory.getPowerupMap;
-
 /**
  * This class has the purpose of managing the game flow
  */
@@ -57,9 +55,6 @@ public class Controller implements Runnable, PlayerDamagedListener {
         this.weaponMap = WeaponFactory.createWeaponDictionary(match.getBoard());
     }
 
-    /**
-     * This function
-     */
     @Override
     public void run() {
         Player activePlayer;
@@ -372,6 +367,11 @@ public class Controller implements Runnable, PlayerDamagedListener {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * This method manages the use of powerups during a player's turn
+     * @param activePlayer is the player who is executing the turn
+     * @param view is the interface that manages the player's turn
+     */
     private void managePowerupBetweenActions(Player activePlayer, Interviewer view){
         Map<String, Powerup>  powerupMap = PowerupFactory.getPowerupMap();
         List<PowerupTile> playerPowerupTiles = activePlayer.getPowerups();
@@ -386,20 +386,14 @@ public class Controller implements Runnable, PlayerDamagedListener {
                 .filter(powerup -> PaymentHandler.canAfford(powerup.getCost(), activePlayer))
                 .collect(Collectors.toList());
         if (!playerPowerups.isEmpty()){
-            Player target;
             selectedPowerup = view.selectOptional("Do you want to use a powerup?", playerPowerups, ClientApi.POWERUP_QUESTION);
             if (selectedPowerup.isPresent()){
                 Powerup powerup = selectedPowerup.get();
-                //Getting target...
-                if (powerup.getName().equals("Newton")){
-                    List<Player> possibleTargets = new LinkedList<>(players);
-                    possibleTargets.remove(activePlayer);
-                    target = view.select("Which target do you select", possibleTargets, ClientApi.TARGET_QUESTION);
-                } else if (powerup.getName().equals("Teleporter")){
-                    target = activePlayer;
-                } else throw new IllegalStateException("Target not associated to any player... Cannot activate powerup");
-                PaymentHandler.pay(powerup.getCost(), activePlayer, view);
-                powerup.activate(activePlayer, target, view);
+                Optional<Player> optionalTarget = selectTarget(powerup, activePlayer, view);
+                if (optionalTarget.isPresent()){
+                    PaymentHandler.pay(powerup.getCost(), activePlayer, view);
+                    powerup.activate(activePlayer, optionalTarget.get(), view);
+                }
             }
         }
     }
@@ -410,6 +404,11 @@ public class Controller implements Runnable, PlayerDamagedListener {
         manageVictimPowerups(e.getVictim(), e.getAttacker());
     }
 
+    /**
+     * This method manages the powerups of an attacker when an attack is performed
+     * @param attacker is the player who is performing the attack
+     * @param victim is the player who is receiving the attack
+     */
     private void manageAttackerPowerups(Player attacker, Player victim){
         Interviewer attackerView = views.get(players.indexOf(attacker));
         List<PowerupTile> availablePowerupTiles = new LinkedList<>(attacker.getPowerups());
@@ -429,10 +428,14 @@ public class Controller implements Runnable, PlayerDamagedListener {
                     powerup.activate(attacker, victim, attackerView);
                 } else availablePowerups.clear();
             }
-
         }
     }
 
+    /**
+     * This method manages the powerups of a victim when an attack is received
+     * @param victim is the player who is receiving the attack
+     * @param attacker is the player who is performing the attack
+     */
     private void manageVictimPowerups(Player victim, Player attacker){
         Interviewer victimView = views.get(players.indexOf(victim));
         List<PowerupTile> availablePowerupTiles = new LinkedList<>(victim.getPowerups());
@@ -453,5 +456,38 @@ public class Controller implements Runnable, PlayerDamagedListener {
                 } else availablePowerups.clear();
             }
         }
+    }
+
+    /**
+     * This method selects the target for SELF or OTHERS target types
+     * @param powerup the Powerup that needs to know his targets
+     * @param self the Player who is activating the powerup
+     * @param view the interface that will select the target if needed
+     * @return the optional of the target, if available. Optional.Empty() otherwise
+     */
+    private Optional<Player> selectTarget(Powerup powerup, Player self, Interviewer view){
+        Optional<Player> target = Optional.empty();
+        switch (powerup.getTarget()) {
+            case SELF:
+                target = Optional.of(self);
+                break;
+            case OTHERS:
+                Set<Player> possibleTargets = new HashSet<>(match.getPlayers());
+                if (powerup.getTargetConstraint() == Powerup.TargetConstraint.VISIBLE) {
+                    possibleTargets = possibleTargets
+                            .stream()
+                            .filter(self::sees)
+                            .collect(Collectors.toSet());
+                }
+                if (possibleTargets.isEmpty()) {
+                    target = Optional.empty();
+                } else target = view.selectOptional("Do you want to use the powerup against who?", possibleTargets, ClientApi.TARGET_QUESTION);
+                break;
+            case ATTACKER:
+                throw new IllegalArgumentException("Can't select the target of the given powerup");
+            case DAMAGED:
+                throw new IllegalArgumentException("Can't select the target of the given powerup");
+        }
+        return target;
     }
 }
