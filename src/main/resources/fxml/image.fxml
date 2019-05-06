@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import it.polimi.ingsw.client.ui.gui.ImagePane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<fx:root type="it.polimi.ingsw.client.ui.gui.ImagePane" xmlns:fx="http://javafx.com/fxml" fx:controller="it.polimi.ingsw.client.ui.gui.ImagePane">
+    <columnConstraints>
+        <ColumnConstraints percentWidth="100" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints percentHeight="100" />
+    </rowConstraints>
+    <Pane fx:id="container"/>
+</fx:root>

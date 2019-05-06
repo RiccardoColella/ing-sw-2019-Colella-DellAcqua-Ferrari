@@ -13,7 +13,7 @@
 #title {
     -fx-text-fill: rgb(194, 194, 214);
     -fx-font-family: "Ethnocentric Rg", monospace;
-    -fx-font-size: 3.5em;
+    -fx-font-size: 4em;
     -fx-text-alignment: center;
     -fx-alignment: center;
 }
@@ -21,7 +21,7 @@
 .fieldDescriptor {
     -fx-font-family: "Audiowide", monospace;
     -fx-text-alignment: center;
-    -fx-alignment: center-left;
+    -fx-alignment: center;
     -fx-text-fill: rgb(194, 194, 214);
     -fx-font-size: 1.2em;
 }
@@ -41,7 +41,7 @@
 }
 
 #choices {
-    -fx-alignment: center-left;
+    -fx-alignment: center;
 
 }
 
@@ -53,4 +53,17 @@ RadioButton {
 
 TextField {
     -fx-background-color: rgb(194, 194, 214);
+}
+
+.selectedBoard {
+    -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.8), 15, 0, 0, 0);
+}
+
+.boardRadio {
+    -fx-opacity: 0;
+}
+
+
+#serverAddressPane, #connectionPane {
+    -fx-orientation: vertical;
 }

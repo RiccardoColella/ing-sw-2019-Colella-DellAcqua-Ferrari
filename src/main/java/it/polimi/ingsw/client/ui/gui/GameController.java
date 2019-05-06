@@ -1,25 +1,80 @@
 package it.polimi.ingsw.client.ui.gui;
 
+import it.polimi.ingsw.client.viewmodels.Player;
+import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import javafx.fxml.FXML;
-import javafx.geometry.Side;
-import javafx.scene.image.Image;
-import javafx.scene.layout.*;
+import javafx.scene.control.Label;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
+
+import java.util.List;
 
 public class GameController extends WindowController {
     @FXML
     private AnchorPane window;
-
     @FXML
-    private BoardPane board;
-
+    private GridPane boardContainer;
     @FXML
-    private FlowPane boardLeft;
-
+    private GridPane opponentsContainer;
     @FXML
-    private FlowPane boardRight;
+    private ImagePane playerBoardImg;
+    @FXML
+    private ImagePane playerTileImg;
 
-    public GameController() {
+    private BoardFactory.Preset preset;
+
+    private List<Player> opponents;
+
+    private Player self;
+
+    public GameController(BoardFactory.Preset preset, Player self, List<Player> opponents) {
         super("Adrenalina", "/fxml/game.fxml", "/css/game.css");
+        this.preset = preset;
+        BoardPane board = new BoardPane(preset);
+        boardContainer.getChildren().add(board);
+        this.opponents = opponents;
+        this.self = self;
+        initOpponentsBoards();
+        initPlayerBoard();
+    }
+
+    private void initPlayerBoard() {
+        playerBoardImg.setImg(UrlFinder.findPlayerBoard(self.getColor(), self.isBoardFlipped()), ImagePane.LEFT);
+        playerTileImg.setImg(UrlFinder.findPlayerTile(self.getColor(), self.isTileFlipped()), ImagePane.RIGHT);
+    }
+
+    private void initOpponentsBoards() {
+        int rows = opponents.size() / 2 + 1;
+        double rowHeight = 100.0 / rows;
+        ColumnConstraints c0 = new ColumnConstraints();
+        c0.setPercentWidth(50);
+        ColumnConstraints c1 = new ColumnConstraints();
+        c1.setPercentWidth(50);
+        opponentsContainer.getColumnConstraints().addAll(c0, c1);
+        for (int i = 0; i < rows; i++) {
+            RowConstraints rc = new RowConstraints();
+            rc.setPercentHeight(rowHeight);
+            opponentsContainer.getRowConstraints().add(rc);
+        }
+        for (int i = 0; i < opponents.size(); i++) {
+            Player opponent = opponents.get(i);
+            ImagePane opponentPane = new ImagePane(UrlFinder.findPlayerBoard(opponent.getColor(), opponent.isBoardFlipped()), ImagePane.LEFT);
+            Label opponentName = new Label(opponent.getNickname());
+            GridPane opponentContainer = new GridPane();
+            ColumnConstraints entireColumn = new ColumnConstraints();
+            entireColumn.setPercentWidth(100);
+            opponentContainer.getColumnConstraints().add(entireColumn);
+            RowConstraints nameRow = new RowConstraints();
+            nameRow.setPercentHeight(15);
+            RowConstraints imgRow = new RowConstraints();
+            imgRow.setPercentHeight(85);
+            opponentContainer.getRowConstraints().addAll(nameRow, imgRow);
+            opponentContainer.add(opponentName, 0, 0);
+            opponentContainer.add(opponentPane, 0, 1);
+            opponentsContainer.add(opponentContainer, i % 2, i / 2);
+        }
     }
 
     @FXML
@@ -27,60 +82,6 @@ public class GameController extends WindowController {
         window.setMinWidth(600);
         window.setMinHeight(400);
         setupViewport(window);
-        Image left = new Image("/assets/LEFT_1.png", 0, 0, false, true);
-        BackgroundPosition right = new BackgroundPosition(Side.RIGHT, 0, true, Side.TOP, 0, true);
-        boardLeft.setBackground(
-                new Background(
-                        new BackgroundImage(
-                                left,
-                                BackgroundRepeat.NO_REPEAT,
-                                BackgroundRepeat.NO_REPEAT,
-                                right,
-                                new BackgroundSize(
-                                        BackgroundSize.AUTO,
-                                        BackgroundSize.AUTO,
-                                        false,
-                                        false,
-                                        true,
-                                        false
-                                )
-                        )
-                )
-        );
-        boardRight.setBackground(
-                new Background(
-                        new BackgroundImage(
-                                new Image("/assets/RIGHT_1.png"),
-                                BackgroundRepeat.NO_REPEAT,
-                                BackgroundRepeat.NO_REPEAT,
-                                BackgroundPosition.DEFAULT,
-                                new BackgroundSize(
-                                        BackgroundSize.AUTO,
-                                        BackgroundSize.AUTO,
-                                        false,
-                                        false,
-                                        true,
-                                        false
-                                )
-                        )
-                )
-        );
-        /*
-        Image boardLeft1 = new Image("/assets/LEFT_1.png");
-        boardLeftView.setImage(boardLeft1);
-        boardLeftView.setFitWidth(boardLeftView.getParent().prefWidth(0) * 47 / 100 - 1);
-        boardLeftView.setFitHeight(boardLeftView.getParent().prefHeight(0));
-        boardLeftView.setPreserveRatio(true);
-        Image boardRight = new Image("/assets/RIGHT_1.png");
-        boardRightView.setImage(boardRight);
-        boardRightView.setFitWidth(boardRightView.getParent().prefWidth(0) * 53 / 100 - 1);
-        boardRightView.setFitHeight(boardRightView.getParent().prefHeight(0));
-        boardRightView.setPreserveRatio(true);
-
-        ((Pane) boardLeftView.getParent()).widthProperty().addListener((a, b, c) -> {
-            boardLeftView.setFitWidth(boardLeftView.getParent().prefWidth(0));
-        });*/
-
     }
 
 

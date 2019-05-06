@@ -12,31 +12,42 @@
     prefHeight="600.0" prefWidth="600.0"
     maxHeight="1200" maxWidth="800">
     <FlowPane fx:id="container">
-        <properties padding-h="10vw" padding-v="5%" width="100vw" height="100vh"  wrap="80%" vgap="1%" hgap="5vw"/>
+        <properties padding-h="10vw" padding-v="5vh" width="100vw" height="100vh"  wrap="50%" vgap="2vh" hgap="5%"/>
 
         <Label  fx:id="title">
-            <properties width="80vw" height="10%" />
+            <properties width="80%" height="10%" />
         </Label>
 
-        <FlowPane fx:id="serverAddressPane" maxWidth="800">
-            <properties width="80%" height="5%" wrap="80%" hgap="0vw" vgap="1%" />
+        <FlowPane fx:id="serverAddressPane" maxWidth="400">
+            <properties width="35%" height="5%" wrap="80%" hgap="0vw" vgap="1%" />
             <Label fx:id="serverAddress" styleClass="fieldDescriptor">
-                <properties width="40%" />
+                <properties width="100%" />
                 Server Address:
             </Label>
             <TextField fx:id="serverAddressField">
-                <properties width="40%" />
+                <properties width="100%" />
             </TextField>
         </FlowPane>
 
-        <FlowPane fx:id="connectionPane" maxWidth="800">
-            <properties width="80%" height="15%" wrap="80%" hgap="0vw" vgap="1%"/>
+        <FlowPane fx:id="usernamePane" maxWidth="400">
+            <properties width="35%" height="10%" wrap="80%" hgap="0vw" vgap="1%"/>
+            <Label fx:id="username" styleClass="fieldDescriptor">
+                <properties width="100%"  />
+                Username:
+            </Label>
+            <TextField fx:id="usernameField">
+                <properties width="100%" />
+            </TextField>
+        </FlowPane>
+
+        <FlowPane fx:id="connectionPane" maxWidth="400">
+            <properties width="25%" height="15%" wrap="80%" hgap="0vw" vgap="1%"/>
             <Label fx:id="connection" styleClass="fieldDescriptor">
-                <properties width="40%" />
+                <properties width="100%" />
                 Connection:
             </Label>
             <FlowPane fx:id="choices">
-                <properties width="40%" wrap="40%" hgap="5vw" vgap="1%"/>
+                <properties width="100%" wrap="100%" hgap="5vw" vgap="1%"/>
                 <RadioButton fx:id="socket" text="socket">
                     <properties width="50%" />
                 </RadioButton>
@@ -45,51 +56,26 @@
                 </RadioButton>
             </FlowPane>
         </FlowPane>
-
-
-        <FlowPane fx:id="usernamePane" maxWidth="800">
-            <properties width="80%" height="10%" wrap="80%" hgap="0vw" vgap="1%"/>
-            <Label fx:id="username" styleClass="fieldDescriptor">
-                <properties width="40%"  />
-                Username:
+        <FlowPane fx:id="modePane" maxWidth="800">
+            <properties width="25%" height="15%" wrap="80%" hgap="0vw" vgap="1%"/>
+            <Label fx:id="mode" styleClass="fieldDescriptor" >
+                <properties width="100%" />
+                Match mode:
             </Label>
-            <TextField fx:id="usernameField">
-                <properties width="40%" />
-            </TextField>
+            <ChoiceBox fx:id="modeChoice" value="STANDARD">
+                <properties width="70%" />
+                <String fx:value="STANDARD" />
+                <String fx:value="SUDDEN DEATH" />
+            </ChoiceBox>
         </FlowPane>
-        <FlowPane fx:id="boardPane" maxWidth="800">
-            <properties width="80%" height="30%" />
-            <Label fx:id="board" styleClass="fieldDescriptor">
-                Board:
-            </Label>
-            <GridPane>
-                <properties width="100%" height="100%" vgap="1%"/>
-                <columnConstraints>
-                    <ColumnConstraints percentWidth="10" />
-                    <ColumnConstraints percentWidth="40" />
-                    <ColumnConstraints percentWidth="10" />
-                    <ColumnConstraints percentWidth="40" />
-                </columnConstraints>
-                <rowConstraints>
-                    <RowConstraints percentHeight="49" />
-                    <RowConstraints percentHeight="49" />
-                </rowConstraints>
-                <RadioButton fx:id="b1" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                <BoardPane preset="BOARD_1" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                <RadioButton fx:id="b2" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                <BoardPane preset="BOARD_2" GridPane.columnIndex="3" GridPane.rowIndex="0" />
-                <RadioButton fx:id="b3" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                <BoardPane preset="BOARD_3" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <RadioButton fx:id="b4" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                <BoardPane preset="BOARD_4" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-            </GridPane>
-        </FlowPane>
-
-        <FlowPane fx:id="skullsPane" maxWidth="800">
+        <FlowPane fx:id="skullsPane" maxWidth="400">
+            <properties width="20%" height="15%" wrap="80%" hgap="0vw" vgap="1%"/>
             <Label fx:id="skulls" styleClass="fieldDescriptor" >
+                <properties width="100%" />
                 Skulls:
             </Label>
-            <ChoiceBox value="8">
+            <ChoiceBox fx:id="skullsChoice" value="8">
+                <properties width="70%" />
                 <String fx:value="1" />
                 <String fx:value="2" />
                 <String fx:value="3" />
@@ -100,15 +86,39 @@
                 <String fx:value="8" />
             </ChoiceBox>
         </FlowPane>
-        <FlowPane fx:id="modePane" maxWidth="800">
-            <Label fx:id="mode" styleClass="fieldDescriptor" >
-                Match mode:
+
+
+
+        <FlowPane fx:id="boardPane" maxWidth="800">
+            <properties width="80%" height="20%" vgap="1%"/>
+            <Label fx:id="board" styleClass="fieldDescriptor">
+                <properties width="100%" />
+                Board:
             </Label>
-            <ChoiceBox value="STANDARD">
-                <String fx:value="STANDARD" />
-                <String fx:value="SUDDEN DEATH" />
-            </ChoiceBox>
+            <GridPane>
+                <properties width="100%" height="100%" vgap="1%"/>
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="25" />
+                    <ColumnConstraints percentWidth="25" />
+                    <ColumnConstraints percentWidth="25" />
+                    <ColumnConstraints percentWidth="25" />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints percentHeight="0" />
+                    <RowConstraints percentHeight="100" />
+                </rowConstraints>
+                <RadioButton fx:id="b1" text="BOARD_1" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="boardRadio"/>
+                <BoardPane fx:id="b1Img" preset="BOARD_1" GridPane.columnIndex="0" GridPane.rowIndex="1" onMouseClicked="#selectBoard"/>
+                <RadioButton fx:id="b2" text="BOARD_2" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="boardRadio"/>
+                <BoardPane fx:id="b2Img" preset="BOARD_2" GridPane.columnIndex="1" GridPane.rowIndex="1" onMouseClicked="#selectBoard"/>
+                <RadioButton fx:id="b3" text="BOARD_3" GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="boardRadio"/>
+                <BoardPane fx:id="b3Img" preset="BOARD_3" GridPane.columnIndex="2" GridPane.rowIndex="1" onMouseClicked="#selectBoard"/>
+                <RadioButton fx:id="b4" text="BOARD_4" GridPane.columnIndex="3" GridPane.rowIndex="0" styleClass="boardRadio"/>
+                <BoardPane fx:id="b4Img" preset="BOARD_4" GridPane.columnIndex="3" GridPane.rowIndex="1" onMouseClicked="#selectBoard"/>
+            </GridPane>
         </FlowPane>
+
+
 
 
         <FlowPane maxWidth="600">

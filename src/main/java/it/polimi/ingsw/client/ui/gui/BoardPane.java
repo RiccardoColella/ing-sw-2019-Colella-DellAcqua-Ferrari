@@ -22,26 +22,23 @@ public class BoardPane extends GridPane {
 
 
     public BoardPane(@NamedArg("preset") BoardFactory.Preset preset) {
-
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/board.fxml"));
             fxmlLoader.setRoot(this);
             fxmlLoader.setControllerFactory(p -> this);
-            try {
-                fxmlLoader.load();
-            } catch (IOException ex) {
-                throw new IllegalStateException("Unable to load resource files " + ex);
-            }
+
+            fxmlLoader.load();
             String leftURL;
             String rightURL;
+
             switch (preset) {
                 case BOARD_1:
-                case BOARD_3:
-                    leftURL = "/assets/LEFT_1.png";
-                    break;
                 case BOARD_2:
+                    leftURL = "/assets/battlefield/LEFT_1.png";
+                    break;
+                case BOARD_3:
                 case BOARD_4:
-                    leftURL = "/assets/LEFT_2.png";
+                    leftURL = "/assets/battlefield/LEFT_2.png";
                     break;
                 default:
                     throw new EnumConstantNotPresentException(BoardFactory.Preset.class, "Unknown preset value: " + preset);
@@ -49,12 +46,12 @@ public class BoardPane extends GridPane {
 
             switch (preset) {
                 case BOARD_1:
-                case BOARD_2:
-                    rightURL = "/assets/RIGHT_1.png";
-                    break;
                 case BOARD_3:
+                    rightURL = "/assets/battlefield/RIGHT_2.png";
+                    break;
+                case BOARD_2:
                 case BOARD_4:
-                    rightURL = "/assets/RIGHT_2.png";
+                    rightURL = "/assets/battlefield/RIGHT_1.png";
                     break;
                 default:
                     throw new EnumConstantNotPresentException(BoardFactory.Preset.class, "Unknown preset value: " + preset);
@@ -101,7 +98,7 @@ public class BoardPane extends GridPane {
                     )
             );
         } catch (Exception ex) {
-            System.out.println(ex);
+            throw new IllegalStateException("Unable to load Board " + ex);
         }
     }
 }
