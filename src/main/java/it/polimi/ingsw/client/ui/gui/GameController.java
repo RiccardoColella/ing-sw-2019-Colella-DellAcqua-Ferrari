@@ -1,7 +1,8 @@
 package it.polimi.ingsw.client.ui.gui;
 
-import it.polimi.ingsw.client.viewmodels.Player;
+import it.polimi.ingsw.client.io.Connector;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.shared.viewmodels.Player;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
@@ -10,8 +11,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 
 import java.util.List;
+import java.util.logging.Logger;
 
-public class GameController extends WindowController {
+public class GameController extends WindowController implements AutoCloseable {
+
+    private Logger logger = Logger.getLogger(this.getClass().getName());
+
     @FXML
     private AnchorPane window;
     @FXML
@@ -29,8 +34,13 @@ public class GameController extends WindowController {
 
     private Player self;
 
-    public GameController(BoardFactory.Preset preset, Player self, List<Player> opponents) {
+    private Connector connector;
+
+    public GameController(Connector connector, BoardFactory.Preset preset, Player self, List<Player> opponents) {
         super("Adrenalina", "/fxml/game.fxml", "/css/game.css");
+
+        this.connector = connector;
+
         this.preset = preset;
         BoardPane board = new BoardPane(preset);
         boardContainer.getChildren().add(board);
@@ -85,5 +95,13 @@ public class GameController extends WindowController {
     }
 
 
-
+    @Override
+    public void close() {
+        super.close();
+        try {
+            connector.close();
+        } catch (Exception ex) {
+            logger.warning("Could not close the connector " + ex);
+        }
+    }
 }

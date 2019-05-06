@@ -8,8 +8,10 @@ import it.polimi.ingsw.utils.function.IOConsumer;
 import it.polimi.ingsw.utils.function.IOSupplier;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
@@ -55,7 +57,7 @@ public class MessageDispatcher implements AutoCloseable {
     /**
      * A list of listeners for the event MessageDispatcherStopped
      */
-    private List<MessageDispatcherStoppedListener> stoppedListeners = new LinkedList<>();
+    private Set<MessageDispatcherStoppedListener> stoppedListeners = new HashSet<>();
 
     /**
      * Constructs a MessageDispatcher class that manages the passed queues

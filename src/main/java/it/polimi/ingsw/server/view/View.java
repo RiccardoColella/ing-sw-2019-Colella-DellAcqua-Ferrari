@@ -8,7 +8,8 @@ import it.polimi.ingsw.shared.InputMessageQueue;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.shared.messages.Message;
-import it.polimi.ingsw.shared.messages.Question;
+import it.polimi.ingsw.shared.messages.ServerApi;
+import it.polimi.ingsw.shared.messages.templates.Question;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -81,15 +82,20 @@ public abstract class View implements Interviewer, AutoCloseable {
      * Initializes the view. This method should be called after the view construction to collect the user preferences from the client view
      *
      * @throws InterruptedException if the thread was forced to stop
+     * @throws ViewDisconnectedException if the expected initialization message has not been not received
      */
     public void initialize() throws InterruptedException {
+
         try {
-            this.setup = gson.fromJson(
-                    inputMessageQueue
-                            .dequeueEvent(5, TimeUnit.SECONDS)
-                            .getPayload(),
-                    ClientInitializationInfo.class
-            );
+            Message initEvent = inputMessageQueue.dequeueEvent(5, TimeUnit.SECONDS);
+            if (initEvent.getName().equals(ServerApi.VIEW_INIT_EVENT.toString())) {
+                this.setup = gson.fromJson(
+                        initEvent.getPayload(),
+                        ClientInitializationInfo.class
+                );
+            } else {
+                throw new ViewDisconnectedException("Initialization event message is malformed");
+            }
         } catch (TimeoutException ex) {
             throw new ViewDisconnectedException("Initialization event message not received", ex);
         }
@@ -134,17 +140,17 @@ public abstract class View implements Interviewer, AutoCloseable {
      * Called after sending a question, this method waits on the input message queue until a message associated with
      * the question and answer flow is available
      *
-     * @param streamId the identifier of the question-and-answer flow
+     * @param flowId the identifier of the question-and-answer flow
      * @param options the available answers for the question
      * @param <T> the type of the item in the option collection
      * @return the chosen option or null if no choice was made
      * @throws ViewDisconnectedException if the client didn't give an answer within the available answering timeout
      */
     @Nullable
-    private  <T> T awaitResponse(String streamId, Collection<T> options) {
+    private  <T> T awaitResponse(String flowId, Collection<T> options) {
 
         try {
-            Message response = inputMessageQueue.dequeueAnswer(streamId, answerTimeout, answerTimeoutUnit);
+            Message response = inputMessageQueue.dequeueAnswer(flowId, answerTimeout, answerTimeoutUnit);
             if (response.getPayload().getAsInt() == 0) {
                 return null;
             } else {
@@ -179,7 +185,7 @@ public abstract class View implements Interviewer, AutoCloseable {
 
             outputMessageQueue.add(message);
 
-            T response = awaitResponse(message.getStreamId(), options);
+            T response = awaitResponse(message.getFlowId(), options);
             if (response == null || !options.contains(response)) {
                 throw new ViewDisconnectedException("Received an invalid answer from the client");
             }
@@ -207,7 +213,7 @@ public abstract class View implements Interviewer, AutoCloseable {
             Message message = Message.createQuestion(messageName.toString(), new Question<>(questionText, options, true));
             outputMessageQueue.add(message);
 
-            T response = awaitResponse(message.getStreamId(), options);
+            T response = awaitResponse(message.getFlowId(), options);
             if (response != null && !options.contains(response)) {
                 throw new ViewDisconnectedException("Received an invalid answer from the client");
             }

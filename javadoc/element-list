@@ -1,6 +1,7 @@
 it.polimi.ingsw.client
 it.polimi.ingsw.client.io
 it.polimi.ingsw.client.ui
+it.polimi.ingsw.client.ui.gui
 it.polimi.ingsw.server
 it.polimi.ingsw.server.bootstrap
 it.polimi.ingsw.server.bootstrap.acceptors
@@ -28,6 +29,8 @@ it.polimi.ingsw.shared.bootstrap
 it.polimi.ingsw.shared.events
 it.polimi.ingsw.shared.events.listeners
 it.polimi.ingsw.shared.messages
+it.polimi.ingsw.shared.messages.templates
 it.polimi.ingsw.shared.rmi
+it.polimi.ingsw.shared.viewmodels
 it.polimi.ingsw.utils
 it.polimi.ingsw.utils.function

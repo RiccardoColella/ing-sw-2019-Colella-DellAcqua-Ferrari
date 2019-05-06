@@ -1,4 +1,4 @@
-package it.polimi.ingsw.client.viewmodels;
+package it.polimi.ingsw.shared.viewmodels;
 
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.utils.Tuple;

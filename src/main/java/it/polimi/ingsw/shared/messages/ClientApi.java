@@ -1,5 +1,7 @@
 package it.polimi.ingsw.shared.messages;
 
+import it.polimi.ingsw.server.controller.weapons.WeaponFactory;
+
 /**
  * A list of all the available messages supported by the client.
  * This enum is translated into the message name
@@ -17,6 +19,8 @@ public enum ClientApi {
     PAYMENT_QUESTION,
     WEAPON_CHOICE_QUESTION,
     RELOAD_QUESTION,
-    POWERUP_QUESTION
+    POWERUP_QUESTION,
+
+    MATCH_STARTED_EVENT
 }
 

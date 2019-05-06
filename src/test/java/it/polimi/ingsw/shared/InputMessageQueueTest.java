@@ -1,7 +1,7 @@
 package it.polimi.ingsw.shared;
 
 import it.polimi.ingsw.shared.messages.Message;
-import it.polimi.ingsw.shared.messages.Question;
+import it.polimi.ingsw.shared.messages.templates.Question;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -24,9 +24,9 @@ class InputMessageQueueTest {
             Message question = Message.createQuestion("test", new Question<>("test", Arrays.asList(1, 2, 3)));
             queue.enqueue(question);
             assertEquals(question, queue.dequeueQuestion(1, TimeUnit.SECONDS), "Enqueued question does not match the expected instance");
-            Message answer = Message.createAnswer("test", 1, question.getStreamId());
+            Message answer = Message.createAnswer("test", 1, question.getFlowId());
             queue.enqueue(answer);
-            assertEquals(answer, queue.dequeueAnswer(question.getStreamId(), 1, TimeUnit.SECONDS), "Expected the previously created answer");
+            assertEquals(answer, queue.dequeueAnswer(question.getFlowId(), 1, TimeUnit.SECONDS), "Expected the previously created answer");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             e.printStackTrace();

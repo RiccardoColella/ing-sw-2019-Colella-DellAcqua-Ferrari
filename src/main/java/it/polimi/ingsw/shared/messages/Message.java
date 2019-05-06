@@ -3,6 +3,7 @@ package it.polimi.ingsw.shared.messages;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
+import it.polimi.ingsw.shared.messages.templates.Question;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -40,7 +41,7 @@ public class Message implements Serializable {
     /**
      * A stream id associated with the message, useful for parallel question/answer flows
      */
-    private final String streamId;
+    private final String flowId;
     /**
      * Type of the message
      */
@@ -51,13 +52,13 @@ public class Message implements Serializable {
      *
      * @param name name of the message
      * @param payload payload of the message
-     * @param streamId stream id associated with the message
+     * @param flowId stream id associated with the message
      * @param type type of the message
      */
-    protected Message(String name, Object payload, String streamId, Type type) {
+    protected Message(String name, Object payload, String flowId, Type type) {
         this.name = name;
         this.payload = new Gson().toJsonTree(payload).toString();
-        this.streamId = streamId;
+        this.flowId = flowId;
         this.type = type;
     }
 
@@ -77,11 +78,11 @@ public class Message implements Serializable {
      *
      * @param name name of the message
      * @param payload payload of the message
-     * @param streamId stream identifier of the question/answer flow
+     * @param flowId stream identifier of the question/answer flow
      * @return an answer message
      */
-    public static Message createAnswer(String name, Object payload, String streamId) {
-        return new Message(name, payload, streamId, Type.ANSWER);
+    public static Message createAnswer(String name, Object payload, String flowId) {
+        return new Message(name, payload, flowId, Type.ANSWER);
     }
 
     /**
@@ -127,8 +128,8 @@ public class Message implements Serializable {
         return gson.toJson(this);
     }
 
-    public String getStreamId() {
-        return streamId;
+    public String getFlowId() {
+        return flowId;
     }
 
     public Type getType() {

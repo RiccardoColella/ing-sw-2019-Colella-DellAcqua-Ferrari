@@ -6,14 +6,9 @@ import it.polimi.ingsw.server.model.currency.BonusTile;
 import it.polimi.ingsw.server.model.currency.BonusTileFactory;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.currency.PowerupTileFactory;
-import it.polimi.ingsw.server.model.events.MatchEnded;
-import it.polimi.ingsw.server.model.events.MatchModeChanged;
-import it.polimi.ingsw.server.model.events.PlayerDied;
-import it.polimi.ingsw.server.model.events.PlayerOverkilled;
-import it.polimi.ingsw.server.model.events.listeners.MatchEndedListener;
-import it.polimi.ingsw.server.model.events.listeners.MatchModeChangedListener;
-import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
-import it.polimi.ingsw.server.model.events.listeners.PlayerOverkilledListener;
+import it.polimi.ingsw.server.model.events.*;
+import it.polimi.ingsw.server.model.events.listeners.MatchListener;
+import it.polimi.ingsw.server.model.events.listeners.PlayerListener;
 import it.polimi.ingsw.server.model.player.DamageToken;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
@@ -22,17 +17,14 @@ import it.polimi.ingsw.server.model.rewards.RewardFactory;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.server.model.weapons.WeaponTileFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
  * This class represents the match, which is the core of the model and contains all the information relative to the game status
  */
-public class Match implements PlayerDiedListener, PlayerOverkilledListener {
+public class Match implements PlayerListener {
 
 
 
@@ -96,9 +88,15 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
      */
     private Mode mode;
 
+    /**
+     * In final frenzy mode, this list keeps track of the players which did their turn
+     */
     private List<Player> playersWhoDidFinalFrenzyTurn;
-    private List<MatchEndedListener> matchEndedListeners;
-    private List<MatchModeChangedListener> matchModeChangedListeners;
+
+    /**
+     * Listener for match events
+     */
+    private Set<MatchListener> matchListeners;
 
     /**
      * This constructor creates a new match from scratch
@@ -119,8 +117,7 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
         this.weaponDeck = WeaponTileFactory.createDeck();
         this.powerupDeck = PowerupTileFactory.createDeck();
         this.mode = mode;
-        this.matchEndedListeners = new ArrayList<>();
-        this.matchModeChangedListeners = new ArrayList<>();
+        this.matchListeners = new HashSet<>();
         this.playersWhoDidFinalFrenzyTurn = new LinkedList<>();
     }
 
@@ -255,6 +252,11 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
         this.killshots.add(new Killshot(new DamageToken(event.getKiller()), false));
     }
 
+    @Override
+    public void onPlayerDamaged(PlayerDamaged e) {
+        // Nothing to do here
+    }
+
 
     /**
      * This method is called when a dead player gets overkilled
@@ -268,6 +270,10 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
         event.getKiller().addMarks(Collections.singletonList(new DamageToken(event.getVictim())));
     }
 
+    @Override
+    public void onPlayerReborn(PlayerReborn event) {
+        // Nothing to do here
+    }
 
 
     /**
@@ -275,7 +281,7 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
      */
     private void notifyMatchModeChanged() {
         MatchModeChanged e = new MatchModeChanged(this, this.mode);
-        this.matchModeChangedListeners.forEach(l -> l.onMatchModeChanged(e));
+        this.matchListeners.forEach(l -> l.onMatchModeChanged(e));
     }
 
     private int getKillshotCount(Player player) {
@@ -330,19 +336,15 @@ public class Match implements PlayerDiedListener, PlayerOverkilledListener {
      */
     private void notifyMatchEnded(List<Player> rankings) {
         MatchEnded e = new MatchEnded(this, rankings);
-        this.matchEndedListeners.forEach(l -> l.onMatchEnded(e));
+        this.matchListeners.forEach(l -> l.onMatchEnded(e));
     }
 
     public List<Player> getPlayers() {
         return this.players;
     }
 
-    public void addMatchEndedListener(MatchEndedListener listener) {
-        this.matchEndedListeners.add(listener);
-    }
-
-    public void addMatchModeChangedListener(MatchModeChangedListener listener) {
-        this.matchModeChangedListeners.add(listener);
+    public void addMatchListener(MatchListener listener) {
+        this.matchListeners.add(listener);
     }
 
     private void scoreVictimPoints(Player victim) {

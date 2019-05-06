@@ -60,9 +60,9 @@ public class MatchFactory {
                 playerSupplier
         );
         match.getPlayers().forEach(player -> {
-            player.addPlayerDiedListener(match);
-            player.addPlayerOverkilledListener(match);
-            match.addMatchModeChangedListener(player);
+            player.addPlayerListener(match);
+            player.addPlayerListener(match);
+            match.addMatchListener(player);
         });
         return match;
     }

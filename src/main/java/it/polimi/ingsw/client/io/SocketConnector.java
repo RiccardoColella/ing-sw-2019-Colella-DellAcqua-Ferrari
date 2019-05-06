@@ -3,6 +3,7 @@ package it.polimi.ingsw.client.io;
 import it.polimi.ingsw.shared.InputStreamMessageSupplier;
 import it.polimi.ingsw.shared.MessageDispatcher;
 import it.polimi.ingsw.shared.OutputStreamMessageConsumer;
+import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -19,7 +20,7 @@ public class SocketConnector extends Connector {
     /**
      * Message supplier object that provides input messages
      */
-    private final InputStreamMessageSupplier inputMessageStreamSupplier;
+    private InputStreamMessageSupplier inputMessageStreamSupplier;
 
     /**
      * Message dispatching utility for IO
@@ -32,12 +33,15 @@ public class SocketConnector extends Connector {
     private Socket socket;
 
     /**
-     * Constructs the Socket-based implementation of the Connector
+     * Initializes the Socket-based implementation of the Connector
      *
+     * @param clientInitializationInfo the user preferences for the match
      * @param address the remote address the client needs to connect to
      * @throws IOException if the created socket cannot provide valid input and output streams
      */
-    public SocketConnector(InetSocketAddress address) throws IOException {
+    public void initialize(ClientInitializationInfo clientInitializationInfo, InetSocketAddress address) throws IOException {
+
+        super.initialize(clientInitializationInfo);
 
         socket = new Socket();
         socket.connect(address);
@@ -60,9 +64,16 @@ public class SocketConnector extends Connector {
     @Override
     public void close() throws Exception {
         super.close();
-        inputMessageStreamSupplier.close();
-        messageDispatcher.close();
-        socket.close();
+
+        if (inputMessageStreamSupplier != null) {
+            inputMessageStreamSupplier.close();
+        }
+        if (messageDispatcher != null) {
+            messageDispatcher.close();
+        }
+        if (socket != null) {
+            socket.close();
+        }
     }
 }
 

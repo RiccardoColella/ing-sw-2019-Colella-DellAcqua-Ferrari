@@ -2,9 +2,10 @@ package it.polimi.ingsw.server.model.player;
 
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.*;
-import it.polimi.ingsw.server.model.events.listeners.PlayerDiedListener;
-import it.polimi.ingsw.server.model.events.listeners.PlayerOverkilledListener;
-import it.polimi.ingsw.server.model.events.listeners.PlayerRebornListener;
+import it.polimi.ingsw.server.model.events.PlayerDamaged;
+import it.polimi.ingsw.server.model.events.PlayerDied;
+import it.polimi.ingsw.server.model.events.PlayerOverkilled;
+import it.polimi.ingsw.server.model.events.listeners.PlayerListener;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.match.Match;
@@ -653,56 +654,6 @@ class PlayerTest {
             match.endTurn();
             match.changeTurn();
         }
-
-    }
-
-    /**
-     * This test checks whether addPlayerDiedListener adds once and only once the same listener
-     */
-    @Test
-    void addPlayerDiedListener() {
-        PlayerDiedListener listener = event -> Logger.getLogger(event.getVictim() + " died!");
-        int expectedListeners = player.getPlayerDiedListeners().size();
-        player.addPlayerDiedListener(listener);
-        expectedListeners++;
-        //the first time, the listener is added
-        assertEquals(expectedListeners, player.getPlayerDiedListeners().size(), "Listener was not added");
-        player.addPlayerDiedListener(listener);
-        //the second time, the listener is ignored
-        assertEquals(expectedListeners, player.getPlayerDiedListeners().size(), "Listener was added twice");
-    }
-
-    /**
-     * This test checks whether addPlayerOverkilledListener adds once and only once the same listener
-     */
-    @Test
-    void addPlayerOverkilledListener() {
-        PlayerOverkilledListener listener = event -> Logger.getLogger(event.getVictim() + " was overkilled!");
-        int expectedListeners = player.getPlayerOverkilledListeners().size();
-        player.addPlayerOverkilledListener(listener);
-        expectedListeners++;
-        //the first time, the listener is added
-        assertEquals(expectedListeners, player.getPlayerOverkilledListeners().size(), "Listener was not added");
-        player.addPlayerOverkilledListener(listener);
-        //the second time, the listener is ignored
-        assertEquals(expectedListeners, player.getPlayerOverkilledListeners().size(), "Listener was added twice");
-
-    }
-
-    /**
-     * This test checks whether addPlayerRebornListener adds once and only once the same listener
-     */
-    @Test
-    void addPlayerRebornListener() {
-        PlayerRebornListener listener = event -> Logger.getLogger(event.getPhoenix() + " is alive again!");
-        int expectedListeners = player.getPlayerRebornListeners().size();
-        player.addPlayerRebornListener(listener);
-        expectedListeners++;
-        //the first time, the listener is added
-        assertEquals(expectedListeners, player.getPlayerRebornListeners().size(), "Listener was not added");
-        player.addPlayerRebornListener(listener);
-        //the second time, the listener is ignored
-        assertEquals(expectedListeners, player.getPlayerRebornListeners().size(), "Listener was added twice");
 
     }
 }

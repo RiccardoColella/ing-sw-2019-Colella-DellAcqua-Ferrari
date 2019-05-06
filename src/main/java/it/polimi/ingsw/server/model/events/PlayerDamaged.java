@@ -9,8 +9,8 @@ public class PlayerDamaged extends EventObject {
     private Player attacker;
 
     /**
-     *
      * @param victim the source object
+     * @param attacker the attacker
      */
     public PlayerDamaged(Player victim, Player attacker) {
         super(victim);

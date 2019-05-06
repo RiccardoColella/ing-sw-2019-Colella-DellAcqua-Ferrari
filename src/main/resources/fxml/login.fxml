@@ -9,6 +9,7 @@
     xmlns:fx="http://javafx.com/fxml"
     fx:id="window"
     fx:controller="it.polimi.ingsw.client.ui.gui.LoginController"
+    minHeight="600.0" minWidth="600.0"
     prefHeight="600.0" prefWidth="600.0"
     maxHeight="1200" maxWidth="800">
     <FlowPane fx:id="container">

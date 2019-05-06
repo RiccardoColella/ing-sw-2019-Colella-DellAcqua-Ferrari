@@ -19,7 +19,7 @@ public class InputMessageQueue {
     /**
      * This queue contains question messages
      */
-    private BlockingQueue<Message> questionMessageQueues = new LinkedBlockingQueue<>();
+    private BlockingQueue<Message> questionMessageQueue = new LinkedBlockingQueue<>();
 
     /**
      * This queue contains event messages
@@ -41,16 +41,16 @@ public class InputMessageQueue {
 
         switch (message.getType()) {
             case QUESTION:
-                questionMessageQueues.add(message);
+                questionMessageQueue.add(message);
                 break;
             case EVENT:
                 eventMessageQueues.add(message);
                 break;
             case ANSWER:
-                if (!answerMessageQueues.containsKey(message.getStreamId())) {
-                    answerMessageQueues.put(message.getStreamId(), new LinkedBlockingQueue<>());
+                if (!answerMessageQueues.containsKey(message.getFlowId())) {
+                    answerMessageQueues.put(message.getFlowId(), new LinkedBlockingQueue<>());
                 }
-                answerMessageQueues.get(message.getStreamId()).add(message);
+                answerMessageQueues.get(message.getFlowId()).add(message);
                 break;
         }
     }
@@ -95,7 +95,7 @@ public class InputMessageQueue {
      * @throws TimeoutException if the timeout has been reached without receiving any message
      */
     public Message dequeueQuestion(int timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
-        return dequeue(questionMessageQueues, timeout, unit);
+        return dequeue(questionMessageQueue, timeout, unit);
     }
 
     /**

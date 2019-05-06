@@ -7,10 +7,12 @@ import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
 
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * This class is used to create a virtual waiting room in which RMI and Socket clients will wait until a virtual
@@ -170,9 +172,15 @@ public class WaitingRoom implements AutoCloseable {
      * Removes views that disconnected while waiting in the queue
      */
     private void removeDisconnectedViews() {
+        List<View> disconnectedViews;
         synchronized (connectedViews) {
-            connectedViews.removeIf(view -> !view.isConnected());
+            disconnectedViews = connectedViews
+                    .stream()
+                    .filter(view -> !view.isConnected())
+                    .collect(Collectors.toList());
+            connectedViews.removeAll(disconnectedViews);
         }
+        disconnectedViews.forEach(this::closeView);
     }
 
     private void addNewView(View view) {
@@ -182,11 +190,7 @@ public class WaitingRoom implements AutoCloseable {
             synchronized (connectedViews) {
                 if (connectedViews.stream().anyMatch(v -> v.getNickname().equals(view.getNickname()))) {
                     logger.info("Cannot add player. Duplicated nickname " + view.getNickname());
-                    try {
-                        view.close();
-                    } catch (Exception e) {
-                        logger.warning("Unable to close view " + e);
-                    }
+                    closeView(view);
                 } else {
                     connectedViews.add(view);
                 }
@@ -196,6 +200,14 @@ public class WaitingRoom implements AutoCloseable {
             logger.warning("Thread stopped " + e);
         } catch (ViewDisconnectedException e) {
             logger.warning("View disconnected during initialization");
+        }
+    }
+
+    private void closeView(View view) {
+        try {
+            view.close();
+        } catch (Exception e) {
+            logger.warning("Unable to close view " + e);
         }
     }
 

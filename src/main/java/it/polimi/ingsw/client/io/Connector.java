@@ -1,13 +1,21 @@
 package it.polimi.ingsw.client.io;
 
+import com.google.gson.Gson;
 import it.polimi.ingsw.shared.InputMessageQueue;
+import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
+import it.polimi.ingsw.shared.events.MatchStarted;
 import it.polimi.ingsw.shared.events.MessageReceived;
-import it.polimi.ingsw.shared.events.listeners.EventMessageReceivedListener;
+import it.polimi.ingsw.shared.events.listeners.MatchListener;
 import it.polimi.ingsw.shared.events.listeners.QuestionMessageReceivedListener;
+import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.shared.messages.Message;
+import it.polimi.ingsw.shared.messages.ServerApi;
+import it.polimi.ingsw.utils.EnumValueByString;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
@@ -18,10 +26,16 @@ import java.util.logging.Logger;
  * @author Carlo Dell'Acqua
  */
 public abstract class Connector implements AutoCloseable {
+
     /**
      * Logging utility
      */
     protected final Logger logger = Logger.getLogger(this.getClass().getName());
+
+    /**
+     * JSON conversion utility
+     */
+    private static Gson gson = new Gson();
 
     /**
      * Timeout needed to prevent deadlocks
@@ -44,19 +58,25 @@ public abstract class Connector implements AutoCloseable {
     private final ExecutorService threadPool = Executors.newFixedThreadPool(2);
 
     /**
-     * Event message listeners
-     */
-    private List<EventMessageReceivedListener> eventListeners = new LinkedList<>();
-
-    /**
      * Question message listeners
      */
-    private List<QuestionMessageReceivedListener> questionListeners = new LinkedList<>();
+    private Set<QuestionMessageReceivedListener> questionListeners = new HashSet<>();
+
 
     /**
-     * Base constructor that automatically start the receiving tasks
+     * The following sets contain the listeners for all possible events that the connector can raise
      */
-    public Connector() {
+    private Set<MatchListener> matchListeners = new HashSet<>();
+    // TODO: add the other sets
+
+
+    /**
+     * Initializes the connector and its IO queues
+     *
+     * @param clientInitializationInfo the user preferences for the match
+     */
+    protected void initialize(ClientInitializationInfo clientInitializationInfo) {
+        outputMessageQueue.add(Message.createEvent(ServerApi.VIEW_INIT_EVENT.toString(), clientInitializationInfo));
         threadPool.execute(() -> receiveAsync(Message.Type.EVENT));
         threadPool.execute(() -> receiveAsync(Message.Type.QUESTION));
     }
@@ -140,31 +160,29 @@ public abstract class Connector implements AutoCloseable {
     }
 
     /**
-     * Adds a listener of input event messages
-     *
-     * @param l the listener
-     */
-    public void addEventMessageReceivedListener(EventMessageReceivedListener l) {
-        eventListeners.add(l);
-    }
-
-    /**
-     * Removes a listener of input event messages
-     *
-     * @param l the listener
-     */
-    public void removeEventMessageReceivedListener(EventMessageReceivedListener l) {
-        eventListeners.remove(l);
-    }
-
-    /**
      * Notifies event listeners that a message has been received
      *
      * @param message the received event message
      */
     private void notifyEventMessageReceivedListeners(Message message) {
-        MessageReceived e = new MessageReceived(this, message);
-        eventListeners.forEach(l -> l.onEventMessageReceived(e));
+
+        ClientApi eventType = EnumValueByString.findByString(message.getName(), ClientApi.class);
+
+        switch (eventType) {
+            case MATCH_STARTED_EVENT: {
+                MatchStarted e = gson.fromJson(message.getPayload(), MatchStarted.class);
+                matchListeners.forEach(l -> l.onMatchStarted(e));
+                break;
+            }
+
+            default: {
+                throw new UnsupportedOperationException("Event \"" + eventType + "\" not supported");
+            }
+        }
+    }
+
+    public void addMatchListener(MatchListener l) {
+        matchListeners.add(l);
     }
 
     /**

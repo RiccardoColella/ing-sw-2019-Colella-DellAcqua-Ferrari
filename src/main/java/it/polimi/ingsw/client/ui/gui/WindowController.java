@@ -68,6 +68,10 @@ public abstract class WindowController {
         stage.showAndWait();
     }
 
+    public void close() {
+        this.stage.close();
+    }
+
     protected void setupViewport(Pane window) {
         this.window = window;
         initializeViewport(window);
@@ -89,13 +93,13 @@ public abstract class WindowController {
         String measurementUnit = m.group(3);
         switch (measurementUnit) {
             case "vw":
-                setter.accept(vw * height / 100);
+                setter.accept(Math.floor(vw * height / 100));
                 break;
             case "vh":
-                setter.accept(vh * height / 100);
+                setter.accept(Math.floor(vh * height / 100));
                 break;
             case "%":
-                setter.accept((dimension == Dimension.WIDTH ? parentWidth : parentHeight) * height / 100);
+                setter.accept(Math.floor((dimension == Dimension.WIDTH ? parentWidth : parentHeight) * height / 100));
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported measurement unit");

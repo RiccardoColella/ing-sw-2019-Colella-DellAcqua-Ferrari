@@ -7,5 +7,6 @@ package it.polimi.ingsw.shared.messages;
  * @author Carlo Dell'Acqua
  */
 public enum ServerApi {
-    ANSWER
+    ANSWER,
+    VIEW_INIT_EVENT
 }

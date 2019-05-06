@@ -2,6 +2,7 @@ package it.polimi.ingsw.client.io;
 
 import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
 import it.polimi.ingsw.shared.MessageDispatcher;
+import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 import it.polimi.ingsw.shared.rmi.RMIMessageProxy;
 import it.polimi.ingsw.shared.rmi.RMIStreamProvider;
 
@@ -19,23 +20,24 @@ public class RMIConnector extends Connector {
     /**
      * Message dispatching utility for IO
      */
-    private final MessageDispatcher messageDispatcher;
+    private MessageDispatcher messageDispatcher;
 
     /**
      * The object that represents the connection between the client and the server used to send and receive messages
      */
-    private final RMIMessageProxy messageProxy;
+    private RMIMessageProxy messageProxy;
 
     /**
-     * Constructs the RMI-based implementation of the Connector
+     * Initializes the RMI-based implementation of the Connector
      *
+     * @param clientInitializationInfo the user preferences for the match
      * @param address the remote address the client needs to connect to
      * @throws RemoteException if the RMI registry cannot be reached
      * @throws NotBoundException if the server couldn't provide a valid RMIMessageProxy
      * @throws InterruptedException if the server couldn't provide a valid RMIMessageProxy
      */
-    public RMIConnector(InetSocketAddress address) throws RemoteException, NotBoundException, InterruptedException {
-
+    public void initialize(ClientInitializationInfo clientInitializationInfo, InetSocketAddress address) throws RemoteException, NotBoundException, InterruptedException {
+        super.initialize(clientInitializationInfo);
         RMIStreamProvider provider = (RMIStreamProvider) LocateRegistry.getRegistry(address.getHostName(), address.getPort()).lookup("RMIConnectionEndPoint");
         messageProxy = (RMIMessageProxy) LocateRegistry.getRegistry(address.getHostName(), address.getPort()).lookup(provider.connect());
 
@@ -70,7 +72,11 @@ public class RMIConnector extends Connector {
     @Override
     public void close() throws Exception {
         super.close();
-        messageDispatcher.close();
-        messageProxy.close();
+        if (messageDispatcher != null) {
+            messageDispatcher.close();
+        }
+        if (messageProxy != null) {
+            messageProxy.close();
+        }
     }
 }

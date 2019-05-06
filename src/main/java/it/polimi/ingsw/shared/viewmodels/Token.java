@@ -1,4 +1,4 @@
-package it.polimi.ingsw.client.viewmodels;
+package it.polimi.ingsw.shared.viewmodels;
 
 public class Token {
 

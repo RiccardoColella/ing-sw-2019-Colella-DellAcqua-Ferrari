@@ -10,7 +10,10 @@ import it.polimi.ingsw.server.model.currency.BonusTile;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
 import it.polimi.ingsw.server.model.events.PlayerDamaged;
-import it.polimi.ingsw.server.model.events.listeners.PlayerDamagedListener;
+import it.polimi.ingsw.server.model.events.PlayerDied;
+import it.polimi.ingsw.server.model.events.PlayerOverkilled;
+import it.polimi.ingsw.server.model.events.PlayerReborn;
+import it.polimi.ingsw.server.model.events.listeners.PlayerListener;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.ActionTile;
@@ -31,7 +34,7 @@ import java.util.stream.Stream;
 /**
  * This class has the purpose of managing the game flow
  */
-public class Controller implements Runnable, PlayerDamagedListener {
+public class Controller implements Runnable, PlayerListener {
     /**
      * Logging utility
      */
@@ -51,7 +54,7 @@ public class Controller implements Runnable, PlayerDamagedListener {
         this.match = match;
         this.views = views;
         this.players = match.getPlayers();
-        this.players.forEach(player -> player.addPlayerDamagedListener(this));
+        this.players.forEach(player -> player.addPlayerListener(this));
         this.weaponMap = WeaponFactory.createWeaponDictionary(match.getBoard());
     }
 
@@ -399,9 +402,24 @@ public class Controller implements Runnable, PlayerDamagedListener {
     }
 
     @Override
+    public void onPlayerDied(PlayerDied event) {
+        // Nothing to do here
+    }
+
+    @Override
     public void onPlayerDamaged(PlayerDamaged e) {
         manageAttackerPowerups(e.getAttacker(), e.getVictim());
         manageVictimPowerups(e.getVictim(), e.getAttacker());
+    }
+
+    @Override
+    public void onPlayerOverkilled(PlayerOverkilled event) {
+        // Nothing to do here
+    }
+
+    @Override
+    public void onPlayerReborn(PlayerReborn event) {
+        // Nothing to do here
     }
 
     /**

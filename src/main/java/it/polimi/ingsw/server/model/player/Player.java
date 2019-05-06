@@ -22,7 +22,7 @@ import static it.polimi.ingsw.server.model.match.Match.Mode.FINAL_FRENZY;
 /**
  * This class represents the player entity, storing all info about its status during the match
  */
-public class Player implements Damageable, MatchModeChangedListener {
+public class Player implements Damageable, MatchListener {
 
     /**
      * This property represents the marks received by the player during its current life
@@ -75,24 +75,9 @@ public class Player implements Damageable, MatchModeChangedListener {
     private WeaponTile activeWeapon;
 
     /**
-     * This property stores the listeners to the PlayerDied event
+     * This property stores the listeners of the Player's events
      */
-    private List<PlayerDiedListener> playerDiedListeners = new ArrayList<>();
-
-    /**
-     * This property stores the listeners to the PlayerOverkilled event
-     */
-    private List<PlayerOverkilledListener> playerOverkilledListeners = new ArrayList<>();
-
-    /**
-     * This property stores the listeners to the PlayerReborn event
-     */
-    private List<PlayerRebornListener> playerRebornListeners = new ArrayList<>();
-
-    /**
-     * This property stores the listeners to the PlayerDamaged event
-     */
-    private List<PlayerDamagedListener> playerDamagedListeners = new ArrayList<>();
+    private Set<PlayerListener> playerListeners = new HashSet<>();
 
     /**
      * This property stores the match the Player is participating to
@@ -501,43 +486,11 @@ public class Player implements Damageable, MatchModeChangedListener {
     }
 
     /**
-     * This method adds a new listener of PlayerDied event to the list
-     * @param listener the PlayerDiedListener to add
+     * This method adds a new listener of Player's event to the set
+     * @param listener the PlayerListener to add
      */
-    public void addPlayerDiedListener(PlayerDiedListener listener) {
-        if (!this.playerDiedListeners.contains(listener)) {
-            playerDiedListeners.add(listener);
-        }
-    }
-
-    /**
-     * This method adds a new listener of PlayerDamaged event to the list
-     * @param listener the PlayerDiedListener to add
-     */
-    public void addPlayerDamagedListener(PlayerDamagedListener listener) {
-        if (!this.playerDamagedListeners.contains(listener)) {
-            playerDamagedListeners.add(listener);
-        }
-    }
-
-    /**
-     * This method adds a new listener of PlayerOverkilled event to the list
-     * @param listener the PlayerOverkilledListener to add
-     */
-    public void addPlayerOverkilledListener(PlayerOverkilledListener listener) {
-        if (!this.playerOverkilledListeners.contains(listener)) {
-            playerOverkilledListeners.add(listener);
-        }
-    }
-
-    /**
-     * This method adds a new listener of PlayerReborn event to the list
-     * @param listener the PlayerRebornListener to add
-     */
-    public void addPlayerRebornListener(PlayerRebornListener listener) {
-        if (!this.playerRebornListeners.contains(listener)) {
-            playerRebornListeners.add(listener);
-        }
+    public void addPlayerListener(PlayerListener listener) {
+        playerListeners.add(listener);
     }
 
     /**
@@ -683,7 +636,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      */
     private void notifyPlayerBroughtBackToLife() {
         PlayerReborn e = new PlayerReborn(this);
-        playerRebornListeners.forEach(l -> l.onPlayerReborn(e));
+        playerListeners.forEach(l -> l.onPlayerReborn(e));
     }
 
     /**
@@ -692,7 +645,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      */
     private void notifyPlayerOverkilled(Player killer) {
         PlayerOverkilled e = new PlayerOverkilled(this, killer);
-        playerOverkilledListeners.forEach(l -> l.onPlayerOverkilled(e));
+        playerListeners.forEach(l -> l.onPlayerOverkilled(e));
     }
 
     /**
@@ -701,7 +654,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      */
     private void notifyPlayerDied(Player killer) {
         PlayerDied e = new PlayerDied(this, killer);
-        this.playerDiedListeners.forEach(listener -> listener.onPlayerDied(e));
+        this.playerListeners.forEach(listener -> listener.onPlayerDied(e));
     }
 
     /**
@@ -710,7 +663,7 @@ public class Player implements Damageable, MatchModeChangedListener {
      */
     private void notifyPlayerDamaged(Player attacker) {
         PlayerDamaged e = new PlayerDamaged(this, attacker);
-        this.playerDamagedListeners.forEach(listener -> listener.onPlayerDamaged(e));
+        this.playerListeners.forEach(listener -> listener.onPlayerDamaged(e));
     }
 
     /**
@@ -719,30 +672,6 @@ public class Player implements Damageable, MatchModeChangedListener {
      */
     public PlayerConstraints getConstraints() {
         return constraints;
-    }
-
-    /**
-     * This method gets the listeners of PlayerDied event
-     * @return a list of PlayerDiedListener
-     */
-    public List<PlayerDiedListener> getPlayerDiedListeners() {
-        return this.playerDiedListeners;
-    }
-
-    /**
-     * This method gets the listeners of PlayerOverkilled event
-     * @return a list of PlayerOverkilledListener
-     */
-    public List<PlayerOverkilledListener> getPlayerOverkilledListeners() {
-        return this.playerOverkilledListeners;
-    }
-
-    /**
-     * This method gets the listeners of PlayerReborn event
-     * @return a list of PlayerRebornListener
-     */
-    public List<PlayerRebornListener> getPlayerRebornListeners() {
-        return this.playerRebornListeners;
     }
 
     public Match getMatch() {
@@ -766,5 +695,10 @@ public class Player implements Damageable, MatchModeChangedListener {
         Block otherPlayerPosition = match.getBoard().findPlayer(otherPlayer).orElseThrow(() -> new IllegalStateException("otherPlayer is not on the board"));
         Set<Block> visibleBlocks = match.getBoard().getVisibleBlocks(myPosition);
         return visibleBlocks.contains(otherPlayerPosition);
+    }
+
+    @Override
+    public void onMatchEnded(MatchEnded event) {
+        // Nothing to do here
     }
 }
