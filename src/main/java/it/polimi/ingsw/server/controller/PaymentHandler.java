@@ -30,11 +30,12 @@ public class PaymentHandler {
      * @return true if the player can afford the debt
      */
     public static boolean canAfford(List<? extends Coin> debt, Player owner){
-        List<Coin> activePlayerWallet = owner.getAmmoCubes().stream().map(ammoCube -> (Coin) ammoCube).collect(Collectors.toList());
-        activePlayerWallet.addAll(owner.getPowerups().stream().map(powerupTile -> (Coin) powerupTile).collect(Collectors.toList()));
+        List<Coin> activePlayerWallet = new LinkedList<>(owner.getAmmoCubes());
+        activePlayerWallet.addAll(owner.getPowerups());
         for (Coin coin : debt) {
             if (activePlayerWallet.stream().anyMatch(coin::hasSameValueAs)) {
-                activePlayerWallet.remove(coin);
+                activePlayerWallet.remove(activePlayerWallet.stream().filter(c -> c.hasSameValueAs(coin)).findAny().orElseThrow(() -> new IllegalStateException("if-Control failed")));
+                //activePlayerWallet.remove(coin);
             } else {
                 return false;
             }
