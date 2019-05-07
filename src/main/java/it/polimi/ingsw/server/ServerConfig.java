@@ -41,6 +41,11 @@ public class ServerConfig {
      */
     private int socketPort;
 
+    /**
+     * The hostname or IP that the RMI Registry will use
+     */
+    private String rmiHostname;
+
     public int getMaxParallelMatches() {
         return maxParallelMatches;
     }
@@ -95,5 +100,13 @@ public class ServerConfig {
 
     public void setSocketPort(int socketPort) {
         this.socketPort = socketPort;
+    }
+
+    public String getRMIHostname() {
+        return rmiHostname;
+    }
+
+    public void setRMIHostname(String rmiHostname) {
+        this.rmiHostname = rmiHostname;
     }
 }

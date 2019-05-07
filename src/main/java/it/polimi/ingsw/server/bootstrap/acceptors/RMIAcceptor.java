@@ -134,8 +134,6 @@ public class RMIAcceptor implements Acceptor, AutoCloseable {
      * @throws IOException if the registry cannot be created
      */
     public RMIAcceptor(int port) throws IOException {
-        System.setProperty("java.rmi.server.hostname", "diemisto");
-
         registry = java.rmi.registry.LocateRegistry.createRegistry(port);
 
         provider = new RMIStreamProvider(id -> {
