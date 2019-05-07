@@ -1,9 +1,7 @@
 package it.polimi.ingsw.server.model.player;
 
 import it.polimi.ingsw.server.model.battlefield.Block;
-import it.polimi.ingsw.server.model.currency.AmmoCube;
-import it.polimi.ingsw.server.model.currency.Coin;
-import it.polimi.ingsw.server.model.currency.PowerupTile;
+import it.polimi.ingsw.server.model.currency.*;
 import it.polimi.ingsw.server.model.events.*;
 import it.polimi.ingsw.server.model.events.listeners.*;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
@@ -109,6 +107,9 @@ public class Player implements Damageable, MatchListener {
         this.match = match;
         this.info = info;
         this.constraints = constraints;
+        this.ammoCubes.add(AmmoCubeFactory.create(CurrencyColor.YELLOW));
+        this.ammoCubes.add(AmmoCubeFactory.create(CurrencyColor.BLUE));
+        this.ammoCubes.add(AmmoCubeFactory.create(CurrencyColor.RED));
     }
 
     /**
@@ -512,6 +513,11 @@ public class Player implements Damageable, MatchListener {
             default:
                 throw new IllegalArgumentException("Unrecognizable match mode");
         }
+    }
+
+    @Override
+    public void onMatchStarted(MatchStarted event) {
+
     }
 
     /**

@@ -197,6 +197,7 @@ class PlayerTest {
     @Test
     void grabWeapon() {
         // FILLING UP THE WALLET SO THAT THE PLAYER CAN BUY A WEAPON
+        player.pay(player.getAmmoCubes().stream().map(a -> (Coin) a).collect(Collectors.toList()));
         Optional<WeaponTile> currentWeapon = match.getWeaponDeck().pick();
         int playerAmmoCubes = player.getAmmoCubes().size();
 
@@ -349,6 +350,7 @@ class PlayerTest {
     @Test
     void grabAmmoCubes() {
         this.player = match.getActivePlayer();
+        this.player.pay(this.player.getAmmoCubes().stream().map(a -> (Coin) a).collect(Collectors.toList()));
         List<AmmoCube> redAmmoCubes = new LinkedList<>();
         List<AmmoCube> blueAmmoCubes = new LinkedList<>();
         List<AmmoCube> yellowAmmoCubes = new LinkedList<>();

@@ -57,6 +57,7 @@ public class MatchFactory {
                 BoardFactory.create(preset),
                 skulls,
                 mode,
+                preset,
                 playerSupplier
         );
         match.getPlayers().forEach(player -> {

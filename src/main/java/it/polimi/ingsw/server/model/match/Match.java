@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server.model.match;
 
 import it.polimi.ingsw.server.model.battlefield.Board;
+import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.currency.BonusTile;
 import it.polimi.ingsw.server.model.currency.BonusTileFactory;
@@ -25,8 +26,6 @@ import java.util.stream.Collectors;
  * This class represents the match, which is the core of the model and contains all the information relative to the game status
  */
 public class Match implements PlayerListener {
-
-
 
     /**
      * This enum contains the possible types of match
@@ -99,17 +98,23 @@ public class Match implements PlayerListener {
     private Set<MatchListener> matchListeners;
 
     /**
+     * Preset used for the board
+     */
+    private final BoardFactory.Preset boardPreset;
+
+    /**
      * This constructor creates a new match from scratch
      *
      * @param playerInfoList the playerInfoList containing the information to create the players
      * @param board the board that was chosen for the match
      * @param skulls an int representing the number of skulls
      * @param mode the initial match mode
+     * @param boardPreset the preset used for the board
      * @param playerSupplier a bi-function which provides a Player instance given this match and a PlayerInfo object
      */
-    public Match(List<PlayerInfo> playerInfoList, Board board, int skulls, Mode mode, BiFunction<Match, PlayerInfo, Player> playerSupplier) {
+    public Match(List<PlayerInfo> playerInfoList, Board board, int skulls, Mode mode, BoardFactory.Preset boardPreset, BiFunction<Match, PlayerInfo, Player> playerSupplier) {
         this.skulls = skulls;
-        this.players = Collections.unmodifiableList(playerInfoList.stream().map(info -> playerSupplier.apply(this, info)).collect(Collectors.toList()));
+        this.players = playerInfoList.stream().map(info -> playerSupplier.apply(this, info)).collect(Collectors.toUnmodifiableList());
         this.board = board;
         this.activePlayer = this.players.get(0);
         this.killshots = new LinkedList<>();
@@ -119,9 +124,22 @@ public class Match implements PlayerListener {
         this.mode = mode;
         this.matchListeners = new HashSet<>();
         this.playersWhoDidFinalFrenzyTurn = new LinkedList<>();
+        this.boardPreset = boardPreset;
     }
 
-
+    public void start() {
+        MatchStarted e = new MatchStarted(this);
+        for (MatchListener l : matchListeners) {
+            l.onMatchStarted(e);
+        }
+    }
+    /**
+     * Gets the preset used for the board
+     * @return the preset used for the board
+     */
+    public BoardFactory.Preset getBoardPreset() {
+        return boardPreset;
+    }
     /**
      * This method gets the bonus tile deck
      * @return the Deck of BonusTile

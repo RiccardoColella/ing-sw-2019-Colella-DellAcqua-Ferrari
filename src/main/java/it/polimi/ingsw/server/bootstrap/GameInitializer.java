@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server.bootstrap;
 
 import it.polimi.ingsw.server.controller.Controller;
+import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.match.MatchFactory;
 import it.polimi.ingsw.server.view.View;
 
@@ -87,16 +88,17 @@ public class GameInitializer {
                 deadline = Instant.now().plus(Duration.ofMillis(matchStartTimeoutMilliseconds));
             }
         }
-
+        Match match = MatchFactory.create(
+                participants.stream()
+                        .map(View::getNickname)
+                        .collect(Collectors.toList()),
+                playersChoice(participants.stream().map(View::getChosenPreset)),
+                playersChoice(participants.stream().map(View::getChosenSkulls)),
+                playersChoice(participants.stream().map(View::getChosenMode))
+        );
+        participants.forEach(match::addMatchListener);
         return new Controller(
-                MatchFactory.create(
-                        participants.stream()
-                                .map(View::getNickname)
-                                .collect(Collectors.toList()),
-                        playersChoice(participants.stream().map(View::getChosenPreset)),
-                        playersChoice(participants.stream().map(View::getChosenSkulls)),
-                        playersChoice(participants.stream().map(View::getChosenMode))
-                ),
+                match,
                 participants
         );
     }

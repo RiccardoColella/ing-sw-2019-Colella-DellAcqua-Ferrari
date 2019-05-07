@@ -6,7 +6,10 @@ import it.polimi.ingsw.client.io.SocketConnector;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
+import it.polimi.ingsw.shared.events.MatchStarted;
+import it.polimi.ingsw.shared.events.listeners.MatchListener;
 import it.polimi.ingsw.utils.EnumValueByString;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
@@ -58,7 +61,6 @@ public class LoginController extends WindowController {
     private GameController gameController;
 
     private Map<String, Match.Mode> modeChoiceMap = new HashMap<>();
-
 
     public LoginController(String title) {
         super(title, "/fxml/login.fxml", "/css/login.css");
@@ -121,18 +123,22 @@ public class LoginController extends WindowController {
             switch (connection) {
                 case "rmi":
                     connector = new RMIConnector();
-                    connector.addMatchListener(e -> {
-                        this.gameController = new GameController(connector, e.getPreset(), e.getSelf(), e.getOpponents());
-                        this.close();
-                    });
+                    connector.addMatchListener(e -> Platform.runLater(
+                            () -> {
+                                this.gameController = new GameController(connector, e.getPreset(), e.getSelf(), e.getOpponents());
+                                this.close();
+                            }
+                    ));
                     ((RMIConnector) connector).initialize(info, new InetSocketAddress(serverAddressField.getText(), 9090));
                     break;
                 case "socket":
                     connector = new SocketConnector();
-                    connector.addMatchListener(e -> {
-                        this.gameController = new GameController(connector, e.getPreset(), e.getSelf(), e.getOpponents());
-                        this.close();
-                    });
+                    connector.addMatchListener(e -> Platform.runLater(
+                            () -> {
+                                this.gameController = new GameController(connector, e.getPreset(), e.getSelf(), e.getOpponents());
+                                this.close();
+                            }
+                    ));
                     ((SocketConnector) connector).initialize(info, new InetSocketAddress(serverAddressField.getText(), 9000));
                     break;
                 default:
@@ -174,4 +180,5 @@ public class LoginController extends WindowController {
             }
         }
     }
+
 }

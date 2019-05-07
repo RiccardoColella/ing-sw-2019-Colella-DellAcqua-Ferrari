@@ -56,6 +56,7 @@ public class Controller implements Runnable, PlayerListener {
         this.players = match.getPlayers();
         this.players.forEach(player -> player.addPlayerListener(this));
         this.weaponMap = WeaponFactory.createWeaponDictionary(match.getBoard());
+        match.start();
     }
 
     @Override

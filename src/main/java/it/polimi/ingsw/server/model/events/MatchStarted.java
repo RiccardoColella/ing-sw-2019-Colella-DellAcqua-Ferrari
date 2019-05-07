@@ -5,6 +5,7 @@ import it.polimi.ingsw.server.model.match.Match;
 import java.util.EventObject;
 
 public class MatchStarted extends EventObject {
+    private Match match;
     /**
      * Constructs a prototypical Event.
      *
@@ -12,5 +13,11 @@ public class MatchStarted extends EventObject {
      */
     public MatchStarted(Match match) {
         super(match);
+        this.match = match;
+    }
+
+
+    public Match getMatch() {
+        return match;
     }
 }

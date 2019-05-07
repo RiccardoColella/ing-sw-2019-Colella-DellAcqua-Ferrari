@@ -2,7 +2,15 @@ package it.polimi.ingsw.server.view;
 
 import com.google.gson.Gson;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.server.model.currency.AmmoCube;
+import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.server.model.events.MatchEnded;
+import it.polimi.ingsw.server.model.events.MatchModeChanged;
+import it.polimi.ingsw.server.model.events.MatchStarted;
+import it.polimi.ingsw.server.model.events.listeners.MatchListener;
 import it.polimi.ingsw.server.model.match.Match;
+import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
 import it.polimi.ingsw.shared.InputMessageQueue;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
@@ -10,15 +18,16 @@ import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.messages.ServerApi;
 import it.polimi.ingsw.shared.messages.templates.Question;
+import it.polimi.ingsw.shared.viewmodels.Wallet;
+import it.polimi.ingsw.utils.Tuple;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * This class is an abstract server-side View. It contains all the methods needed for the interaction with the controller
@@ -26,7 +35,7 @@ import java.util.logging.Logger;
  *
  * @author Carlo Dell'Acqua
  */
-public abstract class View implements Interviewer, AutoCloseable {
+public abstract class View implements Interviewer, AutoCloseable, MatchListener {
 
     /**
      * JSON conversion utility
@@ -222,5 +231,72 @@ public abstract class View implements Interviewer, AutoCloseable {
         } else {
             throw new IllegalArgumentException("No option provided");
         }
+    }
+
+    @Override
+    public void onMatchEnded(MatchEnded event) {
+
+    }
+
+    @Override
+    public void onMatchModeChanged(MatchModeChanged event) {
+
+    }
+
+    @Override
+    public void onMatchStarted(MatchStarted event) {
+        Match match = event.getMatch();
+        List<Player> allPlayers = new LinkedList<>(match.getPlayers());
+        List<Player> opponents = allPlayers
+                .stream()
+                .filter(o -> !o.getPlayerInfo().getNickname().equals(setup.getNickname()))
+                .collect(Collectors.toList());
+        Player self = allPlayers
+                .stream()
+                .filter(o -> o.getPlayerInfo().getNickname().equals(setup.getNickname()))
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("Self player missing"));
+        List<it.polimi.ingsw.shared.viewmodels.Player> opponentsVM = opponents
+                .stream()
+                .map(p ->
+                        new it.polimi.ingsw.shared.viewmodels.Player(
+                                p.getPlayerInfo().getNickname(),
+                                p.getPlayerInfo().getColor(),
+                                new Wallet()
+                        )
+                )
+                .collect(Collectors.toList());
+        it.polimi.ingsw.shared.viewmodels.Player selfVM = new it.polimi.ingsw.shared.viewmodels.Player(
+                self.getPlayerInfo().getNickname(),
+                self.getPlayerInfo().getColor(),
+                new Wallet()
+        );
+        mapWallets(self, selfVM);
+        it.polimi.ingsw.shared.events.MatchStarted e = new it.polimi.ingsw.shared.events.MatchStarted(
+                new Object(),
+                match.getBoardPreset(),
+                selfVM,
+                opponentsVM
+        );
+        outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_STARTED_EVENT.toString(), e));
+    }
+
+    private void mapWallets(Player player, it.polimi.ingsw.shared.viewmodels.Player playerVM) {
+        List<CurrencyColor> ammoCubes = player.getAmmoCubes().stream().map(AmmoCube::getColor).collect(Collectors.toList());
+        playerVM.getWallet().setAmmoCubes(ammoCubes);
+        List<Tuple<String, CurrencyColor>> powerups = player.getPowerups().stream().map(p -> new Tuple<>(p.getName(), p.getColor())).collect(Collectors.toList());
+        playerVM.getWallet().setPowerups(powerups);
+        List<String> unloadedWeapons = player.getWeapons()
+                .stream()
+                .map(WeaponTile::getName)
+                .collect(Collectors.toList());
+        List<String> loadedWeapons = player.getWeapons()
+                .stream()
+                .filter(WeaponTile::isLoaded)
+                .map(WeaponTile::getName)
+                .collect(Collectors.toList());
+        unloadedWeapons.removeAll(loadedWeapons);
+        playerVM.getWallet().setLoadedWeapons(loadedWeapons);
+        playerVM.getWallet().setUnloadedWeapons(unloadedWeapons);
     }
 }
