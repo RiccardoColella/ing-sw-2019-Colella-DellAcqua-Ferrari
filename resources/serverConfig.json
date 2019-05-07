@@ -6,5 +6,6 @@
   "minClients": 3,
   "maxClients": 5,
   "rmiPort": 9090,
-  "socketPort": 9000
+  "socketPort": 9000,
+  "rmiHostname": "localhost"
 }

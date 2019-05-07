@@ -28,6 +28,7 @@ public class Main {
          * "maxClients"
          * "rmiPort"
          * "socketPort"
+         * "rmiHostname"
          */
 
         ServerConfig config = new Gson().fromJson(new FileReader(new File(SERVER_CONFIG_JSON_FILENAME)), ServerConfig.class);
@@ -49,6 +50,8 @@ public class Main {
             config.setRMIPort(Integer.parseInt(args[settingCount]));
         if (args.length > settingCount++)
             config.setSocketPort(Integer.parseInt(args[settingCount]));
+        if (args.length > settingCount++)
+            config.setRMIHostname(args[settingCount]);
 
         new Server(config).start();
     }

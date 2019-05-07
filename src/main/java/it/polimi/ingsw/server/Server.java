@@ -54,6 +54,8 @@ public class Server implements ControllerListener {
      */
     public Server(ServerConfig config) {
 
+        System.setProperty("java.rmi.server.hostname", config.getRMIHostname());
+
         RMIViewFactory.initialize(config.getClientAnswerTimeout());
         SocketViewFactory.initialize(config.getClientAnswerTimeout());
 
