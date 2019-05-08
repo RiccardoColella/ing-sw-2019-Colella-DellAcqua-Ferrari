@@ -79,8 +79,7 @@ public class Controller implements Runnable, PlayerListener {
             PowerupTile discardedPowerup = views.get(players.indexOf(player)).select("Select Spawnpoint: ", powerups, ClientApi.SPAWNPOINT_QUESTION);
             match.getBoard().getSpawnpoint(discardedPowerup.getColor()).addPlayer(match.getActivePlayer());
             //Discarding the selected powerup
-            powerups.remove(discardedPowerup);
-            powerupTileDeck.discard(discardedPowerup);
+            discardPowerupTile(player, discardedPowerup);
             logger.info("Selected Spawnpoint " + discardedPowerup.getColor());
             //Grabbing the other powerup
             player.grabPowerup(powerups.get(0));
@@ -104,6 +103,7 @@ public class Controller implements Runnable, PlayerListener {
         logger.info("No more actions to be managed");
         logger.info("Ending turn. Checking for died players...");
         for (Player player : match.endTurn()) {
+            //Here we iterate on the dead players returned by match.endTurn()
             logger.info("Player " + player.getColor() + " died.");
             Optional<PowerupTile> powerupTile = powerupTileDeck.pick();
             List<PowerupTile> playerPowerups = new LinkedList<>(player.getPowerups());
@@ -115,7 +115,7 @@ public class Controller implements Runnable, PlayerListener {
             //Discarded powerup define respawn point. Player is moved to that spawnpoint and reanimated.
             if (powerupTile.isPresent()){
                 match.getBoard().teleportPlayer(player, match.getBoard().getSpawnpoint(powerupTile.get().getColor()));
-                powerupTileDeck.discard(powerupTile.get());
+                discardPowerupTile(activePlayer, powerupTile.get());
             } else throw new IllegalStateException("Powerup to respawn not found");
             player.bringBackToLife();
         }
@@ -128,12 +128,14 @@ public class Controller implements Runnable, PlayerListener {
      * @param activePlayer is the player who is acting the move
      * @param view is the interface that manages the chosen action
      */
-    private void manageChosenAction(BasicAction basicActionChosen, Player activePlayer, Interviewer view){
+    private boolean manageChosenAction(BasicAction basicActionChosen, Player activePlayer, Interviewer view){
         switch (basicActionChosen){
             case GRAB:
                 logger.info("Managing GRAB move...");
                 if (activePlayer.isOnASpawnpoint()){
-                    grabOnASpawnpoint(activePlayer, view);
+                    if (!grabOnASpawnpoint(activePlayer, view)){
+                        return false;
+                    }
                 } else {
                     grabNotOnASpawnpoint(activePlayer);
                 }
@@ -153,6 +155,7 @@ public class Controller implements Runnable, PlayerListener {
             default:
                 throw new IllegalStateException("No valid action selected!");
         }
+        return true;
     }
 
     /**
@@ -160,17 +163,20 @@ public class Controller implements Runnable, PlayerListener {
      * @param activePlayer the player who is grabbing
      * @param view the interface that manage the action of grabbing
      */
-    private void grabOnASpawnpoint(Player activePlayer, Interviewer view){
+    private boolean grabOnASpawnpoint(Player activePlayer, Interviewer view){
         //choose weapon to be picked up
         SpawnpointBlock block =  (SpawnpointBlock) activePlayer.getBlock();
         List<WeaponTile> availableWeapons = new LinkedList<>(block.getWeapons());
         List<WeaponTile> affordableWeapons = availableWeapons.stream().filter(weapon -> PaymentHandler.canAfford(weapon.getAcquisitionCost(), activePlayer))
                 .collect(Collectors.toList());
-        WeaponTile weapon = view.select("Which weapon would you like to grab?",
-                affordableWeapons, ClientApi.WEAPON_CHOICE_QUESTION);
-        //pick up
-        logger.info("picking up weapon " + weapon.getName() + "...");
-        pickUpWeapon(weapon, activePlayer, view);
+        if (affordableWeapons.size() > 0){
+            WeaponTile weapon = view.select("Which weapon would you like to grab?",
+                    affordableWeapons, ClientApi.WEAPON_CHOICE_QUESTION);
+            //pick up
+            logger.info("picking up weapon " + weapon.getName() + "...");
+            pickUpWeapon(weapon, activePlayer, view);
+        } else return false;
+        return true;
     }
 
     /**
@@ -188,10 +194,7 @@ public class Controller implements Runnable, PlayerListener {
             if (card.canPickPowerup() &&
                     activePlayer.getPowerups().size() < activePlayer.getConstraints().getMaxPowerupsForPlayer()){
                 logger.info("Grabbing power-up too...");
-                powerupTileDeck.pick().ifPresent( powerup -> {
-                    activePlayer.grabPowerup(powerup);
-                    powerupTileDeck.discard(powerup);
-                });
+                powerupTileDeck.pick().ifPresent(activePlayer::grabPowerup);
             }
         } else throw new NullPointerException("Card from bonusDeck while grabbing ammo is Optional.empty()");
     }
@@ -323,6 +326,13 @@ public class Controller implements Runnable, PlayerListener {
                         Optional.empty() :
                         view.selectOptional("Which move would you like to execute?", availableActions, ClientApi.BASIC_ACTION_QUESTION);
                 //Here we execute that basic action
+                while (move.isPresent() && !manageChosenAction(move.get(), player, view)){
+                        availableActions.remove(move.get());
+                        //Here we ask the view to choose a basic action
+                        move = availableActions.isEmpty() ?
+                                Optional.empty() :
+                                view.selectOptional("Previous action was not executable. Would you like to execute another move?", availableActions, ClientApi.BASIC_ACTION_QUESTION);
+                    }
                 move.ifPresent(basicAction -> {
                     manageChosenAction(basicAction, player, view);
                     playedActions.add(basicAction);
@@ -407,11 +417,9 @@ public class Controller implements Runnable, PlayerListener {
         Map<String, Powerup>  powerupMap = PowerupFactory.getPowerupMap();
         List<PowerupTile> playerPowerupTiles = activePlayer.getPowerups();
         List<Powerup> playerPowerups = new LinkedList<>();
-        List<Tuple<PowerupTile, Powerup>> tuplesPlayerPowerups = new LinkedList<>();
         Optional<Powerup> selectedPowerup;
         for (PowerupTile powerupTile : playerPowerupTiles){
             playerPowerups.add(powerupMap.get(powerupTile.getName()));
-            tuplesPlayerPowerups.add(new Tuple<>(powerupTile, powerupMap.get(powerupTile.getName())));
         }
         //We select all the powerups a player has
         playerPowerups = playerPowerups
@@ -432,9 +440,8 @@ public class Controller implements Runnable, PlayerListener {
                     //If the target is present/available we use the powerup
                     PaymentHandler.pay(powerup.getCost(), activePlayer, view);
                     powerup.activate(activePlayer, optionalTarget.get(), view);
-                    //After the use, we put the powerupTile in the discarded Deck
-                    PowerupTile toBeDiscarded = tuplesPlayerPowerups.get(playerPowerups.indexOf(powerup)).getItem1();
-                    powerupTileDeck.discard(toBeDiscarded);
+                    //After the use, we discard the powerupTile from the player's hand and we put it in the discarded pack
+                    discardPowerupTile(activePlayer, powerup);
                 }
             }
         }
@@ -550,7 +557,14 @@ public class Controller implements Runnable, PlayerListener {
         return target;
     }
 
+    /**
+     * This method manages the discard process of a powerup. Retrieve the powerupTile, discard it from the player's hand
+     * and puts it in the discarded powerup pack
+     * @param player the player who needs to discard a powerup after the use
+     * @param powerup powerup to be discarded
+     */
     private void discardPowerupTile(Player player, Powerup powerup){
+        //Here we are retrieving the powerupTile corresponding to te powerup
         List<PowerupTile> powerupTiles = player.getPowerups();
         List<Tuple<PowerupTile, Powerup>> tuples = new LinkedList<>();
         Map<String, Powerup>  powerupMap = PowerupFactory.getPowerupMap();
@@ -563,7 +577,22 @@ public class Controller implements Runnable, PlayerListener {
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("Powerup to be discarded is not in player's hand"))
                 .getItem1();
+        //Here we discard the powerup. We first put the powerup in the discarded pack
         powerupTileDeck.discard(toBeDiscarded);
-        //Maybe here the player should discard the powerup from his hand...
+        //We then say the player to discard the powerup from his hand
+        powerupTiles.remove(toBeDiscarded);
+    }
+
+    /**
+     * This method manages the discard process of a powerup. Discard the powerup from the player's hand
+     * and puts it in the discarded powerup pack
+     * @param player player who needs to discard the powerup
+     * @param toBeDiscarded powerup to be discarded
+     */
+    private void discardPowerupTile(Player player, PowerupTile toBeDiscarded){
+        //Here we discard the powerup. We first put the powerup in the discarded pack
+        powerupTileDeck.discard(toBeDiscarded);
+        //We then say the player to discard the powerup from his hand
+        player.getPowerups().remove(toBeDiscarded);
     }
 }
