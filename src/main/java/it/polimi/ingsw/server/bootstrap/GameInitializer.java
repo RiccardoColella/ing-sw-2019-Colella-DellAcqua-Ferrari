@@ -97,10 +97,12 @@ public class GameInitializer {
                 playersChoice(participants.stream().map(View::getChosenMode))
         );
         participants.forEach(match::addMatchListener);
-        return new Controller(
+        Controller controller = new Controller(
                 match,
                 participants
         );
+        participantSource.addViewReconnectedListener(controller);
+        return controller;
     }
 
     /**

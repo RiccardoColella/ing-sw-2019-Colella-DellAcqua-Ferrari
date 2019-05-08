@@ -25,7 +25,7 @@ it.polimi.ingsw.server.view.exceptions
 it.polimi.ingsw.server.view.remote
 it.polimi.ingsw.shared
 it.polimi.ingsw.shared.events
-it.polimi.ingsw.shared.events.listeners
+it.polimi.ingsw.client.io.listeners
 it.polimi.ingsw.shared.messages
 it.polimi.ingsw.shared.view.remote
 it.polimi.ingsw.shared.view.remote.events

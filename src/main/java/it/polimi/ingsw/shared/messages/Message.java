@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import it.polimi.ingsw.shared.messages.templates.Question;
+import it.polimi.ingsw.utils.EnumValueByString;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -74,6 +75,17 @@ public class Message implements Serializable {
     }
 
     /**
+     * Factory method that creates a question
+     *
+     * @param enumValue the enum value that will be used as the name of the message
+     * @param payload payload of the message
+     * @return a question message
+     */
+    public static Message createQuestion(Enum<?> enumValue, Question payload) {
+        return new Message(enumValue.toString(), payload, UUID.randomUUID().toString(), Type.QUESTION);
+    }
+
+    /**
      * Factory method that creates an answer
      *
      * @param name name of the message
@@ -83,6 +95,18 @@ public class Message implements Serializable {
      */
     public static Message createAnswer(String name, Object payload, String flowId) {
         return new Message(name, payload, flowId, Type.ANSWER);
+    }
+
+    /**
+     * Factory method that creates an answer
+     *
+     * @param enumValue the enum value that will be used as the name of the message
+     * @param payload payload of the message
+     * @param flowId stream identifier of the question/answer flow
+     * @return an answer message
+     */
+    public static Message createAnswer(Enum<?> enumValue, Object payload, String flowId) {
+        return new Message(enumValue.toString(), payload, flowId, Type.ANSWER);
     }
 
     /**
@@ -96,8 +120,33 @@ public class Message implements Serializable {
         return new Message(name, payload, "event", Type.EVENT);
     }
 
+    /**
+     * Factory method that creates an event
+     *
+     * @param enumValue the enum value that will be used as the name of the message
+     * @param payload payload of the message
+     * @return an event message
+     */
+    public static Message createEvent(Enum<?> enumValue, Object payload) {
+        return createEvent(enumValue.toString(), payload);
+    }
+
+    /**
+     * @return the name of the message
+     */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Gets the name of the message as an enum value
+     *
+     * @param enumType the enum type class
+     * @param <T> the enum type
+     * @return the enum value corresponding to the message name
+     */
+    public <T extends Enum<T>> T getNameAsEnum(Class<T> enumType) {
+        return EnumValueByString.findByString(name, enumType);
     }
 
     /**

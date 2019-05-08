@@ -1,16 +1,13 @@
 package it.polimi.ingsw.shared;
 
-import it.polimi.ingsw.shared.InputMessageQueue;
 import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.events.MessageDispatcherStopped;
-import it.polimi.ingsw.shared.events.listeners.MessageDispatcherStoppedListener;
+import it.polimi.ingsw.client.io.listeners.MessageDispatcherStoppedListener;
 import it.polimi.ingsw.utils.function.IOConsumer;
 import it.polimi.ingsw.utils.function.IOSupplier;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.logging.Logger;

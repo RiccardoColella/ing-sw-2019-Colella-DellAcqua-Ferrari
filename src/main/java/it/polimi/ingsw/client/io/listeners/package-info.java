@@ -1,4 +1,4 @@
 @ParametersAreNonnullByDefault
-package it.polimi.ingsw.shared.events.listeners;
+package it.polimi.ingsw.client.io.listeners;
 
 import javax.annotation.ParametersAreNonnullByDefault;

@@ -9,12 +9,10 @@ import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 import it.polimi.ingsw.shared.events.MessageReceived;
-import it.polimi.ingsw.shared.events.listeners.QuestionMessageReceivedListener;
-import it.polimi.ingsw.shared.messages.ClientApi;
+import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.messages.templates.Question;
 import it.polimi.ingsw.shared.messages.ServerApi;
-import it.polimi.ingsw.utils.EnumValueByString;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -147,7 +145,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable {
 
         int chosenIndex = askForSelection(question.getText(), options, question.isSkippable());
 
-        connector.sendMessage(Message.createAnswer(ServerApi.ANSWER.toString(), chosenIndex, message.getFlowId()));
+        connector.sendMessage(Message.createAnswer(ServerApi.ANSWER, chosenIndex, message.getFlowId()));
     }
 
     /**

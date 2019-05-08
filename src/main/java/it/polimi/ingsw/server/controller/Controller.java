@@ -1,5 +1,7 @@
 package it.polimi.ingsw.server.controller;
 
+import it.polimi.ingsw.server.bootstrap.events.ViewReconnected;
+import it.polimi.ingsw.server.bootstrap.events.listeners.ViewReconnectedListener;
 import it.polimi.ingsw.server.controller.powerup.Powerup;
 import it.polimi.ingsw.server.controller.powerup.PowerupFactory;
 import it.polimi.ingsw.server.controller.weapons.Weapon;
@@ -35,7 +37,7 @@ import java.util.stream.Stream;
 /**
  * This class has the purpose of managing the game flow
  */
-public class Controller implements Runnable, PlayerListener {
+public class Controller implements Runnable, PlayerListener, ViewReconnectedListener {
     /**
      * Logging utility
      */
@@ -594,5 +596,10 @@ public class Controller implements Runnable, PlayerListener {
         powerupTileDeck.discard(toBeDiscarded);
         //We then say the player to discard the powerup from his hand
         player.getPowerups().remove(toBeDiscarded);
+    }
+
+    @Override
+    public void onViewReconnected(ViewReconnected e) {
+        // TODO: Manage client reconnection
     }
 }

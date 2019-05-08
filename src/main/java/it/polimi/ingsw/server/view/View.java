@@ -22,6 +22,8 @@ import it.polimi.ingsw.shared.viewmodels.Wallet;
 import it.polimi.ingsw.utils.Tuple;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +38,10 @@ import java.util.stream.Collectors;
  * @author Carlo Dell'Acqua
  */
 public abstract class View implements Interviewer, AutoCloseable, MatchListener {
+
+    private static final int CLOSE_TIMEOUT_MILLISECONDS = 10000;
+    private static final int CLOSE_CHECK_DELAY = CLOSE_TIMEOUT_MILLISECONDS / 10;
+
 
     /**
      * JSON conversion utility
@@ -97,7 +103,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener 
 
         try {
             Message initEvent = inputMessageQueue.dequeueEvent(5, TimeUnit.SECONDS);
-            if (initEvent.getName().equals(ServerApi.VIEW_INIT_EVENT.toString())) {
+            if (initEvent.getNameAsEnum(ServerApi.class).equals(ServerApi.VIEW_INIT_EVENT)) {
                 this.setup = gson.fromJson(
                         initEvent.getPayload(),
                         ClientInitializationInfo.class
@@ -190,7 +196,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener 
     public <T> T select(String questionText, Collection<T> options, ClientApi messageName) {
         if (!options.isEmpty()) {
 
-            Message message = Message.createQuestion(messageName.toString(), new Question<>(questionText, options));
+            Message message = Message.createQuestion(messageName, new Question<>(questionText, options));
 
             outputMessageQueue.add(message);
 
@@ -219,7 +225,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener 
     @Override
     public <T> Optional<T> selectOptional(String questionText, Collection<T> options, ClientApi messageName) {
         if (!options.isEmpty()) {
-            Message message = Message.createQuestion(messageName.toString(), new Question<>(questionText, options, true));
+            Message message = Message.createQuestion(messageName, new Question<>(questionText, options, true));
             outputMessageQueue.add(message);
 
             T response = awaitResponse(message.getFlowId(), options);
@@ -278,7 +284,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener 
                 selfVM,
                 opponentsVM
         );
-        outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_STARTED_EVENT.toString(), e));
+        outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_STARTED_EVENT, e));
     }
 
     private void mapWallets(Player player, it.polimi.ingsw.shared.viewmodels.Player playerVM) {
@@ -298,5 +304,22 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener 
         unloadedWeapons.removeAll(loadedWeapons);
         playerVM.getWallet().setLoadedWeapons(loadedWeapons);
         playerVM.getWallet().setUnloadedWeapons(unloadedWeapons);
+    }
+
+    @Override
+    public void close() throws Exception {
+        java.time.Instant deadline = Instant.now().plus(Duration.ofMillis(CLOSE_TIMEOUT_MILLISECONDS));
+
+        while (
+                deadline.isAfter(Instant.now())
+                && !outputMessageQueue.isEmpty()
+        ) {
+            Thread.sleep(CLOSE_CHECK_DELAY);
+        }
+    }
+
+    public void close(Message lastMessage) throws Exception {
+        outputMessageQueue.add(lastMessage);
+        this.close();
     }
 }

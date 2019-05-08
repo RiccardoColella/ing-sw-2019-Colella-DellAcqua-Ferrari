@@ -39,6 +39,7 @@ public class RMIView extends View {
 
     @Override
     public void close() throws Exception {
+        super.close();
         if (messageProxy != null) {
             messageProxy.close();
         }

@@ -7,6 +7,7 @@ import it.polimi.ingsw.shared.rmi.RMIMessageProxy;
 import it.polimi.ingsw.shared.rmi.RMIStreamProvider;
 
 import java.net.InetSocketAddress;
+import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -72,11 +73,15 @@ public class RMIConnector extends Connector {
     @Override
     public void close() throws Exception {
         super.close();
-        if (messageDispatcher != null) {
-            messageDispatcher.close();
-        }
-        if (messageProxy != null) {
-            messageProxy.close();
+        try {
+            if (messageDispatcher != null) {
+                messageDispatcher.close();
+            }
+            if (messageProxy != null) {
+                messageProxy.close();
+            }
+        } catch (ViewDisconnectedException|NoSuchObjectException ex) {
+            logger.info("The server already disconnected this client");
         }
     }
 }

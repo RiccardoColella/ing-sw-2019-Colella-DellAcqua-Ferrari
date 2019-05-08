@@ -32,15 +32,15 @@ public class GUI extends Application {
     public void start(Stage stage) {
 
 
-        debug();
-        /*LoginController loginController = new LoginController();
+        //debug();
+        LoginController loginController = new LoginController();
         loginController.showAsModal();
         Optional<GameController> gameController = loginController.getGameController();
         if (gameController.isPresent()) {
             gameController.get().showAsModal();
         } else {
             Platform.exit();
-        }*/
+        }
     }
 
     public void debug() {

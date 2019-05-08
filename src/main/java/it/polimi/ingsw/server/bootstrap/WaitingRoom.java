@@ -2,14 +2,15 @@ package it.polimi.ingsw.server.bootstrap;
 
 import it.polimi.ingsw.server.bootstrap.acceptors.RMIAcceptor;
 import it.polimi.ingsw.server.bootstrap.acceptors.SocketAcceptor;
+import it.polimi.ingsw.server.bootstrap.events.ViewReconnected;
+import it.polimi.ingsw.server.bootstrap.events.listeners.ViewReconnectedListener;
 import it.polimi.ingsw.server.view.View;
 import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
+import it.polimi.ingsw.shared.messages.ClientApi;
+import it.polimi.ingsw.shared.messages.Message;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -77,6 +78,12 @@ public class WaitingRoom implements AutoCloseable {
      * The RMI listening port
      */
     private int rmiPort;
+
+    /**
+     * The listener for the reconnection event
+     */
+    private Set<ViewReconnectedListener> viewReconnectedListeners = new HashSet<>();
+
 
     /**
      * Constructs a waiting room to let clients connect to the server and wait till there is a room available for a Match
@@ -197,8 +204,17 @@ public class WaitingRoom implements AutoCloseable {
             view.initialize();
             synchronized (connectedViews) {
                 if (connectedNicknames.stream().anyMatch(n -> n.equals(view.getNickname()))) {
-                    logger.info("Cannot add player. Duplicated nickname " + view.getNickname());
-                    closeView(view);
+                    ViewReconnected e = new ViewReconnected(this, view);
+                    Iterator<ViewReconnectedListener> iterator = viewReconnectedListeners.iterator();
+                    while (iterator.hasNext() && !e.isConsumed()) {
+                        iterator.next().onViewReconnected(e);
+                    }
+                    if (e.isConsumed()) {
+                        logger.info("View reconnected. Nickname: " + view.getNickname());
+                    } else {
+                        logger.info("Cannot add player. Duplicated nickname " + view.getNickname());
+                        closeView(view);
+                    }
                 } else {
                     connectedViews.add(view);
                     connectedNicknames.add(view.getNickname());
@@ -214,7 +230,7 @@ public class WaitingRoom implements AutoCloseable {
 
     private void closeView(View view) {
         try {
-            view.close();
+            view.close(Message.createEvent(ClientApi.DUPLICATE_NICKNAME_EVENT, new Object()));
         } catch (Exception e) {
             logger.warning("Unable to close view " + e);
         }
@@ -232,6 +248,22 @@ public class WaitingRoom implements AutoCloseable {
                 return Optional.of(connectedViews.remove());
             }
         }
+    }
+
+    /**
+     * Add a new listener of the reconnection event
+     * @param l the listener
+     */
+    public void addViewReconnectedListener(ViewReconnectedListener l) {
+        this.viewReconnectedListeners.add(l);
+    }
+
+    /**
+     * Remove a listener of the reconnection event
+     * @param l the listener
+     */
+    public void removeViewReconnectedListener(ViewReconnectedListener l) {
+        this.viewReconnectedListeners.remove(l);
     }
 
     /**

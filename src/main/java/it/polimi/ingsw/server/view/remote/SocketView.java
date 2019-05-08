@@ -9,6 +9,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketOption;
+import java.net.SocketOptions;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -17,6 +19,9 @@ import java.util.concurrent.TimeUnit;
  * @author Carlo Dell'Acqua
  */
 public class SocketView extends View implements AutoCloseable {
+
+
+    private static final long LAST_MESSAGE_TIMEOUT = 5000;
 
 
     private final InputStreamMessageSupplier inputMessageStreamSupplier;
@@ -46,6 +51,9 @@ public class SocketView extends View implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
+        super.close();
+        socket.getOutputStream().flush();
+        Thread.sleep(LAST_MESSAGE_TIMEOUT);
         socket.close();
         inputMessageStreamSupplier.close();
         messageDispatcher.close();

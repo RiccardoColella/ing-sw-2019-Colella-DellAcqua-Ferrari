@@ -3,11 +3,12 @@ package it.polimi.ingsw.client.ui.gui;
 import it.polimi.ingsw.client.io.Connector;
 import it.polimi.ingsw.client.io.RMIConnector;
 import it.polimi.ingsw.client.io.SocketConnector;
+import it.polimi.ingsw.client.io.listeners.DuplicatedNicknameListener;
+import it.polimi.ingsw.client.io.listeners.MatchListener;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 import it.polimi.ingsw.shared.events.MatchStarted;
-import it.polimi.ingsw.shared.events.listeners.MatchListener;
 import it.polimi.ingsw.utils.EnumValueByString;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -17,8 +18,15 @@ import javafx.scene.layout.AnchorPane;
 
 import java.net.InetSocketAddress;
 import java.util.*;
+import java.util.logging.Logger;
 
-public class LoginController extends WindowController {
+public class LoginController extends WindowController implements MatchListener, DuplicatedNicknameListener {
+
+    /**
+     * Logging utility
+     */
+    private final Logger logger = Logger.getLogger(this.getClass().getName());
+
     @FXML
     private Label title;
     @FXML
@@ -61,6 +69,7 @@ public class LoginController extends WindowController {
     private GameController gameController;
 
     private Map<String, Match.Mode> modeChoiceMap = new HashMap<>();
+    private Connector connector;
 
     public LoginController(String title) {
         super(title, "/fxml/login.fxml", "/css/login.css");
@@ -119,26 +128,17 @@ public class LoginController extends WindowController {
                 modeChoiceMap.get(modeChoice.getValue().toString())
         );
         try {
-            Connector connector;
             switch (connection) {
                 case "rmi":
                     connector = new RMIConnector();
-                    connector.addMatchListener(e -> Platform.runLater(
-                            () -> {
-                                this.gameController = new GameController(connector, e.getPreset(), e.getSelf(), e.getOpponents());
-                                this.close();
-                            }
-                    ));
+                    connector.addMatchListener(this);
+                    connector.addDuplicatedNicknameListener(this);
                     ((RMIConnector) connector).initialize(info, new InetSocketAddress(serverAddressField.getText(), 9090));
                     break;
                 case "socket":
                     connector = new SocketConnector();
-                    connector.addMatchListener(e -> Platform.runLater(
-                            () -> {
-                                this.gameController = new GameController(connector, e.getPreset(), e.getSelf(), e.getOpponents());
-                                this.close();
-                            }
-                    ));
+                    connector.addMatchListener(this);
+                    connector.addDuplicatedNicknameListener(this);
                     ((SocketConnector) connector).initialize(info, new InetSocketAddress(serverAddressField.getText(), 9000));
                     break;
                 default:
@@ -181,4 +181,29 @@ public class LoginController extends WindowController {
         }
     }
 
+    @Override
+    public void onMatchStarted(MatchStarted e) {
+        connector.removeMatchListener(this);
+        connector.removeDuplicatedNicknameListener(this);
+        Platform.runLater(
+            () -> {
+                this.gameController = new GameController(connector, e.getPreset(), e.getSelf(), e.getOpponents());
+                this.close();
+            }
+        );
+    }
+
+    @Override
+    public void onDuplicatedNickname() {
+        connector.removeMatchListener(this);
+        connector.removeDuplicatedNicknameListener(this);
+        Platform.runLater(() -> sendError("Nickname not available, change it and try again"));
+        new Thread(() -> {
+            try {
+                connector.close();
+            } catch (Exception ex) {
+                logger.warning("Could not close the connector");
+            }
+        }).start();
+    }
 }

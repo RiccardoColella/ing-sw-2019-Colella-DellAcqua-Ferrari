@@ -1,20 +1,18 @@
 package it.polimi.ingsw.client.io;
 
 import com.google.gson.Gson;
+import it.polimi.ingsw.client.io.listeners.DuplicatedNicknameListener;
 import it.polimi.ingsw.shared.InputMessageQueue;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 import it.polimi.ingsw.shared.events.MatchStarted;
 import it.polimi.ingsw.shared.events.MessageReceived;
-import it.polimi.ingsw.shared.events.listeners.MatchListener;
-import it.polimi.ingsw.shared.events.listeners.QuestionMessageReceivedListener;
+import it.polimi.ingsw.client.io.listeners.MatchListener;
+import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.messages.ServerApi;
-import it.polimi.ingsw.utils.EnumValueByString;
 
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
@@ -67,6 +65,7 @@ public abstract class Connector implements AutoCloseable {
      * The following sets contain the listeners for all possible events that the connector can raise
      */
     private Set<MatchListener> matchListeners = new HashSet<>();
+    private Set<DuplicatedNicknameListener> duplicatedNicknameListeners = new HashSet<>();
     // TODO: add the other sets
 
 
@@ -76,7 +75,7 @@ public abstract class Connector implements AutoCloseable {
      * @param clientInitializationInfo the user preferences for the match
      */
     protected void initialize(ClientInitializationInfo clientInitializationInfo) {
-        outputMessageQueue.add(Message.createEvent(ServerApi.VIEW_INIT_EVENT.toString(), clientInitializationInfo));
+        outputMessageQueue.add(Message.createEvent(ServerApi.VIEW_INIT_EVENT, clientInitializationInfo));
         threadPool.execute(() -> receiveAsync(Message.Type.EVENT));
         threadPool.execute(() -> receiveAsync(Message.Type.QUESTION));
     }
@@ -166,12 +165,17 @@ public abstract class Connector implements AutoCloseable {
      */
     private void notifyEventMessageReceivedListeners(Message message) {
 
-        ClientApi eventType = EnumValueByString.findByString(message.getName(), ClientApi.class);
+        ClientApi eventType = message.getNameAsEnum(ClientApi.class);
 
         switch (eventType) {
             case MATCH_STARTED_EVENT: {
                 MatchStarted e = gson.fromJson(message.getPayload(), MatchStarted.class);
                 matchListeners.forEach(l -> l.onMatchStarted(e));
+                break;
+            }
+
+            case DUPLICATE_NICKNAME_EVENT: {
+                duplicatedNicknameListeners.forEach(DuplicatedNicknameListener::onDuplicatedNickname);
                 break;
             }
 
@@ -183,6 +187,18 @@ public abstract class Connector implements AutoCloseable {
 
     public void addMatchListener(MatchListener l) {
         matchListeners.add(l);
+    }
+
+    public void removeMatchListener(MatchListener l) {
+        matchListeners.remove(l);
+    }
+
+    public void addDuplicatedNicknameListener(DuplicatedNicknameListener l) {
+        duplicatedNicknameListeners.add(l);
+    }
+
+    public void removeDuplicatedNicknameListener(DuplicatedNicknameListener l) {
+        duplicatedNicknameListeners.remove(l);
     }
 
     /**
