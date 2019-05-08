@@ -49,6 +49,11 @@ public class WaitingRoom implements AutoCloseable {
     private final Queue<View> connectedViews = new LinkedList<>();
 
     /**
+     * A list containing the collection of the nicknames of the players that are connected
+     */
+    private final List<String> connectedNicknames = new LinkedList<>();
+
+    /**
      * The thread pool that runs the background tasks
      */
     private final ExecutorService threadPool = Executors.newFixedThreadPool(3);
@@ -180,6 +185,9 @@ public class WaitingRoom implements AutoCloseable {
                     .collect(Collectors.toList());
             connectedViews.removeAll(disconnectedViews);
         }
+        synchronized (connectedNicknames) {
+            disconnectedViews.forEach(v -> connectedNicknames.remove(v.getNickname()));
+        }
         disconnectedViews.forEach(this::closeView);
     }
 
@@ -188,11 +196,12 @@ public class WaitingRoom implements AutoCloseable {
         try {
             view.initialize();
             synchronized (connectedViews) {
-                if (connectedViews.stream().anyMatch(v -> v.getNickname().equals(view.getNickname()))) {
+                if (connectedNicknames.stream().anyMatch(n -> n.equals(view.getNickname()))) {
                     logger.info("Cannot add player. Duplicated nickname " + view.getNickname());
                     closeView(view);
                 } else {
                     connectedViews.add(view);
+                    connectedNicknames.add(view.getNickname());
                 }
             }
         } catch (InterruptedException e) {

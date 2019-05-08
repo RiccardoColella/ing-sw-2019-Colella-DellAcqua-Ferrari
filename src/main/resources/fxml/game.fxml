@@ -1,55 +1,125 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
-<?import javafx.scene.image.ImageView?>
-<?import it.polimi.ingsw.client.ui.gui.BoardPane?>
 <?import it.polimi.ingsw.client.ui.gui.ImagePane?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Label?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="it.polimi.ingsw.client.ui.gui.GameController"
             fx:id="window"
-            prefHeight="768.0" prefWidth="1366.0">
+            prefHeight="700" prefWidth="1000"
+            minHeight="700" minWidth="1000">
     <FlowPane fx:id="container">
-        <properties width="100vw" height="100vh" wrap="100vw"/>
+        <properties width="100vw" height="100vh" />
         <FlowPane fx:id="left">
             <properties width="50%" height="100%" />
             <GridPane fx:id="boardContainer">
-                <properties width="100%" height="80%" />
+                <properties width="100%" height="60%" />
                 <columnConstraints>
-                    <ColumnConstraints percentWidth="90" />
-                </columnConstraints>
-                <rowConstraints>
-                    <RowConstraints percentHeight="90" />
-                </rowConstraints>
-            </GridPane>
-            <GridPane fx:id="tile">
-                <properties width="100%" height="20%" />
-                <columnConstraints>
-                    <ColumnConstraints percentWidth="10" />
-                    <ColumnConstraints percentWidth="90" />
+                    <ColumnConstraints percentWidth="100" />
                 </columnConstraints>
                 <rowConstraints>
                     <RowConstraints percentHeight="100" />
                 </rowConstraints>
-                <ImagePane fx:id="playerTileImg" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                <ImagePane fx:id="playerBoardImg" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            </GridPane>
+            <Label styleClass="h1">
+                <properties height="15%" width="100%"/>
+                Adrenalina
+            </Label>
+            <GridPane fx:id="tile">
+                <properties width="100%" height="25%" />
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="7.5" />
+                    <ColumnConstraints percentWidth="92.5" />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints percentHeight="15" />
+                    <RowConstraints percentHeight="85" />
+                </rowConstraints>
+                <Label fx:id="tileMsg" GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.columnSpan="2">this is your player tile</Label>
+                <ImagePane fx:id="playerTileImg" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <ImagePane fx:id="playerBoardImg" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
             </GridPane>
         </FlowPane>
-        <FlowPane fx:id="right">
-            <properties width="47%" height="100%" padding-h="1%" padding-v="1%" />
-            <GridPane fx:id="opponentsContainer">
-                <properties width="100%" height="20%" padding-h="1%" vgap="0.1%" hgap="2%" wrap="50%"/>
+        <GridPane fx:id="right">
+            <properties width="45%" height="100%" padding-h="1%" padding-v="1%" vgap="1%" />
+            <columnConstraints>
+                <ColumnConstraints percentWidth="100" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="5" />
+                <RowConstraints percentHeight="20" />
+                <RowConstraints percentHeight="5" />
+                <RowConstraints percentHeight="70" />
+            </rowConstraints>
+            <Label styleClass="h2" GridPane.rowIndex="0">Your opponents</Label>
+            <GridPane fx:id="opponentsContainer" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                <properties width="100%" height="20%" padding-h="1%" padding-v="1%" vgap="0.1%" hgap="2%" wrap="50%"/>
             </GridPane>
+            <Label styleClass="h2" GridPane.rowIndex="2">
+                <properties padding-top="1%" />
+                Your stuff
+            </Label>
+            <FlowPane fx:id="stuff" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                <properties width="100%" height="80%" padding-bottom="2%" vgap="1%"/>
 
-            <FlowPane fx:id="stuff">
-                <properties width="100%" height="80%" />
+
+                <GridPane fx:id="powerupContainer">
+                    <properties width="60%" height="30%" hgap="3%"/>
+                    <rowConstraints>
+                        <RowConstraints percentHeight="13"/>
+                        <RowConstraints percentHeight="87"/>
+                    </rowConstraints>
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="30" />
+                        <ColumnConstraints percentWidth="30" />
+                        <ColumnConstraints percentWidth="30" />
+                    </columnConstraints>
+                    <Label GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.columnSpan="3" GridPane.halignment="CENTER">
+                        Powerups
+                    </Label>
+                </GridPane>
+                <GridPane fx:id="ammoContainer">
+                    <properties width="40%" height="30%" />
+                    <rowConstraints>
+                        <RowConstraints percentHeight="20"/>
+                        <RowConstraints percentHeight="25"/>
+                        <RowConstraints percentHeight="25"/>
+                        <RowConstraints percentHeight="25"/>
+                    </rowConstraints>
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="30" />
+                        <ColumnConstraints percentWidth="30" />
+                        <ColumnConstraints percentWidth="30" />
+                    </columnConstraints>
+                    <Label GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.columnSpan="3" GridPane.halignment="CENTER">
+                        Ammo
+                    </Label>
+                </GridPane>
+                <GridPane fx:id="weaponContainer">
+                    <properties width="100%" height="30%" hgap="0.5%"/>
+                    <rowConstraints>
+                        <RowConstraints percentHeight="15"/>
+                        <RowConstraints percentHeight="85"/>
+                    </rowConstraints>
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="16" />
+                        <ColumnConstraints percentWidth="16" />
+                        <ColumnConstraints percentWidth="16" />
+                        <ColumnConstraints percentWidth="16" />
+                        <ColumnConstraints percentWidth="16" />
+                        <ColumnConstraints percentWidth="16" />
+                    </columnConstraints>
+                    <Label GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.columnSpan="3" >
+                        Loaded weapons
+                    </Label>
+                    <Label GridPane.rowIndex="0" GridPane.columnIndex="3" GridPane.columnSpan="3" GridPane.halignment="RIGHT" >
+                        Unloaded weapons
+                    </Label>
+                </GridPane>
+
             </FlowPane>
-        </FlowPane>
+        </GridPane>
 
     </FlowPane>
 </AnchorPane>
