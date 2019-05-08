@@ -1,10 +1,21 @@
 package it.polimi.ingsw.client.ui.gui;
 
 import it.polimi.ingsw.client.io.Connector;
+import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.server.model.currency.AmmoCubeFactory;
+import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.server.model.player.PlayerColor;
+import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
+import it.polimi.ingsw.shared.viewmodels.Player;
+import it.polimi.ingsw.shared.viewmodels.Wallet;
+import it.polimi.ingsw.utils.Tuple;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 
+import java.net.ConnectException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -19,24 +30,49 @@ public class GUI extends Application {
 
     @Override
     public void start(Stage stage) {
-//        List<Player> opponents = new LinkedList<>();
-//        opponents.add(new Player("avv1", PlayerColor.YELLOW, new Wallet()));
-//        opponents.add(new Player("avv2", PlayerColor.PURPLE, new Wallet()));
-//        opponents.add(new Player("avv3", PlayerColor.TURQUOISE, new Wallet()));
-//        opponents.add(new Player("avv4", PlayerColor.GREEN, new Wallet()));
-//        new GameController(BoardFactory.Preset.BOARD_1, new Player("me", PlayerColor.GRAY, new Wallet()), opponents).showAsModal();
 
 
-        LoginController loginController = new LoginController();
+        debug();
+        /*LoginController loginController = new LoginController();
         loginController.showAsModal();
         Optional<GameController> gameController = loginController.getGameController();
         if (gameController.isPresent()) {
             gameController.get().showAsModal();
         } else {
             Platform.exit();
-        }
+        }*/
     }
 
+    public void debug() {
+        Connector fakeConnector = new Connector() {
+            /**
+             * Initializes the connector and its IO queues
+             *
+             * @param clientInitializationInfo the user preferences for the match
+             */
+            @Override
+            protected void initialize(ClientInitializationInfo clientInitializationInfo) {
+                super.initialize(clientInitializationInfo);
+            }
+        };
+        List<Player> opponents = new LinkedList<>();
+        opponents.add(new Player("avv1", PlayerColor.YELLOW, new Wallet()));
+        opponents.add(new Player("avv2", PlayerColor.PURPLE, new Wallet()));
+        opponents.add(new Player("avv3", PlayerColor.TURQUOISE, new Wallet()));
+        opponents.add(new Player("avv4", PlayerColor.GREEN, new Wallet()));
+        Wallet myWallet = new Wallet();
+        for (int i = 0; i < 9; i++) {
+            myWallet.getAmmoCubes().add(CurrencyColor.YELLOW);
+        }
+        myWallet.getPowerups().add(new Tuple<>("Tagback Grenade", CurrencyColor.RED));
+        myWallet.getPowerups().add(new Tuple<>("Newton", CurrencyColor.YELLOW));
+        myWallet.getPowerups().add(new Tuple<>("Teleporter", CurrencyColor.BLUE));
+        myWallet.getLoadedWeapons().add("Electroscythe");
+        myWallet.getLoadedWeapons().add("Railgun");
+        myWallet.getUnloadedWeapons().add("Shockwave");
+        new GameController(fakeConnector, BoardFactory.Preset.BOARD_1, new Player("me", PlayerColor.GRAY, myWallet), opponents).showAsModal();
+
+    }
     public void start() {
         launch();
     }

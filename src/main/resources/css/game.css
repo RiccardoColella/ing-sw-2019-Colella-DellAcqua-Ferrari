@@ -1,5 +1,7 @@
-#container {
-
+#window {
+    -fx-background-image: url("/assets/background.png");
+    -fx-background-repeat: repeat;
+    -fx-background-size: 100 56;
 }
 
 #board {
@@ -15,10 +17,35 @@
     -fx-orientation: horizontal;
 }
 
-#stuff {
-    -fx-background-color: pink;
+
+Label {
+    -fx-font-family: "Audiowide", monospace;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+    -fx-text-fill: rgb(194, 194, 214);
+    -fx-font-size: 1.2em;
 }
 
+#weaponContainer ImagePane, #powerupContainer ImagePane {
+    -fx-cursor: hand;
+}
 
+#weaponContainer ImagePane:hover, #powerupContainer ImagePane:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.8), 15, 0, 0, 0);
+}
 
+.h2 {
+    -fx-font-family: "Ethnocentric Rg", monospace;
+    -fx-font-size: 2em;
+}
 
+.h1 {
+    -fx-font-family: "Ethnocentric Rg", monospace;
+    -fx-font-size: 4em;
+    -fx-text-alignment: center;
+}
+
+.-right {
+    -fx-text-alignment: right;
+    -fx-alignment: center-right;
+}
