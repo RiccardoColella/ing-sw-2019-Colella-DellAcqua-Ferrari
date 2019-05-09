@@ -4,19 +4,28 @@
     -fx-background-size: 100 56;
 }
 
-#board {
-    -fx-alignment: center-left;
-    -fx-hgap: 0;
-}
 
 #container #others FlowPane FlowPane {
     -fx-background-color: blue;
+}
+
+#container #left {
+    -fx-column-halignment: center;
+    -fx-row-valignment: center;
+
+}
+
+#boardContainer {
+    -fx-alignment: center;
 }
 
 #others {
     -fx-orientation: horizontal;
 }
 
+#container {
+    -fx-alignment: center;
+}
 
 Label {
     -fx-font-family: "Audiowide", monospace;
@@ -26,11 +35,11 @@ Label {
     -fx-font-size: 1.2em;
 }
 
-#weaponContainer ImagePane, #powerupContainer ImagePane {
+#weaponContainer ImagePane, #powerupContainer ImagePane, #opponentsContainer PlayerBoardPane {
     -fx-cursor: hand;
 }
 
-#weaponContainer ImagePane:hover, #powerupContainer ImagePane:hover {
+#weaponContainer ImagePane:hover, #powerupContainer ImagePane:hover, #opponentsContainer PlayerBoardPane:hover {
     -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.8), 15, 0, 0, 0);
 }
 
@@ -45,7 +54,11 @@ Label {
     -fx-text-alignment: center;
 }
 
-.-right {
-    -fx-text-alignment: right;
-    -fx-alignment: center-right;
+#playerBoardContainer {
+    -fx-column-halignment: center;
+    -fx-row-valignment: center;
+}
+
+#playerBoardContainer * {
+    -fx-alignment: center;
 }

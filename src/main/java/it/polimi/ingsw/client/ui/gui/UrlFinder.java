@@ -29,4 +29,12 @@ public final class UrlFinder {
     public static String findWeapon(String name) {
         return "/assets/weapons/" + name + ".png";
     }
+
+    public static String findToken(PlayerColor color) {
+        return "/assets/tokens/" + color.toString() + ".png";
+    }
+
+    public static String findSkull() {
+        return "/assets/skull.png";
+    }
 }

@@ -74,7 +74,7 @@ public class ImagePane extends GridPane {
             fxmlLoader.setControllerFactory(p -> this);
             fxmlLoader.load();
         } catch (Exception ex) {
-            throw new IllegalStateException("Unable to load Board " + ex);
+            throw new IllegalStateException("Unable to load image " + ex);
         }
     }
 
@@ -104,6 +104,7 @@ public class ImagePane extends GridPane {
                     )
                 )
         );
+        this.src = src;
     }
 
     private Image loadImg(String src) {

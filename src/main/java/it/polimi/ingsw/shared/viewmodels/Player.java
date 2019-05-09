@@ -12,8 +12,8 @@ public class Player {
     private final PlayerColor color;
     private final Wallet wallet;
     private int skulls;
-    private List<Token> damage;
-    private List<Token> marks;
+    private List<PlayerColor> damage;
+    private List<PlayerColor> marks;
     private Point location;
     private boolean boardFlipped;
     private boolean tileFlipped;
@@ -46,19 +46,19 @@ public class Player {
         return skulls;
     }
 
-    public List<Token> getDamage() {
+    public List<PlayerColor> getDamage() {
         return damage;
     }
 
-    public List<Token> getMarks() {
+    public List<PlayerColor> getMarks() {
         return marks;
     }
 
-    public void setDamage(List<Token> damage) {
+    public void setDamage(List<PlayerColor> damage) {
         this.damage = damage;
     }
 
-    public void setMarks(List<Token> marks) {
+    public void setMarks(List<PlayerColor> marks) {
         this.marks = marks;
     }
 

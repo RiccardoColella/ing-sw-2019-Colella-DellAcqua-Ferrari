@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import it.polimi.ingsw.client.ui.gui.ImagePane?>
+<fx:root type="it.polimi.ingsw.client.ui.gui.PlayerBoardPane"
+         xmlns:fx="http://javafx.com/fxml"
+         fx:controller="it.polimi.ingsw.client.ui.gui.PlayerBoardPane"
+>
+    <columnConstraints>
+        <ColumnConstraints percentWidth="100" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints percentHeight="100" />
+    </rowConstraints>
+    <ImagePane fx:id="playerBoardImg" GridPane.halignment="LEFT">
+        <StackPane fx:id="stackContainer">
+            <GridPane fx:id="damageContainerFront" GridPane.valignment="TOP" GridPane.halignment="LEFT" >
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="2.4" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="4.0" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="3.65" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="3.8" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="3.7" />
+                    <ColumnConstraints percentWidth="17"  />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints percentHeight="40" />
+                    <RowConstraints percentHeight="20" />
+                    <RowConstraints percentHeight="40" />
+                </rowConstraints>
+            </GridPane>
+            <GridPane fx:id="damageContainerBack" GridPane.valignment="TOP" GridPane.halignment="LEFT" >
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="4" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="3.8" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="2.96" />
+                    <ColumnConstraints percentWidth="2.95" />
+                    <ColumnConstraints percentWidth="3.7" />
+                    <ColumnConstraints percentWidth="17"  />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints percentHeight="40" />
+                    <RowConstraints percentHeight="20" />
+                    <RowConstraints percentHeight="40" />
+                </rowConstraints>
+            </GridPane>
+            <GridPane fx:id="markContainer" GridPane.valignment="TOP" GridPane.halignment="LEFT">
+                <rowConstraints>
+                    <RowConstraints percentHeight="20" />
+                    <RowConstraints percentHeight="80" />
+                </rowConstraints>
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="43.3" />
+                    <ColumnConstraints percentWidth="2.6" />
+                    <ColumnConstraints percentWidth="2.6" />
+                    <ColumnConstraints percentWidth="2.6" />
+                    <ColumnConstraints percentWidth="2.6" />
+                    <ColumnConstraints percentWidth="2.6" />
+                    <ColumnConstraints percentWidth="2.6" />
+                    <ColumnConstraints percentWidth="2.6" />
+                    <ColumnConstraints percentWidth="2.6" />
+                    <ColumnConstraints percentWidth="2.6" />
+                    <ColumnConstraints percentWidth="2.6" />
+                    <ColumnConstraints percentWidth="2.6" />
+                    <ColumnConstraints percentWidth="2.6" />
+                    <ColumnConstraints percentWidth="25.4" />
+                </columnConstraints>
+            </GridPane>
+            <GridPane fx:id="skullContainerFront" GridPane.valignment="TOP" GridPane.halignment="LEFT">
+                <rowConstraints>
+                    <RowConstraints percentHeight="75" />
+                    <RowConstraints percentHeight="25" />
+                </rowConstraints>
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="14" />
+                    <ColumnConstraints percentWidth="5.75" />
+                    <ColumnConstraints percentWidth="5.75" />
+                    <ColumnConstraints percentWidth="5.75" />
+                    <ColumnConstraints percentWidth="5.75" />
+                    <ColumnConstraints percentWidth="5.75" />
+                    <ColumnConstraints percentWidth="5.75" />
+                    <ColumnConstraints percentWidth="51.5" />
+                </columnConstraints>
+            </GridPane>
+            <GridPane fx:id="skullContainerBack" GridPane.valignment="TOP" GridPane.halignment="LEFT">
+                <rowConstraints>
+                    <RowConstraints percentHeight="75" />
+                    <RowConstraints percentHeight="25" />
+                </rowConstraints>
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="21.75" />
+                    <ColumnConstraints percentWidth="5.75" />
+                    <ColumnConstraints percentWidth="5.75" />
+                    <ColumnConstraints percentWidth="5.75" />
+                    <ColumnConstraints percentWidth="5.75" />
+                    <ColumnConstraints percentWidth="57.25" />
+                </columnConstraints>
+            </GridPane>
+        </StackPane>
+    </ImagePane>
+</fx:root>

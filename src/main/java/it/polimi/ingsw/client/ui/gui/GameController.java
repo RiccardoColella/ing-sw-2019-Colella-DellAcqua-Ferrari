@@ -3,10 +3,12 @@ package it.polimi.ingsw.client.ui.gui;
 import it.polimi.ingsw.client.io.Connector;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.shared.viewmodels.Player;
 import it.polimi.ingsw.utils.Tuple;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.HPos;
+import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -24,13 +26,13 @@ public class GameController extends WindowController implements AutoCloseable {
     private Logger logger = Logger.getLogger(this.getClass().getName());
 
     @FXML
-    private AnchorPane window;
+    private GridPane window;
     @FXML
-    private GridPane boardContainer;
+    private FlowPane boardContainer;
     @FXML
     private GridPane opponentsContainer;
     @FXML
-    private ImagePane playerBoardImg;
+    private PlayerBoardPane playerBoardImg;
     @FXML
     private ImagePane playerTileImg;
     @FXML
@@ -41,6 +43,8 @@ public class GameController extends WindowController implements AutoCloseable {
     private GridPane weaponContainer;
     @FXML
     private Label tileMsg;
+    @FXML
+    private GridPane right;
 
     private BoardFactory.Preset preset;
 
@@ -52,11 +56,13 @@ public class GameController extends WindowController implements AutoCloseable {
 
     public GameController(Connector connector, BoardFactory.Preset preset, Player self, List<Player> opponents) {
         super("Adrenalina", "/fxml/game.fxml", "/css/game.css");
-
         this.connector = connector;
-
         this.preset = preset;
         BoardPane board = new BoardPane(preset);
+        board.setMinWidth(500);
+        board.setMaxWidth(500);
+        board.setMinHeight(400);
+        board.setMaxHeight(400);
         boardContainer.getChildren().add(board);
         this.opponents = opponents;
         this.self = self;
@@ -66,10 +72,12 @@ public class GameController extends WindowController implements AutoCloseable {
         initPowerups();
         initWeapons();
         tileMsg.setText(self.getNickname() + ", " + tileMsg.getText());
+
     }
 
     private void initPlayerBoard() {
         playerBoardImg.setImg(UrlFinder.findPlayerBoard(self.getColor(), self.isBoardFlipped()), ImagePane.LEFT);
+        updateBoard(self, playerBoardImg);
         playerTileImg.setImg(UrlFinder.findPlayerTile(self.getColor(), self.isTileFlipped()), ImagePane.RIGHT);
     }
 
@@ -88,7 +96,11 @@ public class GameController extends WindowController implements AutoCloseable {
         }
         for (int i = 0; i < opponents.size(); i++) {
             Player opponent = opponents.get(i);
-            ImagePane opponentPane = new ImagePane(UrlFinder.findPlayerBoard(opponent.getColor(), opponent.isBoardFlipped()), ImagePane.LEFT);
+            PlayerBoardPane opponentPane = new PlayerBoardPane(UrlFinder.findPlayerBoard(opponent.getColor(), opponent.isBoardFlipped()), ImagePane.LEFT);
+            opponentPane.setMaxHeight(59);
+            opponentPane.setMinHeight(59);
+            opponentPane.setMaxWidth(229);
+            opponentPane.setMinWidth(229);
             Label opponentName = new Label(opponent.getNickname());
             GridPane opponentContainer = new GridPane();
             ColumnConstraints entireColumn = new ColumnConstraints();
@@ -98,10 +110,24 @@ public class GameController extends WindowController implements AutoCloseable {
             nameRow.setPercentHeight(20);
             RowConstraints imgRow = new RowConstraints();
             imgRow.setPercentHeight(80);
+            updateBoard(opponent, opponentPane);
             opponentContainer.getRowConstraints().addAll(nameRow, imgRow);
             opponentContainer.add(opponentName, 0, 0);
             opponentContainer.add(opponentPane, 0, 1);
             opponentsContainer.add(opponentContainer, i % 2, i / 2);
+            opponentPane.setOnMouseClicked(this::showOpponentFullSize);
+        }
+    }
+
+    private void updateBoard(Player owner, PlayerBoardPane pane) {
+        for (PlayerColor token : owner.getDamage()) {
+            pane.addToken(token);
+        }
+        for (PlayerColor token : owner.getMarks()) {
+            pane.addMark(token);
+        }
+        for (int i = 0; i < owner.getSkulls(); i++) {
+            pane.addSkull();
         }
     }
 
@@ -145,6 +171,33 @@ public class GameController extends WindowController implements AutoCloseable {
         popup.setResizable(false);
         popup.setScene(scene);
         popup.sizeToScene();
+        popup.show();
+    }
+
+    private void showOpponentFullSize(MouseEvent e) {
+        PlayerBoardPane src = (PlayerBoardPane) e.getSource();
+        Stage popup = new Stage();
+        popup.initStyle(StageStyle.DECORATED);
+        PlayerBoardPane copy = new PlayerBoardPane(src.getImgSrc(), ImagePane.LEFT);
+        copy.setMinWidth(467);
+        copy.setMinHeight(123);
+        copy.setMaxWidth(467);
+        copy.setMaxHeight(123);
+        List<PlayerColor> damageToRepresent = src.getRepresentedDamageTokens();
+        List<PlayerColor> marksToRepresent = src.getRepresentedMarkTokens();
+        int skullsToRepresent = src.getRepresentedSkulls();
+        for (PlayerColor color : damageToRepresent) {
+            copy.addToken(color);
+        }
+        for (PlayerColor color : marksToRepresent) {
+            copy.addToken(color);
+        }
+        for (int i = 0; i < skullsToRepresent; i++) {
+            copy.addSkull();
+        }
+        Scene scene = new Scene(copy);
+        popup.setResizable(false);
+        popup.setScene(scene);
         popup.show();
     }
 
