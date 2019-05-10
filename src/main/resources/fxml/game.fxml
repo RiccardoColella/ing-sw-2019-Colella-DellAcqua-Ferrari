@@ -29,9 +29,8 @@
                 <rowConstraints>
                     <RowConstraints percentHeight="100" />
                 </rowConstraints>
-                <FlowPane fx:id="boardContainer" minHeight="400" maxHeight="400" minWidth="500" maxWidth="500" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
-
-                </FlowPane>
+                <StackPane fx:id="boardContainer" minHeight="400" maxHeight="400" minWidth="500" maxWidth="500" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                </StackPane>
             </GridPane>
             <Label styleClass="h1">
                 <properties height="20%" width="100%"/>

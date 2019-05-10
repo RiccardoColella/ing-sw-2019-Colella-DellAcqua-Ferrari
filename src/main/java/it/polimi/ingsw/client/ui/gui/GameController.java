@@ -28,7 +28,7 @@ public class GameController extends WindowController implements AutoCloseable {
     @FXML
     private GridPane window;
     @FXML
-    private FlowPane boardContainer;
+    private StackPane boardContainer;
     @FXML
     private GridPane opponentsContainer;
     @FXML
@@ -64,6 +64,27 @@ public class GameController extends WindowController implements AutoCloseable {
         board.setMinHeight(400);
         board.setMaxHeight(400);
         boardContainer.getChildren().add(board);
+        BoardContentPane boardContent = new BoardContentPane();
+        ColumnConstraints cc = new ColumnConstraints();
+        cc.setPercentWidth(100);
+        RowConstraints rc = new RowConstraints();
+        rc.setPercentHeight(100);
+        /*board.getColumnConstraints().add(cc);
+        board.getRowConstraints().add(rc);*/
+        boardContent.setMinWidth(500);
+        boardContent.setMaxWidth(500);
+        boardContent.setMinHeight(400);
+        boardContent.setMaxHeight(400);
+        boardContainer.getChildren().add(boardContent);
+        boardContent.addWeaponRight("Railgun", 0);
+        boardContent.addWeaponRight("2x-2", 1);
+        boardContent.addWeaponRight("Furnace", 2);
+        boardContent.addWeaponLeft("Electroscythe", 0);
+        boardContent.addWeaponLeft("Furnace", 1);
+        boardContent.addWeaponLeft("Hellion", 2);
+        boardContent.addWeaponTop("Shotgun", 0);
+        boardContent.addWeaponTop("Furnace", 1);
+        boardContent.addWeaponTop("T.H.O.R.", 2);
         this.opponents = opponents;
         this.self = self;
         initOpponentsBoards();

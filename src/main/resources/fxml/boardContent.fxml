@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import it.polimi.ingsw.client.ui.gui.ImagePane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.StackPane?>
+<fx:root type="it.polimi.ingsw.client.ui.gui.BoardContentPane" xmlns:fx="http://javafx.com/fxml" fx:controller="it.polimi.ingsw.client.ui.gui.ImagePane">
+    <columnConstraints>
+        <ColumnConstraints percentWidth="100" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints percentHeight="100" />
+    </rowConstraints>
+    <StackPane GridPane.columnIndex="0" GridPane.rowIndex="0" fx:id="container">
+        <GridPane fx:id="weaponTopContainer0">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="52" />
+                <ColumnConstraints percentWidth="10" />
+                <ColumnConstraints percentWidth="38" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="19" />
+                <RowConstraints percentHeight="81" />
+            </rowConstraints>
+        </GridPane>
+        <GridPane fx:id="weaponTopContainer1">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="63" />
+                <ColumnConstraints percentWidth="10" />
+                <ColumnConstraints percentWidth="27" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="19" />
+                <RowConstraints percentHeight="81" />
+            </rowConstraints>
+        </GridPane>
+        <GridPane fx:id="weaponTopContainer2">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="74" />
+                <ColumnConstraints percentWidth="10" />
+                <ColumnConstraints percentWidth="16" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="19" />
+                <RowConstraints percentHeight="81" />
+            </rowConstraints>
+        </GridPane>
+        <GridPane fx:id="weaponRightContainer0">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="86" />
+                <ColumnConstraints percentWidth="14" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="49" />
+                <RowConstraints percentHeight="20" />
+                <RowConstraints percentHeight="31" />
+            </rowConstraints>
+        </GridPane>
+        <GridPane fx:id="weaponRightContainer1">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="86" />
+                <ColumnConstraints percentWidth="14" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="63" />
+                <RowConstraints percentHeight="20" />
+                <RowConstraints percentHeight="17" />
+            </rowConstraints>
+        </GridPane>
+        <GridPane fx:id="weaponRightContainer2">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="86" />
+                <ColumnConstraints percentWidth="14" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="77" />
+                <RowConstraints percentHeight="20" />
+                <RowConstraints percentHeight="3" />
+            </rowConstraints>
+        </GridPane>
+        <GridPane fx:id="weaponLeftContainer0">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="14" />
+                <ColumnConstraints percentWidth="86" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="30" />
+                <RowConstraints percentHeight="20" />
+                <RowConstraints percentHeight="50" />
+            </rowConstraints>
+        </GridPane>
+        <GridPane fx:id="weaponLeftContainer1">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="14" />
+                <ColumnConstraints percentWidth="86" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="44" />
+                <RowConstraints percentHeight="20" />
+                <RowConstraints percentHeight="36" />
+            </rowConstraints>
+        </GridPane>
+        <GridPane fx:id="weaponLeftContainer2">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="14" />
+                <ColumnConstraints percentWidth="86" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="58" />
+                <RowConstraints percentHeight="20" />
+                <RowConstraints percentHeight="22" />
+            </rowConstraints>
+        </GridPane>
+        <GridPane fx:id="skullContainer">
+
+        </GridPane>
+        <GridPane fx:id="playerContainer">
+
+        </GridPane>
+    </StackPane>
+</fx:root>
