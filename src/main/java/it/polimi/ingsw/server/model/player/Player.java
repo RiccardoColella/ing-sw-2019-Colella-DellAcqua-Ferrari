@@ -684,23 +684,51 @@ public class Player implements Damageable, MatchListener {
         return match;
     }
 
+    /**
+     * This method returns the block where this player is
+     * @return the block where this player is
+     */
     public Block getBlock() {
         return match.getBoard().findPlayer(this).orElseThrow(() -> new IllegalStateException("Player is not on the board"));
     }
 
+    /**
+     * This method returns a list of available directions to move
+     * @return a list of availble directions to move
+     */
     public List<Direction> getAvailableDirections(){
         return match.getBoard().getAvailableDirections(this.getBlock());
     }
 
+    /**
+     * This method tells if the player is on a spawnpoint
+     * @return true if the player is on a spawnpoint
+     */
     public boolean isOnASpawnpoint(){
         return match.getBoard().isOnASpawnpoint(this.getBlock());
     }
 
+    /**
+     * This method returns true if the player sees the other player given as parameter. It means the two players are in the
+     * same room or this player is next to the door that leads to the room of the other player
+     * @param otherPlayer is the player to see if is on line of sight
+     * @return true if this player sees otherPlayer
+     */
     public boolean sees(Player otherPlayer){
         Block myPosition = getBlock();
         Block otherPlayerPosition = match.getBoard().findPlayer(otherPlayer).orElseThrow(() -> new IllegalStateException("otherPlayer is not on the board"));
         Set<Block> visibleBlocks = match.getBoard().getVisibleBlocks(myPosition);
         return visibleBlocks.contains(otherPlayerPosition);
+    }
+
+    /**
+     * This method returns true if the player cannot pick any more ammo or powerups because he has reached the limit set
+     * by constraints
+     * @return true if the player cannot pick any more ammo or powerups
+     */
+    public boolean isFullOfAmmoAndPowerups(){
+        return getAmmoCubes().size() >= constraints.getMaxAmmoCubesOfAColor() * CurrencyColor.values().length &&
+                getPowerups().size() >= constraints.getMaxPowerupsForPlayer();
     }
 
     @Override

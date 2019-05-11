@@ -9,10 +9,7 @@ import it.polimi.ingsw.server.view.View;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
@@ -23,6 +20,7 @@ class ControllerTest {
     private class Mockview extends View implements Interviewer {
 
         int index;
+        Random random = new Random();
 
         /**
          * Constructs a server-side view
@@ -52,8 +50,8 @@ class ControllerTest {
         @Override
         public <T> Optional<T> selectOptional(String questionText, Collection<T> options, ClientApi messageName) {
             List<T> optionsList = new ArrayList<>(options);
-            int i = 0;
-            while (i < index && i < optionsList.size() - 1){ i++; }
+            int i = random.nextInt(options.size() + 1);
+            if (i >= options.size()) return Optional.empty();
             return Optional.of(optionsList.get(i));
         }
 
