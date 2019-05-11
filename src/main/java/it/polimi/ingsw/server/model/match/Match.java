@@ -325,26 +325,63 @@ public class Match implements PlayerListener {
         playersWithDamage.forEach(this::scoreVictimPoints);
 
         scoreKillshots();
-        List<Player> rankings = this.players.stream().sorted((a, b) -> {
-            int absoluteScore = b.getPoints() - a.getPoints(); // if a has more points than b, a is ahead of b (and vice-versa)
-            int killshotScore = this.getKillshotCount(b) - getKillshotCount(a);
-            int firstComparator = 0;
-            for (Killshot killshot : killshots) {
-                if (killshot.getDamageToken().getAttacker() == a) {
-                    firstComparator = -1;
+
+        Map<Integer, List<Player>> rankings = new HashMap<>();
+        List<Player> playersToEvaluate = new LinkedList<>(this.players);
+        for (int i = 0; i < this.players.size() && !playersToEvaluate.isEmpty(); i++) {
+            rankings.put(i + 1, findBest(playersToEvaluate));
+            playersToEvaluate.removeAll(rankings.get(i + 1));
+        }
+        notifyMatchEnded(rankings);
+    }
+
+    private List<Player> findBest(List<Player> playersToEvaluate) {
+        List<Player> best = new LinkedList<>();
+        List<Player> toEval = new LinkedList<>(playersToEvaluate);
+        best.add(toEval.get(0));
+        List<BiFunction<Player, Player, Integer>> comparators = new ArrayList<>();
+        comparators.add(this::compareScores);
+        comparators.add(this::compareKillshots);
+        comparators.add(this::compareFirstKillshot);
+        for (int i = 1; i < toEval.size(); i++) {
+            Player a = toEval.get(i);
+            Player b = best.get(0);
+            int mainComparator = 0;
+            for (BiFunction<Player, Player, Integer> comparator : comparators) {
+                mainComparator = comparator.apply(a, b);
+                if (mainComparator != 0) {
                     break;
-                } else if (killshot.getDamageToken().getAttacker() == b) {
-                    firstComparator = 1;
                 }
             }
-            int tieBreaker = killshotScore != 0 ? killshotScore : firstComparator;
-            return absoluteScore != 0 ? absoluteScore : tieBreaker;
-            // TODO: instead of returning an ordered list in which the information about ties gets lost,
-            // return a List<List<Player>> or a Map<Integer, List<Player>> or a Map<Player, Integer> containing for each player
-            // his rank
-        }).collect(Collectors.toList());
+            if (mainComparator < 0) {
+                best.clear();
+                best.add(a);
+            } else if (mainComparator == 0) {
+                best.add(a);
+            }
+        }
+        return best;
+    }
 
-        notifyMatchEnded(rankings);
+    private int compareScores(Player a, Player b) {
+        return b.getPoints() - a.getPoints();
+    }
+
+    private int compareKillshots(Player a, Player b) {
+        return this.getKillshotCount(b) - getKillshotCount(a);
+    }
+
+    private int compareFirstKillshot(Player a, Player b) {
+        int firstComparator = 0;
+        for (Killshot killshot : killshots) {
+            if (killshot.getDamageToken().getAttacker() == a) {
+                firstComparator = -1;
+                break;
+            } else if (killshot.getDamageToken().getAttacker() == b) {
+                firstComparator = 1;
+            }
+        }
+        return firstComparator;
     }
 
     /**
@@ -352,7 +389,7 @@ public class Match implements PlayerListener {
      *
      * @param rankings the ordered list of players, sorted by their score descending
      */
-    private void notifyMatchEnded(List<Player> rankings) {
+    private void notifyMatchEnded(Map<Integer, List<Player>> rankings) {
         MatchEnded e = new MatchEnded(this, rankings);
         this.matchListeners.forEach(l -> l.onMatchEnded(e));
     }

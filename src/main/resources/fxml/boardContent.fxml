@@ -6,6 +6,8 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.StackPane?>
+<?import it.polimi.ingsw.client.ui.gui.BoardContentPane?>
+<?import it.polimi.ingsw.client.ui.gui.BoardBlockPane?>
 <fx:root type="it.polimi.ingsw.client.ui.gui.BoardContentPane" xmlns:fx="http://javafx.com/fxml" fx:controller="it.polimi.ingsw.client.ui.gui.ImagePane">
     <columnConstraints>
         <ColumnConstraints percentWidth="100" />
@@ -114,10 +116,55 @@
             </rowConstraints>
         </GridPane>
         <GridPane fx:id="skullContainer">
-
+            <rowConstraints>
+                <RowConstraints percentHeight="4.5" />
+                <RowConstraints percentHeight="6" />
+                <RowConstraints percentHeight="89.5" />
+            </rowConstraints>
+            <columnConstraints>
+                <ColumnConstraints percentWidth="7" />
+                <ColumnConstraints percentWidth="4.3" />
+                <ColumnConstraints percentWidth="4.3" />
+                <ColumnConstraints percentWidth="4.3" />
+                <ColumnConstraints percentWidth="4.3" />
+                <ColumnConstraints percentWidth="4.3" />
+                <ColumnConstraints percentWidth="4.3" />
+                <ColumnConstraints percentWidth="4.3" />
+                <ColumnConstraints percentWidth="4.3" />
+                <ColumnConstraints percentWidth="4.3" />
+                <ColumnConstraints percentWidth="4.3" />
+                <ColumnConstraints percentWidth="4.3" />
+                <ColumnConstraints percentWidth="49.3" />
+            </columnConstraints>
         </GridPane>
         <GridPane fx:id="playerContainer">
-
+            <columnConstraints>
+                <ColumnConstraints percentWidth="15" />
+                <ColumnConstraints percentWidth="18" />
+                <ColumnConstraints percentWidth="18" />
+                <ColumnConstraints percentWidth="18" />
+                <ColumnConstraints percentWidth="18" />
+                <ColumnConstraints percentWidth="15" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="20" />
+                <RowConstraints percentHeight="22" />
+                <RowConstraints percentHeight="22" />
+                <RowConstraints percentHeight="22" />
+                <RowConstraints percentHeight="14" />
+            </rowConstraints>
+            <BoardBlockPane GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <BoardBlockPane GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            <BoardBlockPane GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+            <BoardBlockPane GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+            <BoardBlockPane GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <BoardBlockPane GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+            <BoardBlockPane GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+            <BoardBlockPane GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+            <BoardBlockPane GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <BoardBlockPane GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+            <BoardBlockPane GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+            <BoardBlockPane GridPane.rowIndex="3" GridPane.columnIndex="3"/>
         </GridPane>
     </StackPane>
 </fx:root>

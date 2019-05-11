@@ -2,3 +2,10 @@
     -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.8), 15, 0, 0, 0);
     -fx-cursor: hand;
 }
+
+#skullContainer ImagePane Label {
+    -fx-font-family: "Roboto Mono";
+    -fx-text-fill: black;
+    -fx-font-size: 1em;
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 255, 255, 1), 15, 0, 0, 0);
+}

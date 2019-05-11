@@ -85,6 +85,15 @@ public class GameController extends WindowController implements AutoCloseable {
         boardContent.addWeaponTop("Shotgun", 0);
         boardContent.addWeaponTop("Furnace", 1);
         boardContent.addWeaponTop("T.H.O.R.", 2);
+        boardContent.setSkulls(8);
+        boardContent.addKillshot(PlayerColor.YELLOW);
+        boardContent.addOverkill();
+        boardContent.addPlayer(PlayerColor.GRAY, 2, 1);
+        boardContent.addPlayer(PlayerColor.YELLOW, 2, 1);
+        boardContent.addPlayer(PlayerColor.GREEN, 2, 1);
+        boardContent.addPlayer(PlayerColor.PURPLE, 2, 1);
+        boardContent.addPlayer(PlayerColor.TURQUOISE, 2, 1);
+
         this.opponents = opponents;
         this.self = self;
         initOpponentsBoards();

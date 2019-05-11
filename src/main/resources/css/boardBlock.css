@@ -1,0 +1,3 @@
+ImagePane {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,1), 15, 0, 0, 0);
+}

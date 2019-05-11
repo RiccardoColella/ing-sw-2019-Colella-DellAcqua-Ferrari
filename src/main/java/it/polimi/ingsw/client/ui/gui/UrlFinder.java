@@ -37,4 +37,8 @@ public final class UrlFinder {
     public static String findSkull() {
         return "/assets/skull.png";
     }
+
+    public static String findAvatar(PlayerColor color) {
+        return "/assets/avatars/" + color.toString() + ".png";
+    }
 }

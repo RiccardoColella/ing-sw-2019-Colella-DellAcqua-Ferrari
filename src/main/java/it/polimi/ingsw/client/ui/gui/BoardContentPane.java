@@ -1,11 +1,14 @@
 package it.polimi.ingsw.client.ui.gui;
 
+import it.polimi.ingsw.server.model.player.PlayerColor;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.HPos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -43,6 +46,10 @@ public class BoardContentPane extends GridPane {
     private GridPane weaponRightContainer2;
     @FXML
     private StackPane container;
+    @FXML
+    private GridPane skullContainer;
+    @FXML
+    private GridPane playerContainer;
 
     private List<GridPane> rightContainers;
     private List<GridPane> leftContainers;
@@ -52,7 +59,10 @@ public class BoardContentPane extends GridPane {
     private List<String> weaponTop;
     private List<String> weaponRight;
 
+    private int skullIndex;
+
     private static final String HOVERED = "hovered";
+
     public BoardContentPane() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/boardContent.fxml"));
@@ -80,6 +90,7 @@ public class BoardContentPane extends GridPane {
         topContainers.add(weaponTopContainer2);
         container.setOnMouseMoved(mouseEvent -> mouseEventHandler(mouseEvent, this::mouseHoverHandler, node -> !node.getStyleClass().contains(HOVERED)));
         container.setOnMouseClicked(mouseEvent -> mouseEventHandler(mouseEvent, this::mouseClickHandler, node -> true));
+        skullIndex = 8;
     }
 
     private void mouseEventHandler(MouseEvent mouseEvent, Consumer<Parent> consumer, Function<Node, Boolean> additionalCondition) {
@@ -95,6 +106,7 @@ public class BoardContentPane extends GridPane {
         boolean isTopFirst = mouseEvent.getX() > 255 && mouseEvent.getX() < 310;
         boolean isTopSecond = mouseEvent.getX() > 310 && mouseEvent.getX() < 365;
         boolean isTopThird = mouseEvent.getX() > 365 && mouseEvent.getX() < 420;
+
         if (
                 isLeft
                 && isLeftFirst
@@ -233,5 +245,42 @@ public class BoardContentPane extends GridPane {
 
     public void removeWeaponLeft(String weaponName) {
 
+    }
+
+    public void setSkulls(int skulls) {
+        for (int i = 0; i < skulls && skullIndex > 0; i++, skullIndex--) {
+            ImagePane skullImg = new ImagePane(UrlFinder.findSkull());
+            skullContainer.add(skullImg, skullIndex, 1);
+        }
+    }
+
+    public void addKillshot(PlayerColor color) {
+        if (skullIndex < 8) {
+            ImagePane toChange = (ImagePane) skullContainer.getChildren().get(skullContainer.getChildren().size() - skullIndex - 1);
+            toChange.setImg(UrlFinder.findToken(color));
+
+        } else {
+            ImagePane token = new ImagePane(UrlFinder.findToken(color));
+            skullContainer.add(token, skullIndex + 1, 1);
+        }
+        skullIndex++;
+    }
+
+    public void addOverkill() {
+        ImagePane lastToken = (ImagePane) skullContainer.getChildren().get(skullContainer.getChildren().size() - skullIndex);
+        Label overkill = new Label("2");
+        GridPane.setHalignment(overkill, HPos.CENTER);
+        lastToken.add(overkill, 0, 0);
+    }
+
+    public void addPlayer(PlayerColor color, int row, int col) {
+        ((BoardBlockPane) playerContainer.getChildren().get(row * 4 + col + 1)).addPlayer(color);
+    }
+
+    public void movePlayer(PlayerColor color, int row, int col) {
+        for (Node pane : playerContainer.getChildren()) {
+            ((BoardBlockPane) pane).removePlayer(color);
+        }
+        addPlayer(color, row, col);
     }
 }

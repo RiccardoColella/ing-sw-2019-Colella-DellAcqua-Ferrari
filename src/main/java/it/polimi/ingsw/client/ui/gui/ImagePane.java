@@ -83,9 +83,6 @@ public class ImagePane extends GridPane {
     }
 
     public void setImg(String src, BackgroundPosition position) {
-        if (container.getBackground() != null) {
-            container.getBackground().getImages().clear();
-        }
         container.setBackground(
                 new Background(
                     new BackgroundImage(
