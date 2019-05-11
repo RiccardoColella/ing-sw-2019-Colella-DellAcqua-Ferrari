@@ -1,13 +1,11 @@
 package it.polimi.ingsw.client.io;
 
 import com.google.gson.Gson;
-import it.polimi.ingsw.client.io.listeners.DuplicatedNicknameListener;
+import it.polimi.ingsw.client.io.listeners.*;
 import it.polimi.ingsw.shared.InputMessageQueue;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
-import it.polimi.ingsw.shared.events.MatchStarted;
+import it.polimi.ingsw.shared.events.networkevents.*;
 import it.polimi.ingsw.shared.events.MessageReceived;
-import it.polimi.ingsw.client.io.listeners.MatchListener;
-import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.messages.ServerApi;
@@ -66,7 +64,8 @@ public abstract class Connector implements AutoCloseable {
      */
     private Set<MatchListener> matchListeners = new HashSet<>();
     private Set<DuplicatedNicknameListener> duplicatedNicknameListeners = new HashSet<>();
-    // TODO: add the other sets
+    private Set<BoardListener> boardListeners = new HashSet<>();
+    private Set<PlayerListener> playerListeners = new HashSet<>();
 
 
     /**
@@ -168,14 +167,96 @@ public abstract class Connector implements AutoCloseable {
         ClientApi eventType = message.getNameAsEnum(ClientApi.class);
 
         switch (eventType) {
-            case MATCH_STARTED_EVENT: {
-                MatchStarted e = gson.fromJson(message.getPayload(), MatchStarted.class);
-                matchListeners.forEach(l -> l.onMatchStarted(e));
+            case DUPLICATE_NICKNAME_EVENT: {
+                duplicatedNicknameListeners.forEach(DuplicatedNicknameListener::onDuplicatedNickname);
                 break;
             }
 
-            case DUPLICATE_NICKNAME_EVENT: {
-                duplicatedNicknameListeners.forEach(DuplicatedNicknameListener::onDuplicatedNickname);
+            case MATCH_STARTED_EVENT: {
+                MatchStarted e = MatchStarted.fromJson(message.getPayload(), this);
+                matchListeners.forEach(l -> l.onMatchStarted(e));
+                break;
+            }
+            case MATCH_ENDED_EVENT: {
+                MatchEnded e = MatchEnded.fromJson(message.getPayload(), this);
+                matchListeners.forEach(l -> l.onMatchEnded(e));
+                break;
+            }
+            case MATCH_MODE_CHANGED_EVENT: {
+                MatchModeChanged e = MatchModeChanged.fromJson(message.getPayload(), this);
+                matchListeners.forEach(l -> l.onMatchModeChanged(e));
+                break;
+            }
+            case MATCH_KILLSHOT_TRACK_CHANGED_EVENT: {
+                KillshotTrackChanged e = KillshotTrackChanged.fromJson(message.getPayload(), this);
+                matchListeners.forEach(l -> l.onKillshotTrackChanged(e));
+                break;
+            }
+
+            case PLAYER_MOVED_EVENT: {
+                PlayerMoved e = PlayerMoved.fromJson(message.getPayload(), this);
+                boardListeners.forEach(l -> l.onPlayerMoved(e));
+                break;
+            }
+            case PLAYER_TELEPORTED_EVENT: {
+                PlayerMoved e = PlayerMoved.fromJson(message.getPayload(), this);
+                boardListeners.forEach(l -> l.onPlayerTeleported(e));
+                break;
+            }
+
+            case PLAYER_DIED_EVENT: {
+                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this);
+                playerListeners.forEach(l -> l.onPlayerDied(e));
+                break;
+            }
+            case PLAYER_REBORN_EVENT: {
+                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this);
+                playerListeners.forEach(l -> l.onPlayerReborn(e));
+                break;
+            }
+            case PLAYER_BOARD_FLIPPED_EVENT: {
+                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this);
+                playerListeners.forEach(l -> l.onPlayerBoardFlipped(e));
+                break;
+            }
+            case PLAYER_WALLET_CHANGED_EVENT: {
+                PlayerWalletChanged e = PlayerWalletChanged.fromJson(message.getPayload(), this);
+                playerListeners.forEach(l -> l.onPlayerWalletChanged(e));
+                break;
+            }
+            case PLAYER_HEALTH_CHANGED_EVENT: {
+                PlayerHealthChanged e = PlayerHealthChanged.fromJson(message.getPayload(), this);
+                playerListeners.forEach(l -> l.onPlayerHealthChanged(e));
+                break;
+            }
+            case WEAPON_RELOADED_EVENT: {
+                WeaponEvent e = WeaponEvent.fromJson(message.getPayload(), this);
+                playerListeners.forEach(l -> l.onWeaponReloaded(e));
+                break;
+            }
+            case WEAPON_UNLOADED_EVENT: {
+                WeaponEvent e = WeaponEvent.fromJson(message.getPayload(), this);
+                playerListeners.forEach(l -> l.onWeaponUnloaded(e));
+                break;
+            }
+            case WEAPON_PICKED_EVENT: {
+                WeaponExchanged e = WeaponExchanged.fromJson(message.getPayload(), this);
+                playerListeners.forEach(l -> l.onWeaponPicked(e));
+                break;
+            }
+            case WEAPON_DROPPED_EVENT: {
+                WeaponExchanged e = WeaponExchanged.fromJson(message.getPayload(), this);
+                playerListeners.forEach(l -> l.onWeaponDropped(e));
+                break;
+            }
+            case PLAYER_DISCONNECTED_EVENT: {
+                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this);
+                playerListeners.forEach(l -> l.onPlayerDisconnected(e));
+                break;
+            }
+            case PLAYER_RECONNECTED_EVENT: {
+                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this);
+                playerListeners.forEach(l -> l.onPlayerReconnected(e));
                 break;
             }
 
@@ -200,6 +281,24 @@ public abstract class Connector implements AutoCloseable {
     public void removeDuplicatedNicknameListener(DuplicatedNicknameListener l) {
         duplicatedNicknameListeners.remove(l);
     }
+
+    public void addPlayerListener(PlayerListener l) {
+        playerListeners.add(l);
+    }
+
+    public void removePlayerListener(PlayerListener l) {
+        playerListeners.remove(l);
+    }
+
+    public void addBoardListener(BoardListener l) {
+        boardListeners.add(l);
+    }
+
+    public void removeBoardListener(BoardListener l) {
+        boardListeners.remove(l);
+    }
+
+
 
     /**
      * Closes this object and stops the background threads execution

@@ -4,7 +4,7 @@ import it.polimi.ingsw.server.model.player.Player;
 
 import java.util.EventObject;
 
-public class PlayerDied extends EventObject {
+public class PlayerDied extends PlayerEvent {
 
     private final Player killer;
 
@@ -19,7 +19,7 @@ public class PlayerDied extends EventObject {
     }
 
     public Player getVictim() {
-        return (Player) this.getSource();
+        return getPlayer();
     }
 
     public Player getKiller() {

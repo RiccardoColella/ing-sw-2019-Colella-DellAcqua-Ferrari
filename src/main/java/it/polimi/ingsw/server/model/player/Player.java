@@ -14,6 +14,7 @@ import it.polimi.ingsw.shared.Direction;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static it.polimi.ingsw.server.model.match.Match.Mode.FINAL_FRENZY;
 
@@ -75,7 +76,7 @@ public class Player implements Damageable, MatchListener {
     /**
      * This property stores the listeners of the Player's events
      */
-    private Set<PlayerListener> playerListeners = new HashSet<>();
+    private Set<PlayerListener> listeners = new HashSet<>();
 
     /**
      * This property stores the match the Player is participating to
@@ -164,6 +165,7 @@ public class Player implements Damageable, MatchListener {
         }
 
         notifyPlayerDamaged(shooter);
+        notifyHealthChanged();
     }
 
     /**
@@ -315,31 +317,14 @@ public class Player implements Damageable, MatchListener {
      *
      */
     public void grabWeapon(WeaponTile weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups, WeaponTile discardedWeapon) {
-        if (this.weapons.size() == constraints.getMaxWeaponsForPlayer()) {
-            //the weapon should only be discarded if the player already has the maximum number available
-            if (!weapons.remove(discardedWeapon)) {
-                //if the player did not own the discarded weapon, an exception is thrown
-                throw new IllegalArgumentException("Discarded weapon does not belong to the player");
-            }
-        } else throw new IllegalArgumentException("Player should not discard a weapon if he only owns " + this.weapons.size() + " and the maximum is " + this.constraints.getMaxWeaponsForPlayer());
-
-        if (this.weapons.size() < constraints.getMaxWeaponsForPlayer()) {
-            //now the weapon can be grabbed if the player has enough money to pay for it
-            grabWeapon(weapon, ammoCubes, powerups);
-        } else {
-            //if the player could not pay for the weapon, the discarded weapon is given back to him
-            weapons.add(discardedWeapon);
-            throw new UnauthorizedExchangeException("Player already has " + constraints.getMaxWeaponsForPlayer() + " weapons and needs to drop one in order to buy one");
-        }
-
-        //the discarded weapon is put back to the spawnpoint
-        Optional<Block> spawnpoint = this.match.getBoard().findPlayer(this);
-        if (spawnpoint.isPresent()) {
-            discardedWeapon.setLoaded(false);
-            spawnpoint.get().drop(weapon);
-        } else {
-            throw new UnauthorizedExchangeException("Player is trying to put a weapon into a nonexisting block");
-        }
+        grabWeapon(
+                weapon,
+                Stream.concat(
+                        ammoCubes.stream().map(x -> (Coin)x),
+                        powerups.stream().map(x -> (Coin)x)
+                ).collect(Collectors.toList()),
+                discardedWeapon
+        );
     }
 
     /**
@@ -367,13 +352,14 @@ public class Player implements Damageable, MatchListener {
         }
 
         //the discarded weapon is put back to the spawnpoint
-        Optional<Block> spawnpoint = this.match.getBoard().findPlayer(this);
-        if (spawnpoint.isPresent()) {
-            discardedWeapon.setLoaded(false);
-            spawnpoint.get().drop(weapon);
-        } else {
-            throw new UnauthorizedExchangeException("Player is trying to put a weapon into a nonexisting block");
-        }
+        discardedWeapon.setLoaded(false);
+        getBlock().drop(weapon);
+        notifyWeaponDropped(weapon);
+    }
+
+    private void notifyWeaponDropped(WeaponTile weapon) {
+        WeaponExchanged e = new WeaponExchanged(this, weapon, getBlock());
+        listeners.forEach(l -> l.onWeaponDropped(e));
     }
 
     /**
@@ -383,12 +369,13 @@ public class Player implements Damageable, MatchListener {
      * @param powerups the cost the player is paying with powerups
      */
     public void grabWeapon(WeaponTile weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
-        if (this.weapons.size() < constraints.getMaxWeaponsForPlayer()) {
-            //if the player can grab more weapons, he pays and gets the weapon
-            this.pay(ammoCubes, powerups);
-            weapon.setLoaded(true);
-            weapons.add(weapon);
-        } else throw new UnauthorizedExchangeException("Player already has " + constraints.getMaxWeaponsForPlayer() + " weapons and needs to drop one in order to buy one");
+        grabWeapon(
+                weapon,
+                Stream.concat(
+                        ammoCubes.stream().map(x -> (Coin)x),
+                        powerups.stream().map(x -> (Coin)x)
+                ).collect(Collectors.toList())
+        );
     }
 
     /**
@@ -402,7 +389,13 @@ public class Player implements Damageable, MatchListener {
             this.pay(coins);
             weapon.setLoaded(true);
             weapons.add(weapon);
+            notifyWeaponPicked(weapon);
         } else throw new UnauthorizedExchangeException("Player already has " + constraints.getMaxWeaponsForPlayer() + " weapons and needs to drop one in order to buy one");
+    }
+
+    private void notifyWeaponPicked(WeaponTile weapon) {
+        WeaponExchanged e = new WeaponExchanged(this, weapon, getBlock());
+        listeners.forEach(l -> l.onWeaponPicked(e));
     }
 
     /**
@@ -438,10 +431,28 @@ public class Player implements Damageable, MatchListener {
      * @param powerups the cost the player is paying with powerups
      */
     public void reload(WeaponTile weapon, List<AmmoCube> ammoCubes, List<PowerupTile> powerups) {
-        if (!weapon.isLoaded() && this.getWeapons().contains(weapon)) {
-            pay(ammoCubes, powerups);
-            weapon.setLoaded(true);
-        } else throw new IllegalArgumentException("Weapon could not be loaded");
+        reload(
+                weapon,
+                Stream.concat(
+                        ammoCubes.stream().map(x -> (Coin)x),
+                        powerups.stream().map(x -> (Coin)x)
+                ).collect(Collectors.toList())
+        );
+    }
+
+    public void unloadActiveWeapon() {
+        this.activeWeapon.setLoaded(false);
+        notifyWeaponUnloaded(activeWeapon);
+    }
+
+    private void notifyWeaponUnloaded(WeaponTile weapon) {
+        WeaponEvent e = new WeaponEvent(this, weapon);
+        listeners.forEach(l -> l.onWeaponUnloaded(e));
+    }
+
+    private void notifyWeaponReloaded(WeaponTile weapon) {
+        WeaponEvent e = new WeaponEvent(this, weapon);
+        listeners.forEach(l -> l.onWeaponReloaded(e));
     }
 
     /**
@@ -453,6 +464,7 @@ public class Player implements Damageable, MatchListener {
         if (!weapon.isLoaded() && this.getWeapons().contains(weapon)) {
             pay(coins);
             weapon.setLoaded(true);
+            notifyWeaponReloaded(weapon);
         } else throw new IllegalArgumentException("Weapon could not be loaded");
     }
 
@@ -461,6 +473,12 @@ public class Player implements Damageable, MatchListener {
      */
     public void addSkull() {
         skulls++;
+        notifyHealthChanged();
+    }
+
+    private void notifyHealthChanged() {
+        PlayerEvent e = new PlayerEvent(this);
+        listeners.forEach(l -> l.onHealthChanged(e));
     }
 
     /**
@@ -476,6 +494,8 @@ public class Player implements Damageable, MatchListener {
                 this.marks.add(mark);
             }
         }
+
+        notifyHealthChanged();
     }
 
     /**
@@ -491,7 +511,7 @@ public class Player implements Damageable, MatchListener {
      * @param listener the PlayerListener to add
      */
     public void addPlayerListener(PlayerListener listener) {
-        playerListeners.add(listener);
+        listeners.add(listener);
     }
 
     /**
@@ -504,6 +524,7 @@ public class Player implements Damageable, MatchListener {
             case FINAL_FRENZY:
                 if (this.damageTokens.isEmpty()) {
                     this.currentReward = RewardFactory.create(RewardFactory.Type.FINAL_FRENZY);
+                    notifyPlayerBoardFlipped();
                 }
                 break;
             case STANDARD:
@@ -516,7 +537,13 @@ public class Player implements Damageable, MatchListener {
     }
 
     @Override
-    public void onMatchStarted(MatchStarted event) {
+    public void onMatchStarted(MatchEvent event) {
+
+    }
+
+    @Override
+    public void onKillshotTrackChanged(KillshotTrackChanged e) {
+        // Nothing to do here
 
     }
 
@@ -558,6 +585,13 @@ public class Player implements Damageable, MatchListener {
                 throw new MissingOwnershipException("Player can't afford this weapon, missing powerups");
             }
         }
+
+        notifyPlayerWalletChanged();
+    }
+
+    private void notifyPlayerWalletChanged() {
+        PlayerWalletChanged e = new PlayerWalletChanged(this);
+        listeners.forEach(l -> l.onWalletChanged(e));
     }
 
     /**
@@ -633,16 +667,22 @@ public class Player implements Damageable, MatchListener {
         damageTokens.clear();
         if (match.getMode() == FINAL_FRENZY) { // when a player dies during final frenzy, he flips his board
             this.currentReward = RewardFactory.create(RewardFactory.Type.FINAL_FRENZY);
+            notifyPlayerBoardFlipped();
         }
         notifyPlayerBroughtBackToLife();
+    }
+
+    private void notifyPlayerBoardFlipped() {
+        PlayerEvent e = new PlayerEvent(this);
+        listeners.forEach(l -> l.onPlayerBoardFlipped(e));
     }
 
     /**
      * This method notifies all PlayerRebornListeners
      */
     private void notifyPlayerBroughtBackToLife() {
-        PlayerReborn e = new PlayerReborn(this);
-        playerListeners.forEach(l -> l.onPlayerReborn(e));
+        PlayerEvent e = new PlayerEvent(this);
+        listeners.forEach(l -> l.onPlayerReborn(e));
     }
 
     /**
@@ -651,7 +691,7 @@ public class Player implements Damageable, MatchListener {
      */
     private void notifyPlayerOverkilled(Player killer) {
         PlayerOverkilled e = new PlayerOverkilled(this, killer);
-        playerListeners.forEach(l -> l.onPlayerOverkilled(e));
+        listeners.forEach(l -> l.onPlayerOverkilled(e));
     }
 
     /**
@@ -660,7 +700,7 @@ public class Player implements Damageable, MatchListener {
      */
     private void notifyPlayerDied(Player killer) {
         PlayerDied e = new PlayerDied(this, killer);
-        this.playerListeners.forEach(listener -> listener.onPlayerDied(e));
+        this.listeners.forEach(listener -> listener.onPlayerDied(e));
     }
 
     /**
@@ -669,7 +709,7 @@ public class Player implements Damageable, MatchListener {
      */
     private void notifyPlayerDamaged(Player attacker) {
         PlayerDamaged e = new PlayerDamaged(this, attacker);
-        this.playerListeners.forEach(listener -> listener.onPlayerDamaged(e));
+        this.listeners.forEach(listener -> listener.onPlayerDamaged(e));
     }
 
     /**

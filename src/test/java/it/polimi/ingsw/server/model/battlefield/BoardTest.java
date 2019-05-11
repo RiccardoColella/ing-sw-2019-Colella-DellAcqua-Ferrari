@@ -3,8 +3,6 @@ package it.polimi.ingsw.server.model.battlefield;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.match.MatchFactory;
 import it.polimi.ingsw.server.model.player.Player;
-import it.polimi.ingsw.server.model.player.PlayerColor;
-import it.polimi.ingsw.server.model.player.PlayerInfo;
 import it.polimi.ingsw.shared.Direction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,8 +69,8 @@ class BoardTest {
 
         //Testing bounds
         assertFalse(board2.getBlock(-1, 2).isPresent(), "2. Error in bound exception.");
-        assertFalse(board2.getBlock(0,board2.getColumnLenght()).isPresent(), "3a. Error in bound exception.");
-        assertFalse(board2.getBlock(board2.getRowLenght(), 0).isPresent(), "3b. Error in bound exception.");
+        assertFalse(board2.getBlock(0,board2.getColumnLength()).isPresent(), "3a. Error in bound exception.");
+        assertFalse(board2.getBlock(board2.getRowLength(), 0).isPresent(), "3b. Error in bound exception.");
 
         //Trying to select some existing blocks
         assertTrue(board2.getBlock(1,1).isPresent(), "4. Error in picking block in BOARD_2.");

@@ -3,6 +3,7 @@ package it.polimi.ingsw.server.bootstrap;
 import it.polimi.ingsw.server.controller.Controller;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.match.MatchFactory;
+import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.View;
 
 import java.time.Duration;
@@ -96,7 +97,27 @@ public class GameInitializer {
                 playersChoice(participants.stream().map(View::getChosenSkulls)),
                 playersChoice(participants.stream().map(View::getChosenMode))
         );
+        // Associates all the views with their respective player
+        match.getPlayers().forEach(player -> {
+            View view = participants.stream()
+                    .filter(
+                            v -> v.getNickname().equals(player.getPlayerInfo().getNickname())
+                    )
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Players nickname haven't been saved correctly in the model"));
+            view.setPlayer(player);
+
+            player.addPlayerListener(view);
+        });
         participants.forEach(match::addMatchListener);
+        participants.forEach(match.getBoard()::addBoardListener);
+        participants.forEach(
+                view -> match
+                        .getPlayers()
+                        .forEach(
+                                player -> player.addPlayerListener(view)
+                        )
+        );
         Controller controller = new Controller(
                 match,
                 participants

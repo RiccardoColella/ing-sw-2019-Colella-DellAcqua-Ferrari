@@ -95,7 +95,7 @@ public class Match implements PlayerListener {
     /**
      * Listener for match events
      */
-    private Set<MatchListener> matchListeners;
+    private Set<MatchListener> listeners;
 
     /**
      * Preset used for the board
@@ -122,14 +122,14 @@ public class Match implements PlayerListener {
         this.weaponDeck = WeaponTileFactory.createDeck();
         this.powerupDeck = PowerupTileFactory.createDeck();
         this.mode = mode;
-        this.matchListeners = new HashSet<>();
+        this.listeners = new HashSet<>();
         this.playersWhoDidFinalFrenzyTurn = new LinkedList<>();
         this.boardPreset = boardPreset;
     }
 
     public void start() {
-        MatchStarted e = new MatchStarted(this);
-        for (MatchListener l : matchListeners) {
+        MatchEvent e = new MatchEvent(this);
+        for (MatchListener l : listeners) {
             l.onMatchStarted(e);
         }
     }
@@ -242,6 +242,8 @@ public class Match implements PlayerListener {
             if (this.skulls > 0) {
                 this.skulls--;
                 deadPlayer.addSkull();
+
+                notifyKillshotTrackChanged();
             }
         }
 
@@ -258,6 +260,12 @@ public class Match implements PlayerListener {
         }
 
         return deadPlayers;
+    }
+
+
+    private void notifyKillshotTrackChanged() {
+        KillshotTrackChanged e = new KillshotTrackChanged(this, killshots);
+        listeners.forEach(l -> l.onKillshotTrackChanged(e));
     }
 
     /**
@@ -289,17 +297,59 @@ public class Match implements PlayerListener {
     }
 
     @Override
-    public void onPlayerReborn(PlayerReborn event) {
+    public void onPlayerReborn(PlayerEvent e) {
         // Nothing to do here
+
     }
 
+    @Override
+    public void onPlayerBoardFlipped(PlayerEvent e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onWeaponReloaded(WeaponEvent e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onWeaponUnloaded(WeaponEvent e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onWeaponPicked(WeaponExchanged e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onWeaponDropped(WeaponExchanged e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onWalletChanged(PlayerWalletChanged e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onHealthChanged(PlayerEvent e) {
+        // Nothing to do here
+
+    }
 
     /**
      * This method triggers the MatchModeChanged event and sends it to its listeners
      */
     private void notifyMatchModeChanged() {
         MatchModeChanged e = new MatchModeChanged(this, this.mode);
-        this.matchListeners.forEach(l -> l.onMatchModeChanged(e));
+        this.listeners.forEach(l -> l.onMatchModeChanged(e));
     }
 
     private int getKillshotCount(Player player) {
@@ -391,7 +441,7 @@ public class Match implements PlayerListener {
      */
     private void notifyMatchEnded(Map<Integer, List<Player>> rankings) {
         MatchEnded e = new MatchEnded(this, rankings);
-        this.matchListeners.forEach(l -> l.onMatchEnded(e));
+        this.listeners.forEach(l -> l.onMatchEnded(e));
     }
 
     public List<Player> getPlayers() {
@@ -399,7 +449,7 @@ public class Match implements PlayerListener {
     }
 
     public void addMatchListener(MatchListener listener) {
-        this.matchListeners.add(listener);
+        this.listeners.add(listener);
     }
 
     private void scoreVictimPoints(Player victim) {

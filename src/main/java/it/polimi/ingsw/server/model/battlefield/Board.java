@@ -1,5 +1,7 @@
 package it.polimi.ingsw.server.model.battlefield;
 
+import it.polimi.ingsw.server.model.events.PlayerMoved;
+import it.polimi.ingsw.server.model.events.listeners.BoardListener;
 import it.polimi.ingsw.utils.Range;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.Player;
@@ -15,20 +17,20 @@ import static it.polimi.ingsw.server.model.battlefield.Block.BorderType.*;
 public class Board {
 
     private final Block[][] field;
+    private final Set<BoardListener> listeners = new HashSet<>();
 
     /**
-     *
      * @param field the matrix containing all the blocks arranged according to the 2D representation of the board
      */
     public Board(Block[][] field) {
         this.field = field;
     }
 
-    int getRowLenght(){
+    int getRowLength(){
         return field.length;
     }
 
-    int getColumnLenght(){
+    int getColumnLength(){
         return field[0].length;
     }
 
@@ -193,8 +195,14 @@ public class Board {
             if (nextPosition.isPresent()){
                 position.get().removePlayer(player);
                 nextPosition.get().addPlayer(player);
+                notifyPlayerMoved(player, nextPosition.get());
             }
         }
+    }
+
+    private void notifyPlayerMoved(Player player, Block destination) {
+        PlayerMoved e = new PlayerMoved(this, player, destination);
+        listeners.forEach(l -> l.onPlayerMoved(e));
     }
 
     /**
@@ -227,6 +235,13 @@ public class Board {
             playerBlock.get().removePlayer(player);
         } else throw new NullPointerException();
         block.addPlayer(player);
+
+        notifyPlayerTeleported(player, block);
+    }
+
+    private void notifyPlayerTeleported(Player player, Block block) {
+        PlayerMoved e = new PlayerMoved(this, player, block);
+        listeners.forEach(l -> l.onPlayerTeleported(e));
     }
 
     public SpawnpointBlock getSpawnpoint(CurrencyColor color){
@@ -331,4 +346,7 @@ public class Board {
     }
 
 
+    public void addBoardListener(BoardListener l) {
+        listeners.add(l);
+    }
 }

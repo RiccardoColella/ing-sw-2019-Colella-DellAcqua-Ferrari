@@ -4,10 +4,10 @@ import com.google.gson.Gson;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
-import it.polimi.ingsw.server.model.events.MatchEnded;
-import it.polimi.ingsw.server.model.events.MatchModeChanged;
-import it.polimi.ingsw.server.model.events.MatchStarted;
+import it.polimi.ingsw.server.model.events.*;
+import it.polimi.ingsw.server.model.events.listeners.BoardListener;
 import it.polimi.ingsw.server.model.events.listeners.MatchListener;
+import it.polimi.ingsw.server.model.events.listeners.PlayerListener;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  *
  * @author Carlo Dell'Acqua
  */
-public abstract class View implements Interviewer, AutoCloseable, MatchListener {
+public abstract class View implements Interviewer, AutoCloseable, MatchListener, PlayerListener, BoardListener {
 
     private static final int CLOSE_TIMEOUT_MILLISECONDS = 10000;
     private static final int CLOSE_CHECK_DELAY = CLOSE_TIMEOUT_MILLISECONDS / 10;
@@ -83,6 +83,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener 
     private ClientInitializationInfo setup;
 
     /**
+     * The player instance associated with this View
+     */
+    private Player player;
+
+    /**
      * Constructs a server-side view
      *
      * @param answerTimeout maximum timeout before considering the view disconnected
@@ -114,6 +119,15 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener 
         } catch (TimeoutException ex) {
             throw new ViewDisconnectedException("Initialization event message not received", ex);
         }
+    }
+
+    /**
+     * Sets the player associated with this view (this should be done before starting the match)
+     *
+     * @param player the player associated with this view
+     */
+    public void setPlayer(Player player) {
+        this.player = player;
     }
 
     /**
@@ -239,54 +253,6 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener 
         }
     }
 
-    @Override
-    public void onMatchEnded(MatchEnded event) {
-
-    }
-
-    @Override
-    public void onMatchModeChanged(MatchModeChanged event) {
-
-    }
-
-    @Override
-    public void onMatchStarted(MatchStarted event) {
-        Match match = event.getMatch();
-        List<Player> allPlayers = new LinkedList<>(match.getPlayers());
-        List<Player> opponents = allPlayers
-                .stream()
-                .filter(o -> !o.getPlayerInfo().getNickname().equals(setup.getNickname()))
-                .collect(Collectors.toList());
-        Player self = allPlayers
-                .stream()
-                .filter(o -> o.getPlayerInfo().getNickname().equals(setup.getNickname()))
-                .findAny()
-                .orElseThrow(() -> new IllegalStateException("Self player missing"));
-        List<it.polimi.ingsw.shared.viewmodels.Player> opponentsVM = opponents
-                .stream()
-                .map(p ->
-                        new it.polimi.ingsw.shared.viewmodels.Player(
-                                p.getPlayerInfo().getNickname(),
-                                p.getPlayerInfo().getColor(),
-                                new Wallet()
-                        )
-                )
-                .collect(Collectors.toList());
-        it.polimi.ingsw.shared.viewmodels.Player selfVM = new it.polimi.ingsw.shared.viewmodels.Player(
-                self.getPlayerInfo().getNickname(),
-                self.getPlayerInfo().getColor(),
-                new Wallet()
-        );
-        mapWallets(self, selfVM);
-        it.polimi.ingsw.shared.events.MatchStarted e = new it.polimi.ingsw.shared.events.MatchStarted(
-                new Object(),
-                match.getBoardPreset(),
-                selfVM,
-                opponentsVM
-        );
-        outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_STARTED_EVENT, e));
-    }
-
     private void mapWallets(Player player, it.polimi.ingsw.shared.viewmodels.Player playerVM) {
         List<CurrencyColor> ammoCubes = player.getAmmoCubes().stream().map(AmmoCube::getColor).collect(Collectors.toList());
         playerVM.getWallet().setAmmoCubes(ammoCubes);
@@ -306,6 +272,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener 
         playerVM.getWallet().setUnloadedWeapons(unloadedWeapons);
     }
 
+
     @Override
     public void close() throws Exception {
         java.time.Instant deadline = Instant.now().plus(Duration.ofMillis(CLOSE_TIMEOUT_MILLISECONDS));
@@ -321,5 +288,122 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener 
     public void close(Message lastMessage) throws Exception {
         outputMessageQueue.add(lastMessage);
         this.close();
+    }
+
+    @Override
+    public void onMatchStarted(MatchEvent event) {
+        Match match = event.getMatch();
+        List<Player> allPlayers = new LinkedList<>(match.getPlayers());
+        List<Player> opponents = allPlayers
+                .stream()
+                .filter(o -> !o.getPlayerInfo().getNickname().equals(setup.getNickname()))
+                .collect(Collectors.toList());
+        List<it.polimi.ingsw.shared.viewmodels.Player> opponentsVM = opponents
+                .stream()
+                .map(p ->
+                        new it.polimi.ingsw.shared.viewmodels.Player(
+                                p.getPlayerInfo().getNickname(),
+                                p.getPlayerInfo().getColor(),
+                                new Wallet()
+                        )
+                )
+                .collect(Collectors.toList());
+        it.polimi.ingsw.shared.viewmodels.Player selfVM = new it.polimi.ingsw.shared.viewmodels.Player(
+                player.getPlayerInfo().getNickname(),
+                player.getPlayerInfo().getColor(),
+                new Wallet()
+        );
+        mapWallets(player, selfVM);
+        it.polimi.ingsw.shared.events.networkevents.MatchStarted e = new it.polimi.ingsw.shared.events.networkevents.MatchStarted(
+                match.getBoardPreset(),
+                selfVM,
+                opponentsVM
+        );
+        outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_STARTED_EVENT, e));
+    }
+
+    @Override
+    public void onMatchEnded(MatchEnded event) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+    }
+
+    @Override
+    public void onMatchModeChanged(MatchModeChanged event) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+    }
+
+
+    @Override
+    public void onKillshotTrackChanged(KillshotTrackChanged e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+    }
+
+    @Override
+    public void onPlayerDied(PlayerDied e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+    }
+
+    @Override
+    public void onPlayerDamaged(PlayerDamaged e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+    }
+
+    @Override
+    public void onPlayerOverkilled(PlayerOverkilled e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+    }
+
+    @Override
+    public void onPlayerReborn(PlayerEvent e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+    }
+
+    @Override
+    public void onPlayerBoardFlipped(PlayerEvent e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+    }
+
+    @Override
+    public void onWeaponReloaded(WeaponEvent e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+    }
+
+    @Override
+    public void onWeaponUnloaded(WeaponEvent e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+    }
+
+    @Override
+    public void onWeaponPicked(WeaponExchanged e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+
+    }
+
+    @Override
+    public void onWeaponDropped(WeaponExchanged e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+
+    }
+
+    @Override
+    public void onWalletChanged(PlayerWalletChanged e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+    }
+
+    @Override
+    public void onHealthChanged(PlayerEvent e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+    }
+
+    @Override
+    public void onPlayerTeleported(PlayerMoved e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+
+    }
+
+    @Override
+    public void onPlayerMoved(PlayerMoved e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+
     }
 }

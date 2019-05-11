@@ -4,7 +4,7 @@ import it.polimi.ingsw.server.model.player.Player;
 
 import java.util.EventObject;
 
-public class PlayerDamaged extends EventObject {
+public class PlayerDamaged extends PlayerEvent {
 
     private Player attacker;
 
@@ -22,6 +22,6 @@ public class PlayerDamaged extends EventObject {
     }
 
     public Player getVictim(){
-        return (Player) this.getSource();
+        return getPlayer();
     }
 }

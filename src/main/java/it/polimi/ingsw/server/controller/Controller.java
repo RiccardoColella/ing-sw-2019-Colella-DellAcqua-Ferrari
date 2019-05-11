@@ -13,10 +13,7 @@ import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.BonusTile;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.PowerupTile;
-import it.polimi.ingsw.server.model.events.PlayerDamaged;
-import it.polimi.ingsw.server.model.events.PlayerDied;
-import it.polimi.ingsw.server.model.events.PlayerOverkilled;
-import it.polimi.ingsw.server.model.events.PlayerReborn;
+import it.polimi.ingsw.server.model.events.*;
 import it.polimi.ingsw.server.model.events.listeners.PlayerListener;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.match.Match;
@@ -473,8 +470,50 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
     }
 
     @Override
-    public void onPlayerReborn(PlayerReborn event) {
+    public void onPlayerReborn(PlayerEvent event) {
         // Nothing to do here
+    }
+
+    @Override
+    public void onPlayerBoardFlipped(PlayerEvent e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onWeaponReloaded(WeaponEvent e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onWeaponUnloaded(WeaponEvent e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onWeaponPicked(WeaponExchanged e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onWeaponDropped(WeaponExchanged e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onWalletChanged(PlayerWalletChanged e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onHealthChanged(PlayerEvent e) {
+        // Nothing to do here
+
     }
 
     /**

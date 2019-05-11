@@ -8,7 +8,10 @@ import it.polimi.ingsw.client.io.listeners.MatchListener;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
-import it.polimi.ingsw.shared.events.MatchStarted;
+import it.polimi.ingsw.shared.events.networkevents.KillshotTrackChanged;
+import it.polimi.ingsw.shared.events.networkevents.MatchEnded;
+import it.polimi.ingsw.shared.events.networkevents.MatchModeChanged;
+import it.polimi.ingsw.shared.events.networkevents.MatchStarted;
 import it.polimi.ingsw.utils.EnumValueByString;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -191,6 +194,24 @@ public class LoginController extends WindowController implements MatchListener, 
                 this.close();
             }
         );
+    }
+
+    @Override
+    public void onMatchModeChanged(MatchModeChanged e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onKillshotTrackChanged(KillshotTrackChanged e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onMatchEnded(MatchEnded e) {
+        // Nothing to do here
+
     }
 
     @Override

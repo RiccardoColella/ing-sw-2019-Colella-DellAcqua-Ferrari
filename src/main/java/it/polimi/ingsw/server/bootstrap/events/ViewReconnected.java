@@ -14,7 +14,7 @@ public class ViewReconnected extends ConsumableEventObject {
     /**
      * The reconnected view
      */
-    private final View view;
+    private final transient View view;
 
     /**
      * Constructs the event
