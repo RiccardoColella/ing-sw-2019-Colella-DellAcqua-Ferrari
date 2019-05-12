@@ -1,5 +1,9 @@
 package it.polimi.ingsw.shared.messages.templates;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
+
 import java.util.Collection;
 
 /**
@@ -9,6 +13,8 @@ import java.util.Collection;
  * @param <T> the type of the items in the option set
  */
 public class Question<T> {
+
+    private static final Gson gson = new Gson();
 
     /**
      * The question text
@@ -59,5 +65,9 @@ public class Question<T> {
 
     public boolean isSkippable() {
         return skippable;
+    }
+
+    public static <T> Question<T> fromJson(JsonElement jsonElement) {
+        return gson.fromJson(jsonElement, new TypeToken<Question<T>>(){}.getType());
     }
 }

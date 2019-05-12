@@ -17,6 +17,7 @@ import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.messages.ServerApi;
+import it.polimi.ingsw.shared.messages.templates.Answer;
 import it.polimi.ingsw.shared.messages.templates.Question;
 import it.polimi.ingsw.shared.viewmodels.Wallet;
 import it.polimi.ingsw.utils.Tuple;
@@ -30,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import static it.polimi.ingsw.shared.messages.templates.Answer.fromJson;
 
 /**
  * This class is an abstract server-side View. It contains all the methods needed for the interaction with the controller
@@ -170,20 +173,20 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
      * the question and answer flow is available
      *
      * @param flowId the identifier of the question-and-answer flow
-     * @param options the available answers for the question
      * @param <T> the type of the item in the option collection
      * @return the chosen option or null if no choice was made
      * @throws ViewDisconnectedException if the client didn't give an answer within the available answering timeout
      */
     @Nullable
-    private  <T> T awaitResponse(String flowId, Collection<T> options) {
+    private  <T> T awaitResponse(String flowId) {
 
         try {
             Message response = inputMessageQueue.dequeueAnswer(flowId, answerTimeout, answerTimeoutUnit);
-            if (response.getPayload().getAsInt() == 0) {
+            Answer<T> answer = Answer.fromJson(response.getPayload());
+            if (!answer.isPresent()) {
                 return null;
             } else {
-                return new ArrayList<>(options).get(response.getPayload().getAsInt() - 1);
+                return answer.getChoice();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -214,7 +217,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
             outputMessageQueue.add(message);
 
-            T response = awaitResponse(message.getFlowId(), options);
+            T response = awaitResponse(message.getFlowId());
             if (response == null || !options.contains(response)) {
                 throw new ViewDisconnectedException("Received an invalid answer from the client");
             }
@@ -242,7 +245,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
             Message message = Message.createQuestion(messageName, new Question<>(questionText, options, true));
             outputMessageQueue.add(message);
 
-            T response = awaitResponse(message.getFlowId(), options);
+            T response = awaitResponse(message.getFlowId());
             if (response != null && !options.contains(response)) {
                 throw new ViewDisconnectedException("Received an invalid answer from the client");
             }

@@ -2,14 +2,21 @@ package it.polimi.ingsw.client.io;
 
 import com.google.gson.Gson;
 import it.polimi.ingsw.client.io.listeners.*;
+import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.server.model.player.BasicAction;
+import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.InputMessageQueue;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 import it.polimi.ingsw.shared.events.networkevents.*;
-import it.polimi.ingsw.shared.events.MessageReceived;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.messages.ServerApi;
+import it.polimi.ingsw.shared.messages.templates.Answer;
+import it.polimi.ingsw.shared.messages.templates.Question;
+import it.polimi.ingsw.utils.Tuple;
 
+import javax.annotation.Nullable;
+import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -148,13 +155,110 @@ public abstract class Connector implements AutoCloseable {
         questionListeners.remove(l);
     }
 
+    private <T> void enqueueAnswer(T choice, String flowId) {
+        outputMessageQueue
+                .add(Message.createAnswer(ServerApi.ANSWER, new Answer<>(choice), flowId));
+    }
+
     /**
      * Notifies question listeners that a message has been received
      * @param message the received question message
      */
     private void notifyQuestionMessageReceivedListeners(Message message) {
-        MessageReceived e = new MessageReceived(this, message);
-        questionListeners.forEach(l -> l.onQuestionMessageReceived(e));
+        ClientApi questionType = message.getNameAsEnum(ClientApi.class);
+
+        switch (questionType) {
+            case DIRECTION_QUESTION: {
+                Question<Direction> question = Question.fromJson(message.getPayload());
+                questionListeners.forEach(l -> l.onDirectionQuestion(
+                                question,
+                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        )
+                );
+                break;
+            }
+            case ATTACK_QUESTION: {
+                Question<String> question = Question.fromJson(message.getPayload());
+                questionListeners.forEach(l -> l.onAttackQuestion(
+                            question,
+                            choice -> enqueueAnswer(choice, message.getFlowId())
+                        )
+                );
+                break;
+            }
+            case BASIC_ACTION_QUESTION: {
+                Question<BasicAction> question = Question.fromJson(message.getPayload());
+                questionListeners.forEach(l -> l.onBasicActionQuestion(
+                                question,
+                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        )
+                );
+                break;
+            }
+            case BLOCK_QUESTION: {
+                Question<Point> question = Question.fromJson(message.getPayload());
+                questionListeners.forEach(l -> l.onBlockQuestion(
+                                question,
+                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        )
+                );
+                break;
+            }
+            case PAYMENT_METHOD_QUESTION: {
+                Question<String> question = Question.fromJson(message.getPayload());
+                questionListeners.forEach(l -> l.onPaymentMethodQuestion(
+                                question,
+                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        )
+                );
+                break;
+            }
+            case POWERUP_QUESTION: {
+                Question<Tuple<String, CurrencyColor>> question = Question.fromJson(message.getPayload());
+                questionListeners.forEach(l -> l.onPowerupQuestion(
+                                question,
+                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        )
+                );
+                break;
+            }
+            case WEAPON_CHOICE_QUESTION: {
+                Question<String> question = Question.fromJson(message.getPayload());
+                questionListeners.forEach(l -> l.onWeaponQuestion(
+                                question,
+                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        )
+                );
+                break;
+            }
+            case RELOAD_QUESTION: {
+                Question<String> question = Question.fromJson(message.getPayload());
+                questionListeners.forEach(l -> l.onReloadQuestion(
+                                question,
+                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        )
+                );
+                break;
+            }
+            case SPAWNPOINT_QUESTION: {
+                Question<Tuple<String, CurrencyColor>> question = Question.fromJson(message.getPayload());
+                questionListeners.forEach(l -> l.onSpawnpointQuestion(
+                                question,
+                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        )
+                );
+                break;
+            }
+            case TARGET_QUESTION: {
+                Question<String> question = Question.fromJson(message.getPayload());
+                questionListeners.forEach(l -> l.onTargetQuestion(
+                                question,
+                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        )
+                );
+                break;
+            }
+        }
     }
 
     /**

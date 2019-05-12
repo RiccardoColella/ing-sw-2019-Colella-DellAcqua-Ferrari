@@ -6,21 +6,30 @@ import it.polimi.ingsw.client.io.Connector;
 import it.polimi.ingsw.client.io.RMIConnector;
 import it.polimi.ingsw.client.io.SocketConnector;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.match.Match;
+import it.polimi.ingsw.server.model.player.BasicAction;
+import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 import it.polimi.ingsw.shared.events.MessageReceived;
 import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.messages.templates.Question;
 import it.polimi.ingsw.shared.messages.ServerApi;
+import it.polimi.ingsw.utils.Tuple;
 
+import javax.annotation.Nullable;
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
-import java.util.Scanner;
+import java.util.*;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * This class represents a command line implementation of the user interface of the game
@@ -68,109 +77,90 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable {
      */
     public void initialize() throws InterruptedException, IOException, NotBoundException {
 
-        String[] availableConnectionOptions = new String[] { "RMI", "Socket" };
-        Integer[] availableSkulls = new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+        List<String> availableConnectionOptions = Arrays.asList("RMI", "Socket");
+        List<Integer> availableSkulls = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8);
 
         printStream.println("Enter the server address");
         String serverAddress = scanner.nextLine();
 
-        int chosenIndex;
-        chosenIndex = askForSelection(
+        String connectionType = askForSelection(
                 "Choose the connection type you'd like to use",
                 availableConnectionOptions,
                 false
-        ) - 1;
-        String connectionType = availableConnectionOptions[chosenIndex];
+        );
 
         printStream.println("Enter a nickname");
         String nickname = scanner.nextLine();
 
-        chosenIndex = askForSelection(
+        BoardFactory.Preset preset = askForSelection(
                 "Choose a board preset",
-                BoardFactory.Preset.values(),
+                Arrays.asList(BoardFactory.Preset.values()),
                 false
-        ) - 1;
-        BoardFactory.Preset preset = BoardFactory.Preset.values()[chosenIndex];
-        chosenIndex = askForSelection(
+        );
+        Integer skulls = askForSelection(
                 "Choose a number of skulls",
                 availableSkulls,
                 false
         );
+        if (skulls == null) {
+            throw new IllegalStateException("The user had to choose a number of skulls, null returned");
+        }
 
-        int skulls = availableSkulls[chosenIndex];
-
-        chosenIndex = askForSelection(
+        Match.Mode mode = askForSelection(
                 "Choose a board preset",
-                Match.Mode.values(),
+                Arrays.asList(Match.Mode.values()),
                 false
-        ) - 1;
+        );
 
-        Match.Mode mode = Match.Mode.values()[chosenIndex];
-
-        switch (connectionType) {
-            case "RMI":
-                connector = new RMIConnector();
-                ((RMIConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9090));
-                break;
-            case "Socket":
-                connector = new SocketConnector();
-                ((SocketConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9000));
-                break;
-            default:
-                throw new IllegalStateException("The user had to choose between Socket or RMI, unrecognized option " + connectionType);
+        if (connectionType != null) {
+            switch (connectionType) {
+                case "RMI":
+                    connector = new RMIConnector();
+                    ((RMIConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9090));
+                    break;
+                case "Socket":
+                    connector = new SocketConnector();
+                    ((SocketConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9000));
+                    break;
+                default:
+                    throw new IllegalStateException("The user had to choose between Socket or RMI, unrecognized option " + connectionType);
+            }
+        } else {
+            throw new IllegalStateException("The user had to choose between Socket or RMI, null returned");
         }
 
         connector.addQuestionMessageReceivedListener(this);
     }
 
     /**
-     * Manages questions
-     *
-     * @param e the MessageReceived event
-     */
-    @Override
-    public void onQuestionMessageReceived(MessageReceived e) {
-        manageQuestion(e.getMessage());
-    }
-
-    /**
-     * Given a question message it shows it to the user and ask for a selection. Once
-     * a valid selection has been made by the user, the answer is forwarded through the connector
-     *
-     * @param message a question message
-     */
-    private void manageQuestion(Message message) {
-        Question question = gson.fromJson(message.getPayload(), new TypeToken<Question>(){}.getType());
-        Object[] options = question.getAvailableOptions().toArray();
-
-        int chosenIndex = askForSelection(question.getText(), options, question.isSkippable());
-
-        connector.sendMessage(Message.createAnswer(ServerApi.ANSWER, chosenIndex, message.getFlowId()));
-    }
-
-    /**
      * Method used for interacting with the user. It asks a question and wait for a valid user selection between the available options
      *
      * @param questionText the text of the question
-     * @param options the available options to choose from
+     * @param optionCollection the available options to choose from
      * @param skippable indicates whether or not the answer can be none of the available options
-     * @return 0 if the user didn't choose any of the presented options
-     *         1..{@code options.length}, corresponding to the option index in the array + 1
+     * @param <T> the type of the options
+     * @return the selected option or null if the user decided to skip
      */
-    private int askForSelection(String questionText, Object[] options, boolean skippable) {
+    @Nullable
+    private <T> T askForSelection(String questionText, Collection<T> optionCollection, boolean skippable) {
+        List<T> options = new LinkedList<>(optionCollection);
         int chosenIndex;
         do {
             printStream.println(questionText);
             if (skippable) {
                 printStream.println("0) Skip");
             }
-            for (int i = 0; i < options.length; i++) {
-                printStream.println(String.format("%d) %s", (i + 1), options[i].toString()));
+            for (int i = 0; i < options.size(); i++) {
+                printStream.println(String.format("%d) %s", (i + 1), options.get(i).toString()));
             }
             chosenIndex = Integer.parseInt(scanner.nextLine());
-        } while (!((skippable ? 0 : 1) <= chosenIndex && chosenIndex <= options.length));
+        } while (!((skippable ? 0 : 1) <= chosenIndex && chosenIndex <= options.size()));
 
-        return chosenIndex;
+        if (chosenIndex == 0) {
+            return null;
+        } else {
+            return options.get(chosenIndex - 1);
+        }
     }
 
     /**
@@ -183,5 +173,86 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable {
         if (connector != null) {
             connector.close();
         }
+    }
+
+    @Override
+    public void onDirectionQuestion(Question<Direction> question, Consumer<Direction> answerCallback) {
+
+        answerCallback.accept(
+            askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
+        );
+
+    }
+
+    @Override
+    public void onAttackQuestion(Question<String> question, Consumer<String> answerCallback) {
+        answerCallback.accept(
+            askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
+        );
+
+    }
+
+    @Override
+    public void onBasicActionQuestion(Question<BasicAction> question, Consumer<BasicAction> answerCallback) {
+        answerCallback.accept(
+            askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
+        );
+
+    }
+
+    @Override
+    public void onBlockQuestion(Question<Point> question, Consumer<Point> answerCallback) {
+        answerCallback.accept(
+            askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
+        );
+
+    }
+
+    @Override
+    public void onPaymentMethodQuestion(Question<String> question, Consumer<String> answerCallback) {
+        answerCallback.accept(
+            askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
+        );
+
+    }
+
+    @Override
+    public void onPowerupQuestion(Question<Tuple<String, CurrencyColor>> question, Consumer<Tuple<String, CurrencyColor>> answerCallback) {
+        answerCallback.accept(
+            askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
+        );
+
+    }
+
+    @Override
+    public void onWeaponQuestion(Question<String> question, Consumer<String> answerCallback) {
+        answerCallback.accept(
+            askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
+        );
+
+    }
+
+    @Override
+    public void onReloadQuestion(Question<String> question, Consumer<String> answerCallback) {
+        answerCallback.accept(
+            askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
+        );
+
+    }
+
+    @Override
+    public void onSpawnpointQuestion(Question<Tuple<String, CurrencyColor>> question, Consumer<Tuple<String, CurrencyColor>> answerCallback) {
+        answerCallback.accept(
+            askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
+        );
+
+    }
+
+    @Override
+    public void onTargetQuestion(Question<String> question, Consumer<String> answerCallback) {
+        answerCallback.accept(
+            askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
+        );
+
     }
 }

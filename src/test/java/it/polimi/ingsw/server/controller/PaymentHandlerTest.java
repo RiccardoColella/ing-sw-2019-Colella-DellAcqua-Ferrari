@@ -11,6 +11,7 @@ import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
 import it.polimi.ingsw.server.view.Interviewer;
+import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -179,6 +180,6 @@ class PaymentHandlerTest {
         mockDebt.add(new PowerupTile(CurrencyColor.BLUE, "MockPowerup"));
         player2.grabAmmoCubes(ammoCubesToBeGrabbed);
         assertEquals(1, player2.getPowerups().size() + player2.getAmmoCubes().size());
-        assertThrows(IndexOutOfBoundsException.class, () -> PaymentHandler.pay(mockDebt, player2, mockView));
+        assertThrows(ViewDisconnectedException.class, () -> PaymentHandler.pay(mockDebt, player2, mockView));
     }
 }
