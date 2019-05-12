@@ -15,6 +15,7 @@ import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.utils.EnumValueByString;
 import it.polimi.ingsw.utils.Range;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -199,11 +200,19 @@ public class PowerupFactory {
      * @param interviewer the communication proxy
      */
     private static void manageTeleport(Player target, Interviewer interviewer) {
-        Block block = interviewer.select(
+        Set<Block> potentialBlocks = target.getMatch().getBoard().getBlocks();
+        Point blockAsPoint = interviewer.select(
                 "Where do you want to teleport?",
-                target.getMatch().getBoard().getBlocks(),
+                potentialBlocks.stream().map(block -> new Point(block.getColumn(), block.getRow())).collect(Collectors.toSet()),
                 ClientApi.BLOCK_QUESTION
         );
-        target.getMatch().getBoard().teleportPlayer(target, block);
+        target.getMatch().getBoard().teleportPlayer(
+                target,
+                target
+                    .getMatch()
+                    .getBoard()
+                    .getBlock(blockAsPoint.y, blockAsPoint.x)
+                    .orElseThrow(() -> new IllegalStateException("Non existent block was chosen"))
+        );
     }
 }

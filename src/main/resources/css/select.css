@@ -1,0 +1,16 @@
+#container {
+    -fx-vgap: 5;
+    -fx-alignment: center;
+}
+
+#container Label {
+    -fx-font-family: "Roboto Mono";
+}
+
+.button-bar * {
+    -fx-min-width: 200;
+}
+
+Button {
+    -fx-alignment: center;
+}
