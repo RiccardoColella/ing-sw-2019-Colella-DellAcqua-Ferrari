@@ -9,18 +9,12 @@ import it.polimi.ingsw.server.controller.weapons.WeaponFactory;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.battlefield.SpawnpointBlock;
 import it.polimi.ingsw.server.model.collections.Deck;
-import it.polimi.ingsw.server.model.currency.AmmoCube;
-import it.polimi.ingsw.server.model.currency.BonusTile;
-import it.polimi.ingsw.server.model.currency.Coin;
-import it.polimi.ingsw.server.model.currency.PowerupTile;
+import it.polimi.ingsw.server.model.currency.*;
 import it.polimi.ingsw.server.model.events.*;
 import it.polimi.ingsw.server.model.events.listeners.PlayerListener;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.match.Match;
-import it.polimi.ingsw.server.model.player.ActionTile;
-import it.polimi.ingsw.server.model.player.BasicAction;
-import it.polimi.ingsw.server.model.player.CompoundAction;
-import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.player.*;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.server.view.View;
@@ -75,10 +69,8 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                             .pick()
                             .orElseThrow(() -> new IllegalStateException("Empty deck"))
             );
-            //Asking what powerup to discard
-            PowerupTile discardedPowerup = views.get(players.indexOf(player)).select("Select Spawnpoint: ", powerups, ClientApi.SPAWNPOINT_QUESTION);
-            match.getBoard().getSpawnpoint(discardedPowerup.getColor()).addPlayer(match.getActivePlayer());
             //Discarding the selected powerup
+            PowerupTile discardedPowerup = selectSpawnpointFromPowerup(powerups, player);
             discardPowerupTile(player, discardedPowerup);
             logger.info("Selected Spawnpoint " + discardedPowerup.getColor());
             //Grabbing the other powerup
@@ -110,7 +102,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
             //If the player had at least one powerup in his hand he can choose what power-up to discard
             if (powerupTile.isPresent() && playerPowerups.size() > 1){
                 playerPowerups.add(powerupTile.get());
-                powerupTile = Optional.of(view.select("Discard a Power-Up to choose where to respawn...", playerPowerups, ClientApi.SPAWNPOINT_QUESTION));
+                powerupTile = Optional.of(selectSpawnpointFromPowerup(playerPowerups, activePlayer));
             }
             //Discarded powerup define respawn point. Player is moved to that spawnpoint and reanimated.
             if (powerupTile.isPresent()){
@@ -120,6 +112,23 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
             player.bringBackToLife();
         }
         match.changeTurn();
+    }
+
+    /**
+     * This method lets the player choose the spawnpoint at the beginning of the match or when he die
+     * @param powerups list of powerups to discard to choose spawnpoint
+     * @param player active player
+     * @return the selected powerup to be discarded
+     */
+    private PowerupTile selectSpawnpointFromPowerup(List<PowerupTile> powerups, Player player){
+        //Asking what powerup to discard
+        List<Tuple<String, CurrencyColor>> powerupsForView = powerups
+                .stream()
+                .map(powerupTile -> new Tuple<>(powerupTile.getName(), powerupTile.getColor()))
+                .collect(Collectors.toList());
+        PowerupTile discardedPowerup = powerups.get(powerupsForView.indexOf(views.get(players.indexOf(player)).select("Select Spawnpoint: ", powerupsForView, ClientApi.SPAWNPOINT_QUESTION)));
+        match.getBoard().getSpawnpoint(discardedPowerup.getColor()).addPlayer(match.getActivePlayer());
+        return discardedPowerup;
     }
 
     /**
@@ -170,8 +179,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         List<WeaponTile> affordableWeapons = availableWeapons.stream().filter(weapon -> PaymentHandler.canAfford(weapon.getAcquisitionCost(), activePlayer))
                 .collect(Collectors.toList());
         if (affordableWeapons.size() > 0){
-            WeaponTile weapon = view.select("Which weapon would you like to grab?",
-                    affordableWeapons, ClientApi.WEAPON_CHOICE_QUESTION);
+            WeaponTile weapon = selectWeaponTile("Which weapon would you like to grab?", affordableWeapons, view);
             //pick up
             logger.info("picking up weapon " + weapon.getName() + "...");
             pickUpWeapon(weapon, activePlayer, view);
@@ -211,7 +219,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 .filter(WeaponTile::isLoaded)
                 .collect(Collectors.toList());
         if (!loadedPlayerWeapons.isEmpty()){
-            WeaponTile selectedWeapon = view.select("Which weapon do you want to use for shooting?", loadedPlayerWeapons, ClientApi.WEAPON_CHOICE_QUESTION);
+            WeaponTile selectedWeapon = selectWeaponTile("Which weapon do you want to use for shooting?", loadedPlayerWeapons, view);
             Weapon weapon = weaponMap.get(selectedWeapon.getName());
             weapon.shoot(view, activePlayer);
         } else throw new IllegalStateException("Shoot executed while no weapon is loaded");
@@ -232,7 +240,11 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         if (weaponsReloadable.isEmpty()){
             throw new IllegalArgumentException("All weapons are reloaded. The reload shouldn't be selectable");
         } else {
-            WeaponTile weaponToReload = view.select("Which weapon would you like to reload?", weaponsReloadable, ClientApi.RELOAD_QUESTION);
+            List<String> weaponsReloadableForView = weaponsReloadable
+                    .stream()
+                    .map(WeaponTile::getName)
+                    .collect(Collectors.toList());
+            WeaponTile weaponToReload = weaponsReloadable.get(weaponsReloadable.indexOf(view.select("Which weapon would you like to reload?", weaponsReloadableForView, ClientApi.RELOAD_QUESTION)));
             reloadWeapon(weaponToReload, activePlayer, view);
         }
     }
@@ -251,11 +263,25 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 activePlayer.grabWeapon(weapon, paymentMethod);
             } catch (UnauthorizedExchangeException e){
                 //To pick up the selected weapon the player needs to discard one
-                WeaponTile weaponToDiscard = view.select("Which weapon do you want to discard?",
-                        activePlayer.getWeapons(), ClientApi.WEAPON_CHOICE_QUESTION);
+                WeaponTile weaponToDiscard = selectWeaponTile("Which weapon do you want to discard?", activePlayer.getWeapons(), view);
                 activePlayer.grabWeapon(weapon, paymentMethod, weaponToDiscard);
             }
         }
+    }
+
+    /**
+     * This method manages the weaponTile selection for a WEAPON_CHOICE_QUESTION
+     * @param string string to be sent as question to the client
+     * @param weaponTiles selectable weapon tiles
+     * @param view view that will manage the selection
+     * @return the selected weapon tile
+     */
+    private WeaponTile selectWeaponTile(String string, List<WeaponTile> weaponTiles, Interviewer view){
+        List<String> weaponNames = weaponTiles
+                .stream()
+                .map(WeaponTile::getName)
+                .collect(Collectors.toList());
+        return weaponTiles.get(weaponNames.indexOf(view.select(string, weaponNames, ClientApi.WEAPON_CHOICE_QUESTION)));
     }
 
     /**
@@ -590,16 +616,25 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 target = Optional.of(self);
                 break;
             case OTHERS:
-                Set<Player> possibleTargets = new HashSet<>(match.getPlayers());
+                List<Player> possibleTargets = new LinkedList<>(match.getPlayers());
                 if (powerup.getTargetConstraint() == Powerup.TargetConstraint.VISIBLE) {
                     possibleTargets = possibleTargets
                             .stream()
                             .filter(self::sees)
-                            .collect(Collectors.toSet());
+                            .collect(Collectors.toList());
                 }
                 if (possibleTargets.isEmpty()) {
                     target = Optional.empty();
-                } else target = view.selectOptional("Do you want to use the powerup against who?", possibleTargets, ClientApi.TARGET_QUESTION);
+                } else {
+                    List<String> targetsForView = possibleTargets
+                            .stream()
+                            .map(player -> player.getPlayerInfo().getNickname())
+                            .collect(Collectors.toList());
+                    Optional<String> choice = view.selectOptional("Do you want to use the powerup against who?", targetsForView, ClientApi.TARGET_QUESTION);
+                    if (choice.isPresent()){
+                        target = Optional.of(possibleTargets.get(targetsForView.indexOf(choice.get())));
+                    }
+                }
                 break;
             case ATTACKER:
                 throw new IllegalArgumentException("Can't select the target of the given powerup");

@@ -8,7 +8,6 @@ import java.util.List;
 
 public class KillshotTrackChanged extends NetworkEvent {
 
-
     private final List<Tuple<PlayerColor, Boolean>> killshots;
 
     public KillshotTrackChanged(List<Tuple<PlayerColor, Boolean>> killshots) {
