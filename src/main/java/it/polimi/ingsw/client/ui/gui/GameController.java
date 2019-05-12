@@ -10,6 +10,8 @@ import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Scene;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -17,6 +19,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Callback;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -102,7 +105,27 @@ public class GameController extends WindowController implements AutoCloseable {
         initPowerups();
         initWeapons();
         tileMsg.setText(self.getNickname() + ", " + tileMsg.getText());
-
+        Dialog dialog = new Dialog();
+        SelectPane sp = new SelectPane();
+        sp.setOptions(
+                new Tuple<>(
+                        new ImagePane(
+                                UrlFinder.findPowerup(
+                                        new Tuple<>("Newton", CurrencyColor.RED)
+                                )
+                        ), "Newton"
+                )
+        );
+        /*
+        dialog.setDialogPane(sp);
+        sp.setHeaderText("Ciao amici");
+        dialog.setResultConverter((Callback) o -> {
+            ButtonType button = (ButtonType) o;
+            return button.getText();
+        });
+        dialog.setTitle("Titolo");
+        dialog.showAndWait();
+        System.out.println(dialog.getResult());*/
     }
 
     private void initPlayerBoard() {

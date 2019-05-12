@@ -66,7 +66,7 @@ warning:header *.header-panel *.label {
     -fx-mid-text-color: white;
 }
 
-.dialog-pane > * {
+.warning > * {
     -fx-background-color: white, rgb(230, 119, 0), white, rgb(230, 119, 0);
     -fx-padding: 5px 12px 5px 12px;
 }

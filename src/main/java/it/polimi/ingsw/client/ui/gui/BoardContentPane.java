@@ -258,7 +258,6 @@ public class BoardContentPane extends GridPane {
         if (skullIndex < 8) {
             ImagePane toChange = (ImagePane) skullContainer.getChildren().get(skullContainer.getChildren().size() - skullIndex - 1);
             toChange.setImg(UrlFinder.findToken(color));
-
         } else {
             ImagePane token = new ImagePane(UrlFinder.findToken(color));
             skullContainer.add(token, skullIndex + 1, 1);
