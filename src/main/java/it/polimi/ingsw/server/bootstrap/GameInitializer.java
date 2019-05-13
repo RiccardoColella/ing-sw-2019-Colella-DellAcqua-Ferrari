@@ -3,7 +3,6 @@ package it.polimi.ingsw.server.bootstrap;
 import it.polimi.ingsw.server.controller.Controller;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.match.MatchFactory;
-import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.View;
 
 import java.time.Duration;

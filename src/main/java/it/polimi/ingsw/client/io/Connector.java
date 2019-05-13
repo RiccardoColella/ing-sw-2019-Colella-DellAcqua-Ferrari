@@ -1,8 +1,8 @@
 package it.polimi.ingsw.client.io;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import it.polimi.ingsw.client.io.listeners.*;
-import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.InputMessageQueue;
@@ -13,9 +13,8 @@ import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.messages.ServerApi;
 import it.polimi.ingsw.shared.messages.templates.Answer;
 import it.polimi.ingsw.shared.messages.templates.Question;
-import it.polimi.ingsw.utils.Tuple;
+import it.polimi.ingsw.shared.viewmodels.Powerup;
 
-import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -171,7 +170,7 @@ public abstract class Connector implements AutoCloseable {
         ClientApi questionType = message.getNameAsEnum(ClientApi.class);
         switch (questionType) {
             case DIRECTION_QUESTION: {
-                Question<Direction> question = Question.fromJson(message.getPayload());
+                Question<Direction> question = Question.fromJson(message.getPayload(), new TypeToken<Question<Direction>>(){}.getType());
                 questionListeners.forEach(l -> l.onDirectionQuestion(
                         question,
                         choice -> enqueueAnswer(choice, message.getFlowId())
@@ -180,7 +179,7 @@ public abstract class Connector implements AutoCloseable {
                 break;
             }
             case ATTACK_QUESTION: {
-                Question<String> question = Question.fromJson(message.getPayload());
+                Question<String> question = Question.fromJson(message.getPayload(), new TypeToken<Question<String>>(){}.getType());
                 questionListeners.forEach(l -> l.onAttackQuestion(
                         question,
                         choice -> enqueueAnswer(choice, message.getFlowId())
@@ -189,7 +188,7 @@ public abstract class Connector implements AutoCloseable {
                 break;
             }
             case BASIC_ACTION_QUESTION: {
-                Question<BasicAction> question = Question.fromJson(message.getPayload());
+                Question<BasicAction> question = Question.fromJson(message.getPayload(), new TypeToken<Question<BasicAction>>(){}.getType());
                 questionListeners.forEach(l -> l.onBasicActionQuestion(
                         question,
                         choice -> enqueueAnswer(choice, message.getFlowId())
@@ -198,7 +197,7 @@ public abstract class Connector implements AutoCloseable {
                 break;
             }
             case BLOCK_QUESTION: {
-                Question<Point> question = Question.fromJson(message.getPayload());
+                Question<Point> question = Question.fromJson(message.getPayload(), new TypeToken<Question<Point>>(){}.getType());
                 questionListeners.forEach(l -> l.onBlockQuestion(
                         question,
                         choice -> enqueueAnswer(choice, message.getFlowId())
@@ -207,7 +206,7 @@ public abstract class Connector implements AutoCloseable {
                 break;
             }
             case PAYMENT_METHOD_QUESTION: {
-                Question<String> question = Question.fromJson(message.getPayload());
+                Question<String> question = Question.fromJson(message.getPayload(), new TypeToken<Question<String>>(){}.getType());
                 questionListeners.forEach(l -> l.onPaymentMethodQuestion(
                         question,
                         choice -> enqueueAnswer(choice, message.getFlowId())
@@ -216,7 +215,7 @@ public abstract class Connector implements AutoCloseable {
                 break;
             }
             case POWERUP_QUESTION: {
-                Question<Tuple<String, CurrencyColor>> question = Question.fromJson(message.getPayload());
+                Question<Powerup> question = Question.fromJson(message.getPayload(), new TypeToken<Question<Powerup>>(){}.getType());
                 questionListeners.forEach(l -> l.onPowerupQuestion(
                         question,
                         choice -> enqueueAnswer(choice, message.getFlowId())
@@ -225,7 +224,7 @@ public abstract class Connector implements AutoCloseable {
                 break;
             }
             case WEAPON_CHOICE_QUESTION: {
-                Question<String> question = Question.fromJson(message.getPayload());
+                Question<String> question = Question.fromJson(message.getPayload(), new TypeToken<Question<String>>(){}.getType());
                 questionListeners.forEach(l -> l.onWeaponQuestion(
                         question,
                         choice -> enqueueAnswer(choice, message.getFlowId())
@@ -234,7 +233,7 @@ public abstract class Connector implements AutoCloseable {
                 break;
             }
             case RELOAD_QUESTION: {
-                Question<String> question = Question.fromJson(message.getPayload());
+                Question<String> question = Question.fromJson(message.getPayload(), new TypeToken<Question<String>>(){}.getType());
                 questionListeners.forEach(l -> l.onReloadQuestion(
                         question,
                         choice -> enqueueAnswer(choice, message.getFlowId())
@@ -243,7 +242,7 @@ public abstract class Connector implements AutoCloseable {
                 break;
             }
             case SPAWNPOINT_QUESTION: {
-                Question<Tuple<String, CurrencyColor>> question = Question.fromJson(message.getPayload());
+                Question<Powerup> question = Question.fromJson(message.getPayload(), new TypeToken<Question<Powerup>>(){}.getType());
                 questionListeners.forEach(l -> l.onSpawnpointQuestion(
                         question,
                         choice -> enqueueAnswer(choice, message.getFlowId())
@@ -252,7 +251,7 @@ public abstract class Connector implements AutoCloseable {
                 break;
             }
             case TARGET_QUESTION: {
-                Question<String> question = Question.fromJson(message.getPayload());
+                Question<String> question = Question.fromJson(message.getPayload(), new TypeToken<Question<String>>(){}.getType());
                 questionListeners.forEach(l -> l.onTargetQuestion(
                         question,
                         choice -> enqueueAnswer(choice, message.getFlowId())
@@ -284,84 +283,84 @@ public abstract class Connector implements AutoCloseable {
                 break;
             }
             case MATCH_ENDED_EVENT: {
-                MatchEnded e = MatchEnded.fromJson(message.getPayload(), this);
+                MatchEnded e = MatchEnded.fromJson(message.getPayload(), this, MatchEnded.class);
                 matchListeners.forEach(l -> l.onMatchEnded(e));
                 break;
             }
             case MATCH_MODE_CHANGED_EVENT: {
-                MatchModeChanged e = MatchModeChanged.fromJson(message.getPayload(), this);
+                MatchModeChanged e = MatchModeChanged.fromJson(message.getPayload(), this, MatchModeChanged.class);
                 matchListeners.forEach(l -> l.onMatchModeChanged(e));
                 break;
             }
             case MATCH_KILLSHOT_TRACK_CHANGED_EVENT: {
-                KillshotTrackChanged e = KillshotTrackChanged.fromJson(message.getPayload(), this);
+                KillshotTrackChanged e = KillshotTrackChanged.fromJson(message.getPayload(), this, KillshotTrackChanged.class);
                 matchListeners.forEach(l -> l.onKillshotTrackChanged(e));
                 break;
             }
 
             case PLAYER_MOVED_EVENT: {
-                PlayerMoved e = PlayerMoved.fromJson(message.getPayload(), this);
+                PlayerMoved e = PlayerMoved.fromJson(message.getPayload(), this, PlayerMoved.class);
                 boardListeners.forEach(l -> l.onPlayerMoved(e));
                 break;
             }
             case PLAYER_TELEPORTED_EVENT: {
-                PlayerMoved e = PlayerMoved.fromJson(message.getPayload(), this);
+                PlayerMoved e = PlayerMoved.fromJson(message.getPayload(), this, PlayerMoved.class);
                 boardListeners.forEach(l -> l.onPlayerTeleported(e));
                 break;
             }
 
             case PLAYER_DIED_EVENT: {
-                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this);
+                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this, PlayerEvent.class);
                 playerListeners.forEach(l -> l.onPlayerDied(e));
                 break;
             }
             case PLAYER_REBORN_EVENT: {
-                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this);
+                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this, PlayerEvent.class);
                 playerListeners.forEach(l -> l.onPlayerReborn(e));
                 break;
             }
             case PLAYER_BOARD_FLIPPED_EVENT: {
-                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this);
+                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this, PlayerEvent.class);
                 playerListeners.forEach(l -> l.onPlayerBoardFlipped(e));
                 break;
             }
             case PLAYER_WALLET_CHANGED_EVENT: {
-                PlayerWalletChanged e = PlayerWalletChanged.fromJson(message.getPayload(), this);
+                PlayerWalletChanged e = PlayerWalletChanged.fromJson(message.getPayload(), this, PlayerWalletChanged.class);
                 playerListeners.forEach(l -> l.onPlayerWalletChanged(e));
                 break;
             }
             case PLAYER_HEALTH_CHANGED_EVENT: {
-                PlayerHealthChanged e = PlayerHealthChanged.fromJson(message.getPayload(), this);
+                PlayerHealthChanged e = PlayerHealthChanged.fromJson(message.getPayload(), this, PlayerHealthChanged.class);
                 playerListeners.forEach(l -> l.onPlayerHealthChanged(e));
                 break;
             }
             case WEAPON_RELOADED_EVENT: {
-                WeaponEvent e = WeaponEvent.fromJson(message.getPayload(), this);
+                WeaponEvent e = WeaponEvent.fromJson(message.getPayload(), this, WeaponEvent.class);
                 playerListeners.forEach(l -> l.onWeaponReloaded(e));
                 break;
             }
             case WEAPON_UNLOADED_EVENT: {
-                WeaponEvent e = WeaponEvent.fromJson(message.getPayload(), this);
+                WeaponEvent e = WeaponEvent.fromJson(message.getPayload(), this, WeaponEvent.class);
                 playerListeners.forEach(l -> l.onWeaponUnloaded(e));
                 break;
             }
             case WEAPON_PICKED_EVENT: {
-                WeaponExchanged e = WeaponExchanged.fromJson(message.getPayload(), this);
+                WeaponExchanged e = WeaponExchanged.fromJson(message.getPayload(), this, WeaponExchanged.class);
                 playerListeners.forEach(l -> l.onWeaponPicked(e));
                 break;
             }
             case WEAPON_DROPPED_EVENT: {
-                WeaponExchanged e = WeaponExchanged.fromJson(message.getPayload(), this);
+                WeaponExchanged e = WeaponExchanged.fromJson(message.getPayload(), this, WeaponExchanged.class);
                 playerListeners.forEach(l -> l.onWeaponDropped(e));
                 break;
             }
             case PLAYER_DISCONNECTED_EVENT: {
-                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this);
+                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this, PlayerEvent.class);
                 playerListeners.forEach(l -> l.onPlayerDisconnected(e));
                 break;
             }
             case PLAYER_RECONNECTED_EVENT: {
-                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this);
+                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this, PlayerEvent.class);
                 playerListeners.forEach(l -> l.onPlayerReconnected(e));
                 break;
             }

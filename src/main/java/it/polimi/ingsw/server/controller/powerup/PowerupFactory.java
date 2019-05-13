@@ -2,7 +2,6 @@ package it.polimi.ingsw.server.controller.powerup;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.battlefield.Board;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
@@ -11,7 +10,6 @@ import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.messages.ClientApi;
-import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.utils.EnumValueByString;
 import it.polimi.ingsw.utils.Range;
 

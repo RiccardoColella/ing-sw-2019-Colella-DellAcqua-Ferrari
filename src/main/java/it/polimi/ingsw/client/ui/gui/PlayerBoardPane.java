@@ -1,14 +1,11 @@
 package it.polimi.ingsw.client.ui.gui;
 
-import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.GridPane;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 

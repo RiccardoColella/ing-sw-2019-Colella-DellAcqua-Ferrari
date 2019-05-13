@@ -1,6 +1,5 @@
 package it.polimi.ingsw.shared.events.networkevents;
 
-import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.utils.Tuple;
 

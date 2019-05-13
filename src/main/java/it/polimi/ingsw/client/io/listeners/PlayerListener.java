@@ -1,6 +1,9 @@
 package it.polimi.ingsw.client.io.listeners;
 
-import it.polimi.ingsw.shared.events.networkevents.*;
+import it.polimi.ingsw.shared.events.networkevents.PlayerEvent;
+import it.polimi.ingsw.shared.events.networkevents.PlayerHealthChanged;
+import it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged;
+import it.polimi.ingsw.shared.events.networkevents.WeaponExchanged;
 
 public interface PlayerListener {
     void onPlayerDied(PlayerEvent e);

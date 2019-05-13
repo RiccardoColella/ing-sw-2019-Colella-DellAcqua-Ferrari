@@ -1,6 +1,5 @@
 package it.polimi.ingsw.client.ui.gui;
 
-import com.google.gson.internal.LinkedTreeMap;
 import it.polimi.ingsw.client.io.Connector;
 import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
@@ -10,14 +9,11 @@ import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.messages.templates.Question;
 import it.polimi.ingsw.shared.viewmodels.Player;
-import it.polimi.ingsw.utils.EnumValueByString;
+import it.polimi.ingsw.shared.viewmodels.Powerup;
 import it.polimi.ingsw.utils.Tuple;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.geometry.HPos;
-import javafx.geometry.VPos;
 import javafx.scene.Scene;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -26,16 +22,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.util.Callback;
 
 import java.awt.*;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class GameController extends WindowController implements AutoCloseable, QuestionMessageReceivedListener {
@@ -186,7 +177,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     private void initPowerups() {
         for (int i = 0; i < self.getWallet().getPowerups().size(); i++) {
-            Tuple<String, CurrencyColor> powerup = self.getWallet().getPowerups().get(i);
+            Powerup powerup = self.getWallet().getPowerups().get(i);
             ImagePane powerupPane = new ImagePane(UrlFinder.findPowerup(powerup), ImagePane.CENTER);
             powerupContainer.add(powerupPane, i, 1);
             powerupPane.setOnMouseClicked(this::showFullSize);
@@ -290,7 +281,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     @Override
-    public void onPowerupQuestion(Question<Tuple<String, CurrencyColor>> question, Consumer<Tuple<String, CurrencyColor>> answerCallback) {
+    public void onPowerupQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback) {
 
     }
 
@@ -305,9 +296,9 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     @Override
-    public void onSpawnpointQuestion(Question<Tuple<String, CurrencyColor>> question, Consumer<Tuple<String, CurrencyColor>> answerCallback) {
+    public void onSpawnpointQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback) {
         Platform.runLater( () -> {
-                    Dialog<Tuple<String, CurrencyColor>> dialog = new Dialog<>();
+                    Dialog<Powerup> dialog = new Dialog<>();
                     dialog.setTitle("Spawnpoint question");
                     dialog.setContentText(question.getText());
                     SelectPane sp = new SelectPane();
@@ -315,8 +306,8 @@ public class GameController extends WindowController implements AutoCloseable, Q
                             .stream()
                             .map(o -> new Tuple<>(
                                     new ImagePane(UrlFinder.findPowerup(o)),
-                                    o.getItem2().toString().toLowerCase() + o.getItem1()
-                            ))
+                                    o.getColor().toString().toLowerCase() + " " + o.getName())
+                            )
                             .collect(Collectors.toList());
                     sp.setOptions(options);
                     sp.setSkippable(question.isSkippable());

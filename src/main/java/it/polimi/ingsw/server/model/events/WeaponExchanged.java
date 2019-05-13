@@ -4,8 +4,6 @@ import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
 
-import java.util.EventObject;
-
 public class WeaponExchanged extends WeaponEvent {
 
     private final Block block;

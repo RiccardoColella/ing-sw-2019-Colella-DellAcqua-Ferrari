@@ -3,8 +3,6 @@ package it.polimi.ingsw.server.model.events;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.shared.viewmodels.Player;
 
-import java.util.EventObject;
-
 public class ActivePlayerChanged extends MatchEvent {
     private final Player activePlayer;
 

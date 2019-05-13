@@ -2,18 +2,16 @@ package it.polimi.ingsw.client.ui.gui;
 
 import it.polimi.ingsw.client.io.Connector;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
-import it.polimi.ingsw.server.model.currency.AmmoCubeFactory;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 import it.polimi.ingsw.shared.viewmodels.Player;
+import it.polimi.ingsw.shared.viewmodels.Powerup;
 import it.polimi.ingsw.shared.viewmodels.Wallet;
-import it.polimi.ingsw.utils.Tuple;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 
-import java.net.ConnectException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,9 +66,9 @@ public class GUI extends Application {
         for (int i = 0; i < 9; i++) {
             myWallet.getAmmoCubes().add(CurrencyColor.YELLOW);
         }
-        myWallet.getPowerups().add(new Tuple<>("Tagback Grenade", CurrencyColor.RED));
-        myWallet.getPowerups().add(new Tuple<>("Newton", CurrencyColor.YELLOW));
-        myWallet.getPowerups().add(new Tuple<>("Teleporter", CurrencyColor.BLUE));
+        myWallet.getPowerups().add(new Powerup("Tagback Grenade", CurrencyColor.RED));
+        myWallet.getPowerups().add(new Powerup("Newton", CurrencyColor.YELLOW));
+        myWallet.getPowerups().add(new Powerup("Teleporter", CurrencyColor.BLUE));
         myWallet.getLoadedWeapons().add("Electroscythe");
         myWallet.getLoadedWeapons().add("Railgun");
         myWallet.getUnloadedWeapons().add("Shockwave");

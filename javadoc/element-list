@@ -33,6 +33,7 @@ it.polimi.ingsw.shared.events
 it.polimi.ingsw.shared.events.networkevents
 it.polimi.ingsw.shared.messages
 it.polimi.ingsw.shared.messages.templates
+it.polimi.ingsw.shared.messages.templates.gsonadapters
 it.polimi.ingsw.shared.rmi
 it.polimi.ingsw.shared.viewmodels
 it.polimi.ingsw.utils

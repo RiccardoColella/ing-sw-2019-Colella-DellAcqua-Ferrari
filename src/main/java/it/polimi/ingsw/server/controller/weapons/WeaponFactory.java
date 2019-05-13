@@ -1,9 +1,11 @@
 package it.polimi.ingsw.server.controller.weapons;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.battlefield.Board;
-import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.server.model.currency.AmmoCubeFactory;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
@@ -12,6 +14,7 @@ import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException
 import it.polimi.ingsw.server.model.player.DamageToken;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
+import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.utils.EnumValueByString;
 import it.polimi.ingsw.utils.Range;
@@ -22,8 +25,8 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;

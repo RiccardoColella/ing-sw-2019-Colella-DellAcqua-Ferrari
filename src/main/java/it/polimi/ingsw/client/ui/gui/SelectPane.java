@@ -3,18 +3,15 @@ package it.polimi.ingsw.client.ui.gui;
 import it.polimi.ingsw.utils.Tuple;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.HPos;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ConcurrentSkipListMap;
 
 public class SelectPane extends DialogPane {
 

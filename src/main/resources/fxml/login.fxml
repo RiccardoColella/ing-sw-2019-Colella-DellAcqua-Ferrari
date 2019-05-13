@@ -27,6 +27,7 @@
             </Label>
             <TextField fx:id="serverAddressField">
                 <properties width="100%" />
+                localhost
             </TextField>
         </FlowPane>
 

@@ -7,9 +7,7 @@ import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.stream.Collectors;
 

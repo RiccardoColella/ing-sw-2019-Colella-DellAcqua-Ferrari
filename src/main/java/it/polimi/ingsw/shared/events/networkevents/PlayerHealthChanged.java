@@ -2,7 +2,6 @@ package it.polimi.ingsw.shared.events.networkevents;
 
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.shared.viewmodels.Player;
-import it.polimi.ingsw.shared.viewmodels.Wallet;
 
 import java.util.List;
 

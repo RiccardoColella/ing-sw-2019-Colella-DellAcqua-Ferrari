@@ -1,7 +1,6 @@
 package it.polimi.ingsw.shared.events.networkevents;
 
 import it.polimi.ingsw.server.model.match.Match;
-import it.polimi.ingsw.shared.viewmodels.Player;
 
 public class MatchModeChanged extends NetworkEvent {
 

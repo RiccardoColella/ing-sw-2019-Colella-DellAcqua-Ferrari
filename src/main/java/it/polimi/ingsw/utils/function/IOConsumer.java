@@ -1,7 +1,6 @@
 package it.polimi.ingsw.utils.function;
 
 import java.io.IOException;
-import java.util.concurrent.TimeoutException;
 
 /**
  * A simple consumer that might throw an IOException during it's execution

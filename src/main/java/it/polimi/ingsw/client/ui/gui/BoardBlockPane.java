@@ -7,7 +7,6 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 
 public class BoardBlockPane extends GridPane {

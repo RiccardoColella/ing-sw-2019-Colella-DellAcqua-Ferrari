@@ -78,6 +78,22 @@ public class LoginController extends WindowController implements MatchListener, 
         super(title, "/fxml/login.fxml", "/css/login.css");
         modeChoiceMap.put("STANDARD", Match.Mode.STANDARD);
         modeChoiceMap.put("SUDDEN DEATH", Match.Mode.SUDDEN_DEATH);
+
+        // Debug
+        new Thread(() -> {
+            try {
+                Thread.sleep(5000);
+                Platform.runLater(() -> {
+                    usernameField.setText(UUID.randomUUID().toString());
+                    boardRadios.get(0).setSelected(true);
+                    socket.setSelected(true);
+                    onSend();
+                });
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.warning(e.toString());
+            }
+        }).start();
     }
 
     public LoginController() {

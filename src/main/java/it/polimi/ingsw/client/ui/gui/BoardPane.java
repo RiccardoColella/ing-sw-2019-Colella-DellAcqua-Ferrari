@@ -1,16 +1,12 @@
 package it.polimi.ingsw.client.ui.gui;
 
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
-import it.polimi.ingsw.utils.EnumValueByString;
 import javafx.beans.NamedArg;
-import javafx.beans.property.Property;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Side;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
-
-import java.io.IOException;
 
 public class BoardPane extends GridPane {
 

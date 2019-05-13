@@ -2,7 +2,7 @@ package it.polimi.ingsw.client.ui.gui;
 
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.PlayerColor;
-import it.polimi.ingsw.utils.Tuple;
+import it.polimi.ingsw.shared.viewmodels.Powerup;
 
 public final class UrlFinder {
 
@@ -22,8 +22,8 @@ public final class UrlFinder {
         return "/assets/ammo/" + color.toString() + ".png";
     }
 
-    public static String findPowerup(Tuple<String, CurrencyColor> powerup) {
-        return "/assets/powerups/" + powerup.getItem1() + " " + powerup.getItem2().toString() + ".png";
+    public static String findPowerup(Powerup powerup) {
+        return "/assets/powerups/" + powerup.getName() + " " + powerup.getColor().toString() + ".png";
     }
 
     public static String findWeapon(String name) {

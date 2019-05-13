@@ -2,8 +2,8 @@ package it.polimi.ingsw.shared.messages.templates;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
 
 /**
@@ -67,7 +67,7 @@ public class Question<T> {
         return skippable;
     }
 
-    public static <T> Question<T> fromJson(JsonElement jsonElement) {
-        return gson.fromJson(jsonElement, new TypeToken<Question<T>>(){}.getType());
+    public static <T> Question<T> fromJson(JsonElement jsonElement, Type questionClass) {
+        return gson.fromJson(jsonElement, questionClass);
     }
 }

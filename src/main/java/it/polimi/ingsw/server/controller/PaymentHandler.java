@@ -8,7 +8,7 @@ import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
 import it.polimi.ingsw.shared.messages.ClientApi;
-import it.polimi.ingsw.utils.Tuple;
+import it.polimi.ingsw.shared.viewmodels.Powerup;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -119,10 +119,10 @@ public class PaymentHandler {
                     break;
                 case PAYMENT_METHOD_POWERUPS:
                     if (powerupTiles.size() > 1) {
-                        List<Tuple<String, CurrencyColor>> powerups = powerupTiles.stream().map(p -> new Tuple<>(p.getName(), p.getColor())).collect(Collectors.toList());
-                        Tuple<String, CurrencyColor> powerup = payer.select("Which powerup would you like to discard to pay your debt?", powerups, ClientApi.POWERUP_QUESTION);
+                        List<Powerup> powerups = powerupTiles.stream().map(p -> new Powerup(p.getName(), p.getColor())).collect(Collectors.toList());
+                        Powerup powerup = payer.select("Which powerup would you like to discard to pay your debt?", powerups, ClientApi.POWERUP_QUESTION);
                         PowerupTile choice = powerupTiles.stream()
-                                .filter(p -> p.getName().equals(powerup.getItem1()) && p.getColor().equals(powerup.getItem2()))
+                                .filter(p -> p.getName().equals(powerup.getName()) && p.getColor().equals(powerup.getColor()))
                                 .findFirst()
                                 .orElseThrow(() -> new ViewDisconnectedException("Invalid response: " + powerup));
                         chosenPowerups.add(choice);

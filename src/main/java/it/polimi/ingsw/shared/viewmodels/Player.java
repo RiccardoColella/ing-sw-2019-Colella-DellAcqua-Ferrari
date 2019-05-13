@@ -89,4 +89,18 @@ public class Player {
     public void setTileFlipped(boolean tileFlipped) {
         this.tileFlipped = tileFlipped;
     }
+
+    @Override
+    public int hashCode() {
+        return nickname.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof Player)) {
+            return false;
+        } else {
+            return other.hashCode() == this.hashCode();
+        }
+    }
 }

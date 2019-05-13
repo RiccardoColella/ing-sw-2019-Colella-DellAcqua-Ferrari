@@ -19,20 +19,22 @@ import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.messages.ServerApi;
 import it.polimi.ingsw.shared.messages.templates.Answer;
 import it.polimi.ingsw.shared.messages.templates.Question;
+import it.polimi.ingsw.shared.messages.templates.gsonadapters.AnswerOf;
+import it.polimi.ingsw.shared.viewmodels.Powerup;
 import it.polimi.ingsw.shared.viewmodels.Wallet;
-import it.polimi.ingsw.utils.Tuple;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static it.polimi.ingsw.shared.messages.templates.Answer.fromJson;
 
 /**
  * This class is an abstract server-side View. It contains all the methods needed for the interaction with the controller
@@ -54,7 +56,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     /**
      * Logging utility
      */
-    private Logger logger = Logger.getLogger(this.getClass().getName());
+    protected Logger logger = Logger.getLogger(this.getClass().getName());
 
     /**
      * Boolean representing the virtual connection status
@@ -173,21 +175,24 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
      * the question and answer flow is available
      *
      * @param flowId the identifier of the question-and-answer flow
+     * @param options the options the client can choose from
      * @param <T> the type of the item in the option collection
      * @return the chosen option or null if no choice was made
      * @throws ViewDisconnectedException if the client didn't give an answer within the available answering timeout
      */
     @Nullable
-    private  <T> T awaitResponse(String flowId) {
+    private  <T> T awaitResponse(String flowId, Collection<T> options) {
 
         try {
             Message response = inputMessageQueue.dequeueAnswer(flowId, answerTimeout, answerTimeoutUnit);
-            Answer<T> answer = Answer.fromJson(response.getPayload());
-            if (!answer.isPresent()) {
-                return null;
+            Answer<T> answer = gson.fromJson(response.getPayload(), new AnswerOf<>(options.iterator().next().getClass()));
+
+            if (answer.isPresent() && !options.contains(answer.getChoice())) {
+                throw new ViewDisconnectedException("Received an invalid answer from the client");
             } else {
                 return answer.getChoice();
             }
+
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             connected = false;
@@ -217,12 +222,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
             outputMessageQueue.add(message);
 
-            T response = awaitResponse(message.getFlowId());
-            if (response == null || !options.contains(response)) {
-                throw new ViewDisconnectedException("Received an invalid answer from the client");
-            }
-
-            return response;
+            return awaitResponse(message.getFlowId(), options);
         } else {
             throw new IllegalArgumentException("No option provided");
         }
@@ -245,12 +245,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
             Message message = Message.createQuestion(messageName, new Question<>(questionText, options, true));
             outputMessageQueue.add(message);
 
-            T response = awaitResponse(message.getFlowId());
-            if (response != null && !options.contains(response)) {
-                throw new ViewDisconnectedException("Received an invalid answer from the client");
-            }
-
-            return Optional.ofNullable(response);
+            return Optional.ofNullable(awaitResponse(message.getFlowId(), options));
         } else {
             throw new IllegalArgumentException("No option provided");
         }
@@ -259,7 +254,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     private void mapWallets(Player player, it.polimi.ingsw.shared.viewmodels.Player playerVM) {
         List<CurrencyColor> ammoCubes = player.getAmmoCubes().stream().map(AmmoCube::getColor).collect(Collectors.toList());
         playerVM.getWallet().setAmmoCubes(ammoCubes);
-        List<Tuple<String, CurrencyColor>> powerups = player.getPowerups().stream().map(p -> new Tuple<>(p.getName(), p.getColor())).collect(Collectors.toList());
+        List<Powerup> powerups = player.getPowerups().stream().map(p -> new Powerup(p.getName(), p.getColor())).collect(Collectors.toList());
         playerVM.getWallet().setPowerups(powerups);
         List<String> unloadedWeapons = player.getWeapons()
                 .stream()

@@ -1,22 +1,17 @@
 package it.polimi.ingsw.client.ui;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import it.polimi.ingsw.client.io.Connector;
 import it.polimi.ingsw.client.io.RMIConnector;
 import it.polimi.ingsw.client.io.SocketConnector;
+import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
-import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
-import it.polimi.ingsw.shared.events.MessageReceived;
-import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
-import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.messages.templates.Question;
-import it.polimi.ingsw.shared.messages.ServerApi;
-import it.polimi.ingsw.utils.Tuple;
+import it.polimi.ingsw.shared.viewmodels.Powerup;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -26,10 +21,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * This class represents a command line implementation of the user interface of the game
@@ -217,7 +211,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable {
     }
 
     @Override
-    public void onPowerupQuestion(Question<Tuple<String, CurrencyColor>> question, Consumer<Tuple<String, CurrencyColor>> answerCallback) {
+    public void onPowerupQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback) {
         answerCallback.accept(
             askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
         );
@@ -241,7 +235,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable {
     }
 
     @Override
-    public void onSpawnpointQuestion(Question<Tuple<String, CurrencyColor>> question, Consumer<Tuple<String, CurrencyColor>> answerCallback) {
+    public void onSpawnpointQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback) {
         answerCallback.accept(
             askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
         );

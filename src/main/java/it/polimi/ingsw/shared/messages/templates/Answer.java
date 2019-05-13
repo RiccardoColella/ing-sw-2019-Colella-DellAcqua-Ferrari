@@ -1,11 +1,8 @@
 package it.polimi.ingsw.shared.messages.templates;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.reflect.TypeToken;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 /**
  * This class represents a generic answer intended as a result of the previously asked question
@@ -42,9 +39,5 @@ public class Answer<T> {
     @Nullable
     public T getChoice() {
         return choice;
-    }
-
-    public static <T> Answer<T> fromJson(JsonElement jsonElement) {
-        return gson.fromJson(jsonElement, new TypeToken<Answer<T>>(){}.getType());
     }
 }

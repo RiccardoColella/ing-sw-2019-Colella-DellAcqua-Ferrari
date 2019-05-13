@@ -1,7 +1,6 @@
 package it.polimi.ingsw.server.controller.weapons;
 
 import it.polimi.ingsw.server.model.player.Player;
-import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.shared.messages.ClientApi;
 
 import java.util.Collections;

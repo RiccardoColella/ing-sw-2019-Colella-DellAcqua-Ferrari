@@ -2,8 +2,6 @@ package it.polimi.ingsw.server.model.events;
 
 import it.polimi.ingsw.server.model.match.Match;
 
-import java.util.EventObject;
-
 public class MatchModeChanged extends MatchEvent {
 
     private final Match.Mode mode;
