@@ -14,6 +14,7 @@ import javafx.scene.layout.GridPane;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 public class SelectPane extends DialogPane {
 
@@ -47,6 +48,12 @@ public class SelectPane extends DialogPane {
             options.get(i).getItem1().setMinSize(200, 250);
             container.add(options.get(i).getItem1(), i, 0);
             getButtonTypes().add(new ButtonType(options.get(i).getItem2(), ButtonBar.ButtonData.LEFT));
+        }
+    }
+
+    public void setSkippable(boolean isSkippable) {
+        if (isSkippable) {
+            getButtonTypes().add(new ButtonType("Skip", ButtonBar.ButtonData.RIGHT));
         }
     }
 

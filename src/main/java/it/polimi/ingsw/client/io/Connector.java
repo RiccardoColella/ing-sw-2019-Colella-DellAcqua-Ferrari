@@ -83,6 +83,9 @@ public abstract class Connector implements AutoCloseable {
     protected void initialize(ClientInitializationInfo clientInitializationInfo) {
         outputMessageQueue.add(Message.createEvent(ServerApi.VIEW_INIT_EVENT, clientInitializationInfo));
         threadPool.execute(() -> receiveAsync(Message.Type.EVENT));
+    }
+
+    public void startListeningToQuestions() {
         threadPool.execute(() -> receiveAsync(Message.Type.QUESTION));
     }
 
@@ -92,14 +95,13 @@ public abstract class Connector implements AutoCloseable {
      * @param type the type of message (question or event) to wait
      */
     private void receiveAsync(Message.Type type) {
-
         try {
             switch (type) {
                 case EVENT:
                     try {
                         notifyEventMessageReceivedListeners(
-                            inputMessageQueue
-                                    .dequeueEvent(DEQUEUE_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS)
+                                inputMessageQueue
+                                        .dequeueEvent(DEQUEUE_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS)
                         );
                     } catch (TimeoutException ignored) {
                         // No message received within the timeout
@@ -126,6 +128,7 @@ public abstract class Connector implements AutoCloseable {
             Thread.currentThread().interrupt();
             logger.warning("Thread interrupted " + ex);
         }
+
     }
 
     /**
@@ -166,13 +169,12 @@ public abstract class Connector implements AutoCloseable {
      */
     private void notifyQuestionMessageReceivedListeners(Message message) {
         ClientApi questionType = message.getNameAsEnum(ClientApi.class);
-
         switch (questionType) {
             case DIRECTION_QUESTION: {
                 Question<Direction> question = Question.fromJson(message.getPayload());
                 questionListeners.forEach(l -> l.onDirectionQuestion(
-                                question,
-                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        question,
+                        choice -> enqueueAnswer(choice, message.getFlowId())
                         )
                 );
                 break;
@@ -180,8 +182,8 @@ public abstract class Connector implements AutoCloseable {
             case ATTACK_QUESTION: {
                 Question<String> question = Question.fromJson(message.getPayload());
                 questionListeners.forEach(l -> l.onAttackQuestion(
-                            question,
-                            choice -> enqueueAnswer(choice, message.getFlowId())
+                        question,
+                        choice -> enqueueAnswer(choice, message.getFlowId())
                         )
                 );
                 break;
@@ -189,8 +191,8 @@ public abstract class Connector implements AutoCloseable {
             case BASIC_ACTION_QUESTION: {
                 Question<BasicAction> question = Question.fromJson(message.getPayload());
                 questionListeners.forEach(l -> l.onBasicActionQuestion(
-                                question,
-                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        question,
+                        choice -> enqueueAnswer(choice, message.getFlowId())
                         )
                 );
                 break;
@@ -198,8 +200,8 @@ public abstract class Connector implements AutoCloseable {
             case BLOCK_QUESTION: {
                 Question<Point> question = Question.fromJson(message.getPayload());
                 questionListeners.forEach(l -> l.onBlockQuestion(
-                                question,
-                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        question,
+                        choice -> enqueueAnswer(choice, message.getFlowId())
                         )
                 );
                 break;
@@ -207,8 +209,8 @@ public abstract class Connector implements AutoCloseable {
             case PAYMENT_METHOD_QUESTION: {
                 Question<String> question = Question.fromJson(message.getPayload());
                 questionListeners.forEach(l -> l.onPaymentMethodQuestion(
-                                question,
-                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        question,
+                        choice -> enqueueAnswer(choice, message.getFlowId())
                         )
                 );
                 break;
@@ -216,8 +218,8 @@ public abstract class Connector implements AutoCloseable {
             case POWERUP_QUESTION: {
                 Question<Tuple<String, CurrencyColor>> question = Question.fromJson(message.getPayload());
                 questionListeners.forEach(l -> l.onPowerupQuestion(
-                                question,
-                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        question,
+                        choice -> enqueueAnswer(choice, message.getFlowId())
                         )
                 );
                 break;
@@ -225,8 +227,8 @@ public abstract class Connector implements AutoCloseable {
             case WEAPON_CHOICE_QUESTION: {
                 Question<String> question = Question.fromJson(message.getPayload());
                 questionListeners.forEach(l -> l.onWeaponQuestion(
-                                question,
-                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        question,
+                        choice -> enqueueAnswer(choice, message.getFlowId())
                         )
                 );
                 break;
@@ -234,8 +236,8 @@ public abstract class Connector implements AutoCloseable {
             case RELOAD_QUESTION: {
                 Question<String> question = Question.fromJson(message.getPayload());
                 questionListeners.forEach(l -> l.onReloadQuestion(
-                                question,
-                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        question,
+                        choice -> enqueueAnswer(choice, message.getFlowId())
                         )
                 );
                 break;
@@ -243,8 +245,8 @@ public abstract class Connector implements AutoCloseable {
             case SPAWNPOINT_QUESTION: {
                 Question<Tuple<String, CurrencyColor>> question = Question.fromJson(message.getPayload());
                 questionListeners.forEach(l -> l.onSpawnpointQuestion(
-                                question,
-                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        question,
+                        choice -> enqueueAnswer(choice, message.getFlowId())
                         )
                 );
                 break;
@@ -252,13 +254,14 @@ public abstract class Connector implements AutoCloseable {
             case TARGET_QUESTION: {
                 Question<String> question = Question.fromJson(message.getPayload());
                 questionListeners.forEach(l -> l.onTargetQuestion(
-                                question,
-                                choice -> enqueueAnswer(choice, message.getFlowId())
+                        question,
+                        choice -> enqueueAnswer(choice, message.getFlowId())
                         )
                 );
                 break;
             }
         }
+
     }
 
     /**
@@ -269,7 +272,6 @@ public abstract class Connector implements AutoCloseable {
     private void notifyEventMessageReceivedListeners(Message message) {
 
         ClientApi eventType = message.getNameAsEnum(ClientApi.class);
-
         switch (eventType) {
             case DUPLICATE_NICKNAME_EVENT: {
                 duplicatedNicknameListeners.forEach(DuplicatedNicknameListener::onDuplicatedNickname);
@@ -277,7 +279,7 @@ public abstract class Connector implements AutoCloseable {
             }
 
             case MATCH_STARTED_EVENT: {
-                MatchStarted e = MatchStarted.fromJson(message.getPayload(), this);
+                MatchStarted e = MatchStarted.fromJson(message.getPayload(), this, MatchStarted.class);
                 matchListeners.forEach(l -> l.onMatchStarted(e));
                 break;
             }
@@ -368,6 +370,7 @@ public abstract class Connector implements AutoCloseable {
                 throw new UnsupportedOperationException("Event \"" + eventType + "\" not supported");
             }
         }
+
     }
 
     public void addMatchListener(MatchListener l) {

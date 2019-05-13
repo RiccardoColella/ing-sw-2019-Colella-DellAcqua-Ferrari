@@ -22,6 +22,14 @@ public abstract class NetworkEvent extends EventObject {
         return event;
     }
 
+    public static <T extends NetworkEvent> T fromJson(JsonElement jsonElement, Object eventSource, Class<T> eventClass) {
+
+        T event = gson.fromJson(jsonElement, eventClass);
+        event.setSource(eventSource);
+
+        return event;
+    }
+
     protected void setSource(Object source) {
         this.source = source;
     }

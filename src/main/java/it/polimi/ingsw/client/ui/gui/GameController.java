@@ -1,11 +1,18 @@
 package it.polimi.ingsw.client.ui.gui;
 
+import com.google.gson.internal.LinkedTreeMap;
 import it.polimi.ingsw.client.io.Connector;
+import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.server.model.player.PlayerColor;
+import it.polimi.ingsw.shared.Direction;
+import it.polimi.ingsw.shared.messages.templates.Question;
 import it.polimi.ingsw.shared.viewmodels.Player;
+import it.polimi.ingsw.utils.EnumValueByString;
 import it.polimi.ingsw.utils.Tuple;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -21,10 +28,17 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Callback;
 
+import java.awt.*;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-public class GameController extends WindowController implements AutoCloseable {
+public class GameController extends WindowController implements AutoCloseable, QuestionMessageReceivedListener {
 
     private Logger logger = Logger.getLogger(this.getClass().getName());
 
@@ -72,8 +86,6 @@ public class GameController extends WindowController implements AutoCloseable {
         cc.setPercentWidth(100);
         RowConstraints rc = new RowConstraints();
         rc.setPercentHeight(100);
-        /*board.getColumnConstraints().add(cc);
-        board.getRowConstraints().add(rc);*/
         boardContent.setMinWidth(500);
         boardContent.setMaxWidth(500);
         boardContent.setMinHeight(400);
@@ -105,27 +117,7 @@ public class GameController extends WindowController implements AutoCloseable {
         initPowerups();
         initWeapons();
         tileMsg.setText(self.getNickname() + ", " + tileMsg.getText());
-        Dialog dialog = new Dialog();
-        SelectPane sp = new SelectPane();
-        sp.setOptions(
-                new Tuple<>(
-                        new ImagePane(
-                                UrlFinder.findPowerup(
-                                        new Tuple<>("Newton", CurrencyColor.RED)
-                                )
-                        ), "Newton"
-                )
-        );
-        /*
-        dialog.setDialogPane(sp);
-        sp.setHeaderText("Ciao amici");
-        dialog.setResultConverter((Callback) o -> {
-            ButtonType button = (ButtonType) o;
-            return button.getText();
-        });
-        dialog.setTitle("Titolo");
-        dialog.showAndWait();
-        System.out.println(dialog.getResult());*/
+
     }
 
     private void initPlayerBoard() {
@@ -270,5 +262,75 @@ public class GameController extends WindowController implements AutoCloseable {
         } catch (Exception ex) {
             logger.warning("Could not close the connector " + ex);
         }
+    }
+
+    @Override
+    public void onDirectionQuestion(Question<Direction> question, Consumer<Direction> answerCallback) {
+
+    }
+
+    @Override
+    public void onAttackQuestion(Question<String> question, Consumer<String> answerCallback) {
+
+    }
+
+    @Override
+    public void onBasicActionQuestion(Question<BasicAction> question, Consumer<BasicAction> answerCallback) {
+
+    }
+
+    @Override
+    public void onBlockQuestion(Question<Point> question, Consumer<Point> answerCallback) {
+
+    }
+
+    @Override
+    public void onPaymentMethodQuestion(Question<String> question, Consumer<String> answerCallback) {
+
+    }
+
+    @Override
+    public void onPowerupQuestion(Question<Tuple<String, CurrencyColor>> question, Consumer<Tuple<String, CurrencyColor>> answerCallback) {
+
+    }
+
+    @Override
+    public void onWeaponQuestion(Question<String> question, Consumer<String> answerCallback) {
+
+    }
+
+    @Override
+    public void onReloadQuestion(Question<String> question, Consumer<String> answerCallback) {
+
+    }
+
+    @Override
+    public void onSpawnpointQuestion(Question<Tuple<String, CurrencyColor>> question, Consumer<Tuple<String, CurrencyColor>> answerCallback) {
+        Platform.runLater( () -> {
+                    Dialog<Tuple<String, CurrencyColor>> dialog = new Dialog<>();
+                    dialog.setTitle("Spawnpoint question");
+                    dialog.setContentText(question.getText());
+                    SelectPane sp = new SelectPane();
+                    List<Tuple<ImagePane, String>> options = question.getAvailableOptions()
+                            .stream()
+                            .map(o -> new Tuple<>(
+                                    new ImagePane(UrlFinder.findPowerup(o)),
+                                    o.getItem2().toString().toLowerCase() + o.getItem1()
+                            ))
+                            .collect(Collectors.toList());
+                    sp.setOptions(options);
+                    sp.setSkippable(question.isSkippable());
+                    dialog.setDialogPane(sp);
+                    dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippablePowerup() : CallbackFactory.unskippablePowerup());
+                    dialog.showAndWait();
+                    answerCallback.accept(dialog.getResult());
+                }
+        );
+
+    }
+
+    @Override
+    public void onTargetQuestion(Question<String> question, Consumer<String> answerCallback) {
+
     }
 }
