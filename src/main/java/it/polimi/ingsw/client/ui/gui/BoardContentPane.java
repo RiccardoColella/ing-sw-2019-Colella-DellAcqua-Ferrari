@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -51,13 +52,13 @@ public class BoardContentPane extends GridPane {
     @FXML
     private GridPane playerContainer;
 
-    private List<GridPane> rightContainers;
-    private List<GridPane> leftContainers;
-    private List<GridPane> topContainers;
+    private GridPane[] rightContainers;
+    private GridPane[] leftContainers;
+    private GridPane[] topContainers;
 
-    private List<String> weaponLeft;
-    private List<String> weaponTop;
-    private List<String> weaponRight;
+    private String[] weaponLeft;
+    private String[] weaponTop;
+    private String[] weaponRight;
 
     private int skullIndex;
 
@@ -73,21 +74,21 @@ public class BoardContentPane extends GridPane {
             throw new IllegalStateException("Unable to load Board Content" + ex);
         }
         container.getStylesheets().add(getClass().getResource("/css/boardContent.css").toExternalForm());
-        this.weaponLeft = new LinkedList<>();
-        this.weaponRight = new LinkedList<>();
-        this.weaponTop = new LinkedList<>();
-        rightContainers = new ArrayList<>();
-        leftContainers = new ArrayList<>();
-        topContainers = new ArrayList<>();
-        rightContainers.add(weaponRightContainer0);
-        rightContainers.add(weaponRightContainer1);
-        rightContainers.add(weaponRightContainer2);
-        leftContainers.add(weaponLeftContainer0);
-        leftContainers.add(weaponLeftContainer1);
-        leftContainers.add(weaponLeftContainer2);
-        topContainers.add(weaponTopContainer0);
-        topContainers.add(weaponTopContainer1);
-        topContainers.add(weaponTopContainer2);
+        this.weaponLeft = new String[3];
+        this.weaponRight = new String[3];
+        this.weaponTop = new String[3];
+        rightContainers = new GridPane[3];
+        leftContainers = new GridPane[3];
+        topContainers = new GridPane[3];
+        rightContainers[0] = weaponRightContainer0;
+        rightContainers[1] = weaponRightContainer1;
+        rightContainers[2] = weaponRightContainer2;
+        leftContainers[0] = weaponLeftContainer0;
+        leftContainers[1] = weaponLeftContainer1;
+        leftContainers[2] = weaponLeftContainer2;
+        topContainers[0] = weaponTopContainer0;
+        topContainers[1] = weaponTopContainer1;
+        topContainers[2] = weaponTopContainer2;
         container.setOnMouseMoved(mouseEvent -> mouseEventHandler(mouseEvent, this::mouseHoverHandler, node -> !node.getStyleClass().contains(HOVERED)));
         container.setOnMouseClicked(mouseEvent -> mouseEventHandler(mouseEvent, this::mouseClickHandler, node -> true));
         skullIndex = 8;
@@ -196,38 +197,65 @@ public class BoardContentPane extends GridPane {
     }
 
     private void clearHovers() {
-        leftContainers.forEach(c -> c.getStyleClass().remove(HOVERED));
-        rightContainers.forEach(c -> c.getStyleClass().remove(HOVERED));
-        topContainers.forEach(c -> c.getStyleClass().remove(HOVERED));
+        Arrays.stream(leftContainers).forEach(c -> c.getStyleClass().remove(HOVERED));
+        Arrays.stream(rightContainers).forEach(c -> c.getStyleClass().remove(HOVERED));
+        Arrays.stream(topContainers).forEach(c -> c.getStyleClass().remove(HOVERED));
     }
 
     public void addWeaponTop(String weaponName, int index) {
         if (index < 3) {
             removePreviousElementIfPresent(topContainers, weaponTop, index, weaponName);
-            addWeapon(weaponName, 0, 0, 1, topContainers.get(index));
+            addWeapon(weaponName, 0, 0, 1, topContainers[index]);
         }
     }
 
     public void addWeaponRight(String weaponName, int index) {
         if (index < 3) {
             removePreviousElementIfPresent(rightContainers, weaponRight, index, weaponName);
-            addWeapon(weaponName, 90, 1, 1, rightContainers.get(index));
+            addWeapon(weaponName, 90, 1, 1, rightContainers[index]);
         }
     }
 
     public void addWeaponLeft(String weaponName, int index) {
         if (index < 3) {
             removePreviousElementIfPresent(leftContainers, weaponLeft, index, weaponName);
-            addWeapon(weaponName, 270, 1, 0, leftContainers.get(index));
+            addWeapon(weaponName, 270, 1, 0, leftContainers[index]);
         }
     }
 
-    private void removePreviousElementIfPresent(List<GridPane> containerGroup, List<String> previousContentNames, int index, String newName) {
-        if (!containerGroup.get(index).getChildren().isEmpty()) {
-            previousContentNames.remove(index);
-            containerGroup.get(index).getChildren().clear();
+    public void addWeaponLeft(String weaponName) {
+        for (int i = 0; i < weaponLeft.length; i++) {
+            if (weaponLeft[i] == null) {
+                addWeaponLeft(weaponName, i);
+                break;
+            }
         }
-        previousContentNames.add(index, newName);
+    }
+
+    public void addWeaponRight(String weaponName) {
+        for (int i = 0; i < weaponRight.length; i++) {
+            if (weaponRight[i] == null) {
+                addWeaponRight(weaponName, i);
+                break;
+            }
+        }
+    }
+
+    public void addWeaponTop(String weaponName) {
+        for (int i = 0; i < weaponTop.length; i++) {
+            if (weaponTop[i] == null) {
+                addWeaponTop(weaponName, i);
+                break;
+            }
+        }
+    }
+
+    private void removePreviousElementIfPresent(GridPane[] containerGroup, String[] previousContentNames, int index, String newName) {
+        if (!containerGroup[index].getChildren().isEmpty()) {
+            previousContentNames[index] = null;
+            containerGroup[index].getChildren().clear();
+        }
+        previousContentNames[index] = newName;
     }
     private void addWeapon(String weaponName, double rotation, int row, int col, GridPane container) {
         ImagePane weaponImg = new ImagePane(UrlFinder.findWeapon(weaponName));

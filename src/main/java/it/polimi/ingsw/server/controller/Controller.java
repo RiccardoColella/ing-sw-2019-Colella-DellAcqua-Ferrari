@@ -189,7 +189,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
             WeaponTile weapon = selectWeaponTile("Which weapon would you like to grab?", affordableWeapons, view);
             //pick up
             logger.info("picking up weapon " + weapon.getName() + "...");
-            pickUpWeapon(weapon, activePlayer, view);
+            pickUpWeapon(weapon, activePlayer, view, block);
         } else return false;
         return true;
     }
@@ -263,12 +263,13 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
      * @param activePlayer player who wants to pick up the weapon
      * @param view the interface that manage how to pay the pick-up cost
      */
-    private void pickUpWeapon(WeaponTile weapon, Player activePlayer, Interviewer view){
+    private void pickUpWeapon(WeaponTile weapon, Player activePlayer, Interviewer view, SpawnpointBlock block){
         List<AmmoCube> acquisitionCost = weapon.getAcquisitionCost();
         if (PaymentHandler.canAfford(acquisitionCost, activePlayer)){
             List<Coin> paymentMethod = PaymentHandler.collectCoins(acquisitionCost, activePlayer, view);
             try {
                 activePlayer.grabWeapon(weapon, paymentMethod);
+                block.grabWeapon(weapon);
                 Optional<WeaponTile> newWeapon = match.getWeaponDeck().pick();
                 newWeapon.ifPresent(weaponTile -> activePlayer.getBlock().drop(weaponTile));
                 // TODO: notify new weapon

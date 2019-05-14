@@ -8,12 +8,36 @@ import it.polimi.ingsw.utils.EnumValueByString;
 import javafx.scene.control.ButtonType;
 import javafx.util.Callback;
 
+import java.awt.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class CallbackFactory {
 
     private CallbackFactory() {}
+
+    public static Callback<ButtonType, Point> skippablePoint() {
+        return button -> {
+            if (!button.getText().equals("Skip")) {
+                Matcher m = Pattern.compile("(\\d+)\\s(\\d+)").matcher(button.getText());
+                if (!m.find()) {
+                    throw new IllegalStateException("Invalid spawnpoint response");
+                }
+                return new Point(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+            }
+            return null;
+        };
+    }
+
+    public static Callback<ButtonType, Point> unskippablePoint() {
+        return button -> {
+            Matcher m = Pattern.compile("(\\d+)\\s(\\d+)").matcher(button.getText());
+            if (!m.find()) {
+                throw new IllegalStateException("Invalid spawnpoint response");
+            }
+            return new Point(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+        };
+    }
 
     public static Callback<ButtonType, Powerup> unskippablePowerup() {
         return button -> {
@@ -38,7 +62,7 @@ public final class CallbackFactory {
         };
     }
 
-    private static Callback<ButtonType, String> skippableString() {
+    public static Callback<ButtonType, String> skippableString() {
         return button -> {
             if (!button.getText().equals("Skip")) {
                 return button.getText();
@@ -47,16 +71,8 @@ public final class CallbackFactory {
         };
     }
 
-    private static Callback<ButtonType, String> unskippableString() {
+    public static Callback<ButtonType, String> unskippableString() {
         return ButtonType::getText;
-    }
-
-    public static Callback<ButtonType, String> skippablePaymentMethod() {
-        return skippableString();
-    }
-
-    public static Callback<ButtonType, String> unskippablePaymentMethod() {
-        return unskippableString();
     }
 
     public static Callback<ButtonType, String> skippableWeapon() {

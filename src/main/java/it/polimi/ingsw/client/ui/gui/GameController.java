@@ -254,6 +254,67 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
+    private void stringSelectionQuestion(Question<String> question, Consumer<String> answerCallback, String title) {
+        Platform.runLater(() -> {
+            Dialog<String> dialog = new Dialog<>();
+            dialog.setTitle(title);
+            dialog.setHeaderText(question.getText());
+            SelectPane sp = new SelectPane();
+            sp.setTextOnlyOptions(new LinkedList<>(question.getAvailableOptions()));
+            sp.setSkippable(question.isSkippable());
+            dialog.setDialogPane(sp);
+            dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippableString() : CallbackFactory.unskippableString());
+            dialog.showAndWait();
+            answerCallback.accept(dialog.getResult());
+        });
+    }
+
+    private void weaponSelectionQuestion(Question<String> question, Consumer<String> answerCallback, String title) {
+        Platform.runLater( () -> {
+                    Dialog<String> dialog = new Dialog<>();
+                    dialog.setTitle(title);
+                    dialog.setHeaderText(question.getText());
+                    SelectPane sp = new SelectPane();
+                    List<Tuple<ImagePane, String>> options = question.getAvailableOptions()
+                            .stream()
+                            .map(o -> new Tuple<>(
+                                    new ImagePane(UrlFinder.findWeapon(o)),
+                                    o)
+                            )
+                            .collect(Collectors.toList());
+                    sp.setOptions(options);
+                    sp.setSkippable(question.isSkippable());
+                    dialog.setDialogPane(sp);
+                    dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippableWeapon() : CallbackFactory.unskippableWeapon());
+                    dialog.showAndWait();
+                    answerCallback.accept(dialog.getResult());
+                }
+        );
+    }
+
+    private void powerupSelectionQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback, String title) {
+        Platform.runLater( () -> {
+                    Dialog<Powerup> dialog = new Dialog<>();
+                    dialog.setTitle(title);
+                    dialog.setHeaderText(question.getText());
+                    SelectPane sp = new SelectPane();
+                    List<Tuple<ImagePane, String>> options = question.getAvailableOptions()
+                            .stream()
+                            .map(o -> new Tuple<>(
+                                    new ImagePane(UrlFinder.findPowerup(o)),
+                                    o.getColor().toString().toLowerCase() + " " + o.getName())
+                            )
+                            .collect(Collectors.toList());
+                    sp.setOptions(options);
+                    sp.setSkippable(question.isSkippable());
+                    dialog.setDialogPane(sp);
+                    dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippablePowerup() : CallbackFactory.unskippablePowerup());
+                    dialog.showAndWait();
+                    answerCallback.accept(dialog.getResult());
+                }
+        );
+    }
+
     @Override
     public void onDirectionQuestion(Question<Direction> question, Consumer<Direction> answerCallback) {
         Platform.runLater(() -> {
@@ -272,7 +333,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onAttackQuestion(Question<String> question, Consumer<String> answerCallback) {
-
+        stringSelectionQuestion(question, answerCallback, "Attack question");
     }
 
     @Override
@@ -293,87 +354,48 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onBlockQuestion(Question<Point> question, Consumer<Point> answerCallback) {
-
-    }
-
-    @Override
-    public void onPaymentMethodQuestion(Question<String> question, Consumer<String> answerCallback) {
         Platform.runLater(() -> {
-            Dialog<String> dialog = new Dialog<>();
-            dialog.setTitle("Payment method question");
+            Dialog<Point> dialog = new Dialog<>();
+            dialog.setTitle("Block question");
             dialog.setHeaderText(question.getText());
             SelectPane sp = new SelectPane();
-            sp.setTextOnlyOptions(new LinkedList<>(question.getAvailableOptions()));
+            sp.setTextOnlyOptions(question.getAvailableOptions().stream().map(point -> point.x + " " + point.y).collect(Collectors.toList()));
             sp.setSkippable(question.isSkippable());
             dialog.setDialogPane(sp);
-            dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippablePaymentMethod() : CallbackFactory.unskippablePaymentMethod());
+            dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippablePoint() : CallbackFactory.unskippablePoint());
             dialog.showAndWait();
             answerCallback.accept(dialog.getResult());
         });
     }
 
     @Override
-    public void onPowerupQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback) {
+    public void onPaymentMethodQuestion(Question<String> question, Consumer<String> answerCallback) {
+        stringSelectionQuestion(question, answerCallback, "Payment method question");
+    }
 
+    @Override
+    public void onPowerupQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback) {
+        powerupSelectionQuestion(question, answerCallback, "Powerup usage question");
     }
 
     @Override
     public void onWeaponQuestion(Question<String> question, Consumer<String> answerCallback) {
-        Platform.runLater( () -> {
-                    Dialog<String> dialog = new Dialog<>();
-                    dialog.setTitle("Spawnpoint question");
-                    dialog.setHeaderText(question.getText());
-                    SelectPane sp = new SelectPane();
-                    List<Tuple<ImagePane, String>> options = question.getAvailableOptions()
-                            .stream()
-                            .map(o -> new Tuple<>(
-                                    new ImagePane(UrlFinder.findWeapon(o)),
-                                    o)
-                            )
-                            .collect(Collectors.toList());
-                    sp.setOptions(options);
-                    sp.setSkippable(question.isSkippable());
-                    dialog.setDialogPane(sp);
-                    dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippableWeapon() : CallbackFactory.unskippableWeapon());
-                    dialog.showAndWait();
-                    answerCallback.accept(dialog.getResult());
-                }
-        );
+        weaponSelectionQuestion(question, answerCallback, "Weapon selection question");
     }
 
     @Override
     public void onReloadQuestion(Question<String> question, Consumer<String> answerCallback) {
-
+        weaponSelectionQuestion(question, answerCallback, "Weapon reload question");
     }
 
     @Override
     public void onSpawnpointQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback) {
-        Platform.runLater( () -> {
-                    Dialog<Powerup> dialog = new Dialog<>();
-                    dialog.setTitle("Spawnpoint question");
-                    dialog.setHeaderText(question.getText());
-                    SelectPane sp = new SelectPane();
-                    List<Tuple<ImagePane, String>> options = question.getAvailableOptions()
-                            .stream()
-                            .map(o -> new Tuple<>(
-                                    new ImagePane(UrlFinder.findPowerup(o)),
-                                    o.getColor().toString().toLowerCase() + " " + o.getName())
-                            )
-                            .collect(Collectors.toList());
-                    sp.setOptions(options);
-                    sp.setSkippable(question.isSkippable());
-                    dialog.setDialogPane(sp);
-                    dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippablePowerup() : CallbackFactory.unskippablePowerup());
-                    dialog.showAndWait();
-                    answerCallback.accept(dialog.getResult());
-                }
-        );
-
+        powerupSelectionQuestion(question, answerCallback, "Spawnpoint question");
     }
 
     @Override
     public void onTargetQuestion(Question<String> question, Consumer<String> answerCallback) {
-
+        stringSelectionQuestion(question, answerCallback, "Target question");
     }
 
     @Override
@@ -414,12 +436,21 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onWeaponReloaded(WeaponEvent e) {
+        if (e.getPlayer().getNickname().equals(self.getNickname())) {
+            self = e.getPlayer();
+            initWeapons();
+        }
+        sendNotification(e.getPlayer().getNickname() + " reloaded their " + e.getWeaponName());
 
     }
 
     @Override
     public void onWeaponUnloaded(WeaponEvent e) {
-
+        if (e.getPlayer().getNickname().equals(self.getNickname())) {
+            self = e.getPlayer();
+            initWeapons();
+        }
+        sendNotification(e.getPlayer().getNickname() + " shot with " + e.getWeaponName() + ", which is now unloaded");
     }
 
     @Override
@@ -441,7 +472,19 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onWeaponDropped(WeaponExchanged e) {
-
+        Platform.runLater(() -> {
+            if (e.getColumn() == 0) {
+                boardContent.addWeaponLeft(e.getWeaponName());
+            } else if (e.getRow() == 0) {
+                boardContent.addWeaponTop(e.getWeaponName());
+            } else {
+                boardContent.addWeaponRight(e.getWeaponName());
+            }
+            if (e.getPlayer().getNickname().equals(self.getNickname())) {
+                self = e.getPlayer();
+                initWeapons();
+            }
+        });
     }
 
     @Override
