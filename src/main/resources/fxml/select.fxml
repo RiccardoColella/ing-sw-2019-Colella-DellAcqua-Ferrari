@@ -9,9 +9,6 @@
 <fx:root type="it.polimi.ingsw.client.ui.gui.SelectPane" xmlns:fx="http://javafx.com/fxml" fx:controller="it.polimi.ingsw.client.ui.gui.SelectPane">
     <content>
         <GridPane fx:id="container">
-            <rowConstraints>
-                <RowConstraints percentHeight="100" />
-            </rowConstraints>
         </GridPane>
     </content>
     <buttonTypes>

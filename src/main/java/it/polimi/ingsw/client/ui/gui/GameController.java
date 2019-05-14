@@ -18,6 +18,7 @@ import it.polimi.ingsw.utils.Tuple;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -28,6 +29,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.awt.*;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -97,7 +100,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
         this.opponents = e.getOpponents();
         this.self = e.getSelf();
-        initOpponentsBoards();
+        initOpponentsBoards();boardContent.setMaxHeight(400);
         initPlayerBoard();
         initAmmo();
         initPowerups();
@@ -180,6 +183,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     private void initWeapons() {
+        weaponContainer.getChildren().remove(2, weaponContainer.getChildren().size());
         for (int i = 0; i < self.getWallet().getLoadedWeapons().size(); i++) {
             String weaponName = self.getWallet().getLoadedWeapons().get(i);
             ImagePane weaponPane = new ImagePane(UrlFinder.findWeapon(weaponName), ImagePane.CENTER);
@@ -252,7 +256,18 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onDirectionQuestion(Question<Direction> question, Consumer<Direction> answerCallback) {
-
+        Platform.runLater(() -> {
+            Dialog<Direction> dialog = new Dialog<>();
+            dialog.setTitle("Direction question");
+            dialog.setHeaderText(question.getText());
+            SelectPane sp = new SelectPane();
+            sp.setTextOnlyOptions(question.getAvailableOptions().stream().map(e -> e.toString().toLowerCase()).collect(Collectors.toList()));
+            sp.setSkippable(question.isSkippable());
+            dialog.setDialogPane(sp);
+            dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippableDirection() : CallbackFactory.unskippableDirection());
+            dialog.showAndWait();
+            answerCallback.accept(dialog.getResult());
+        });
     }
 
     @Override
@@ -262,7 +277,18 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onBasicActionQuestion(Question<BasicAction> question, Consumer<BasicAction> answerCallback) {
-
+        Platform.runLater(() -> {
+            Dialog<BasicAction> dialog = new Dialog<>();
+            dialog.setTitle("Basic action question");
+            dialog.setHeaderText(question.getText());
+            SelectPane sp = new SelectPane();
+            sp.setTextOnlyOptions(question.getAvailableOptions().stream().map(e -> e.toString().toLowerCase()).collect(Collectors.toList()));
+            sp.setSkippable(question.isSkippable());
+            dialog.setDialogPane(sp);
+            dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippableBasicAction() : CallbackFactory.unskippableBasicAction());
+            dialog.showAndWait();
+            answerCallback.accept(dialog.getResult());
+        });
     }
 
     @Override
@@ -272,7 +298,18 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onPaymentMethodQuestion(Question<String> question, Consumer<String> answerCallback) {
-
+        Platform.runLater(() -> {
+            Dialog<String> dialog = new Dialog<>();
+            dialog.setTitle("Payment method question");
+            dialog.setHeaderText(question.getText());
+            SelectPane sp = new SelectPane();
+            sp.setTextOnlyOptions(new LinkedList<>(question.getAvailableOptions()));
+            sp.setSkippable(question.isSkippable());
+            dialog.setDialogPane(sp);
+            dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippablePaymentMethod() : CallbackFactory.unskippablePaymentMethod());
+            dialog.showAndWait();
+            answerCallback.accept(dialog.getResult());
+        });
     }
 
     @Override
@@ -282,7 +319,26 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onWeaponQuestion(Question<String> question, Consumer<String> answerCallback) {
-
+        Platform.runLater( () -> {
+                    Dialog<String> dialog = new Dialog<>();
+                    dialog.setTitle("Spawnpoint question");
+                    dialog.setHeaderText(question.getText());
+                    SelectPane sp = new SelectPane();
+                    List<Tuple<ImagePane, String>> options = question.getAvailableOptions()
+                            .stream()
+                            .map(o -> new Tuple<>(
+                                    new ImagePane(UrlFinder.findWeapon(o)),
+                                    o)
+                            )
+                            .collect(Collectors.toList());
+                    sp.setOptions(options);
+                    sp.setSkippable(question.isSkippable());
+                    dialog.setDialogPane(sp);
+                    dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippableWeapon() : CallbackFactory.unskippableWeapon());
+                    dialog.showAndWait();
+                    answerCallback.accept(dialog.getResult());
+                }
+        );
     }
 
     @Override
@@ -295,7 +351,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
         Platform.runLater( () -> {
                     Dialog<Powerup> dialog = new Dialog<>();
                     dialog.setTitle("Spawnpoint question");
-                    dialog.setContentText(question.getText());
+                    dialog.setHeaderText(question.getText());
                     SelectPane sp = new SelectPane();
                     List<Tuple<ImagePane, String>> options = question.getAvailableOptions()
                             .stream()
@@ -368,7 +424,19 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onWeaponPicked(WeaponExchanged e) {
-
+        Platform.runLater(() -> {
+            if (e.getColumn() == 0) {
+                boardContent.removeWeaponLeft(e.getWeaponName());
+            } else if (e.getRow() == 0) {
+                boardContent.removeWeaponTop(e.getWeaponName());
+            } else {
+                boardContent.removeWeaponRight(e.getWeaponName());
+            }
+            if (e.getPlayer().getNickname().equals(self.getNickname())) {
+                self = e.getPlayer();
+                initWeapons();
+            }
+        });
     }
 
     @Override
@@ -388,7 +456,11 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onPlayerMoved(PlayerMoved e) {
-
+        Platform.runLater( () -> {
+            boardContent.movePlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
+            String message = " just moved!";
+            sendNotification(e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
+        });
     }
 
     @Override
@@ -398,7 +470,6 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onPlayerSpawned(PlayerSpawned e) {
-        System.out.println("EVENTO ARRIVATO");
         Platform.runLater( () -> {
             boardContent.addPlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
             String message = " just spawned!";
@@ -413,7 +484,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onMatchModeChanged(MatchModeChanged e) {
-
+        sendNotification("New match mode was triggered: " + e.getMode().toString().toLowerCase());
     }
 
     @Override
@@ -427,6 +498,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     private void sendNotification(String message) {
-
+        /*Alert info = new Alert(Alert.AlertType.INFORMATION, message);
+        info.show();*/
     }
 }

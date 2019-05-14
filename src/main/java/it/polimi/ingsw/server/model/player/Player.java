@@ -455,10 +455,10 @@ public class Player implements Damageable, MatchListener {
                 this.ammoCubes.add(newAmmoCube);
             }
         }
-        notifyWalletChanges();
+        notifyWalletChanged();
     }
 
-    private void notifyWalletChanges(){
+    private void notifyWalletChanged(){
         PlayerWalletChanged e = new PlayerWalletChanged(this);
         listeners.forEach(playerListener -> playerListener.onWalletChanged(e));
     }

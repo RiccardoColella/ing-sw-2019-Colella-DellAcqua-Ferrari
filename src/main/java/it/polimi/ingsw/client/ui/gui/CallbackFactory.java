@@ -1,6 +1,8 @@
 package it.polimi.ingsw.client.ui.gui;
 
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.server.model.player.BasicAction;
+import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.viewmodels.Powerup;
 import it.polimi.ingsw.utils.EnumValueByString;
 import javafx.scene.control.ButtonType;
@@ -34,5 +36,61 @@ public final class CallbackFactory {
             }
             return null;
         };
+    }
+
+    private static Callback<ButtonType, String> skippableString() {
+        return button -> {
+            if (!button.getText().equals("Skip")) {
+                return button.getText();
+            }
+            return null;
+        };
+    }
+
+    private static Callback<ButtonType, String> unskippableString() {
+        return ButtonType::getText;
+    }
+
+    public static Callback<ButtonType, String> skippablePaymentMethod() {
+        return skippableString();
+    }
+
+    public static Callback<ButtonType, String> unskippablePaymentMethod() {
+        return unskippableString();
+    }
+
+    public static Callback<ButtonType, String> skippableWeapon() {
+        return skippableString();
+    }
+
+    public static Callback<ButtonType, String> unskippableWeapon() {
+        return unskippableString();
+    }
+
+
+    public static Callback<ButtonType, BasicAction> skippableBasicAction() {
+        return button -> {
+            if (!button.getText().equals("Skip")) {
+                return EnumValueByString.findByString(button.getText().toUpperCase(), BasicAction.class);
+            }
+            return null;
+        };
+    }
+
+    public static Callback<ButtonType, BasicAction> unskippableBasicAction() {
+        return button -> EnumValueByString.findByString(button.getText().toUpperCase(), BasicAction.class);
+    }
+
+    public static Callback<ButtonType, Direction> skippableDirection() {
+        return button -> {
+            if (!button.getText().equals("Skip")) {
+                return EnumValueByString.findByString(button.getText().toUpperCase(), Direction.class);
+            }
+            return null;
+        };
+    }
+
+    public static Callback<ButtonType, Direction> unskippableDirection() {
+        return button -> EnumValueByString.findByString(button.getText().toUpperCase(), Direction.class);
     }
 }

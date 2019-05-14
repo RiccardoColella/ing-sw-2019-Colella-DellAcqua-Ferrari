@@ -8,6 +8,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -41,6 +42,9 @@ public class SelectPane extends DialogPane {
             ccs.add(cc);
         }
         container.getColumnConstraints().addAll(ccs);
+        RowConstraints rc = new RowConstraints();
+        rc.setPercentHeight(100);
+        container.getRowConstraints().add(rc);
         for (int i = 0; i < optionNumber; i++) {
             options.get(i).getItem1().setMinSize(200, 250);
             container.add(options.get(i).getItem1(), i, 0);
@@ -48,9 +52,15 @@ public class SelectPane extends DialogPane {
         }
     }
 
+    public void setTextOnlyOptions(List<String> textualOptions) {
+        for (String textualOption : textualOptions) {
+            getButtonTypes().add(new ButtonType(textualOption, ButtonBar.ButtonData.LEFT));
+        }
+    }
+
     public void setSkippable(boolean isSkippable) {
         if (isSkippable) {
-            getButtonTypes().add(new ButtonType("Skip", ButtonBar.ButtonData.RIGHT));
+            getButtonTypes().add(new ButtonType("Skip", ButtonBar.ButtonData.CANCEL_CLOSE));
         }
     }
 

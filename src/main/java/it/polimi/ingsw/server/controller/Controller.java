@@ -185,7 +185,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         List<WeaponTile> availableWeapons = new LinkedList<>(block.getWeapons());
         List<WeaponTile> affordableWeapons = availableWeapons.stream().filter(weapon -> PaymentHandler.canAfford(weapon.getAcquisitionCost(), activePlayer))
                 .collect(Collectors.toList());
-        if (affordableWeapons.size() > 0){
+        if (!affordableWeapons.isEmpty()){
             WeaponTile weapon = selectWeaponTile("Which weapon would you like to grab?", affordableWeapons, view);
             //pick up
             logger.info("picking up weapon " + weapon.getName() + "...");
