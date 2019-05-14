@@ -47,9 +47,10 @@ public class MessageDispatcher implements AutoCloseable {
      */
     private BlockingQueue<Message> outputMessageQueue;
     /**
-     * The thread pool that executes the IO tasks in background
+     * The thread pools that executes the IO tasks in background
      */
-    private final ExecutorService threadPool = Executors.newFixedThreadPool(2);
+    private final ExecutorService receiveThreadPool = Executors.newSingleThreadExecutor();
+    private final ExecutorService sendThreadPool = Executors.newSingleThreadExecutor();
 
     /**
      * A list of listeners for the event MessageDispatcherStopped
@@ -69,8 +70,8 @@ public class MessageDispatcher implements AutoCloseable {
         this.outputMessageQueue = outputMessageQueue;
         this.inputMessageSupplier = inputMessageSupplier;
         this.outputMessageConsumer = outputMessageConsumer;
-        threadPool.execute(this::receiveMessageAsync);
-        threadPool.execute(this::sendMessageAsync);
+        receiveThreadPool.execute(this::receiveMessageAsync);
+        sendThreadPool.execute(this::sendMessageAsync);
     }
 
     /**
@@ -88,9 +89,9 @@ public class MessageDispatcher implements AutoCloseable {
             // No data received within the timeout
         }
 
-        synchronized (threadPool) {
-            if (!threadPool.isShutdown()) {
-                threadPool.execute(this::receiveMessageAsync);
+        synchronized (receiveThreadPool) {
+            if (!receiveThreadPool.isShutdown()) {
+                receiveThreadPool.execute(this::receiveMessageAsync);
             }
         }
     }
@@ -104,9 +105,9 @@ public class MessageDispatcher implements AutoCloseable {
             if (message != null) {
                 outputMessageConsumer.accept(message);
             }
-            synchronized (threadPool) {
-                if (!threadPool.isShutdown()) {
-                    threadPool.execute(this::sendMessageAsync);
+            synchronized (sendThreadPool) {
+                if (!sendThreadPool.isShutdown()) {
+                    sendThreadPool.execute(this::sendMessageAsync);
                 }
             }
         } catch (InterruptedException e) {
@@ -146,11 +147,14 @@ public class MessageDispatcher implements AutoCloseable {
     }
 
     /**
-     * Shuts down the thread pool
+     * Shuts down the thread pools
      */
     private void stop() {
-        synchronized (threadPool) {
-            threadPool.shutdown();
+        synchronized (receiveThreadPool) {
+            receiveThreadPool.shutdown();
+        }
+        synchronized (sendThreadPool) {
+            sendThreadPool.shutdown();
         }
     }
 
@@ -163,12 +167,15 @@ public class MessageDispatcher implements AutoCloseable {
     public void close() throws InterruptedException {
         stop();
         try {
-            while (!threadPool.awaitTermination(5, TimeUnit.SECONDS)) {
-                logger.warning("Thread pool hasn't shut down yet, waiting...");
+            while (
+                    !receiveThreadPool.awaitTermination(5, TimeUnit.SECONDS)
+                    && !sendThreadPool.awaitTermination(5, TimeUnit.SECONDS)
+            ) {
+                logger.warning("Thread pools haven't shut down yet, waiting...");
             }
             notifyMessageDispatcherStopped();
         } catch (InterruptedException ex) {
-            logger.warning("Unexpected thread interruption, unable to correctly shut down the threadPool and notify this to listeners");
+            logger.warning("Unexpected thread interruption, unable to correctly shut down the threadPools and notify this to listeners");
             throw ex;
         }
     }

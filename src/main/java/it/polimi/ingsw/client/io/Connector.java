@@ -16,7 +16,9 @@ import it.polimi.ingsw.shared.messages.templates.Question;
 import it.polimi.ingsw.shared.viewmodels.Powerup;
 
 import java.awt.*;
+import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
@@ -55,9 +57,16 @@ public abstract class Connector implements AutoCloseable {
     protected LinkedBlockingQueue<Message> outputMessageQueue = new LinkedBlockingQueue<>();
 
     /**
-     * The thread pool that schedules the execution of the receiveAsync method for events and questions
+     * The thread pools that schedules the execution of the receiveAsync method for events and questions
      */
-    private final ExecutorService threadPool = Executors.newFixedThreadPool(2);
+    private final ExecutorService eventThreadPool = Executors.newSingleThreadExecutor();
+    private final ExecutorService questionThreadPool = Executors.newSingleThreadExecutor();
+
+    private final Map<Message.Type, ExecutorService> threadPools = Map.of(
+            Message.Type.QUESTION, questionThreadPool,
+            Message.Type.EVENT, eventThreadPool
+    );
+
 
     /**
      * Question message listeners
@@ -81,11 +90,11 @@ public abstract class Connector implements AutoCloseable {
      */
     protected void initialize(ClientInitializationInfo clientInitializationInfo) {
         outputMessageQueue.add(Message.createEvent(ServerApi.VIEW_INIT_EVENT, clientInitializationInfo));
-        threadPool.execute(() -> receiveAsync(Message.Type.EVENT));
+        eventThreadPool.execute(() -> receiveAsync(Message.Type.EVENT));
     }
 
     public void startListeningToQuestions() {
-        threadPool.execute(() -> receiveAsync(Message.Type.QUESTION));
+        questionThreadPool.execute(() -> receiveAsync(Message.Type.QUESTION));
     }
 
     /**
@@ -118,9 +127,9 @@ public abstract class Connector implements AutoCloseable {
                     break;
             }
 
-            synchronized (threadPool) {
-                if (!threadPool.isShutdown()) {
-                    threadPool.execute(() -> receiveAsync(type));
+            synchronized (threadPools.get(type)) {
+                if (!threadPools.get(type).isShutdown()) {
+                    threadPools.get(type).execute(() -> receiveAsync(type));
                 }
             }
         } catch (InterruptedException ex) {
@@ -408,8 +417,6 @@ public abstract class Connector implements AutoCloseable {
         boardListeners.remove(l);
     }
 
-
-
     /**
      * Closes this object and stops the background threads execution
      *
@@ -417,11 +424,13 @@ public abstract class Connector implements AutoCloseable {
      */
     @Override
     public void close() throws Exception {
-        synchronized (threadPool) {
-            threadPool.shutdown();
-        }
-        while (!threadPool.awaitTermination(5, TimeUnit.SECONDS)) {
-            logger.warning("Thread pool hasn't shut down yet, waiting...");
+        for (Message.Type threadPoolKey : threadPools.keySet()) {
+            synchronized (threadPools.get(threadPoolKey)) {
+                threadPools.get(threadPoolKey).shutdown();
+            }
+            while (!threadPools.get(threadPoolKey).awaitTermination(5, TimeUnit.SECONDS)) {
+                logger.warning("Thread pool hasn't shut down yet, waiting...");
+            }
         }
     }
 }
