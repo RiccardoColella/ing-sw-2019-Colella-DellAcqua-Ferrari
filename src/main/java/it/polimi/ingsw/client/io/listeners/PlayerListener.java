@@ -1,9 +1,6 @@
 package it.polimi.ingsw.client.io.listeners;
 
-import it.polimi.ingsw.shared.events.networkevents.PlayerEvent;
-import it.polimi.ingsw.shared.events.networkevents.PlayerHealthChanged;
-import it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged;
-import it.polimi.ingsw.shared.events.networkevents.WeaponExchanged;
+import it.polimi.ingsw.shared.events.networkevents.*;
 
 public interface PlayerListener {
     void onPlayerDied(PlayerEvent e);
@@ -27,4 +24,6 @@ public interface PlayerListener {
     void onPlayerDisconnected(PlayerEvent e);
 
     void onPlayerReconnected(PlayerEvent e);
+
+    void onPlayerSpawned(PlayerSpawned e);
 }

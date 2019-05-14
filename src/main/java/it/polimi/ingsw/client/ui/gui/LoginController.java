@@ -206,8 +206,11 @@ public class LoginController extends WindowController implements MatchListener, 
         connector.removeDuplicatedNicknameListener(this);
         Platform.runLater(
                 () -> {
-                    this.gameController = new GameController(connector, e.getPreset(), e.getSelf(), e.getOpponents());
+                    this.gameController = new GameController(connector, e);
                     connector.addQuestionMessageReceivedListener(gameController);
+                    connector.addMatchListener(gameController);
+                    connector.addBoardListener(gameController);
+                    connector.addPlayerListener(gameController);
                     connector.startListeningToQuestions();
                     this.close();
                 }

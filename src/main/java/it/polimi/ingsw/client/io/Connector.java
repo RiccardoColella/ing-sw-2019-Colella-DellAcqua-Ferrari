@@ -276,7 +276,6 @@ public abstract class Connector implements AutoCloseable {
                 duplicatedNicknameListeners.forEach(DuplicatedNicknameListener::onDuplicatedNickname);
                 break;
             }
-
             case MATCH_STARTED_EVENT: {
                 MatchStarted e = MatchStarted.fromJson(message.getPayload(), this, MatchStarted.class);
                 matchListeners.forEach(l -> l.onMatchStarted(e));
@@ -362,6 +361,11 @@ public abstract class Connector implements AutoCloseable {
             case PLAYER_RECONNECTED_EVENT: {
                 PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this, PlayerEvent.class);
                 playerListeners.forEach(l -> l.onPlayerReconnected(e));
+                break;
+            }
+            case PLAYER_SPAWNED_EVENT: {
+                PlayerSpawned e = PlayerSpawned.fromJson(message.getPayload(), this, PlayerSpawned.class);
+                playerListeners.forEach(l -> l.onPlayerSpawned(e));
                 break;
             }
 

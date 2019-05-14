@@ -1,12 +1,16 @@
 package it.polimi.ingsw.client.ui.gui;
 
 import it.polimi.ingsw.client.io.Connector;
+import it.polimi.ingsw.client.io.listeners.BoardListener;
+import it.polimi.ingsw.client.io.listeners.MatchListener;
+import it.polimi.ingsw.client.io.listeners.PlayerListener;
 import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.shared.Direction;
+import it.polimi.ingsw.shared.events.networkevents.*;
 import it.polimi.ingsw.shared.messages.templates.Question;
 import it.polimi.ingsw.shared.viewmodels.Player;
 import it.polimi.ingsw.shared.viewmodels.Powerup;
@@ -29,7 +33,7 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class GameController extends WindowController implements AutoCloseable, QuestionMessageReceivedListener {
+public class GameController extends WindowController implements AutoCloseable, QuestionMessageReceivedListener, PlayerListener, BoardListener, MatchListener {
 
     private Logger logger = Logger.getLogger(this.getClass().getName());
 
@@ -62,17 +66,19 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     private Connector connector;
 
-    public GameController(Connector connector, BoardFactory.Preset preset, Player self, List<Player> opponents) {
+    private BoardContentPane boardContent;
+
+    public GameController(Connector connector, MatchStarted e) {
         super("Adrenalina", "/fxml/game.fxml", "/css/game.css");
         this.connector = connector;
-        this.preset = preset;
+        this.preset = e.getPreset();
         BoardPane board = new BoardPane(preset);
         board.setMinWidth(500);
         board.setMaxWidth(500);
         board.setMinHeight(400);
         board.setMaxHeight(400);
         boardContainer.getChildren().add(board);
-        BoardContentPane boardContent = new BoardContentPane();
+        boardContent = new BoardContentPane();
         ColumnConstraints cc = new ColumnConstraints();
         cc.setPercentWidth(100);
         RowConstraints rc = new RowConstraints();
@@ -82,26 +88,15 @@ public class GameController extends WindowController implements AutoCloseable, Q
         boardContent.setMinHeight(400);
         boardContent.setMaxHeight(400);
         boardContainer.getChildren().add(boardContent);
-        boardContent.addWeaponRight("Railgun", 0);
-        boardContent.addWeaponRight("2x-2", 1);
-        boardContent.addWeaponRight("Furnace", 2);
-        boardContent.addWeaponLeft("Electroscythe", 0);
-        boardContent.addWeaponLeft("Furnace", 1);
-        boardContent.addWeaponLeft("Hellion", 2);
-        boardContent.addWeaponTop("Shotgun", 0);
-        boardContent.addWeaponTop("Furnace", 1);
-        boardContent.addWeaponTop("T.H.O.R.", 2);
-        boardContent.setSkulls(8);
-        boardContent.addKillshot(PlayerColor.YELLOW);
-        boardContent.addOverkill();
-        boardContent.addPlayer(PlayerColor.GRAY, 2, 1);
-        boardContent.addPlayer(PlayerColor.YELLOW, 2, 1);
-        boardContent.addPlayer(PlayerColor.GREEN, 2, 1);
-        boardContent.addPlayer(PlayerColor.PURPLE, 2, 1);
-        boardContent.addPlayer(PlayerColor.TURQUOISE, 2, 1);
+        for (int i = 0; i < e.getWeaponLeft().size(); i++) {
+            boardContent.addWeaponTop(e.getWeaponTop().get(i), i);
+            boardContent.addWeaponRight(e.getWeaponRight().get(i), i);
+            boardContent.addWeaponLeft(e.getWeaponLeft().get(i), i);
+        }
+        boardContent.setSkulls(e.getSkulls());
 
-        this.opponents = opponents;
-        this.self = self;
+        this.opponents = e.getOpponents();
+        this.self = e.getSelf();
         initOpponentsBoards();
         initPlayerBoard();
         initAmmo();
@@ -113,7 +108,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     private void initPlayerBoard() {
         playerBoardImg.setImg(UrlFinder.findPlayerBoard(self.getColor(), self.isBoardFlipped()), ImagePane.LEFT);
-        updateBoard(self, playerBoardImg);
+        updatePlayerBoard(self, playerBoardImg);
         playerTileImg.setImg(UrlFinder.findPlayerTile(self.getColor(), self.isTileFlipped()), ImagePane.RIGHT);
     }
 
@@ -146,7 +141,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
             nameRow.setPercentHeight(20);
             RowConstraints imgRow = new RowConstraints();
             imgRow.setPercentHeight(80);
-            updateBoard(opponent, opponentPane);
+            updatePlayerBoard(opponent, opponentPane);
             opponentContainer.getRowConstraints().addAll(nameRow, imgRow);
             opponentContainer.add(opponentName, 0, 0);
             opponentContainer.add(opponentPane, 0, 1);
@@ -155,7 +150,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
-    private void updateBoard(Player owner, PlayerBoardPane pane) {
+    private void updatePlayerBoard(Player owner, PlayerBoardPane pane) {
         for (PlayerColor token : owner.getDamage()) {
             pane.addToken(token);
         }
@@ -322,6 +317,116 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onTargetQuestion(Question<String> question, Consumer<String> answerCallback) {
+
+    }
+
+    @Override
+    public void onPlayerDied(PlayerEvent e) {
+
+    }
+
+    @Override
+    public void onPlayerReborn(PlayerEvent e) {
+
+    }
+
+    @Override
+    public void onPlayerWalletChanged(PlayerWalletChanged e) {
+        Platform.runLater(() -> {
+            if (e.getPlayer().getNickname().equals(self.getNickname())) {
+                self.getWallet().setPowerups(e.getWallet().getPowerups());
+                self.getWallet().setAmmoCubes(e.getWallet().getAmmoCubes());
+                ammoContainer.getChildren().clear();
+                initAmmo();
+                powerupContainer.getChildren().clear();
+                initPowerups();
+            }
+            sendNotification(e.getMessage());
+        });
+
+    }
+
+    @Override
+    public void onPlayerBoardFlipped(PlayerEvent e) {
+
+    }
+
+    @Override
+    public void onPlayerHealthChanged(PlayerHealthChanged e) {
+
+    }
+
+    @Override
+    public void onWeaponReloaded(WeaponEvent e) {
+
+    }
+
+    @Override
+    public void onWeaponUnloaded(WeaponEvent e) {
+
+    }
+
+    @Override
+    public void onWeaponPicked(WeaponExchanged e) {
+
+    }
+
+    @Override
+    public void onWeaponDropped(WeaponExchanged e) {
+
+    }
+
+    @Override
+    public void onPlayerDisconnected(PlayerEvent e) {
+
+    }
+
+    @Override
+    public void onPlayerReconnected(PlayerEvent e) {
+
+    }
+
+    @Override
+    public void onPlayerMoved(PlayerMoved e) {
+
+    }
+
+    @Override
+    public void onPlayerTeleported(PlayerMoved e) {
+
+    }
+
+    @Override
+    public void onPlayerSpawned(PlayerSpawned e) {
+        System.out.println("EVENTO ARRIVATO");
+        Platform.runLater( () -> {
+            boardContent.addPlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
+            String message = " just spawned!";
+            sendNotification(e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
+        });
+    }
+
+    @Override
+    public void onMatchStarted(MatchStarted e) {
+
+    }
+
+    @Override
+    public void onMatchModeChanged(MatchModeChanged e) {
+
+    }
+
+    @Override
+    public void onKillshotTrackChanged(KillshotTrackChanged e) {
+
+    }
+
+    @Override
+    public void onMatchEnded(MatchEnded e) {
+
+    }
+
+    private void sendNotification(String message) {
 
     }
 }

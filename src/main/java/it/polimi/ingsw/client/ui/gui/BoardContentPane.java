@@ -273,7 +273,7 @@ public class BoardContentPane extends GridPane {
     }
 
     public void addPlayer(PlayerColor color, int row, int col) {
-        ((BoardBlockPane) playerContainer.getChildren().get(row * 4 + col + 1)).addPlayer(color);
+        ((BoardBlockPane) playerContainer.getChildren().get(row * 4 + col)).addPlayer(color);
     }
 
     public void movePlayer(PlayerColor color, int row, int col) {

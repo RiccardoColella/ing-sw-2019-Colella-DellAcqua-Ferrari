@@ -2,6 +2,7 @@ package it.polimi.ingsw.server.view;
 
 import com.google.gson.Gson;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.server.model.battlefield.SpawnpointBlock;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.events.*;
@@ -270,6 +271,15 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         playerVM.getWallet().setUnloadedWeapons(unloadedWeapons);
     }
 
+    private it.polimi.ingsw.shared.viewmodels.Player mapPlayer(Player player) {
+        it.polimi.ingsw.shared.viewmodels.Player playerVM = new it.polimi.ingsw.shared.viewmodels.Player(
+                player.getPlayerInfo().getNickname(),
+                player.getPlayerInfo().getColor(),
+                new Wallet()
+        );
+        mapWallets(player, playerVM);
+        return playerVM;
+    }
 
     @Override
     public void close() throws Exception {
@@ -306,16 +316,30 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
                         )
                 )
                 .collect(Collectors.toList());
-        it.polimi.ingsw.shared.viewmodels.Player selfVM = new it.polimi.ingsw.shared.viewmodels.Player(
-                player.getPlayerInfo().getNickname(),
-                player.getPlayerInfo().getColor(),
-                new Wallet()
-        );
-        mapWallets(player, selfVM);
+
+        List<String> weaponTop = new LinkedList<>();
+        List<String> weaponLeft = new LinkedList<>();
+        List<String> weaponRight = new LinkedList<>();
+        for (CurrencyColor color : CurrencyColor.values()) {
+            SpawnpointBlock block = match.getBoard().getSpawnpoint(color);
+            List<String> weapons = block.getWeapons().stream().map(WeaponTile::getName).collect(Collectors.toList());
+            if (block.getRow() == 0) {
+                weaponTop = weapons;
+            } else if (block.getColumn() == 0) {
+                weaponLeft = weapons;
+            } else {
+                weaponRight = weapons;
+            }
+        }
+        it.polimi.ingsw.shared.viewmodels.Player selfVM = mapPlayer(player);
         it.polimi.ingsw.shared.events.networkevents.MatchStarted e = new it.polimi.ingsw.shared.events.networkevents.MatchStarted(
+                match.getRemainingSkulls(),
                 match.getBoardPreset(),
                 selfVM,
-                opponentsVM
+                opponentsVM,
+                weaponTop,
+                weaponRight,
+                weaponLeft
         );
         outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_STARTED_EVENT, e));
     }
@@ -412,21 +436,24 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     }
 
     @Override
-    public void onPowerupDiscarded(PowerupExchangeEvent e){
+    public void onPowerupDiscarded(PowerupExchange e){
         // TODO: Bind Model to ViewModel and enqueue the event
 
     }
 
     @Override
-    public void onPowerupGrabbed(PowerupExchangeEvent e){
-        // TODO: Bind Model to ViewModel and enqueue the event
-
+    public void onPowerupGrabbed(PowerupExchange e){
+        it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged convertedEvent;
+        it.polimi.ingsw.shared.viewmodels.Player playerVM = mapPlayer(e.getPlayer());
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged(playerVM, playerVM.getWallet(), playerVM.getNickname() + " grabbed a " + e.getPowerupTile().getColor().toString().toLowerCase() + " " + e.getPowerupTile().getName());
+        outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_WALLET_CHANGED_EVENT, convertedEvent));
     }
 
     @Override
-    public void onSpawnpointChoose(SpawnpointChoiceEvent e){
-        // TODO: Bind Model to ViewModel and enqueue the event
-
+    public void onSpawnpointChosen(SpawnpointChoiceEvent e){
+        it.polimi.ingsw.shared.events.networkevents.PlayerSpawned convertedEvent;
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerSpawned(mapPlayer(e.getPlayer()), e.getDestination().getRow(), e.getDestination().getColumn());
+        outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_SPAWNED_EVENT, convertedEvent));
     }
 
     @Override

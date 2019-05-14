@@ -85,7 +85,7 @@ public class GUI extends Application {
         self.getMarks().add(PlayerColor.YELLOW);
         self.getMarks().add(PlayerColor.YELLOW);
         self.setSkulls(4);
-        new GameController(fakeConnector, BoardFactory.Preset.BOARD_1, self, opponents).showAsModal();
+        //new GameController(fakeConnector, BoardFactory.Preset.BOARD_1, self, opponents).showAsModal();
 
     }
     public void start() {

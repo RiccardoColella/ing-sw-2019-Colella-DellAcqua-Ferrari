@@ -53,21 +53,21 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         this.players.forEach(player -> player.addPlayerListener(this));
         this.weaponMap = WeaponFactory.createWeaponDictionary(match.getBoard());
         powerupTileDeck = match.getPowerupDeck();
+        for (CurrencyColor currencyColor : CurrencyColor.values()){
+            SpawnpointBlock block = match.getBoard().getSpawnpoint(currencyColor);
+            for (int i = 0; i < block.getMaxWeapons(); i++) {
+                WeaponTile weaponTile = match.getWeaponDeck().pick().orElseThrow(() -> new IllegalStateException("Not enough weapons to build the board"));
+                block.drop(weaponTile);
+            }
+        }
         match.start();
     }
 
     @Override
     public void run() {
-        for (CurrencyColor currencyColor : CurrencyColor.values()){
-            for (int i = 0; i < 3; i++) {
-                WeaponTile weaponTile = match.getWeaponDeck().pick().orElseThrow(() -> new IllegalStateException("Not enough weapons to build the board"));
-                SpawnpointBlock block = match.getBoard().getSpawnpoint(currencyColor);
-                block.drop(weaponTile);
-                match.notifyDroppedWeapon(weaponTile, block);
-            }
-        }
         Player activePlayer;
         for (Player player : players) {
+            activePlayer = player;
             match.notifyActivePlayerUpdate(player);
             //Picking up two powerups to choose the spawnpoint
             List<PowerupTile> powerups = Arrays.asList(
@@ -79,10 +79,9 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                             .orElseThrow(() -> new IllegalStateException("Empty deck"))
             );
             //Discarding the selected powerup
-            selectSpawnpointFromPowerup(powerups, player);
-
+            PowerupTile spawnpoint = selectSpawnpointFromPowerup(powerups, activePlayer, views.get(players.indexOf(activePlayer)));
             //Grabbing the other powerup
-            player.grabPowerup(powerups.get(0));
+            activePlayer.grabPowerup(powerups.indexOf(spawnpoint) == 0 ? powerups.get(1) : powerups.get(0));
             manageActivePlayerTurn(player, views.get(players.indexOf(player)));
         }
 
@@ -111,7 +110,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
             //If the player had at least one powerup in his hand he can choose what power-up to discard
             if (powerupTile.isPresent() && playerPowerups.size() > 1){
                 playerPowerups.add(powerupTile.get());
-                selectSpawnpointFromPowerup(playerPowerups, activePlayer);
+                selectSpawnpointFromPowerup(playerPowerups, activePlayer, view);
             }
             player.bringBackToLife();
         }
@@ -124,17 +123,17 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
      * @param player active player
      * @return the selected powerup to be discarded
      */
-    private void selectSpawnpointFromPowerup(List<PowerupTile> powerups, Player player){
+    private PowerupTile selectSpawnpointFromPowerup(List<PowerupTile> powerups, Player player, Interviewer view){
         //Asking what powerup to discard
-        List<Tuple<String, CurrencyColor>> powerupsForView = powerups
+        it.polimi.ingsw.shared.viewmodels.Powerup chosenPowerup = mandatorySpawnpointSelection(powerups, view, "Select your Spawnpoint");
+        PowerupTile discardedPowerup = powerups
                 .stream()
-                .map(powerupTile -> new Tuple<>(powerupTile.getName(), powerupTile.getColor()))
-                .collect(Collectors.toList());
-        PowerupTile discardedPowerup = powerups.get(powerupsForView.indexOf(views.get(players.indexOf(player)).select("Select Spawnpoint: ", powerupsForView, ClientApi.SPAWNPOINT_QUESTION)));
+                .filter(tile -> tile.getName().equals(chosenPowerup.getName()) && tile.getColor().equals(chosenPowerup.getColor()))
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("Selected powerup is not available"));
         player.selectSpawnpoint(discardedPowerup);
-        discardPowerupTile(player, discardedPowerup);
-
         logger.info("Selected Spawnpoint " + discardedPowerup.getColor());
+        return discardedPowerup;
     }
 
     /**
@@ -463,7 +462,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         Map<String, Powerup>  powerupMap = PowerupFactory.getPowerupMap();
         List<PowerupTile> playerPowerupTiles = activePlayer.getPowerups();
         List<Powerup> playerPowerups = new LinkedList<>();
-        Optional<Tuple<String, CurrencyColor>> selectedPowerup;
+        Optional<it.polimi.ingsw.shared.viewmodels.Powerup> selectedPowerup;
         for (PowerupTile powerupTile : playerPowerupTiles){
             Powerup powerup = powerupMap.get(powerupTile.getName());
 
@@ -473,16 +472,10 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         }
         //If there are available powerups we ask the player if he wants to use some
         if (!playerPowerups.isEmpty()) {
-
-            List<Tuple<String, CurrencyColor>> playerPowerupsVM = playerPowerupTiles.stream()
-                    .filter(p -> playerPowerups.stream().anyMatch(powerupController -> powerupController.getName().equals(p.getName())))
-                    .map(p -> new Tuple<>(p.getName(), p.getColor()))
-                    .collect(Collectors.toList());
-
-            selectedPowerup = view.selectOptional("Do you want to use a powerup?", playerPowerupsVM, ClientApi.POWERUP_QUESTION);
+            selectedPowerup = optionalPowerupSelection(playerPowerupTiles, view, "Do you want to use a powerup?");
             if (selectedPowerup.isPresent()){
                 //If the player wants to use a powerup we select the target
-                Powerup powerup = playerPowerups.stream().filter(p -> p.getName().equals(selectedPowerup.get().getItem1())).findFirst().orElseThrow(() -> new IllegalStateException("Powerup not found"));
+                Powerup powerup = playerPowerups.stream().filter(p -> p.getName().equals(selectedPowerup.get().getName())).findFirst().orElseThrow(() -> new IllegalStateException("Powerup not found"));
                 Optional<Player> optionalTarget = selectTarget(powerup, activePlayer, view);
                 if (optionalTarget.isPresent()){
                     //If the target is present/available we use the powerup
@@ -577,16 +570,9 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                     .collect(Collectors.toList());
             //If some powerups can be used in this situation the player is asked if he wants to use some
             while (!availablePowerups.isEmpty()){
-
-                List<Tuple<String, CurrencyColor>> playerPowerupsVM = availablePowerupTiles.stream()
-                        .filter(p -> availablePowerups.stream().anyMatch(powerupController -> powerupController.getName().equals(p.getName())))
-                        .map(p -> new Tuple<>(p.getName(), p.getColor()))
-                        .collect(Collectors.toList());
-
-                Optional<Tuple<String, CurrencyColor>> selectedPowerup = attackerView.selectOptional("Do you want to use a powerup against " + victim.getColor() + "?", playerPowerupsVM, ClientApi.POWERUP_QUESTION);
-
+                Optional<it.polimi.ingsw.shared.viewmodels.Powerup> selectedPowerup = optionalPowerupSelection(availablePowerupTiles, attackerView, "Do you want to use a powerup against " + victim.getPlayerInfo().getNickname() + "?");
                 if (selectedPowerup.isPresent()){
-                    Powerup powerup = availablePowerups.stream().filter(p -> p.getName().equals(selectedPowerup.get().getItem1())).findFirst().orElseThrow(() -> new IllegalStateException("Powerup not found"));
+                    Powerup powerup = availablePowerups.stream().filter(p -> p.getName().equals(selectedPowerup.get().getName())).findFirst().orElseThrow(() -> new IllegalStateException("Powerup not found"));
                     PaymentHandler.pay(powerup.getCost(), attacker, attackerView);
                     powerup.activate(attacker, victim, attackerView);
                     discardPowerupTile(attacker, powerup);
@@ -614,15 +600,9 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                     .collect(Collectors.toList());
             //If some powerups can be used in this situation the player is asked if he wants to use some
             while (!availablePowerups.isEmpty()){
-
-                List<Tuple<String, CurrencyColor>> playerPowerupsVM = availablePowerupTiles.stream()
-                        .filter(p -> availablePowerups.stream().anyMatch(powerupController -> powerupController.getName().equals(p.getName())))
-                        .map(p -> new Tuple<>(p.getName(), p.getColor()))
-                        .collect(Collectors.toList());
-
-                Optional<Tuple<String, CurrencyColor>> selectedPowerup = victimView.selectOptional("Do you want to use a powerup against " + attacker.getColor() +"?", playerPowerupsVM, ClientApi.POWERUP_QUESTION);
+                Optional<it.polimi.ingsw.shared.viewmodels.Powerup> selectedPowerup = optionalPowerupSelection(availablePowerupTiles, victimView, "Do you want to use a powerup against " + attacker.getPlayerInfo().getNickname() + "?");
                 if (selectedPowerup.isPresent()){
-                    Powerup powerup = availablePowerups.stream().filter(p -> p.getName().equals(selectedPowerup.get().getItem1())).findFirst().orElseThrow(() -> new IllegalStateException("Powerup not found"));
+                    Powerup powerup = availablePowerups.stream().filter(p -> p.getName().equals(selectedPowerup.get().getName())).findFirst().orElseThrow(() -> new IllegalStateException("Powerup not found"));
                     PaymentHandler.pay(powerup.getCost(), victim, victimView);
                     powerup.activate(attacker, attacker, victimView);
                     discardPowerupTile(victim, powerup);
@@ -666,7 +646,6 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 }
                 break;
             case ATTACKER:
-                throw new IllegalArgumentException("Can't select the target of the given powerup");
             case DAMAGED:
                 throw new IllegalArgumentException("Can't select the target of the given powerup");
         }
@@ -718,20 +697,37 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
     }
 
     @Override
-    public void onPowerupDiscarded(PowerupExchangeEvent e){
+    public void onPowerupDiscarded(PowerupExchange e){
         // nothing to do here
 
     }
 
     @Override
-    public void onPowerupGrabbed(PowerupExchangeEvent e){
+    public void onPowerupGrabbed(PowerupExchange e){
         // nothing to do here
 
     }
 
     @Override
-    public void onSpawnpointChoose(SpawnpointChoiceEvent e) {
+    public void onSpawnpointChosen(SpawnpointChoiceEvent e) {
         // nothing to do here
     }
 
+    private Optional<it.polimi.ingsw.shared.viewmodels.Powerup> optionalPowerupSelection(List<PowerupTile> powerups, Interviewer view, String message) {
+        List<it.polimi.ingsw.shared.viewmodels.Powerup> playerPowerupsVM = powerups.stream()
+                .filter(p -> powerups.stream().anyMatch(powerupController -> powerupController.getName().equals(p.getName())))
+                .map(p -> new it.polimi.ingsw.shared.viewmodels.Powerup(p.getName(), p.getColor()))
+                .collect(Collectors.toList());
+
+        return view.selectOptional(message, playerPowerupsVM, ClientApi.POWERUP_QUESTION);
+    }
+
+    private it.polimi.ingsw.shared.viewmodels.Powerup mandatorySpawnpointSelection(List<PowerupTile> powerups, Interviewer view, String message) {
+        List<it.polimi.ingsw.shared.viewmodels.Powerup> playerPowerupsVM = powerups.stream()
+                .filter(p -> powerups.stream().anyMatch(powerupController -> powerupController.getName().equals(p.getName())))
+                .map(p -> new it.polimi.ingsw.shared.viewmodels.Powerup(p.getName(), p.getColor()))
+                .collect(Collectors.toList());
+
+        return view.select(message, playerPowerupsVM, ClientApi.SPAWNPOINT_QUESTION);
+    }
 }

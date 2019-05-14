@@ -411,7 +411,7 @@ public class Player implements Damageable, MatchListener {
     }
 
     private void notifyPowerupGrabbed(PowerupTile powerupTile){
-        PowerupExchangeEvent e = new PowerupExchangeEvent(powerupTile.getName(), this);
+        PowerupExchange e = new PowerupExchange(powerupTile, this);
         listeners.forEach(playerListener -> playerListener.onPowerupGrabbed(e));
     }
 
@@ -423,21 +423,23 @@ public class Player implements Damageable, MatchListener {
     }
 
     public void selectSpawnpoint(PowerupTile powerupTile){
-        if (this.powerups.contains(powerupTile)){
+        if (match.getBoard().findPlayer(this).isPresent()) {
             match.getBoard().teleportPlayer(this, match.getBoard().getSpawnpoint(powerupTile.getColor()));
-            powerups.remove(powerupTile);
-            notifySelectedSpawnpoint(powerupTile);
-        } else throw new IllegalArgumentException("Player doesn't have the " + powerupTile.getName() + " powerup");
+        } else {
+            match.getBoard().getSpawnpoint(powerupTile.getColor()).addPlayer(this);
+        }
+        powerups.remove(powerupTile);
+        notifySelectedSpawnpoint(powerupTile);
     }
 
     private void notifyPowerupDiscarded(PowerupTile powerupTile){
-        PowerupExchangeEvent e = new PowerupExchangeEvent(powerupTile.getName(), this);
+        PowerupExchange e = new PowerupExchange(powerupTile, this);
         listeners.forEach(playerListener -> playerListener.onPowerupDiscarded(e));
     }
 
     private void notifySelectedSpawnpoint(PowerupTile powerupTile){
         SpawnpointChoiceEvent e = new SpawnpointChoiceEvent(powerupTile.getColor(), this);
-        listeners.forEach(playerListener -> playerListener.onSpawnpointChoose(e));
+        listeners.forEach(playerListener -> playerListener.onSpawnpointChosen(e));
     }
 
     /**

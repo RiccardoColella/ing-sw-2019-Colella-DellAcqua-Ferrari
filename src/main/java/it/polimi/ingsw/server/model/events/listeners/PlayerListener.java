@@ -44,9 +44,9 @@ public interface PlayerListener extends EventListener {
 
     void onHealthChanged(PlayerEvent e);
 
-    void onPowerupDiscarded(PowerupExchangeEvent e);
+    void onPowerupDiscarded(PowerupExchange e);
 
-    void onPowerupGrabbed(PowerupExchangeEvent e);
+    void onPowerupGrabbed(PowerupExchange e);
 
-    void onSpawnpointChoose(SpawnpointChoiceEvent e);
+    void onSpawnpointChosen(SpawnpointChoiceEvent e);
 }

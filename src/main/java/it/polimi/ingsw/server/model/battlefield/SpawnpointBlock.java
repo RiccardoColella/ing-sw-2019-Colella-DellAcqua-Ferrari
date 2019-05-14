@@ -96,4 +96,8 @@ public class SpawnpointBlock extends Block {
                 this.maxWeapons
         );
     }
+
+    public int getMaxWeapons() {
+        return maxWeapons;
+    }
 }

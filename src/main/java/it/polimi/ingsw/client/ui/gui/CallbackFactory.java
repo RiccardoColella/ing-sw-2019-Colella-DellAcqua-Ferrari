@@ -9,7 +9,9 @@ import javafx.util.Callback;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CallbackFactory {
+public final class CallbackFactory {
+
+    private CallbackFactory() {}
 
     public static Callback<ButtonType, Powerup> unskippablePowerup() {
         return button -> {

@@ -346,19 +346,19 @@ public class Match implements PlayerListener {
     }
 
     @Override
-    public void onPowerupDiscarded(PowerupExchangeEvent e){
+    public void onPowerupDiscarded(PowerupExchange e){
         // Nothing to do here
 
     }
 
     @Override
-    public void onPowerupGrabbed(PowerupExchangeEvent e){
+    public void onPowerupGrabbed(PowerupExchange e){
         // Nothing to do here
 
     }
 
     @Override
-    public void onSpawnpointChoose(SpawnpointChoiceEvent e) {
+    public void onSpawnpointChosen(SpawnpointChoiceEvent e) {
         // Nothing to do here
 
     }
