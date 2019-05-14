@@ -4,7 +4,7 @@ import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
 
-public class WeaponExchanged extends WeaponEvent {
+public class WeaponExchanged extends PlayerWeaponEvent {
 
     private final Block block;
 

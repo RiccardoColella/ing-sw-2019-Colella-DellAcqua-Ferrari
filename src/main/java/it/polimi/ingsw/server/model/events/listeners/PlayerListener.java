@@ -32,9 +32,9 @@ public interface PlayerListener extends EventListener {
 
     void onPlayerBoardFlipped(PlayerEvent e);
 
-    void onWeaponReloaded(WeaponEvent e);
+    void onWeaponReloaded(PlayerWeaponEvent e);
 
-    void onWeaponUnloaded(WeaponEvent e);
+    void onWeaponUnloaded(PlayerWeaponEvent e);
 
     void onWeaponPicked(WeaponExchanged e);
 
@@ -43,4 +43,10 @@ public interface PlayerListener extends EventListener {
     void onWalletChanged(PlayerWalletChanged e);
 
     void onHealthChanged(PlayerEvent e);
+
+    void onPowerupDiscarded(PowerupExchangeEvent e);
+
+    void onPowerupGrabbed(PowerupExchangeEvent e);
+
+    void onSpawnpointChoose(SpawnpointChoiceEvent e);
 }

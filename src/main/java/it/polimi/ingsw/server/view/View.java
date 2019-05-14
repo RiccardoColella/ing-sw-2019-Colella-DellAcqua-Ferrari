@@ -362,12 +362,12 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     }
 
     @Override
-    public void onWeaponReloaded(WeaponEvent e) {
+    public void onWeaponReloaded(PlayerWeaponEvent e) {
         // TODO: Bind Model to ViewModel and enqueue the event
     }
 
     @Override
-    public void onWeaponUnloaded(WeaponEvent e) {
+    public void onWeaponUnloaded(PlayerWeaponEvent e) {
         // TODO: Bind Model to ViewModel and enqueue the event
     }
 
@@ -401,6 +401,36 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     @Override
     public void onPlayerMoved(PlayerMoved e) {
+        // TODO: Bind Model to ViewModel and enqueue the event
+
+    }
+
+    @Override
+    public void onWeaponDropped(WeaponDropped e){
+        // TODO: Bind Model to ViewModel and enqueue the event
+
+    }
+
+    @Override
+    public void onPowerupDiscarded(PowerupExchangeEvent e){
+        // TODO: Bind Model to ViewModel and enqueue the event
+
+    }
+
+    @Override
+    public void onPowerupGrabbed(PowerupExchangeEvent e){
+        // TODO: Bind Model to ViewModel and enqueue the event
+
+    }
+
+    @Override
+    public void onSpawnpointChoose(SpawnpointChoiceEvent e){
+        // TODO: Bind Model to ViewModel and enqueue the event
+
+    }
+
+    @Override
+    public void onActivePlayerChanged(PlayerEvent e) {
         // TODO: Bind Model to ViewModel and enqueue the event
 
     }

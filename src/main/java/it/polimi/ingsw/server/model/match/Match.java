@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.model.match;
 
+import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.battlefield.Board;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.collections.Deck;
@@ -309,13 +310,13 @@ public class Match implements PlayerListener {
     }
 
     @Override
-    public void onWeaponReloaded(WeaponEvent e) {
+    public void onWeaponReloaded(PlayerWeaponEvent e) {
         // Nothing to do here
 
     }
 
     @Override
-    public void onWeaponUnloaded(WeaponEvent e) {
+    public void onWeaponUnloaded(PlayerWeaponEvent e) {
         // Nothing to do here
 
     }
@@ -343,6 +344,25 @@ public class Match implements PlayerListener {
         // Nothing to do here
 
     }
+
+    @Override
+    public void onPowerupDiscarded(PowerupExchangeEvent e){
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onPowerupGrabbed(PowerupExchangeEvent e){
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onSpawnpointChoose(SpawnpointChoiceEvent e) {
+        // Nothing to do here
+
+    }
+
 
     /**
      * This method triggers the MatchModeChanged event and sends it to its listeners
@@ -508,6 +528,16 @@ public class Match implements PlayerListener {
 
     public List<Player> getPlayersWhoDidFinalFrenzyTurn() {
         return playersWhoDidFinalFrenzyTurn;
+    }
+
+    public void notifyDroppedWeapon(WeaponTile weaponTile, Block block){
+        WeaponDropped e = new WeaponDropped(weaponTile, block);
+        this.listeners.forEach(matchListener -> matchListener.onWeaponDropped(e));
+    }
+
+    public void notifyActivePlayerUpdate(Player player){
+        PlayerEvent e = new PlayerEvent(player);
+        this.listeners.forEach(matchListener -> matchListener.onActivePlayerChanged(e));
     }
 
     public boolean isEnded() {

@@ -3,8 +3,7 @@ package it.polimi.ingsw.server.model.player;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.currency.*;
 import it.polimi.ingsw.server.model.events.*;
-import it.polimi.ingsw.server.model.events.listeners.MatchListener;
-import it.polimi.ingsw.server.model.events.listeners.PlayerListener;
+import it.polimi.ingsw.server.model.events.listeners.*;
 import it.polimi.ingsw.server.model.exceptions.MissingOwnershipException;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.match.Match;
@@ -407,7 +406,38 @@ public class Player implements Damageable, MatchListener {
         //player is allowed to grab a powerup only if he has not reached the max available
         if (this.powerups.size() < constraints.getMaxPowerupsForPlayer()) {
             this.powerups.add(powerup);
+            notifyPowerupGrabbed(powerup);
         } else throw new UnauthorizedExchangeException("Player already had " + constraints.getMaxPowerupsForPlayer() +" powerups");
+    }
+
+    private void notifyPowerupGrabbed(PowerupTile powerupTile){
+        PowerupExchangeEvent e = new PowerupExchangeEvent(powerupTile.getName(), this);
+        listeners.forEach(playerListener -> playerListener.onPowerupGrabbed(e));
+    }
+
+    public void discardPowerup(PowerupTile powerupTile){
+        if (this.powerups.contains(powerupTile)){
+            powerups.remove(powerupTile);
+            notifyPowerupDiscarded(powerupTile);
+        } else throw new IllegalArgumentException("Player doesn't have the " + powerupTile.getName() + " powerup");
+    }
+
+    public void selectSpawnpoint(PowerupTile powerupTile){
+        if (this.powerups.contains(powerupTile)){
+            match.getBoard().teleportPlayer(this, match.getBoard().getSpawnpoint(powerupTile.getColor()));
+            powerups.remove(powerupTile);
+            notifySelectedSpawnpoint(powerupTile);
+        } else throw new IllegalArgumentException("Player doesn't have the " + powerupTile.getName() + " powerup");
+    }
+
+    private void notifyPowerupDiscarded(PowerupTile powerupTile){
+        PowerupExchangeEvent e = new PowerupExchangeEvent(powerupTile.getName(), this);
+        listeners.forEach(playerListener -> playerListener.onPowerupDiscarded(e));
+    }
+
+    private void notifySelectedSpawnpoint(PowerupTile powerupTile){
+        SpawnpointChoiceEvent e = new SpawnpointChoiceEvent(powerupTile.getColor(), this);
+        listeners.forEach(playerListener -> playerListener.onSpawnpointChoose(e));
     }
 
     /**
@@ -423,6 +453,12 @@ public class Player implements Damageable, MatchListener {
                 this.ammoCubes.add(newAmmoCube);
             }
         }
+        notifyWalletChanges();
+    }
+
+    private void notifyWalletChanges(){
+        PlayerWalletChanged e = new PlayerWalletChanged(this);
+        listeners.forEach(playerListener -> playerListener.onWalletChanged(e));
     }
 
     /**
@@ -447,12 +483,12 @@ public class Player implements Damageable, MatchListener {
     }
 
     private void notifyWeaponUnloaded(WeaponTile weapon) {
-        WeaponEvent e = new WeaponEvent(this, weapon);
+        PlayerWeaponEvent e = new PlayerWeaponEvent(this, weapon);
         listeners.forEach(l -> l.onWeaponUnloaded(e));
     }
 
     private void notifyWeaponReloaded(WeaponTile weapon) {
-        WeaponEvent e = new WeaponEvent(this, weapon);
+        PlayerWeaponEvent e = new PlayerWeaponEvent(this, weapon);
         listeners.forEach(l -> l.onWeaponReloaded(e));
     }
 
@@ -590,6 +626,9 @@ public class Player implements Damageable, MatchListener {
         notifyPlayerWalletChanged();
     }
 
+    /**
+     * This method notifies all PlayerWalletChangedListeners
+     */
     private void notifyPlayerWalletChanged() {
         PlayerWalletChanged e = new PlayerWalletChanged(this);
         listeners.forEach(l -> l.onWalletChanged(e));
@@ -774,6 +813,16 @@ public class Player implements Damageable, MatchListener {
 
     @Override
     public void onMatchEnded(MatchEnded event) {
+        // Nothing to do here
+    }
+
+    @Override
+    public void onWeaponDropped(WeaponDropped e){
+        // Nothing to do here
+    }
+
+    @Override
+    public void onActivePlayerChanged(PlayerEvent e) {
         // Nothing to do here
     }
 }
