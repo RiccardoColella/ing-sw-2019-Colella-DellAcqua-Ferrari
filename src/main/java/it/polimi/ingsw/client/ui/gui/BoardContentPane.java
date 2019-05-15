@@ -1,6 +1,7 @@
 package it.polimi.ingsw.client.ui.gui;
 
 import it.polimi.ingsw.server.model.player.PlayerColor;
+import it.polimi.ingsw.utils.Tuple;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.HPos;
@@ -62,6 +63,8 @@ public class BoardContentPane extends GridPane {
 
     private int skullIndex;
 
+    private List<Tuple<PlayerColor, Boolean>> killshotTrack;
+
     private static final String HOVERED = "hovered";
 
     public BoardContentPane() {
@@ -92,6 +95,7 @@ public class BoardContentPane extends GridPane {
         container.setOnMouseMoved(mouseEvent -> mouseEventHandler(mouseEvent, this::mouseHoverHandler, node -> !node.getStyleClass().contains(HOVERED)));
         container.setOnMouseClicked(mouseEvent -> mouseEventHandler(mouseEvent, this::mouseClickHandler, node -> true));
         skullIndex = 8;
+        killshotTrack = new LinkedList<>();
     }
 
     private void mouseEventHandler(MouseEvent mouseEvent, Consumer<Parent> consumer, Function<Node, Boolean> additionalCondition) {
@@ -290,6 +294,7 @@ public class BoardContentPane extends GridPane {
             ImagePane token = new ImagePane(UrlFinder.findToken(color));
             skullContainer.add(token, skullIndex + 1, 1);
         }
+        killshotTrack.add(new Tuple<>(color, false));
         skullIndex++;
     }
 
@@ -298,6 +303,11 @@ public class BoardContentPane extends GridPane {
         Label overkill = new Label("2");
         GridPane.setHalignment(overkill, HPos.CENTER);
         lastToken.add(overkill, 0, 0);
+        killshotTrack.set(killshotTrack.size() - 1, new Tuple<>(killshotTrack.get(killshotTrack.size() - 1).getItem1(), true));
+    }
+
+    public List<Tuple<PlayerColor, Boolean>> getKillshotTrackUnmodifiable() {
+        return new LinkedList<>(killshotTrack);
     }
 
     public void addPlayer(PlayerColor color, int row, int col) {

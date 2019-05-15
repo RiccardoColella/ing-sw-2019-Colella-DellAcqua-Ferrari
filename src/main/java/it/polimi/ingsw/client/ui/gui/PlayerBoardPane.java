@@ -124,8 +124,14 @@ public class PlayerBoardPane extends GridPane {
                 addMark(copy.get(i));
             }
         }
-
     }
+
+    public void clearMarks() {
+        columnIndexMark = 1;
+        representedMarkTokens.clear();
+        markContainer.getChildren().clear();
+    }
+
     public void resetDamage() {
         activeDamageContainer.getChildren().clear();
         columnIndexDamage = 1;

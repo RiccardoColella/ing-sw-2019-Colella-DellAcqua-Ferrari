@@ -400,12 +400,17 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onPlayerDied(PlayerEvent e) {
-
+        sendNotification(e.getPlayer().getNickname() + " just died");
     }
 
     @Override
     public void onPlayerReborn(PlayerEvent e) {
-
+        Platform.runLater(() -> {
+            PlayerBoardPane paneToUpdate = findPlayerBoard(e.getPlayer());
+            paneToUpdate.resetDamage();
+            boardContent.movePlayer(e.getPlayer().getColor(), e.getPlayer().getLocation().y, e.getPlayer().getLocation().x);
+            sendNotification(e.getPlayer().getNickname() + " was brought back to life");
+        });
     }
 
     @Override
@@ -426,12 +431,63 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onPlayerBoardFlipped(PlayerEvent e) {
+        if (self.getNickname().equals(e.getPlayer().getNickname()) && self.isBoardFlipped() != e.getPlayer().isBoardFlipped()) {
+            self = e.getPlayer();
+            playerBoardImg.flip(UrlFinder.findPlayerBoard(self.getColor(), self.isBoardFlipped()));
+        } else if (self.getNickname().equals(e.getPlayer().getNickname()) && self.isTileFlipped() != e.getPlayer().isTileFlipped()) {
+            self = e.getPlayer();
+            playerTileImg.setImg(UrlFinder.findPlayerTile(self.getColor(), self.isTileFlipped()));
+        } else {
+            for (Player opponent : opponents) {
+                if (opponent.getNickname().equals(e.getPlayer().getNickname())) {
+                    if (self.isBoardFlipped() != e.getPlayer().isBoardFlipped()) {
+                        PlayerBoardPane boardToUpdate = findPlayerBoard(e.getPlayer());
+                        boardToUpdate.flip(UrlFinder.findPlayerBoard(e.getPlayer().getColor(), e.getPlayer().isBoardFlipped()));
+                    } else {
+                        findPlayerBoard(e.getPlayer());
+                    }
+                    break;
+                }
+            }
+        }
 
     }
 
     @Override
     public void onPlayerHealthChanged(PlayerHealthChanged e) {
+        Platform.runLater(() -> {
+            PlayerBoardPane paneToUpdate = findPlayerBoard(e.getPlayer());
+            int skullsToAdd = e.getSkulls() - paneToUpdate.getRepresentedSkulls();
+            for (int i = 0; i < skullsToAdd; i++) {
+                paneToUpdate.addSkull();
+            }
+            int oldTokens = paneToUpdate.getRepresentedDamageTokens().size();
+            int tokensToAdd = e.getDamages().size() - oldTokens;
+            for (int i = 0; i < tokensToAdd; i++) {
+                paneToUpdate.addToken(e.getDamages().get(oldTokens + i));
+            }
+            paneToUpdate.clearMarks();
+            for (PlayerColor c : e.getMarks()) {
+                paneToUpdate.addMark(c);
+            }
+            sendNotification(e.getPlayer().getNickname() + " now has " + e.getSkulls() + " skulls, " + e.getDamages().size() + " damage tokens and " + e.getMarks().size() + " marks.");
 
+        });
+    }
+
+    private PlayerBoardPane findPlayerBoard(Player player) {
+        if (player.getNickname().equals(self.getNickname())) {
+            self = player;
+            return playerBoardImg;
+        } else {
+            for (int i = 0; i < opponents.size(); i++) {
+                if (player.getNickname().equals(opponents.get(i).getNickname())) {
+                    opponents.set(i, player);
+                    return (PlayerBoardPane) ((GridPane) opponentsContainer.getChildren().get(i)).getChildren().get(1);
+                }
+            }
+        }
+        throw new IllegalStateException("Player " + player.getNickname() + " does not exist");
     }
 
     @Override
@@ -446,11 +502,13 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onWeaponUnloaded(WeaponEvent e) {
-        if (e.getPlayer().getNickname().equals(self.getNickname())) {
-            self = e.getPlayer();
-            initWeapons();
-        }
-        sendNotification(e.getPlayer().getNickname() + " shot with " + e.getWeaponName() + ", which is now unloaded");
+        Platform.runLater(() -> {
+            if (e.getPlayer().getNickname().equals(self.getNickname())) {
+                self = e.getPlayer();
+                initWeapons();
+            }
+            sendNotification(e.getPlayer().getNickname() + " shot with " + e.getWeaponName() + ", which is now unloaded");
+        });
     }
 
     @Override
@@ -466,6 +524,13 @@ public class GameController extends WindowController implements AutoCloseable, Q
             if (e.getPlayer().getNickname().equals(self.getNickname())) {
                 self = e.getPlayer();
                 initWeapons();
+            } else {
+                for (Player o : opponents) {
+                    if (o.getNickname().equals(e.getPlayer().getNickname())) {
+                        opponents.set(opponents.indexOf(o), e.getPlayer());
+                        break;
+                    }
+                }
             }
         });
     }
@@ -483,18 +548,25 @@ public class GameController extends WindowController implements AutoCloseable, Q
             if (e.getPlayer().getNickname().equals(self.getNickname())) {
                 self = e.getPlayer();
                 initWeapons();
+            } else {
+                for (Player o : opponents) {
+                    if (o.getNickname().equals(e.getPlayer().getNickname())) {
+                        opponents.set(opponents.indexOf(o), e.getPlayer());
+                        break;
+                    }
+                }
             }
         });
     }
 
     @Override
     public void onPlayerDisconnected(PlayerEvent e) {
-
+        sendNotification(e.getPlayer().getNickname() + " just disconnected from the match");
     }
 
     @Override
     public void onPlayerReconnected(PlayerEvent e) {
-
+        sendNotification(e.getPlayer().getNickname() + " is back!");
     }
 
     @Override
@@ -508,7 +580,11 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onPlayerTeleported(PlayerMoved e) {
-
+        Platform.runLater( () -> {
+            boardContent.movePlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
+            String message = " just teleported!";
+            sendNotification(e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
+        });
     }
 
     @Override
@@ -532,7 +608,16 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onKillshotTrackChanged(KillshotTrackChanged e) {
-
+        List<Tuple<PlayerColor, Boolean>> oldTrack = boardContent.getKillshotTrackUnmodifiable();
+        int toAdd = e.getKillshots().size() - oldTrack.size();
+        if (toAdd > 0) {
+            for (int i = 0; i < toAdd; i++) {
+                boardContent.addKillshot(e.getKillshots().get(i + toAdd).getItem1());
+                if (e.getKillshots().get(i + toAdd).getItem2()) {
+                    boardContent.addOverkill();
+                }
+            }
+        }
     }
 
     @Override
