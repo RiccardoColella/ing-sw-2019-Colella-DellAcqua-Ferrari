@@ -623,6 +623,16 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     @Override
+    public void onPlayerOverkilled(PlayerEvent e) {
+        sendNotification(e.getPlayer().getNickname() + " was overkilled!");
+    }
+
+    @Override
+    public void onActivePlayerChanged(PlayerEvent e) {
+        sendNotification("It's " + e.getPlayer().getNickname() + "'s turn");
+    }
+
+    @Override
     public void onMatchStarted(MatchStarted e) {
 
     }

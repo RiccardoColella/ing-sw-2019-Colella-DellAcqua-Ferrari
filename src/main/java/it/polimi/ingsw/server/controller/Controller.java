@@ -228,8 +228,11 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 .collect(Collectors.toList());
         if (!loadedPlayerWeapons.isEmpty()){
             WeaponTile selectedWeapon = selectWeaponTile("Which weapon do you want to use for shooting?", loadedPlayerWeapons, view);
+            activePlayer.setActiveWeapon(selectedWeapon);
             Weapon weapon = weaponMap.get(selectedWeapon.getName());
             weapon.shoot(view, activePlayer);
+            activePlayer.unloadActiveWeapon();
+            activePlayer.putAwayActiveWeapon();
         } else throw new IllegalStateException("Shoot executed while no weapon is loaded");
     }
 

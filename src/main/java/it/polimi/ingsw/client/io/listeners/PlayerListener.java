@@ -26,4 +26,8 @@ public interface PlayerListener {
     void onPlayerReconnected(PlayerEvent e);
 
     void onPlayerSpawned(PlayerSpawned e);
+
+    void onPlayerOverkilled(PlayerEvent e);
+
+    void onActivePlayerChanged(PlayerEvent e);
 }

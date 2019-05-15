@@ -11,6 +11,7 @@ import it.polimi.ingsw.server.model.events.listeners.MatchListener;
 import it.polimi.ingsw.server.model.events.listeners.PlayerListener;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
 import it.polimi.ingsw.shared.InputMessageQueue;
@@ -25,6 +26,7 @@ import it.polimi.ingsw.shared.messages.templates.Question;
 import it.polimi.ingsw.shared.messages.templates.gsonadapters.AnswerOf;
 import it.polimi.ingsw.shared.viewmodels.Powerup;
 import it.polimi.ingsw.shared.viewmodels.Wallet;
+import it.polimi.ingsw.utils.Tuple;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -361,44 +363,55 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     @Override
     public void onKillshotTrackChanged(KillshotTrackChanged e) {
-        // TODO: Bind Model to ViewModel and enqueue the event
+        List<Tuple<PlayerColor, Boolean>> killshots = e.getKillshots().stream().map(k -> new Tuple<>(k.getDamageToken().getAttacker().getPlayerInfo().getColor(), k.isOverkill())).collect(Collectors.toList());
+        it.polimi.ingsw.shared.events.networkevents.KillshotTrackChanged convertedEvent = new it.polimi.ingsw.shared.events.networkevents.KillshotTrackChanged(killshots);
+        outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_KILLSHOT_TRACK_CHANGED_EVENT, convertedEvent));
     }
 
     @Override
     public void onPlayerDied(PlayerDied e) {
-        // TODO: Bind Model to ViewModel and enqueue the event
+        it.polimi.ingsw.shared.viewmodels.Player playerVM = mapPlayer(e.getVictim());
+        it.polimi.ingsw.shared.events.networkevents.PlayerEvent convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerEvent(playerVM);
+        outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_DIED_EVENT, convertedEvent));
     }
 
     @Override
     public void onPlayerDamaged(PlayerDamaged e) {
-        it.polimi.ingsw.shared.viewmodels.Player playerVM = mapPlayer(e.getVictim());
-        PlayerHealthChanged convertedEvent = new PlayerHealthChanged(playerVM, playerVM.getDamage(), playerVM.getMarks(), playerVM.getSkulls());
-        outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_HEALTH_CHANGED_EVENT, convertedEvent));
+        //View only cares about onPlayerHealthChanged
     }
 
     @Override
     public void onPlayerOverkilled(PlayerOverkilled e) {
-        // TODO: Bind Model to ViewModel and enqueue the event
+        it.polimi.ingsw.shared.viewmodels.Player playerVM = mapPlayer(e.getVictim());
+        it.polimi.ingsw.shared.events.networkevents.PlayerEvent convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerEvent(playerVM);
+        outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_OVERKILLED_EVENT, convertedEvent));
     }
 
     @Override
     public void onPlayerReborn(PlayerEvent e) {
-        // TODO: Bind Model to ViewModel and enqueue the event
+        onBasicPlayerEvent(e, ClientApi.PLAYER_REBORN_EVENT);
     }
 
     @Override
     public void onPlayerBoardFlipped(PlayerEvent e) {
-        // TODO: Bind Model to ViewModel and enqueue the event
+        onBasicPlayerEvent(e, ClientApi.PLAYER_BOARD_FLIPPED_EVENT);
     }
 
     @Override
     public void onWeaponReloaded(PlayerWeaponEvent e) {
-        // TODO: Bind Model to ViewModel and enqueue the event
+        it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged convertedEvent;
+        it.polimi.ingsw.shared.viewmodels.Player playerVM = mapPlayer(e.getPlayer());
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged(playerVM, playerVM.getWallet(), playerVM.getNickname() + " reloaded their " + e.getWeaponTile().getName());
+        outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_WALLET_CHANGED_EVENT, convertedEvent));
     }
 
     @Override
     public void onWeaponUnloaded(PlayerWeaponEvent e) {
-        // TODO: Bind Model to ViewModel and enqueue the event
+        it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged convertedEvent;
+        it.polimi.ingsw.shared.viewmodels.Player playerVM = mapPlayer(e.getPlayer());
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged(playerVM, playerVM.getWallet(), playerVM.getNickname() + " unloaded their " + e.getWeaponTile().getName());
+        outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_WALLET_CHANGED_EVENT, convertedEvent));
+
     }
 
     @Override
@@ -411,8 +424,9 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     @Override
     public void onWeaponDropped(WeaponExchanged e) {
-        // TODO: Bind Model to ViewModel and enqueue the event
-
+        it.polimi.ingsw.shared.events.networkevents.WeaponExchanged convertedEvent;
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.WeaponExchanged(mapPlayer(e.getPlayer()), e.getWeaponTile().getName(), e.getBlock().getRow(), e.getBlock().getColumn());
+        outputMessageQueue.add(Message.createEvent(ClientApi.WEAPON_DROPPED_EVENT, convertedEvent));
     }
 
     @Override
@@ -426,13 +440,16 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     @Override
     public void onHealthChanged(PlayerEvent e) {
-        // TODO: Bind Model to ViewModel and enqueue the event
+        it.polimi.ingsw.shared.viewmodels.Player playerVM = mapPlayer(e.getPlayer());
+        PlayerHealthChanged convertedEvent = new PlayerHealthChanged(playerVM, playerVM.getDamage(), playerVM.getMarks(), playerVM.getSkulls());
+        outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_HEALTH_CHANGED_EVENT, convertedEvent));
     }
 
     @Override
     public void onPlayerTeleported(PlayerMoved e) {
-        // TODO: Bind Model to ViewModel and enqueue the event
-
+        it.polimi.ingsw.shared.events.networkevents.PlayerMoved convertedEvent;
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerMoved(mapPlayer(e.getPlayer()), e.getDestination().getRow(), e.getDestination().getColumn());
+        outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_TELEPORTED_EVENT, convertedEvent));
     }
 
     @Override
@@ -443,15 +460,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     }
 
     @Override
-    public void onWeaponDropped(WeaponDropped e){
-        // TODO: Bind Model to ViewModel and enqueue the event
-
-    }
-
-    @Override
     public void onPowerupDiscarded(PowerupExchange e){
-        // TODO: Bind Model to ViewModel and enqueue the event
-
+        it.polimi.ingsw.shared.viewmodels.Player playerVM = mapPlayer(e.getPlayer());
+        it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged convertedEvent;
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged(playerVM, playerVM.getWallet(), "Powerup " + e.getPowerupTile().getColor().toString().toLowerCase() + " " + e.getPowerupTile().getName() + " was discarded");
+        outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_WALLET_CHANGED_EVENT, convertedEvent));
     }
 
     @Override
@@ -471,7 +484,13 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     @Override
     public void onActivePlayerChanged(PlayerEvent e) {
-        // TODO: Bind Model to ViewModel and enqueue the event
-
+        onBasicPlayerEvent(e, ClientApi.ACTIVE_PLAYER_CHANGED_EVENT);
     }
+
+    private void onBasicPlayerEvent(PlayerEvent e, ClientApi type) {
+        it.polimi.ingsw.shared.viewmodels.Player playerVM = mapPlayer(e.getPlayer());
+        it.polimi.ingsw.shared.events.networkevents.PlayerEvent convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerEvent(playerVM);
+        outputMessageQueue.add(Message.createEvent(type, convertedEvent));
+    }
+
 }

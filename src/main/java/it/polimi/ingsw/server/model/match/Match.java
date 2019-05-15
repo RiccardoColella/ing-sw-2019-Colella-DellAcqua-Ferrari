@@ -530,11 +530,6 @@ public class Match implements PlayerListener {
         return playersWhoDidFinalFrenzyTurn;
     }
 
-    public void notifyDroppedWeapon(WeaponTile weaponTile, Block block){
-        WeaponDropped e = new WeaponDropped(weaponTile, block);
-        this.listeners.forEach(matchListener -> matchListener.onWeaponDropped(e));
-    }
-
     public void notifyActivePlayerUpdate(Player player){
         PlayerEvent e = new PlayerEvent(player);
         this.listeners.forEach(matchListener -> matchListener.onActivePlayerChanged(e));

@@ -867,12 +867,15 @@ public class Player implements Damageable, MatchListener {
     }
 
     @Override
-    public void onWeaponDropped(WeaponDropped e){
+    public void onActivePlayerChanged(PlayerEvent e) {
         // Nothing to do here
     }
 
-    @Override
-    public void onActivePlayerChanged(PlayerEvent e) {
-        // Nothing to do here
+    public void setActiveWeapon(WeaponTile weapon) {
+        if (this.getWeapons().contains(weapon) && weapon.isLoaded()) {
+            this.activeWeapon = weapon;
+        } else {
+            throw new IllegalStateException(weapon.getName() + " cannot be active");
+        }
     }
 }

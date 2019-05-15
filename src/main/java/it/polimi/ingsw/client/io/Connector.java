@@ -326,10 +326,14 @@ public abstract class Connector implements AutoCloseable {
                 boardListeners.forEach(l -> l.onPlayerTeleported(e));
                 break;
             }
-
             case PLAYER_DIED_EVENT: {
                 PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this, PlayerEvent.class);
                 playerListeners.forEach(l -> l.onPlayerDied(e));
+                break;
+            }
+            case PLAYER_OVERKILLED_EVENT: {
+                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this, PlayerEvent.class);
+                playerListeners.forEach(l -> l.onPlayerOverkilled(e));
                 break;
             }
             case PLAYER_REBORN_EVENT: {
@@ -387,7 +391,11 @@ public abstract class Connector implements AutoCloseable {
                 playerListeners.forEach(l -> l.onPlayerSpawned(e));
                 break;
             }
-
+            case ACTIVE_PLAYER_CHANGED_EVENT: {
+                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this, PlayerSpawned.class);
+                playerListeners.forEach(l -> l.onActivePlayerChanged(e));
+                break;
+            }
             default: {
                 throw new UnsupportedOperationException("Event \"" + eventType + "\" not supported");
             }

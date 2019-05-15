@@ -15,7 +15,5 @@ public interface MatchListener extends EventListener {
 
     void onKillshotTrackChanged(KillshotTrackChanged e);
 
-    void onWeaponDropped(WeaponDropped e);
-
     void onActivePlayerChanged(PlayerEvent e);
 }
