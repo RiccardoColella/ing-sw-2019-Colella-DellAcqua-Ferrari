@@ -45,7 +45,10 @@ public class PaymentHandler {
         activePlayerWallet.addAll(owner.getPowerups());
         for (Coin coin : debt) {
             if (activePlayerWallet.stream().anyMatch(coin::hasSameValueAs)) {
-                activePlayerWallet.remove(activePlayerWallet.stream().filter(c -> c.hasSameValueAs(coin)).findAny().orElseThrow(() -> new IllegalStateException("if-Control failed")));
+                activePlayerWallet.remove(activePlayerWallet
+                        .stream()
+                        .filter(c -> c.hasSameValueAs(coin))
+                        .findAny().orElseThrow(() -> new IllegalStateException("if-Control failed")));
             } else {
                 return false;
             }

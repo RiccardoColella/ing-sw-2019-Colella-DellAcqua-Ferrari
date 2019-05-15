@@ -357,6 +357,10 @@ public class Player implements Damageable, MatchListener {
         notifyWeaponDropped(weapon);
     }
 
+    /**
+     * This methods notifies to listeners that a weapon has been dropped by this player
+     * @param weapon dropped weapon
+     */
     private void notifyWeaponDropped(WeaponTile weapon) {
         WeaponExchanged e = new WeaponExchanged(this, weapon, getBlock());
         listeners.forEach(l -> l.onWeaponDropped(e));
@@ -393,6 +397,10 @@ public class Player implements Damageable, MatchListener {
         } else throw new UnauthorizedExchangeException("Player already has " + constraints.getMaxWeaponsForPlayer() + " weapons and needs to drop one in order to buy one");
     }
 
+    /**
+     * This method notifies the listeners that a weapon has benn picked up by this player
+     * @param weapon piked up weapon
+     */
     private void notifyWeaponPicked(WeaponTile weapon) {
         WeaponExchanged e = new WeaponExchanged(this, weapon, getBlock());
         listeners.forEach(l -> l.onWeaponPicked(e));
@@ -410,11 +418,19 @@ public class Player implements Damageable, MatchListener {
         } else throw new UnauthorizedExchangeException("Player already had " + constraints.getMaxPowerupsForPlayer() +" powerups");
     }
 
+    /**
+     * This method notifies that a powerup has been grabbed by this player
+     * @param powerupTile powerup grabbed
+     */
     private void notifyPowerupGrabbed(PowerupTile powerupTile){
         PowerupExchange e = new PowerupExchange(powerupTile, this);
         listeners.forEach(playerListener -> playerListener.onPowerupGrabbed(e));
     }
 
+    /**
+     * this method lets the player discard a powerup and notify this event to all listeners
+     * @param powerupTile discarded powerup
+     */
     public void discardPowerup(PowerupTile powerupTile){
         if (this.powerups.contains(powerupTile)){
             powerups.remove(powerupTile);
@@ -422,6 +438,10 @@ public class Player implements Damageable, MatchListener {
         } else throw new IllegalArgumentException("Player doesn't have the " + powerupTile.getName() + " powerup");
     }
 
+    /**
+     * This method lets the player move to a given spawnpoint and notifies this event to all listeners
+     * @param powerupTile the discarded powerup to choose the spawnpoint
+     */
     public void selectSpawnpoint(PowerupTile powerupTile){
         if (match.getBoard().findPlayer(this).isPresent()) {
             match.getBoard().teleportPlayer(this, match.getBoard().getSpawnpoint(powerupTile.getColor()));
@@ -432,11 +452,19 @@ public class Player implements Damageable, MatchListener {
         notifySelectedSpawnpoint(powerupTile);
     }
 
+    /**
+     * this method notifies that a powerup has been discarded by this player
+     * @param powerupTile discarded powerup
+     */
     private void notifyPowerupDiscarded(PowerupTile powerupTile){
         PowerupExchange e = new PowerupExchange(powerupTile, this);
         listeners.forEach(playerListener -> playerListener.onPowerupDiscarded(e));
     }
 
+    /**
+     * This method notifies to all listener that this player chose his spawnpoint
+     * @param powerupTile powerup discarded to choose the spawnpoint
+     */
     private void notifySelectedSpawnpoint(PowerupTile powerupTile){
         SpawnpointChoiceEvent e = new SpawnpointChoiceEvent(powerupTile.getColor(), this);
         listeners.forEach(playerListener -> playerListener.onSpawnpointChosen(e));
@@ -458,6 +486,9 @@ public class Player implements Damageable, MatchListener {
         notifyWalletChanged();
     }
 
+    /**
+     * This method notify that a changed happened in player's wallet
+     */
     private void notifyWalletChanged(){
         PlayerWalletChanged e = new PlayerWalletChanged(this);
         listeners.forEach(playerListener -> playerListener.onWalletChanged(e));
@@ -479,16 +510,27 @@ public class Player implements Damageable, MatchListener {
         );
     }
 
+    /**
+     * This method unload the active weapon and notifies the event
+     */
     public void unloadActiveWeapon() {
         this.activeWeapon.setLoaded(false);
         notifyWeaponUnloaded(activeWeapon);
     }
 
+    /**
+     * This weapon notifies that a weapon became unloaded
+     * @param weapon weapon that became unloaded
+     */
     private void notifyWeaponUnloaded(WeaponTile weapon) {
         PlayerWeaponEvent e = new PlayerWeaponEvent(this, weapon);
         listeners.forEach(l -> l.onWeaponUnloaded(e));
     }
 
+    /**
+     * This method notifies that a weapon has been reloaded
+     * @param weapon reloadded weapon
+     */
     private void notifyWeaponReloaded(WeaponTile weapon) {
         PlayerWeaponEvent e = new PlayerWeaponEvent(this, weapon);
         listeners.forEach(l -> l.onWeaponReloaded(e));
@@ -515,6 +557,9 @@ public class Player implements Damageable, MatchListener {
         notifyHealthChanged();
     }
 
+    /**
+     * This method notifies that the players's health changed
+     */
     private void notifyHealthChanged() {
         PlayerEvent e = new PlayerEvent(this);
         listeners.forEach(l -> l.onHealthChanged(e));
@@ -714,6 +759,9 @@ public class Player implements Damageable, MatchListener {
         notifyPlayerBroughtBackToLife();
     }
 
+    /**
+     * This method notifies that the player's board flipped
+     */
     private void notifyPlayerBoardFlipped() {
         PlayerEvent e = new PlayerEvent(this);
         listeners.forEach(l -> l.onPlayerBoardFlipped(e));

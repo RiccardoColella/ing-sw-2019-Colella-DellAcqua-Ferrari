@@ -1,6 +1,6 @@
 package it.polimi.ingsw.client;
 
-import it.polimi.ingsw.client.ui.CLI;
+import it.polimi.ingsw.client.ui.cli.CLI;
 
 /**
  * This is the starting point of the client

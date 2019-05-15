@@ -1,4 +1,4 @@
-package it.polimi.ingsw.client.ui;
+package it.polimi.ingsw.client.ui.cli;
 
 import com.google.gson.Gson;
 import it.polimi.ingsw.client.io.Connector;
