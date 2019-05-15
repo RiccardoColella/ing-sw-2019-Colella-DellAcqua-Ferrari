@@ -55,7 +55,7 @@ public class Powerup {
         if (!(other instanceof Powerup)) {
             return false;
         } else {
-            return other.hashCode() == this.hashCode();
+            return this.name.equals(((Powerup) other).name) && this.color.equals(((Powerup) other).color);
         }
     }
 }

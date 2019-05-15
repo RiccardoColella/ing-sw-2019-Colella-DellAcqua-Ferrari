@@ -151,11 +151,11 @@ public class Attack {
             throw new IllegalStateException("No players to hit");
         } else if (actionConfig.isSkippable()) {
             Set<Set<String>> nicknames = mapPlayerToNickName(potentialTargets);
-            Optional<Set<String>> chosenNicknames = interviewer.selectOptional("Select the group of targets you want to hit", nicknames, ClientApi.TARGET_QUESTION);
+            Optional<Set<String>> chosenNicknames = interviewer.selectOptional("Select the group of targets you want to hit", nicknames, ClientApi.TARGET_SET_QUESTION);
             chosenSet = chosenNicknames.map(strings -> findTargetByNickname(potentialTargets, strings));
         } else {
             Set<Set<String>> nicknames = mapPlayerToNickName(potentialTargets);
-            Set<String> chosenNicknames = interviewer.select("Select the group of targets you want to hit", nicknames, ClientApi.TARGET_QUESTION);
+            Set<String> chosenNicknames = interviewer.select("Select the group of targets you want to hit", nicknames, ClientApi.TARGET_SET_QUESTION);
             chosenSet = Optional.of(findTargetByNickname(potentialTargets, chosenNicknames));
         }
         return chosenSet;

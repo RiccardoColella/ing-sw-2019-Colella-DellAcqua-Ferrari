@@ -190,12 +190,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
             Message response = inputMessageQueue.dequeueAnswer(flowId, answerTimeout, answerTimeoutUnit);
             Answer<T> answer = gson.fromJson(response.getPayload(), new AnswerOf<>(options.iterator().next().getClass()));
 
-            if (answer.isPresent() && !options.contains(answer.getChoice())) {
-                throw new ViewDisconnectedException("Received an invalid answer from the client");
-            } else {
-                return answer.getChoice();
-            }
-
+            return options.stream().filter(option -> option.equals(answer.getChoice())).findAny().orElse(null);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             connected = false;

@@ -224,7 +224,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         List<WeaponTile> playerWeapons = activePlayer.getWeapons();
         List<WeaponTile> loadedPlayerWeapons = playerWeapons
                 .stream()
-                .filter(WeaponTile::isLoaded)
+                .filter(tile -> tile.isLoaded() && weaponMap.get(tile.getName()).hasAvailableAttacks(activePlayer))
                 .collect(Collectors.toList());
         if (!loadedPlayerWeapons.isEmpty()){
             WeaponTile selectedWeapon = selectWeaponTile("Which weapon do you want to use for shooting?", loadedPlayerWeapons, view);
@@ -344,38 +344,6 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         }
         managePowerupBetweenActions(player, view);
     }
-
-    /**
-     * This method returns a stream of Optional of Tuples of Compound Actions and an Integer, where the Tuple indicate
-     * in the compound actions the possible BasicActions that are available
-     * @param playedActions is the list of past played actions in this turn by the player
-     * @param compoundActions is the list of CompoundActions the player can play in the macro action. It may depends from the
-     *                        different game mode or player situations
-     * @return a stream of Optional of Tuples of a Compound Action and an Integer, where the Tuple indicate
-     *         in the compound actions the possible BasicActions that are available
-     */
-    private Stream<Optional<Tuple<CompoundAction, Integer>>> candidateActions(List<BasicAction> playedActions, List<CompoundAction> compoundActions){
-        return compoundActions
-                .stream()
-                .map(compoundAction -> {
-                    //Here we take the basic actions from the compound action
-                    List<BasicAction> actions = compoundAction.getActions();
-                    //Here we select the possible basic action the player may do, checking the composition of the compound actions
-                    for (
-                            int i = 0;
-                            i < actions.size() - playedActions.size() &&
-                                    actions.get(i) == BasicAction.MOVE;
-                            i++
-                    ){
-                        //If the previous actions are compatible with the inspected compound action, we select the index of next possible basic action
-                        //The method is thought to be continued in candidateBasicActions()
-                        if (actions.subList(i, i+playedActions.size()).equals(playedActions))
-                            return  Optional.of(new Tuple<>(compoundAction, i));
-                    }
-                    return Optional.empty();
-                });
-    }
-
     /**
      * This private method calculate the possible BasicActions the player can do
      * @param playedActions is the list of actions done in this turn by the players
@@ -384,31 +352,42 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
      * @return a Set of possible basic actions the player can execute
      */
     private Set<BasicAction> candidateBasicActions(List<BasicAction> playedActions, List<CompoundAction> compoundActions){
-        return candidateActions(playedActions, compoundActions)
-                //We select only the present basic actions
-                .filter(Optional::isPresent)
-                //And we get them
-                .map(Optional::get)
-                .map(tuple -> {
-                    //we get the basic action
-                    int index = tuple.getItem2() + 1;
-                    List<BasicAction> compoundAction = tuple.getItem1().getActions();
-                    if (compoundAction.get(index) == BasicAction.MOVE) {
-                        Set<BasicAction> actionsSet = new HashSet<>();
-                        actionsSet.add(BasicAction.MOVE);
-                        for (int i = index + 1; i < compoundAction.size(); i++) {
-                            if (compoundAction.get(i) != BasicAction.MOVE) {
-                                actionsSet.add(compoundAction.get(i));
-                                return actionsSet;
+
+        Set<BasicAction> basicActions = new HashSet<>();
+
+        compoundActions
+                .forEach(compoundAction -> {
+                    //Here we take the basic actions from the compound action
+                    List<BasicAction> actions = compoundAction.getActions();
+
+                    List<BasicAction> filledPlayedActions = new LinkedList<>(playedActions);
+
+                    boolean compatible = false;
+
+                    while (filledPlayedActions.size() < actions.size()) {
+                        if (actions.subList(0, filledPlayedActions.size()).equals(filledPlayedActions)) {
+                            compatible = true;
+                            break;
+                        } else {
+                            filledPlayedActions.add(0, BasicAction.MOVE);
+                        }
+                    }
+
+                    if (compatible) {
+                        basicActions.add(actions.get(filledPlayedActions.size()));
+
+                        if (actions.get(filledPlayedActions.size()) == BasicAction.MOVE) {
+                            for (int i = filledPlayedActions.size() + 1; i < actions.size(); i++) {
+                                if (actions.get(i) != BasicAction.MOVE) {
+                                    basicActions.add(actions.get(i));
+                                    break;
+                                }
                             }
                         }
-                        return actionsSet;
-                    } else {
-                        return new HashSet<>(Collections.singleton(compoundAction.get(index)));
                     }
-                })
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet());
+                });
+
+        return basicActions;
     }
 
 
@@ -477,13 +456,14 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
             if (selectedPowerup.isPresent()){
                 //If the player wants to use a powerup we select the target
                 Powerup powerup = playerPowerups.stream().filter(p -> p.getName().equals(selectedPowerup.get().getName())).findFirst().orElseThrow(() -> new IllegalStateException("Powerup not found"));
+                PowerupTile powerupTile = playerPowerupTiles.stream().filter(p -> p.getName().equals(selectedPowerup.get().getName()) && p.getColor().equals(selectedPowerup.get().getColor())).findFirst().orElseThrow(() -> new IllegalStateException("Powerup not found"));
                 Optional<Player> optionalTarget = selectTarget(powerup, activePlayer, view);
                 if (optionalTarget.isPresent()){
                     //If the target is present/available we use the powerup
                     PaymentHandler.pay(powerup.getCost(), activePlayer, view);
                     powerup.activate(activePlayer, optionalTarget.get(), view);
                     //After the use, we discard the powerupTile from the player's hand and we put it in the discarded pack
-                    discardPowerupTile(activePlayer, powerup);
+                    discardPowerupTile(activePlayer, powerupTile);
                 }
             }
         }
@@ -574,9 +554,10 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 Optional<it.polimi.ingsw.shared.viewmodels.Powerup> selectedPowerup = optionalPowerupSelection(availablePowerupTiles, attackerView, "Do you want to use a powerup against " + victim.getPlayerInfo().getNickname() + "?");
                 if (selectedPowerup.isPresent()){
                     Powerup powerup = availablePowerups.stream().filter(p -> p.getName().equals(selectedPowerup.get().getName())).findFirst().orElseThrow(() -> new IllegalStateException("Powerup not found"));
+                    PowerupTile powerupTile = availablePowerupTiles.stream().filter(p -> p.getName().equals(selectedPowerup.get().getName()) && p.getColor().equals(selectedPowerup.get().getColor())).findFirst().orElseThrow(() -> new IllegalStateException("Powerup not found"));
                     PaymentHandler.pay(powerup.getCost(), attacker, attackerView);
                     powerup.activate(attacker, victim, attackerView);
-                    discardPowerupTile(attacker, powerup);
+                    discardPowerupTile(attacker, powerupTile);
                 } else availablePowerups.clear();
             }
         }
@@ -604,9 +585,10 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 Optional<it.polimi.ingsw.shared.viewmodels.Powerup> selectedPowerup = optionalPowerupSelection(availablePowerupTiles, victimView, "Do you want to use a powerup against " + attacker.getPlayerInfo().getNickname() + "?");
                 if (selectedPowerup.isPresent()){
                     Powerup powerup = availablePowerups.stream().filter(p -> p.getName().equals(selectedPowerup.get().getName())).findFirst().orElseThrow(() -> new IllegalStateException("Powerup not found"));
+                    PowerupTile powerupTile = availablePowerupTiles.stream().filter(p -> p.getName().equals(selectedPowerup.get().getName()) && p.getColor().equals(selectedPowerup.get().getColor())).findFirst().orElseThrow(() -> new IllegalStateException("Powerup not found"));
                     PaymentHandler.pay(powerup.getCost(), victim, victimView);
                     powerup.activate(attacker, attacker, victimView);
-                    discardPowerupTile(victim, powerup);
+                    discardPowerupTile(victim, powerupTile);
                 } else availablePowerups.clear();
             }
         }
@@ -651,32 +633,6 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 throw new IllegalArgumentException("Can't select the target of the given powerup");
         }
         return target;
-    }
-
-    /**
-     * This method manages the discard process of a powerup. Retrieve the powerupTile, discard it from the player's hand
-     * and puts it in the discarded powerup pack
-     * @param player the player who needs to discard a powerup after the use
-     * @param powerup powerup to be discarded
-     */
-    private void discardPowerupTile(Player player, Powerup powerup){
-        //Here we are retrieving the powerupTile corresponding to te powerup
-        List<PowerupTile> powerupTiles = player.getPowerups();
-        List<Tuple<PowerupTile, Powerup>> tuples = new LinkedList<>();
-        Map<String, Powerup>  powerupMap = PowerupFactory.getPowerupMap();
-        for (PowerupTile powerupTile : powerupTiles){
-            tuples.add(new Tuple<>(powerupTile, powerupMap.get(powerupTile.getName())));
-        }
-        PowerupTile toBeDiscarded = tuples
-                .stream()
-                .filter(tuple -> tuple.getItem2().equals(powerup))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("Powerup to be discarded is not in player's hand"))
-                .getItem1();
-        //Here we discard the powerup. We first put the powerup in the discarded pack
-        powerupTileDeck.discard(toBeDiscarded);
-        //We then say the player to discard the powerup from his hand
-        player.discardPowerup(toBeDiscarded);
     }
 
     /**

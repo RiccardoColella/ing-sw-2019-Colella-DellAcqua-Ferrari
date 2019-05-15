@@ -260,8 +260,18 @@ public abstract class Connector implements AutoCloseable {
                 break;
             }
             case TARGET_QUESTION: {
-                Question<String> question = Question.fromJson(message.getPayload(), new TypeToken<Question<String>>(){}.getType());
+                Question<String> question = Question.fromJson(message.getPayload(), new TypeToken<Question<String>>() {
+                }.getType());
                 questionListeners.forEach(l -> l.onTargetQuestion(
+                        question,
+                        choice -> enqueueAnswer(choice, message.getFlowId())
+                        )
+                );
+                break;
+            }
+            case TARGET_SET_QUESTION: {
+                Question<Set<String>> question = Question.fromJson(message.getPayload(), new TypeToken<Question<Set<String>>>(){}.getType());
+                questionListeners.forEach(l -> l.onTargetSetQuestion(
                         question,
                         choice -> enqueueAnswer(choice, message.getFlowId())
                         )

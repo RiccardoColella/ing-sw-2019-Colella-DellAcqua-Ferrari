@@ -7,6 +7,7 @@ import it.polimi.ingsw.shared.viewmodels.Powerup;
 
 import java.awt.*;
 import java.util.EventListener;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -35,4 +36,6 @@ public interface QuestionMessageReceivedListener extends EventListener {
     void onSpawnpointQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback);
 
     void onTargetQuestion(Question<String> question, Consumer<String> answerCallback);
+
+    void onTargetSetQuestion(Question<Set<String>> question, Consumer<Set<String>> answerCallback);
 }

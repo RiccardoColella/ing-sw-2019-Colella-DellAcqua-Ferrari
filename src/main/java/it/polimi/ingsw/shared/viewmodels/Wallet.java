@@ -4,6 +4,7 @@ import it.polimi.ingsw.server.model.currency.CurrencyColor;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Wallet {
@@ -56,7 +57,9 @@ public class Wallet {
         return Stream.concat(
                 Stream.concat(loadedWeapons.stream().map(x -> (Object)x), unloadedWeapons.stream().map(x -> (Object)x)),
                 Stream.concat(ammoCubes.stream().map(x -> (Object)x), powerups.stream().map(x -> (Object)x))
-        ).hashCode();
+        )
+                .collect(Collectors.toList())
+                .hashCode();
     }
 
     @Override
@@ -64,7 +67,10 @@ public class Wallet {
         if (!(other instanceof Wallet)) {
             return false;
         } else {
-            return other.hashCode() == this.hashCode();
+            return loadedWeapons.equals(((Wallet) other).loadedWeapons)
+                    && unloadedWeapons.equals(((Wallet) other).unloadedWeapons)
+                    && ammoCubes.equals(((Wallet) other).ammoCubes)
+                    && powerups.equals(((Wallet) other).powerups);
         }
     }
 }

@@ -100,7 +100,7 @@ public class Player {
         if (!(other instanceof Player)) {
             return false;
         } else {
-            return other.hashCode() == this.hashCode();
+            return this.nickname.equals(((Player) other).nickname);
         }
     }
 }

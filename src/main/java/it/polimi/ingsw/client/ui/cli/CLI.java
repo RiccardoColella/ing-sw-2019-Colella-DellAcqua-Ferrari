@@ -249,4 +249,9 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable {
         );
 
     }
+
+    @Override
+    public void onTargetSetQuestion(Question<Set<String>> question, Consumer<Set<String>> answerCallback) {
+        // TODO: Implement the selection
+    }
 }

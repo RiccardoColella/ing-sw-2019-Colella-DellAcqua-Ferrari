@@ -29,8 +29,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.awt.*;
-import java.util.Collections;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -73,6 +72,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     public GameController(Connector connector, MatchStarted e) {
         super("Adrenalina", "/fxml/game.fxml", "/css/game.css");
+
         this.connector = connector;
         this.preset = e.getPreset();
         BoardPane board = new BoardPane(preset);
@@ -107,6 +107,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
         initWeapons();
         tileMsg.setText(self.getNickname() + ", " + tileMsg.getText());
 
+        stage.setOnCloseRequest(ignored -> this.close());
     }
 
     private void initPlayerBoard() {
@@ -396,6 +397,31 @@ public class GameController extends WindowController implements AutoCloseable, Q
     @Override
     public void onTargetQuestion(Question<String> question, Consumer<String> answerCallback) {
         stringSelectionQuestion(question, answerCallback, "Target question");
+    }
+
+    @Override
+    public void onTargetSetQuestion(Question<Set<String>> question, Consumer<Set<String>> answerCallback) {
+        Platform.runLater(() -> {
+            Dialog<Set<String>> dialog = new Dialog<>();
+            dialog.setTitle("Multiple target question");
+            dialog.setHeaderText(question.getText());
+            SelectPane sp = new SelectPane();
+            sp.setTextOnlyOptions(
+                    question
+                            .getAvailableOptions()
+                            .stream()
+                            .map(
+                                    set -> set.stream()
+                                    .collect(Collectors.joining("\n", " - ", ""))
+                            )
+                    .collect(Collectors.toList())
+            );
+            sp.setSkippable(question.isSkippable());
+            dialog.setDialogPane(sp);
+            dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippableStringSet() : CallbackFactory.unskippableStringSet());
+            dialog.showAndWait();
+            answerCallback.accept(dialog.getResult());
+        });
     }
 
     @Override
