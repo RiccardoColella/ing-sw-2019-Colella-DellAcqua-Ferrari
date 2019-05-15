@@ -4,12 +4,16 @@ import com.google.gson.Gson;
 import it.polimi.ingsw.client.io.Connector;
 import it.polimi.ingsw.client.io.RMIConnector;
 import it.polimi.ingsw.client.io.SocketConnector;
+import it.polimi.ingsw.client.io.listeners.BoardListener;
+import it.polimi.ingsw.client.io.listeners.MatchListener;
+import it.polimi.ingsw.client.io.listeners.PlayerListener;
 import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
+import it.polimi.ingsw.shared.events.networkevents.*;
 import it.polimi.ingsw.shared.messages.templates.Question;
 import it.polimi.ingsw.shared.viewmodels.Powerup;
 
@@ -30,7 +34,7 @@ import java.util.function.Consumer;
  *
  * @author Carlo Dell'Acqua
  */
-public class CLI implements QuestionMessageReceivedListener, AutoCloseable {
+public class CLI implements QuestionMessageReceivedListener, AutoCloseable, MatchListener, BoardListener, PlayerListener {
     /**
      * JSON conversion utility
      */
@@ -50,6 +54,14 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable {
      * Printer for writing to System.out
      */
     private final PrintStream printStream;
+
+    /**
+     * This variable stores and knows how to represent the game situation
+     */
+    private GameRepresentation gameRepresentation;
+
+    private static final String W = "[ WARNING ] ";
+    private static final String M = "[ MESSAGE ] ";
 
     /**
      * Constructs a UI based on the command line
@@ -253,5 +265,122 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable {
     @Override
     public void onTargetSetQuestion(Question<Set<String>> question, Consumer<Set<String>> answerCallback) {
         // TODO: Implement the selection
+    }
+
+    @Override
+    public void onMatchStarted(MatchStarted e) {
+        gameRepresentation = new GameRepresentation(e);
+    }
+
+    @Override
+    public void onMatchModeChanged(MatchModeChanged e) {
+        printStream.print(W + "Match mode changed! It now is: " + e.getMode().toString());
+    }
+
+    @Override
+    public void onKillshotTrackChanged(KillshotTrackChanged e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onMatchEnded(MatchEnded e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onPlayerMoved(PlayerMoved e) {
+        gameRepresentation.movePlayer(e);
+    }
+
+    @Override
+    public void onPlayerTeleported(PlayerMoved e) {
+        gameRepresentation.movePlayer(e);
+    }
+
+    @Override
+    public void onPlayerDied(PlayerEvent e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onPlayerReborn(PlayerEvent e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onPlayerWalletChanged(PlayerWalletChanged e) {
+        gameRepresentation.setPlayerWallet(e.getPlayer(), e.getWallet());
+        printStream.println(W + e.getPlayer().getNickname() + "'s wallet changed!");
+        printStream.println(M + e.getMessage());
+    }
+
+    @Override
+    public void onPlayerBoardFlipped(PlayerEvent e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onPlayerHealthChanged(PlayerHealthChanged e) {
+        gameRepresentation.updatePlayerHealth(e);
+        printStream.println(W + e.getPlayer().getNickname() + "'s health changed");
+    }
+
+    @Override
+    public void onWeaponReloaded(WeaponEvent e) {
+        gameRepresentation.setPlayerWeaponLoaded(e.getPlayer(), e.getWeaponName());
+        printStream.println(W + e.getPlayer() + " reloaded his " + e.getWeaponName());
+    }
+
+    @Override
+    public void onWeaponUnloaded(WeaponEvent e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onWeaponPicked(WeaponExchanged e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onWeaponDropped(WeaponExchanged e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onPlayerDisconnected(PlayerEvent e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onPlayerReconnected(PlayerEvent e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onPlayerSpawned(PlayerSpawned e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onPlayerOverkilled(PlayerEvent e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onActivePlayerChanged(PlayerEvent e) {
+        // TODO: implement
+
     }
 }
