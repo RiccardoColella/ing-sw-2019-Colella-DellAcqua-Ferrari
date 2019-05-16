@@ -40,5 +40,6 @@ public class OutputStreamMessageConsumer implements IOConsumer<Message> {
         byte[] content = message.toJson().getBytes(StandardCharsets.UTF_8);
         outputStream.writeInt(content.length);
         outputStream.write(content);
+        outputStream.flush();
     }
 }

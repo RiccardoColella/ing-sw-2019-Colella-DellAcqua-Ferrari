@@ -10,6 +10,7 @@ import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.shared.viewmodels.Powerup;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -87,9 +88,10 @@ public class PaymentHandler {
      * @param owner is the player who has to pay. He MUST have sufficient coins to cover his debt
      * @param payer is the interface who will be asked to choose how to manage owner's debt
      * @param ignoreColor determines whether or not the only criteria for the currency is the amount and not the color
+     * @param restrictedFunds a coin that should not be considered available for payments
      * @return the selected Coin chosen to pay the debt
      */
-    public static List<Coin> collectCoins(List<? extends Coin> debt, Player owner, Interviewer payer, boolean ignoreColor) {
+    public static List<Coin> collectCoins(List<? extends Coin> debt, Player owner, Interviewer payer, boolean ignoreColor, @Nullable PowerupTile restrictedFunds) {
 
         List<PowerupTile> chosenPowerups = new LinkedList<>();
         List<AmmoCube> chosenAmmoCube = new LinkedList<>();
@@ -97,7 +99,7 @@ public class PaymentHandler {
         for (Coin coinOwed : debt){
 
             List<PowerupTile> powerupTiles = owner.getPowerups().stream()
-                    .filter(p -> (ignoreColor || p.hasSameValueAs(coinOwed)) && !chosenPowerups.contains(p))
+                    .filter(p -> (ignoreColor || p.hasSameValueAs(coinOwed)) && !chosenPowerups.contains(p) && p != restrictedFunds)
                     .collect(Collectors.toList());
 
             List<AmmoCube> ammoCubes = owner.getAmmoCubes().stream()
@@ -145,12 +147,27 @@ public class PaymentHandler {
     /**
      * This methods let the player to choose what payment method to use
      *
+     * @param debt is the amount of coin the player needs to pay
+     * @param owner is the player who has to pay. He MUST have sufficient coins to cover his debt
+     * @param payer is the interface who will be asked to choose how to manage owner's debt
+     * @param ignoreColor determines whether or not the only criteria for the currency is the amount and not the color
+     * @return the selected Coin chosen to pay the debt
+     */
+    public static List<Coin> collectCoins(List<? extends Coin> debt, Player owner, Interviewer payer, boolean ignoreColor) {
+
+        return collectCoins(debt, owner, payer, ignoreColor, null);
+    }
+
+    /**
+     * This methods let the player to choose what payment method to use
+     *
      * @param debt is the amount of coin of non specified colour the player needs to pay
      * @param owner is the player who has to pay. He MUST have sufficient coins to cover his debt
      * @param payer is the interface who will be asked to choose how to manage owner's debt
+     * @param restrictedFunds a coin that should not be considered available for payments
      * @return the selected Coin chosen to pay the debt
      */
-    public static List<Coin> collectCoins(int debt, Player owner, Interviewer payer){
+    public static List<Coin> collectCoins(int debt, Player owner, Interviewer payer, @Nullable PowerupTile restrictedFunds){
         return collectCoins(
                 IntStream.range(0, debt)
                         .boxed()
@@ -158,7 +175,25 @@ public class PaymentHandler {
                         .collect(Collectors.toList()),
                 owner,
                 payer,
-                true
+                true,
+                restrictedFunds
+        );
+    }
+
+    /**
+     * This methods let the player to choose what payment method to use
+     *
+     * @param debt is the amount of coin of non specified colour the player needs to pay
+     * @param owner is the player who has to pay. He MUST have sufficient coins to cover his debt
+     * @param payer is the interface who will be asked to choose how to manage owner's debt
+     * @return the selected Coin chosen to pay the debt
+     */
+    public static List<Coin> collectCoins(int debt, Player owner, Interviewer payer){
+        return collectCoins(
+                debt,
+                owner,
+                payer,
+                null
         );
     }
 
@@ -178,10 +213,22 @@ public class PaymentHandler {
      * @param debt is the amount of coin of non specified colour the player needs to pay
      * @param owner is the player who has to pay
      * @param payer is the interface who will be asked to choose how to manage owner's debt
+     * @param restrictedFunds a coin that should not be considered available for payments
+     */
+    public static void pay(int debt, Player owner, Interviewer payer, @Nullable PowerupTile restrictedFunds) {
+        List<Coin> coins = collectCoins(debt, owner, payer, restrictedFunds);
+        owner.pay(coins);
+    }
+
+
+    /**
+     * This methods let the player to choose what payment method to use
+     * @param debt is the amount of coin of non specified colour the player needs to pay
+     * @param owner is the player who has to pay
+     * @param payer is the interface who will be asked to choose how to manage owner's debt
      */
     public static void pay(int debt, Player owner, Interviewer payer) {
-        List<Coin> coins = collectCoins(debt, owner, payer);
-        owner.pay(coins);
+        pay(debt, owner, payer, null);
     }
 
 

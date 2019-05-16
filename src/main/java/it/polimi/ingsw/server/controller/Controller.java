@@ -521,7 +521,8 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 .stream()
                 .map(powerupTile -> PowerupFactory.getPowerupMap().get(powerupTile.getName()))
                 .filter(powerup -> powerup.getTrigger().equals(trigger))
-                .filter(powerup -> PaymentHandler.canAfford(powerup.getCost(), owner))
+                // + 1 needed to avoid paying a powerup with itself
+                .filter(powerup -> PaymentHandler.canAfford(powerup.getCost() + 1, owner))
                 .collect(Collectors.toList());
         boolean seesSomeone = players.stream().anyMatch(player -> player != owner && owner.sees(player));
         availablePowerups.removeIf(powerup -> powerup.getTargetConstraint() == Powerup.TargetConstraint.VISIBLE && !seesSomeone);
@@ -559,7 +560,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                             .filter(p -> p.getName().equals(selected.get().getName()) && p.getColor().equals(selected.get().getColor()))
                             .findAny()
                             .orElseThrow(() -> new IllegalStateException("PowerupTile " + selected.get().getName() + " does not exist"));
-                    PaymentHandler.pay(chosenPowerup.getCost(), powerupOwner, interviewer);
+                    PaymentHandler.pay(chosenPowerup.getCost(), powerupOwner, interviewer, chosenTile);
                     if (powerupTarget == null) {
                         chosenPowerup.activate(powerupOwner, selectTarget(chosenPowerup, powerupOwner, interviewer), interviewer);
                     } else {
@@ -643,7 +644,6 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
 
     private Optional<it.polimi.ingsw.shared.viewmodels.Powerup> optionalPowerupSelection(List<PowerupTile> powerups, Interviewer view, String message) {
         List<it.polimi.ingsw.shared.viewmodels.Powerup> playerPowerupsVM = powerups.stream()
-                .filter(p -> powerups.stream().anyMatch(powerupController -> powerupController.getName().equals(p.getName())))
                 .map(p -> new it.polimi.ingsw.shared.viewmodels.Powerup(p.getName(), p.getColor()))
                 .collect(Collectors.toList());
 

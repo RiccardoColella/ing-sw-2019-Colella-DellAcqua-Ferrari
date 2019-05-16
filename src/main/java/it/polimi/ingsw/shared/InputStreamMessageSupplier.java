@@ -52,8 +52,9 @@ public class InputStreamMessageSupplier implements IOSupplier<Message>, AutoClos
     private Future<Message> submitMessageReceiveTask() {
         return threadPool.submit(() -> {
             byte[] buffer = new byte[inputStream.readInt()];
-            if (buffer.length != inputStream.read(buffer)) {
-                throw new IOException("Expected and actual buffer data sizes differ");
+            int readBytes = inputStream.read(buffer);
+            if (buffer.length != readBytes) {
+                throw new IOException("Expected and actual buffer data sizes differ. Read " + readBytes + " Expected " + buffer.length);
             }
             return Message.fromJson(
                     new String(
