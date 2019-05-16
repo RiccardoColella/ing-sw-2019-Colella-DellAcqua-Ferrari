@@ -68,7 +68,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     private Connector connector;
 
-    private BoardContentPane boardContent;
+    private final BoardContentPane boardContent;
 
     public GameController(Connector connector, MatchStarted e) {
         super("Adrenalina", "/fxml/game.fxml", "/css/game.css");
@@ -248,19 +248,21 @@ public class GameController extends WindowController implements AutoCloseable, Q
     @Override
     public void close() {
         super.close();
-        try {
-            connector.close();
-        } catch (Exception ex) {
-            logger.warning("Could not close the connector " + ex);
-        }
+        new Thread(() -> {
+            try {
+                connector.close();
+            } catch (Exception ex) {
+                logger.warning("Could not close the connector");
+            }
+        }).start();
     }
 
     private void stringSelectionQuestion(Question<String> question, Consumer<String> answerCallback, String title) {
         Platform.runLater(() -> {
             Dialog<String> dialog = new Dialog<>();
             dialog.setTitle(title);
-            dialog.setHeaderText(question.getText());
             SelectPane sp = new SelectPane();
+            sp.setHeaderText(question.getText());
             sp.setTextOnlyOptions(new LinkedList<>(question.getAvailableOptions()));
             sp.setSkippable(question.isSkippable());
             dialog.setDialogPane(sp);
@@ -274,8 +276,8 @@ public class GameController extends WindowController implements AutoCloseable, Q
         Platform.runLater( () -> {
                     Dialog<String> dialog = new Dialog<>();
                     dialog.setTitle(title);
-                    dialog.setHeaderText(question.getText());
                     SelectPane sp = new SelectPane();
+                    sp.setHeaderText(question.getText());
                     List<Tuple<ImagePane, String>> options = question.getAvailableOptions()
                             .stream()
                             .map(o -> new Tuple<>(
@@ -297,8 +299,8 @@ public class GameController extends WindowController implements AutoCloseable, Q
         Platform.runLater( () -> {
                     Dialog<Powerup> dialog = new Dialog<>();
                     dialog.setTitle(title);
-                    dialog.setHeaderText(question.getText());
                     SelectPane sp = new SelectPane();
+                    sp.setHeaderText(question.getText());
                     List<Tuple<ImagePane, String>> options = question.getAvailableOptions()
                             .stream()
                             .map(o -> new Tuple<>(
@@ -321,8 +323,8 @@ public class GameController extends WindowController implements AutoCloseable, Q
         Platform.runLater(() -> {
             Dialog<Direction> dialog = new Dialog<>();
             dialog.setTitle("Direction question");
-            dialog.setHeaderText(question.getText());
             SelectPane sp = new SelectPane();
+            sp.setHeaderText(question.getText());
             sp.setTextOnlyOptions(question.getAvailableOptions().stream().map(e -> e.toString().toLowerCase()).collect(Collectors.toList()));
             sp.setSkippable(question.isSkippable());
             dialog.setDialogPane(sp);
@@ -342,8 +344,8 @@ public class GameController extends WindowController implements AutoCloseable, Q
         Platform.runLater(() -> {
             Dialog<BasicAction> dialog = new Dialog<>();
             dialog.setTitle("Basic action question");
-            dialog.setHeaderText(question.getText());
             SelectPane sp = new SelectPane();
+            sp.setHeaderText(question.getText());
             sp.setTextOnlyOptions(question.getAvailableOptions().stream().map(e -> e.toString().toLowerCase()).collect(Collectors.toList()));
             sp.setSkippable(question.isSkippable());
             dialog.setDialogPane(sp);
@@ -358,8 +360,8 @@ public class GameController extends WindowController implements AutoCloseable, Q
         Platform.runLater(() -> {
             Dialog<Point> dialog = new Dialog<>();
             dialog.setTitle("Block question");
-            dialog.setHeaderText(question.getText());
             SelectPane sp = new SelectPane();
+            sp.setHeaderText(question.getText());
             sp.setTextOnlyOptions(question.getAvailableOptions().stream().map(point -> point.x + " " + point.y).collect(Collectors.toList()));
             sp.setSkippable(question.isSkippable());
             dialog.setDialogPane(sp);
@@ -404,8 +406,8 @@ public class GameController extends WindowController implements AutoCloseable, Q
         Platform.runLater(() -> {
             Dialog<Set<String>> dialog = new Dialog<>();
             dialog.setTitle("Multiple target question");
-            dialog.setHeaderText(question.getText());
             SelectPane sp = new SelectPane();
+            sp.setHeaderText(question.getText());
             sp.setTextOnlyOptions(
                     question
                             .getAvailableOptions()
@@ -518,12 +520,13 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onWeaponReloaded(WeaponEvent e) {
-        if (e.getPlayer().getNickname().equals(self.getNickname())) {
-            self = e.getPlayer();
-            initWeapons();
-        }
-        sendNotification(e.getPlayer().getNickname() + " reloaded their " + e.getWeaponName());
-
+        Platform.runLater(() -> {
+            if (e.getPlayer().getNickname().equals(self.getNickname())) {
+                self = e.getPlayer();
+                initWeapons();
+            }
+            sendNotification(e.getPlayer().getNickname() + " reloaded their " + e.getWeaponName());
+        });
     }
 
     @Override
@@ -558,6 +561,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
                     }
                 }
             }
+
         });
     }
 
@@ -565,12 +569,13 @@ public class GameController extends WindowController implements AutoCloseable, Q
     public void onWeaponDropped(WeaponExchanged e) {
         Platform.runLater(() -> {
             if (e.getColumn() == 0) {
-                boardContent.addWeaponLeft(e.getWeaponName());
+                boardContent.enqueueWeaponLeft(e.getWeaponName());
             } else if (e.getRow() == 0) {
-                boardContent.addWeaponTop(e.getWeaponName());
+                boardContent.enqueueWeaponTop(e.getWeaponName());
             } else {
-                boardContent.addWeaponRight(e.getWeaponName());
+                boardContent.enqueueWeaponRight(e.getWeaponName());
             }
+
             if (e.getPlayer().getNickname().equals(self.getNickname())) {
                 self = e.getPlayer();
                 initWeapons();
@@ -582,6 +587,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
                     }
                 }
             }
+
         });
     }
 
@@ -610,6 +616,20 @@ public class GameController extends WindowController implements AutoCloseable, Q
             boardContent.movePlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
             String message = " just teleported!";
             sendNotification(e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
+        });
+    }
+
+    @Override
+    public void onNewWeaponAvailable(WeaponExchanged e) {
+        Platform.runLater(() -> {
+            if (e.getColumn() == 0) {
+                boardContent.enqueueWeaponLeft(e.getWeaponName());
+            } else if (e.getRow() == 0) {
+                boardContent.enqueueWeaponTop(e.getWeaponName());
+            } else {
+                boardContent.enqueueWeaponRight(e.getWeaponName());
+            }
+            sendNotification(e.getWeaponName() + " can now be bought");
         });
     }
 
@@ -648,8 +668,8 @@ public class GameController extends WindowController implements AutoCloseable, Q
         int toAdd = e.getKillshots().size() - oldTrack.size();
         if (toAdd > 0) {
             for (int i = 0; i < toAdd; i++) {
-                boardContent.addKillshot(e.getKillshots().get(i + toAdd).getItem1());
-                if (e.getKillshots().get(i + toAdd).getItem2()) {
+                boardContent.addKillshot(e.getKillshots().get(i + toAdd - 1).getItem1());
+                if (e.getKillshots().get(i + toAdd - 1).getItem2()) {
                     boardContent.addOverkill();
                 }
             }

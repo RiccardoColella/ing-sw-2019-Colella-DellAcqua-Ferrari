@@ -19,10 +19,9 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -61,6 +60,9 @@ public class BoardContentPane extends GridPane {
     private String[] weaponTop;
     private String[] weaponRight;
 
+    private Queue<String> rightQueue;
+    private Queue<String> leftQueue;
+    private Queue<String> topQueue;
     private int skullIndex;
 
     private List<Tuple<PlayerColor, Boolean>> killshotTrack;
@@ -96,6 +98,9 @@ public class BoardContentPane extends GridPane {
         container.setOnMouseClicked(mouseEvent -> mouseEventHandler(mouseEvent, this::mouseClickHandler, node -> true));
         skullIndex = 8;
         killshotTrack = new LinkedList<>();
+        topQueue = new LinkedList<>();
+        rightQueue = new LinkedList<>();
+        leftQueue = new LinkedList<>();
     }
 
     private void mouseEventHandler(MouseEvent mouseEvent, Consumer<Parent> consumer, Function<Node, Boolean> additionalCondition) {
@@ -227,30 +232,29 @@ public class BoardContentPane extends GridPane {
         }
     }
 
-    public void addWeaponLeft(String weaponName) {
-        for (int i = 0; i < weaponLeft.length; i++) {
-            if (weaponLeft[i] == null) {
-                addWeaponLeft(weaponName, i);
+    public void enqueueWeaponLeft(String weaponName) {
+        enqueueWeapon(weaponName, weaponLeft, this::addWeaponLeft, leftQueue);
+    }
+
+    public void enqueueWeaponRight(String weaponName) {
+        enqueueWeapon(weaponName, weaponRight, this::addWeaponRight, rightQueue);
+    }
+
+    public void enqueueWeaponTop(String weaponName) {
+        enqueueWeapon(weaponName, weaponTop, this::addWeaponTop, topQueue);
+    }
+
+    private synchronized void enqueueWeapon(String weaponName, String[] names, BiConsumer<String, Integer> adder, Queue<String> queue) {
+        boolean added = false;
+        for (int i = 0; i < names.length; i++) {
+            if (names[i] == null) {
+                adder.accept(weaponName, i);
+                added = true;
                 break;
             }
         }
-    }
-
-    public void addWeaponRight(String weaponName) {
-        for (int i = 0; i < weaponRight.length; i++) {
-            if (weaponRight[i] == null) {
-                addWeaponRight(weaponName, i);
-                break;
-            }
-        }
-    }
-
-    public void addWeaponTop(String weaponName) {
-        for (int i = 0; i < weaponTop.length; i++) {
-            if (weaponTop[i] == null) {
-                addWeaponTop(weaponName, i);
-                break;
-            }
+        if (!added) {
+            queue.add(weaponName);
         }
     }
 
@@ -267,16 +271,29 @@ public class BoardContentPane extends GridPane {
         container.add(weaponImg, col, row);
     }
 
+    private synchronized void removeWeapon(String weaponName, String[] names, GridPane[] containers, Queue<String> queue, BiConsumer<String, Integer> adder) {
+        for (int i = 0; i < names.length; i++) {
+            if (names[i] != null && names[i].equals(weaponName)) {
+                names[i] = null;
+                containers[i].getChildren().clear();
+                String toAdd = queue.poll();
+                if (toAdd != null) {
+                    adder.accept(toAdd, i);
+                }
+                break;
+            }
+        }
+    }
     public void removeWeaponTop(String weaponName) {
-
+        removeWeapon(weaponName, weaponTop, topContainers, topQueue, this::addWeaponTop);
     }
 
     public void removeWeaponRight(String weaponName) {
-
+        removeWeapon(weaponName, weaponRight, rightContainers, rightQueue, this::addWeaponRight);
     }
 
     public void removeWeaponLeft(String weaponName) {
-
+        removeWeapon(weaponName, weaponLeft, leftContainers, leftQueue, this::addWeaponLeft);
     }
 
     public void setSkulls(int skulls) {

@@ -633,7 +633,9 @@ public class WeaponFactory {
                 //all the targets are united in a single set
                 adaptToScope = targets -> {
                     Set<Set<Player>> adaptedTargets = new HashSet<>();
-                    adaptedTargets.add(targets);
+                    if (!targets.isEmpty()) {
+                        adaptedTargets.add(targets);
+                    }
                     return adaptedTargets;
                 };
                 break;

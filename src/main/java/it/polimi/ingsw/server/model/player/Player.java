@@ -11,6 +11,7 @@ import it.polimi.ingsw.server.model.rewards.Reward;
 import it.polimi.ingsw.server.model.rewards.RewardFactory;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.shared.Direction;
+import it.polimi.ingsw.shared.viewmodels.Powerup;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -432,10 +433,17 @@ public class Player implements Damageable, MatchListener {
      * @param powerupTile discarded powerup
      */
     public void discardPowerup(PowerupTile powerupTile){
-        if (this.powerups.contains(powerupTile)){
-            powerups.remove(powerupTile);
-            notifyPowerupDiscarded(powerupTile);
-        } else throw new IllegalArgumentException("Player doesn't have the " + powerupTile.getName() + " powerup");
+        boolean found = false;
+        for (PowerupTile tile : this.powerups) {
+            if (tile.getColor().equals(powerupTile.getColor()) && tile.getName().equals(powerupTile.getName())) {
+                this.powerups.remove(tile);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            throw new IllegalArgumentException("Player doesn't have the " + powerupTile.getName() + " powerup");
+        }
     }
 
     /**
@@ -846,7 +854,10 @@ public class Player implements Damageable, MatchListener {
      */
     public boolean sees(Player otherPlayer){
         Block myPosition = getBlock();
-        Block otherPlayerPosition = match.getBoard().findPlayer(otherPlayer).orElseThrow(() -> new IllegalStateException("otherPlayer is not on the board"));
+        Block otherPlayerPosition = match.getBoard().findPlayer(otherPlayer).orElse(null);
+        if (otherPlayerPosition == null) {
+            return false;
+        }
         Set<Block> visibleBlocks = match.getBoard().getVisibleBlocks(myPosition);
         return visibleBlocks.contains(otherPlayerPosition);
     }

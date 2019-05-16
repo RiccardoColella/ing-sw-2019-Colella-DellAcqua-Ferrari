@@ -72,7 +72,6 @@ public class RMIConnector extends Connector {
      */
     @Override
     public void close() throws Exception {
-        super.close();
         try {
             if (messageDispatcher != null) {
                 messageDispatcher.close();
@@ -83,5 +82,6 @@ public class RMIConnector extends Connector {
         } catch (ViewDisconnectedException|NoSuchObjectException ex) {
             logger.info("The server already disconnected this client");
         }
+        super.close();
     }
 }

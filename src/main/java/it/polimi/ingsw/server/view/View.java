@@ -402,7 +402,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged convertedEvent;
         it.polimi.ingsw.shared.viewmodels.Player playerVM = mapPlayer(e.getPlayer());
         convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged(playerVM, playerVM.getWallet(), playerVM.getNickname() + " reloaded their " + e.getWeaponTile().getName());
-        outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_WALLET_CHANGED_EVENT, convertedEvent));
+        outputMessageQueue.add(Message.createEvent(ClientApi.WEAPON_RELOADED_EVENT, convertedEvent));
     }
 
     @Override
@@ -410,7 +410,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged convertedEvent;
         it.polimi.ingsw.shared.viewmodels.Player playerVM = mapPlayer(e.getPlayer());
         convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged(playerVM, playerVM.getWallet(), playerVM.getNickname() + " unloaded their " + e.getWeaponTile().getName());
-        outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_WALLET_CHANGED_EVENT, convertedEvent));
+        outputMessageQueue.add(Message.createEvent(ClientApi.WEAPON_UNLOADED_EVENT, convertedEvent));
 
     }
 
@@ -457,6 +457,13 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         it.polimi.ingsw.shared.events.networkevents.PlayerMoved convertedEvent;
         convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerMoved(mapPlayer(e.getPlayer()), e.getDestination().getRow(), e.getDestination().getColumn());
         outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_MOVED_EVENT, convertedEvent));
+    }
+
+    @Override
+    public void onNewWeaponAvailable(NewWeaponAvailable e) {
+        it.polimi.ingsw.shared.events.networkevents.WeaponExchanged convertedEvent;
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.WeaponExchanged(new it.polimi.ingsw.shared.viewmodels.Player("", PlayerColor.YELLOW, new Wallet()), e.getWeapon().getName(), e.getBlock().getRow(), e.getBlock().getColumn());
+        outputMessageQueue.add(Message.createEvent(ClientApi.NEW_WEAPON_AVAILABLE_EVENT, convertedEvent));
     }
 
     @Override

@@ -14,3 +14,7 @@
 Button {
     -fx-alignment: center;
 }
+
+.dialog-pane:header .header-panel .label {
+    -fx-font-family: "Roboto Mono";
+}

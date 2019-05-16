@@ -300,6 +300,11 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     }
 
     @Override
+    public void onNewWeaponAvailable(WeaponExchanged e) {
+
+    }
+
+    @Override
     public void onPlayerDied(PlayerEvent e) {
         // TODO: implement
 

@@ -63,7 +63,6 @@ public class SocketConnector extends Connector {
      */
     @Override
     public void close() throws Exception {
-        super.close();
 
         if (inputMessageStreamSupplier != null) {
             inputMessageStreamSupplier.close();
@@ -74,6 +73,8 @@ public class SocketConnector extends Connector {
         if (socket != null) {
             socket.close();
         }
+
+        super.close();
     }
 }
 

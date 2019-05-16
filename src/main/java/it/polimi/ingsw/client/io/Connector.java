@@ -396,6 +396,11 @@ public abstract class Connector implements AutoCloseable {
                 playerListeners.forEach(l -> l.onActivePlayerChanged(e));
                 break;
             }
+            case NEW_WEAPON_AVAILABLE_EVENT: {
+                WeaponExchanged e = WeaponExchanged.fromJson(message.getPayload(), this, WeaponExchanged.class);
+                boardListeners.forEach(l -> l.onNewWeaponAvailable(e));
+                break;
+            }
             default: {
                 throw new UnsupportedOperationException("Event \"" + eventType + "\" not supported");
             }

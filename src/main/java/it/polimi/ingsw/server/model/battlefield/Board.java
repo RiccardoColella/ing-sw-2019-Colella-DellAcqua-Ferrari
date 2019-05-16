@@ -1,9 +1,11 @@
 package it.polimi.ingsw.server.model.battlefield;
 
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.server.model.events.NewWeaponAvailable;
 import it.polimi.ingsw.server.model.events.PlayerMoved;
 import it.polimi.ingsw.server.model.events.listeners.BoardListener;
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.utils.Range;
 
@@ -242,6 +244,11 @@ public class Board {
     private void notifyPlayerTeleported(Player player, Block block) {
         PlayerMoved e = new PlayerMoved(this, player, block);
         listeners.forEach(l -> l.onPlayerTeleported(e));
+    }
+
+    public void notifyNewWeaponAvailable(WeaponTile tile, Block block) {
+        NewWeaponAvailable e = new NewWeaponAvailable(this, tile, block);
+        listeners.forEach(l -> l.onNewWeaponAvailable(e));
     }
 
     public SpawnpointBlock getSpawnpoint(CurrencyColor color){
