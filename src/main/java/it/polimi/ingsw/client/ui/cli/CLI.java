@@ -79,9 +79,9 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
             throw new MissingConfigurationFileException("Unable to read texts configuration file");
         }
         JsonObject jsonObject =jsonElement.getAsJsonObject();
-        JsonArray title = jsonObject.get("gameTitle").getAsJsonArray();
         this.m = jsonObject.get("message").toString();
         this.w = jsonObject.get("warning").toString();
+        JsonArray title = jsonObject.get("gameTitle").getAsJsonArray();
         for (JsonElement line : title){
             stringBuilder.append(line.getAsString());
         }

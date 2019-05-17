@@ -1,13 +1,18 @@
 package it.polimi.ingsw.client.ui.cli;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.shared.events.networkevents.MatchStarted;
 import it.polimi.ingsw.shared.events.networkevents.PlayerHealthChanged;
-import it.polimi.ingsw.shared.events.networkevents.PlayerMoved;
 import it.polimi.ingsw.shared.viewmodels.Player;
 import it.polimi.ingsw.shared.viewmodels.Wallet;
 
 import java.awt.*;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,6 +31,16 @@ public class GameRepresentation {
 
     private List<String> weaponsOnTopSpawnpoint;
 
+    private static final String  TEXTS_JSON_FILE = "./resources/gameTextsForCLI.json";
+
+    private List<String> board;
+
+
+    private final int rowOffset;
+    private final int columnOffset;
+    private final int rowDistance;
+    private final int columnDistance;
+
     public GameRepresentation(MatchStarted e){
 
         this.preset = e.getPreset();
@@ -36,7 +51,91 @@ public class GameRepresentation {
         this.weaponsOnTopSpawnpoint = new ArrayList<>(e.getWeaponTop());
         this.weaponsOnRightSpawnpoint = new ArrayList<>(e.getWeaponRight());
 
+        JsonElement jsonElement;
+
+        try {
+            jsonElement = new JsonParser().parse(new FileReader(new File(TEXTS_JSON_FILE)));
+        } catch (IOException ex) {
+            throw new MissingConfigurationFileException("Unable to read texts configuration file");
+        }
+        JsonObject jsonObject = jsonElement.getAsJsonObject();
+        this.rowOffset = jsonObject.get("rowOffset").getAsInt();
+        this.columnOffset = jsonObject.get("columnOffset").getAsInt();
+        this.rowDistance =jsonObject.get("rowDistance").getAsInt();
+        this.columnDistance = jsonObject.get("columnDistance").getAsInt();
+
+        switch (preset){
+            case BOARD_1:
+                setBoard("board1", jsonObject);
+                break;
+            case BOARD_2:
+                setBoard("board2", jsonObject);
+                break;
+            case BOARD_3:
+                setBoard("board3", jsonObject);
+                break;
+            case BOARD_4:
+                setBoard("board4", jsonObject);
+                break;
+            default: throw new IllegalArgumentException("Cannot find preset " + e.getPreset().toString());
+        }
     }
+
+    private void setBoard(String elem, JsonObject jsonObject){
+        List<String> boardUnderConstruction = new LinkedList<>();
+
+        JsonArray boardDescription = jsonObject.get(elem).getAsJsonArray();
+        for (JsonElement line : boardDescription){
+            boardUnderConstruction.add(line.getAsString());
+        }
+        this.board = boardUnderConstruction;
+    }
+
+    private int getRowOffset() { return rowOffset; }
+
+    private int getColumnOffset() { return columnOffset; }
+
+    private int getRowDistance() { return rowDistance; }
+
+    private int getColumnDistance() { return columnDistance; }
+
+    public void printBoard(List<String> board, PrintStream printStream){
+        for (String line : board){
+            printStream.print(line);
+        }
+    }
+
+    void printEmptyBoard(PrintStream printStream){
+        for (String line : board){
+            printStream.print(line);
+        }
+    }
+
+    public List<String> positPlayers(){
+        List<String> boardWithPlayers = new LinkedList<>(board);
+        for (Player player : players){
+            int i = players.indexOf(player);
+            int x = player.getLocation().x;
+            int y = player.getLocation().y;
+            String nick = player.getNickname();
+            if (nick.length() > 14){
+                nick = nick.substring(0, 14);
+            }
+            // Row is the general offset for rows + the player's row + the distance of the needed block
+            int row = getRowOffset() + i + getRowDistance()*x;
+            // Column is the general column offset + the distance of the needed block
+            int column = getColumnOffset() + getColumnDistance()*y;
+            String line = board.get(row);
+            String newLine = line.substring(0, column) +
+                    nick +
+                    line.substring(column + nick.length(), line.length()-1) +
+                    "\n";
+            boardWithPlayers.set(row, newLine);
+        }
+        return boardWithPlayers;
+    }
+
+    protected List<Player> getPlayers(){ return this.players; }
 
     private Player selectPlayer(Player playerToSelect){
         for (Player player : players){
