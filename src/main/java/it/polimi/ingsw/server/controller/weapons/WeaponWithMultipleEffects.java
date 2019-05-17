@@ -1,12 +1,10 @@
 package it.polimi.ingsw.server.controller.weapons;
 
 import it.polimi.ingsw.server.model.player.Player;
+import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.shared.messages.ClientApi;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -127,7 +125,17 @@ public class WeaponWithMultipleEffects extends Weapon {
      */
     @Override
     public boolean hasAvailableAttacks(Player activePlayer) {
-        currentShooter = activePlayer;
+        resetStatus(activePlayer, new Interviewer() {
+            @Override
+            public <T> T select(String questionText, Collection<T> options, ClientApi messageName) {
+                return null;
+            }
+
+            @Override
+            public <T> Optional<T> selectOptional(String questionText, Collection<T> options, ClientApi messageName) {
+                return Optional.empty();
+            }
+        });
         return !computeAvailableAttacks().isEmpty();
     }
 }

@@ -658,7 +658,7 @@ public class Player implements Damageable, MatchListener {
             } else {
                 //already paid ammo cubes are given back to the player and an exception is thrown
                 grabAmmoCubes(alreadyPaidAmmoCubes);
-                throw new MissingOwnershipException("Player can't afford this weapon, missing ammoCubes");
+                throw new MissingOwnershipException("Player can't afford this payment, missing ammoCubes");
             }
         }
 
@@ -674,7 +674,7 @@ public class Player implements Damageable, MatchListener {
                 //all already paid ammo cubes and powerups are given back to the player and an exception is thrown
                 grabAmmoCubes(alreadyPaidAmmoCubes);
                 alreadyPaidPowerups.forEach(this::grabPowerup);
-                throw new MissingOwnershipException("Player can't afford this weapon, missing powerups");
+                throw new MissingOwnershipException("Player can't afford this payment, missing powerups");
             }
         }
 

@@ -6,6 +6,7 @@ import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.shared.Direction;
+import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.utils.Tuple;
 
 import java.util.*;
@@ -224,7 +225,17 @@ public class Weapon {
      * @return {@code true} if {@code activePlayer} can execute at least one {@code Attack}, false otherwise
      */
     public boolean hasAvailableAttacks(Player activePlayer) {
-        this.currentShooter = activePlayer;
+        resetStatus(activePlayer, new Interviewer() {
+            @Override
+            public <T> T select(String questionText, Collection<T> options, ClientApi messageName) {
+                return null;
+            }
+
+            @Override
+            public <T> Optional<T> selectOptional(String questionText, Collection<T> options, ClientApi messageName) {
+                return Optional.empty();
+            }
+        });
         if (!canAffordAttack(basicAttack)) {
             return false;
         }

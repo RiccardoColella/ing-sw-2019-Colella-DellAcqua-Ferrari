@@ -10,6 +10,7 @@ import it.polimi.ingsw.client.io.listeners.PlayerListener;
 import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
+import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.shared.Direction;
@@ -59,9 +60,9 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     private GameRepresentation gameRepresentation;
 
     private static final String  TEXTS_JSON_FILE = "./resources/gameTextsForCLI.json";
-    private final String W;
-    private final String M;
-    private final String TITLE;
+    private final String w;
+    private final String m;
+    private final String title;
 
     /**
      * Constructs a UI based on the command line
@@ -75,16 +76,16 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
         try {
             jsonElement = new JsonParser().parse(new FileReader(new File(TEXTS_JSON_FILE)));
         } catch (IOException e) {
-            throw new MissingConfigurationFileException("Unable to read Bonus Deck configuration file");
+            throw new MissingConfigurationFileException("Unable to read texts configuration file");
         }
         JsonObject jsonObject =jsonElement.getAsJsonObject();
         JsonArray title = jsonObject.get("gameTitle").getAsJsonArray();
-        this.M = jsonObject.get("message").toString();
-        this.W = jsonObject.get("warning").toString();
+        this.m = jsonObject.get("message").toString();
+        this.w = jsonObject.get("warning").toString();
         for (JsonElement line : title){
             stringBuilder.append(line.getAsString());
         }
-        this.TITLE = stringBuilder.toString();
+        this.title = stringBuilder.toString();
 
         scanner = new Scanner(inputStream);
         printStream = new PrintStream(outputStream);
@@ -103,7 +104,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
         List<String> availableConnectionOptions = Arrays.asList("RMI", "Socket");
         List<Integer> availableSkulls = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8);
 
-        printStream.print(TITLE);
+        printStream.print(title);
         printStream.println("Enter the server address");
         String serverAddress = scanner.nextLine();
 
@@ -286,13 +287,18 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     }
 
     @Override
+    public void onPaymentColorQuestion(Question<CurrencyColor> question, Consumer<CurrencyColor> answerCallback) {
+
+    }
+
+    @Override
     public void onMatchStarted(MatchStarted e) {
         gameRepresentation = new GameRepresentation(e);
     }
 
     @Override
     public void onMatchModeChanged(MatchModeChanged e) {
-        printStream.print(W + "Match mode changed! It now is: " + e.getMode().toString());
+        printStream.print(w + "Match mode changed! It now is: " + e.getMode().toString());
     }
 
     @Override
@@ -337,8 +343,8 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     @Override
     public void onPlayerWalletChanged(PlayerWalletChanged e) {
         gameRepresentation.setPlayerWallet(e.getPlayer(), e.getWallet());
-        printStream.println(W + e.getPlayer().getNickname() + "'s wallet changed!");
-        printStream.println(M + e.getMessage());
+        printStream.println(w + e.getPlayer().getNickname() + "'s wallet changed!");
+        printStream.println(m + e.getMessage());
     }
 
     @Override
@@ -350,47 +356,47 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     @Override
     public void onPlayerHealthChanged(PlayerHealthChanged e) {
         gameRepresentation.updatePlayerHealth(e);
-        printStream.println(M + e.getPlayer().getNickname() + "'s health changed");
+        printStream.println(m + e.getPlayer().getNickname() + "'s health changed");
     }
 
     @Override
     public void onWeaponReloaded(WeaponEvent e) {
         gameRepresentation.setPlayerWeaponLoaded(e.getPlayer(), e.getWeaponName());
-        printStream.println(M + e.getPlayer().getNickname() + " reloaded his " + e.getWeaponName());
+        printStream.println(m + e.getPlayer().getNickname() + " reloaded his " + e.getWeaponName());
     }
 
     @Override
     public void onWeaponUnloaded(WeaponEvent e) {
         gameRepresentation.setPlayerWeaponUnloaded(e.getPlayer(), e.getWeaponName());
-        printStream.println(M + e.getPlayer().getNickname() + " unloaded his " + e.getWeaponName());
+        printStream.println(m + e.getPlayer().getNickname() + " unloaded his " + e.getWeaponName());
     }
 
     @Override
     public void onWeaponPicked(WeaponExchanged e) {
         gameRepresentation.grabPlayerWeapon(e.getPlayer(), e.getWeaponName(), e.getRow(), e.getColumn());
-        printStream.println(M + e.getPlayer().getNickname() + " picked up " + e.getWeaponName() + " on block Row" + e.getRow() + " Column" + e.getColumn());
+        printStream.println(m + e.getPlayer().getNickname() + " picked up " + e.getWeaponName() + " on block Row" + e.getRow() + " Column" + e.getColumn());
     }
 
     @Override
     public void onWeaponDropped(WeaponExchanged e) {
         gameRepresentation.dropPlayerWeapon(e.getPlayer(), e.getWeaponName(), e.getRow(), e.getColumn());
-        printStream.println(M + e.getPlayer().getNickname() + " dropped his " + e.getWeaponName() + " on Row" + e.getRow() + " Column" + e.getColumn());
+        printStream.println(m + e.getPlayer().getNickname() + " dropped his " + e.getWeaponName() + " on Row" + e.getRow() + " Column" + e.getColumn());
     }
 
     @Override
     public void onPlayerDisconnected(PlayerEvent e) {
-        printStream.println(W + e.getPlayer().getNickname() + "disconnected");
+        printStream.println(w + e.getPlayer().getNickname() + "disconnected");
     }
 
     @Override
     public void onPlayerReconnected(PlayerEvent e) {
-        printStream.println(W + e.getPlayer().getNickname() + " reconnected");
+        printStream.println(w + e.getPlayer().getNickname() + " reconnected");
     }
 
     @Override
     public void onPlayerSpawned(PlayerSpawned e) {
         gameRepresentation.movePlayer(e.getPlayer(), e.getRow(), e.getColumn());
-        printStream.println(W + e.getPlayer().getNickname() + " respowned on Row" + e.getRow() + " Column" + e.getColumn());
+        printStream.println(w + e.getPlayer().getNickname() + " respowned on Row" + e.getRow() + " Column" + e.getColumn());
     }
 
     @Override
@@ -401,7 +407,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onActivePlayerChanged(PlayerEvent e) {
-        printStream.println(M + "Now it's " + e.getPlayer().getNickname() + " turn!");
+        printStream.println(m + "Now it's " + e.getPlayer().getNickname() + " turn!");
 
     }
 }
