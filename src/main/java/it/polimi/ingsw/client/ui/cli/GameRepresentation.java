@@ -20,11 +20,11 @@ public class GameRepresentation {
 
     private int skulls;
 
-    private List<String> weaponsOnRedSpawnpoint;
+    private List<String> weaponsOnLeftSpawnpoint;
 
-    private List<String> weaponsOnYellowSpawnpoint;
+    private List<String> weaponsOnRightSpawnpoint;
 
-    private List<String> weaponsOnBlueSpawnpoint;
+    private List<String> weaponsOnTopSpawnpoint;
 
     public GameRepresentation(MatchStarted e){
 
@@ -32,9 +32,9 @@ public class GameRepresentation {
         this.players = new LinkedList<>(e.getOpponents());
         this.players.add(0, e.getSelf());
         this.skulls = e.getSkulls();
-        this.weaponsOnRedSpawnpoint = new ArrayList<>(e.getWeaponLeft());
-        this.weaponsOnBlueSpawnpoint = new ArrayList<>(e.getWeaponTop());
-        this.weaponsOnYellowSpawnpoint = new ArrayList<>(e.getWeaponRight());
+        this.weaponsOnLeftSpawnpoint = new ArrayList<>(e.getWeaponLeft());
+        this.weaponsOnTopSpawnpoint = new ArrayList<>(e.getWeaponTop());
+        this.weaponsOnRightSpawnpoint = new ArrayList<>(e.getWeaponRight());
 
     }
 
@@ -47,8 +47,8 @@ public class GameRepresentation {
         throw new IllegalArgumentException("Player " + playerToSelect.getNickname() + " not found in players");
     }
 
-    public void movePlayer(PlayerMoved e){
-        selectPlayer(e.getPlayer()).setLocation(new Point(e.getRow(), e.getColumn()));
+    public void movePlayer(Player player, int r, int c){
+        selectPlayer(player).setLocation(new Point(r, c));
     }
 
     void setPlayerWallet(Player player, Wallet newWallet){
@@ -69,13 +69,43 @@ public class GameRepresentation {
     void setPlayerWeaponLoaded(Player playerWhoReloaded, String weapon){
         Wallet playerWallet = selectPlayer(playerWhoReloaded).getWallet();
         // Setting loaded weapons
-        List<String> loadedWeapons = new LinkedList<>(playerWallet.getLoadedWeapons());
-        loadedWeapons.add(weapon);
-        playerWallet.setLoadedWeapons(loadedWeapons);
+        playerWallet.getLoadedWeapons().add(weapon);
         // Setting unloaded weapons
-        List<String> unloadedWeapons = new LinkedList<>(playerWallet.getUnloadedWeapons());
-        unloadedWeapons.remove(weapon);
-        playerWallet.setUnloadedWeapons(unloadedWeapons);
+        playerWallet.getUnloadedWeapons().remove(weapon);
     }
+
+    void setPlayerWeaponUnloaded(Player playerWeaponUnloaded, String weapon){
+        Wallet playerWallet = selectPlayer(playerWeaponUnloaded).getWallet();
+        // Setting weapon unloaded
+        playerWallet.getUnloadedWeapons().add(weapon);
+        // Setting loaded weapons
+        playerWallet.getLoadedWeapons().remove(weapon);
+    }
+
+    void grabPlayerWeapon(Player player, String weapon, int r, int c){
+        // Here we select the spawnpoint from which remove the weapon grabbed
+        if (r == 0){
+            weaponsOnLeftSpawnpoint.remove(weapon);
+        } else if (c == 0){
+            weaponsOnTopSpawnpoint.remove(weapon);
+        } else weaponsOnRightSpawnpoint.remove(weapon);
+        // then we add the weapon to player's wallet
+        selectPlayer(player).getWallet().getLoadedWeapons().add(weapon);
+    }
+
+    void dropPlayerWeapon(Player player, String weapon, int r, int c){
+        // Here we select the spawnpoint to which add the weapon dropped
+        if (r == 0){
+            weaponsOnLeftSpawnpoint.add(weapon);
+        } else if (c == 0){
+            weaponsOnTopSpawnpoint.add(weapon);
+        } else weaponsOnRightSpawnpoint.add(weapon);
+        // then we remove the weapon from player's wallet
+        if (selectPlayer(player).getWallet().getLoadedWeapons().contains(weapon)){
+            selectPlayer(player).getWallet().getLoadedWeapons().remove(weapon);
+        } else selectPlayer(player).getWallet().getUnloadedWeapons().remove(weapon);
+    }
+
+
 
 }

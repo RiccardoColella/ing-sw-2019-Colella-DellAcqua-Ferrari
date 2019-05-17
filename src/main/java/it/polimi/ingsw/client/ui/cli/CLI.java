@@ -1,6 +1,6 @@
 package it.polimi.ingsw.client.ui.cli;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
 import it.polimi.ingsw.client.io.Connector;
 import it.polimi.ingsw.client.io.RMIConnector;
 import it.polimi.ingsw.client.io.SocketConnector;
@@ -9,6 +9,7 @@ import it.polimi.ingsw.client.io.listeners.MatchListener;
 import it.polimi.ingsw.client.io.listeners.PlayerListener;
 import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.shared.Direction;
@@ -19,10 +20,7 @@ import it.polimi.ingsw.shared.viewmodels.Powerup;
 
 import javax.annotation.Nullable;
 import java.awt.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.util.List;
@@ -60,8 +58,10 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
      */
     private GameRepresentation gameRepresentation;
 
-    private static final String W = "[ WARNING ] ";
-    private static final String M = "[ MESSAGE ] ";
+    private static final String  TEXTS_JSON_FILE = "./resources/gameTextsForCLI.json";
+    private final String W;
+    private final String M;
+    private final String TITLE;
 
     /**
      * Constructs a UI based on the command line
@@ -70,8 +70,25 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
      * @param outputStream a stream used to write output data
      */
     public CLI(InputStream inputStream, OutputStream outputStream) {
+        StringBuilder stringBuilder = new StringBuilder();
+        JsonElement jsonElement;
+        try {
+            jsonElement = new JsonParser().parse(new FileReader(new File(TEXTS_JSON_FILE)));
+        } catch (IOException e) {
+            throw new MissingConfigurationFileException("Unable to read Bonus Deck configuration file");
+        }
+        JsonObject jsonObject =jsonElement.getAsJsonObject();
+        JsonArray title = jsonObject.get("gameTitle").getAsJsonArray();
+        this.M = jsonObject.get("message").toString();
+        this.W = jsonObject.get("warning").toString();
+        for (JsonElement line : title){
+            stringBuilder.append(line.getAsString());
+        }
+        this.TITLE = stringBuilder.toString();
+
         scanner = new Scanner(inputStream);
         printStream = new PrintStream(outputStream);
+
     }
 
     /**
@@ -86,6 +103,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
         List<String> availableConnectionOptions = Arrays.asList("RMI", "Socket");
         List<Integer> availableSkulls = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8);
 
+        printStream.print(TITLE);
         printStream.println("Enter the server address");
         String serverAddress = scanner.nextLine();
 
@@ -291,12 +309,12 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onPlayerMoved(PlayerMoved e) {
-        gameRepresentation.movePlayer(e);
+        gameRepresentation.movePlayer(e.getPlayer(), e.getRow(), e.getColumn());
     }
 
     @Override
     public void onPlayerTeleported(PlayerMoved e) {
-        gameRepresentation.movePlayer(e);
+        gameRepresentation.movePlayer(e.getPlayer(), e.getRow(), e.getColumn());
     }
 
     @Override
@@ -332,49 +350,47 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     @Override
     public void onPlayerHealthChanged(PlayerHealthChanged e) {
         gameRepresentation.updatePlayerHealth(e);
-        printStream.println(W + e.getPlayer().getNickname() + "'s health changed");
+        printStream.println(M + e.getPlayer().getNickname() + "'s health changed");
     }
 
     @Override
     public void onWeaponReloaded(WeaponEvent e) {
         gameRepresentation.setPlayerWeaponLoaded(e.getPlayer(), e.getWeaponName());
-        printStream.println(W + e.getPlayer() + " reloaded his " + e.getWeaponName());
+        printStream.println(M + e.getPlayer().getNickname() + " reloaded his " + e.getWeaponName());
     }
 
     @Override
     public void onWeaponUnloaded(WeaponEvent e) {
-        // TODO: implement
-
+        gameRepresentation.setPlayerWeaponUnloaded(e.getPlayer(), e.getWeaponName());
+        printStream.println(M + e.getPlayer().getNickname() + " unloaded his " + e.getWeaponName());
     }
 
     @Override
     public void onWeaponPicked(WeaponExchanged e) {
-        // TODO: implement
-
+        gameRepresentation.grabPlayerWeapon(e.getPlayer(), e.getWeaponName(), e.getRow(), e.getColumn());
+        printStream.println(M + e.getPlayer().getNickname() + " picked up " + e.getWeaponName() + " on block Row" + e.getRow() + " Column" + e.getColumn());
     }
 
     @Override
     public void onWeaponDropped(WeaponExchanged e) {
-        // TODO: implement
-
+        gameRepresentation.dropPlayerWeapon(e.getPlayer(), e.getWeaponName(), e.getRow(), e.getColumn());
+        printStream.println(M + e.getPlayer().getNickname() + " dropped his " + e.getWeaponName() + " on Row" + e.getRow() + " Column" + e.getColumn());
     }
 
     @Override
     public void onPlayerDisconnected(PlayerEvent e) {
-        // TODO: implement
-
+        printStream.println(W + e.getPlayer().getNickname() + "disconnected");
     }
 
     @Override
     public void onPlayerReconnected(PlayerEvent e) {
-        // TODO: implement
-
+        printStream.println(W + e.getPlayer().getNickname() + " reconnected");
     }
 
     @Override
     public void onPlayerSpawned(PlayerSpawned e) {
-        // TODO: implement
-
+        gameRepresentation.movePlayer(e.getPlayer(), e.getRow(), e.getColumn());
+        printStream.println(W + e.getPlayer().getNickname() + " respowned on Row" + e.getRow() + " Column" + e.getColumn());
     }
 
     @Override
@@ -385,7 +401,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onActivePlayerChanged(PlayerEvent e) {
-        // TODO: implement
+        printStream.println(M + "Now it's " + e.getPlayer().getNickname() + " turn!");
 
     }
 }
