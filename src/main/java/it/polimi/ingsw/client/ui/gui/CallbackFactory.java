@@ -144,4 +144,17 @@ public final class CallbackFactory {
             return playerSet;
         };
     }
+
+    public static Callback<ButtonType, CurrencyColor> skippableCurrencyColor() {
+        return button -> {
+            if (!button.getButtonData().isCancelButton()) {
+                return EnumValueByString.findByString(button.getText().toUpperCase(), CurrencyColor.class);
+            }
+            return null;
+        };
+    }
+
+    public static Callback<ButtonType, CurrencyColor> unskippableCurrencyColor() {
+        return button -> EnumValueByString.findByString(button.getText().toUpperCase(), CurrencyColor.class);
+    }
 }

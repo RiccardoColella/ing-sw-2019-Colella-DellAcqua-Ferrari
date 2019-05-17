@@ -460,7 +460,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
 
     @Override
     public void onPlayerDamaged(PlayerDamaged e) {
-        managePowerups(e.getAttacker(), e.getVictim(), Powerup.Trigger.ON_DAMAGE_GIVEN, "Do you want to use a powerup against " + e.getVictim() + "?");
+        managePowerups(e.getAttacker(), e.getVictim(), Powerup.Trigger.ON_DAMAGE_GIVEN, "Do you want to use a powerup against " + e.getVictim().getPlayerInfo().getNickname() + "?");
         managePowerups(e.getVictim(), e.getAttacker(), Powerup.Trigger.ON_DAMAGE_RECEIVED, "Do you want to use a powerup against " + e.getAttacker().getPlayerInfo().getNickname() + "?");
     }
 
@@ -525,7 +525,8 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 .filter(powerup -> PaymentHandler.canAfford(powerup.getCost() + 1, owner))
                 .collect(Collectors.toList());
         boolean seesSomeone = players.stream().anyMatch(player -> player != owner && owner.sees(player));
-        availablePowerups.removeIf(powerup -> powerup.getTargetConstraint() == Powerup.TargetConstraint.VISIBLE && !seesSomeone);
+        boolean canHitOthers = players.stream().anyMatch(player -> player != owner && match.getBoard().findPlayer(player).isPresent());
+        availablePowerups.removeIf(powerup -> (powerup.getTargetConstraint() == Powerup.TargetConstraint.VISIBLE && !seesSomeone) || powerup.getTarget() == Powerup.Target.OTHERS && !canHitOthers);
         return availablePowerups;
     }
 
@@ -544,35 +545,36 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
     private void managePowerups(Player powerupOwner, @Nullable Player powerupTarget, Powerup.Trigger trigger, String message) {
         Interviewer interviewer = views.get(players.indexOf(powerupOwner));
         List<PowerupTile> ownedTiles = new LinkedList<>(powerupOwner.getPowerups());
-        if (!ownedTiles.isEmpty()) {
-            List<Powerup> availablePowerups = findAvailablePowerups(ownedTiles, trigger, powerupOwner);
-            ownedTiles = filterPowerupTiles(ownedTiles, availablePowerups);
-            while (!ownedTiles.isEmpty()) {
-                Optional<it.polimi.ingsw.shared.viewmodels.Powerup> selected = optionalPowerupSelection(ownedTiles, interviewer, message);
-                if (selected.isPresent()) {
-                    Powerup chosenPowerup = availablePowerups
-                            .stream()
-                            .filter(p -> p.getName().equals(selected.get().getName()))
-                            .findAny()
-                            .orElseThrow(() -> new IllegalStateException("Powerup " + selected.get().getName() + " was not available"));
-                    PowerupTile chosenTile = ownedTiles
-                            .stream()
-                            .filter(p -> p.getName().equals(selected.get().getName()) && p.getColor().equals(selected.get().getColor()))
-                            .findAny()
-                            .orElseThrow(() -> new IllegalStateException("PowerupTile " + selected.get().getName() + " does not exist"));
-                    PaymentHandler.pay(chosenPowerup.getCost(), powerupOwner, interviewer, chosenTile);
-                    if (powerupTarget == null) {
-                        chosenPowerup.activate(powerupOwner, selectTarget(chosenPowerup, powerupOwner, interviewer), interviewer);
-                    } else {
-                        chosenPowerup.activate(powerupOwner, powerupTarget, interviewer);
-                    }
-                    discardPowerupTile(powerupOwner, chosenTile);
-                    ownedTiles.remove(chosenTile);
+        List<Powerup> availablePowerups = findAvailablePowerups(ownedTiles, trigger, powerupOwner);
+        ownedTiles = filterPowerupTiles(ownedTiles, availablePowerups);
+        while (!ownedTiles.isEmpty()) {
+            Optional<it.polimi.ingsw.shared.viewmodels.Powerup> selected = optionalPowerupSelection(ownedTiles, interviewer, message);
+            if (selected.isPresent()) {
+                Powerup chosenPowerup = availablePowerups
+                        .stream()
+                        .filter(p -> p.getName().equals(selected.get().getName()))
+                        .findAny()
+                        .orElseThrow(() -> new IllegalStateException("Powerup " + selected.get().getName() + " was not available"));
+                PowerupTile chosenTile = ownedTiles
+                        .stream()
+                        .filter(p -> p.getName().equals(selected.get().getName()) && p.getColor().equals(selected.get().getColor()))
+                        .findAny()
+                        .orElseThrow(() -> new IllegalStateException("PowerupTile " + selected.get().getName() + " does not exist"));
+                PaymentHandler.pay(chosenPowerup.getCost(), powerupOwner, interviewer, chosenTile);
+                if (powerupTarget == null) {
+                    chosenPowerup.activate(powerupOwner, selectTarget(chosenPowerup, powerupOwner, interviewer), interviewer);
                 } else {
-                    ownedTiles.clear();
+                    chosenPowerup.activate(powerupOwner, powerupTarget, interviewer);
                 }
+                discardPowerupTile(powerupOwner, chosenTile);
+                ownedTiles = new LinkedList<>(powerupOwner.getPowerups());
+                availablePowerups = findAvailablePowerups(ownedTiles, trigger, powerupOwner);
+                ownedTiles = filterPowerupTiles(ownedTiles, availablePowerups);
+            } else {
+                ownedTiles.clear();
             }
         }
+
     }
 
 
@@ -591,6 +593,8 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 List<Player> possibleTargets = new LinkedList<>(match.getPlayers());
                 if (powerup.getTargetConstraint() == Powerup.TargetConstraint.VISIBLE) {
                     possibleTargets = possibleTargets.stream().filter(player -> player != self && self.sees(player)).collect(Collectors.toList());
+                } else if (powerup.getTargetConstraint() == Powerup.TargetConstraint.NONE) {
+                    possibleTargets = possibleTargets.stream().filter(player -> player != self && match.getBoard().findPlayer(player).isPresent()).collect(Collectors.toList());
                 }
                 List<String> targetsForView = possibleTargets
                         .stream()

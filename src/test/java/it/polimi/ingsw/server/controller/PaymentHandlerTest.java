@@ -142,7 +142,6 @@ class PaymentHandlerTest {
         PaymentHandler.pay(1, player2, mockView);
         assertEquals(0, player2.getAmmoCubes().size() + player2.getPowerups().size());
         mockDebt.add(new AmmoCube(CurrencyColor.YELLOW));
-        ammoCubesToBeGrabbed.clear();
         ammoCubesToBeGrabbed.add(new AmmoCube(CurrencyColor.YELLOW));
         player2.grabAmmoCubes(ammoCubesToBeGrabbed);
         assertEquals(1, player2.getAmmoCubes().size() + player2.getPowerups().size());

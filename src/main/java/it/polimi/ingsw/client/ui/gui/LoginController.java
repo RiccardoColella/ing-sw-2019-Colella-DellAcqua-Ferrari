@@ -80,7 +80,7 @@ public class LoginController extends WindowController implements MatchListener, 
         modeChoiceMap.put("SUDDEN DEATH", Match.Mode.SUDDEN_DEATH);
 
         // Debug
-        new Thread(() -> {
+        /*new Thread(() -> {
             try {
                 Thread.sleep(5000);
                 Platform.runLater(() -> {
@@ -93,7 +93,7 @@ public class LoginController extends WindowController implements MatchListener, 
                 Thread.currentThread().interrupt();
                 logger.warning(e.toString());
             }
-        }).start();
+        }).start();*/
     }
 
     public LoginController() {

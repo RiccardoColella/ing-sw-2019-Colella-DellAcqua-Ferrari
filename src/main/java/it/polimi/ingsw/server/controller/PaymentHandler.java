@@ -1,9 +1,6 @@
 package it.polimi.ingsw.server.controller;
 
-import it.polimi.ingsw.server.model.currency.AmmoCube;
-import it.polimi.ingsw.server.model.currency.Coin;
-import it.polimi.ingsw.server.model.currency.CurrencyColor;
-import it.polimi.ingsw.server.model.currency.PowerupTile;
+import it.polimi.ingsw.server.model.currency.*;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
@@ -11,9 +8,7 @@ import it.polimi.ingsw.shared.messages.ClientApi;
 import it.polimi.ingsw.shared.viewmodels.Powerup;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -102,27 +97,49 @@ public class PaymentHandler {
                     .filter(p -> (ignoreColor || p.hasSameValueAs(coinOwed)) && !chosenPowerups.contains(p) && p != restrictedFunds)
                     .collect(Collectors.toList());
 
+            for (PowerupTile chosenPowerup : chosenPowerups) {
+                powerupTiles.remove(chosenPowerup);
+            }
+
             List<AmmoCube> ammoCubes = owner.getAmmoCubes().stream()
                     .filter(a -> (ignoreColor || a.hasSameValueAs(coinOwed)) && !chosenAmmoCube.contains(a))
                     .collect(Collectors.toList());
 
+            for (AmmoCube chosenAmmo : chosenAmmoCube) {
+                ammoCubes.remove(chosenAmmo);
+            }
 
             List<String> paymentMethods = Arrays.asList(PAYMENT_METHOD_AMMO_CUBES, PAYMENT_METHOD_POWERUPS);
             String paymentMethod;
-
-            if (!powerupTiles.isEmpty() && !ammoCubes.isEmpty()) {
+            CurrencyColor actualColor;
+            if (ignoreColor) {
+                List<CurrencyColor> ownedColors = Stream.concat(powerupTiles.stream().map(PowerupTile::getColor), ammoCubes.stream().map(AmmoCube::getColor)).collect(Collectors.toList());
+                actualColor = payer.select("Which color do you want your debt to be?", new HashSet<>(ownedColors), ClientApi.PAYMENT_COLOR_QUESTION);
+                if (powerupTiles.stream().noneMatch(p -> AmmoCubeFactory.create(actualColor).hasSameValueAs(p))) {
+                    paymentMethod = PAYMENT_METHOD_AMMO_CUBES;
+                } else if (ammoCubes.stream().noneMatch(a -> AmmoCubeFactory.create(actualColor).hasSameValueAs(a))) {
+                    paymentMethod = PAYMENT_METHOD_POWERUPS;
+                } else {
+                    paymentMethod = payer.select("Which payment method would you like to use to pay your debt?", paymentMethods, ClientApi.PAYMENT_METHOD_QUESTION);
+                }
+            } else if (!powerupTiles.isEmpty() && !ammoCubes.isEmpty()) {
+                actualColor = coinOwed.getColor();
                 paymentMethod = payer.select("Which payment method would you like to use to pay your debt?", paymentMethods, ClientApi.PAYMENT_METHOD_QUESTION);
             } else if (!powerupTiles.isEmpty()) {
+                actualColor = coinOwed.getColor();
                 paymentMethod = PAYMENT_METHOD_POWERUPS;
             } else if (!ammoCubes.isEmpty()) {
+                actualColor = coinOwed.getColor();
                 paymentMethod = PAYMENT_METHOD_AMMO_CUBES;
             } else throw new ViewDisconnectedException("Invalid player wallet status, cannot pay the debt");
 
             switch (paymentMethod)  {
                 case PAYMENT_METHOD_AMMO_CUBES:
+                    ammoCubes = ammoCubes.stream().filter(a -> a.getColor().equals(actualColor)).collect(Collectors.toList());
                     chosenAmmoCube.add(ammoCubes.get(0));
                     break;
                 case PAYMENT_METHOD_POWERUPS:
+                    powerupTiles = powerupTiles.stream().filter(p -> p.getColor().equals(actualColor)).collect(Collectors.toList());
                     if (powerupTiles.size() > 1) {
                         List<Powerup> powerups = powerupTiles.stream().map(p -> new Powerup(p.getName(), p.getColor())).collect(Collectors.toList());
                         Powerup powerup = payer.select("Which powerup would you like to discard to pay your debt?", powerups, ClientApi.POWERUP_QUESTION);

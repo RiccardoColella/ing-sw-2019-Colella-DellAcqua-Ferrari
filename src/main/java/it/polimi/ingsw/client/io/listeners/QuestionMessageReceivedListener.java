@@ -1,5 +1,6 @@
 package it.polimi.ingsw.client.io.listeners;
 
+import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.messages.templates.Question;
@@ -38,4 +39,6 @@ public interface QuestionMessageReceivedListener extends EventListener {
     void onTargetQuestion(Question<String> question, Consumer<String> answerCallback);
 
     void onTargetSetQuestion(Question<Set<String>> question, Consumer<Set<String>> answerCallback);
+
+    void onPaymentColorQuestion(Question<CurrencyColor> question, Consumer<CurrencyColor> answerCallback);
 }

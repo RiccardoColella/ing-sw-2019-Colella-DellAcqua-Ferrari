@@ -427,6 +427,24 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     @Override
+    public void onPaymentColorQuestion(Question<CurrencyColor> question, Consumer<CurrencyColor> answerCallback) {
+        Platform.runLater(() -> {
+            Platform.runLater(() -> {
+                Dialog<CurrencyColor> dialog = new Dialog<>();
+                dialog.setTitle("Payment color question");
+                SelectPane sp = new SelectPane();
+                sp.setHeaderText(question.getText());
+                sp.setTextOnlyOptions(question.getAvailableOptions().stream().map(e -> e.toString().toLowerCase()).collect(Collectors.toList()));
+                sp.setSkippable(question.isSkippable());
+                dialog.setDialogPane(sp);
+                dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippableCurrencyColor() : CallbackFactory.unskippableCurrencyColor());
+                dialog.showAndWait();
+                answerCallback.accept(dialog.getResult());
+            });
+        });
+    }
+
+    @Override
     public void onPlayerDied(PlayerEvent e) {
         sendNotification(e.getPlayer().getNickname() + " just died");
     }

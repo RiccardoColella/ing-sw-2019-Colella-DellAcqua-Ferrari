@@ -9,6 +9,7 @@ import it.polimi.ingsw.client.io.listeners.MatchListener;
 import it.polimi.ingsw.client.io.listeners.PlayerListener;
 import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.shared.Direction;
@@ -265,6 +266,11 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     @Override
     public void onTargetSetQuestion(Question<Set<String>> question, Consumer<Set<String>> answerCallback) {
         // TODO: Implement the selection
+    }
+
+    @Override
+    public void onPaymentColorQuestion(Question<CurrencyColor> question, Consumer<CurrencyColor> answerCallback) {
+
     }
 
     @Override

@@ -3,6 +3,7 @@ package it.polimi.ingsw.client.io;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import it.polimi.ingsw.client.io.listeners.*;
+import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.InputMessageQueue;
@@ -272,6 +273,15 @@ public abstract class Connector implements AutoCloseable {
             case TARGET_SET_QUESTION: {
                 Question<Set<String>> question = Question.fromJson(message.getPayload(), new TypeToken<Question<Set<String>>>(){}.getType());
                 questionListeners.forEach(l -> l.onTargetSetQuestion(
+                        question,
+                        choice -> enqueueAnswer(choice, message.getFlowId())
+                        )
+                );
+                break;
+            }
+            case PAYMENT_COLOR_QUESTION: {
+                Question<CurrencyColor> question = Question.fromJson(message.getPayload(), new TypeToken<Question<CurrencyColor>>(){}.getType());
+                questionListeners.forEach(l -> l.onPaymentColorQuestion(
                         question,
                         choice -> enqueueAnswer(choice, message.getFlowId())
                         )
