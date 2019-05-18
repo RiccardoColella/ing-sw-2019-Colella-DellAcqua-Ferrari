@@ -1,8 +1,7 @@
-package it.polimi.ingsw.shared.viewmodels;
+package it.polimi.ingsw.shared.datatransferobjects;
 
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -13,43 +12,27 @@ public class Wallet {
     private List<CurrencyColor> ammoCubes;
     private List<Powerup> powerups;
 
-    public Wallet() {
-        loadedWeapons = new LinkedList<>();
-        unloadedWeapons = new LinkedList<>();
-        ammoCubes = new LinkedList<>();
-        powerups = new LinkedList<>();
+    public Wallet(List<String> loadedWeapons, List<String> unloadedWeapons, List<CurrencyColor> ammoCubes, List<Powerup> powerups) {
+        this.loadedWeapons = loadedWeapons;
+        this.unloadedWeapons = unloadedWeapons;
+        this.ammoCubes = ammoCubes;
+        this.powerups = powerups;
     }
 
     public List<String> getLoadedWeapons() {
         return loadedWeapons;
     }
 
-    public void setLoadedWeapons(List<String> loadedWeapons) {
-        this.loadedWeapons = loadedWeapons;
-    }
-
     public List<String> getUnloadedWeapons() {
         return unloadedWeapons;
-    }
-
-    public void setUnloadedWeapons(List<String> unloadedWeapons) {
-        this.unloadedWeapons = unloadedWeapons;
     }
 
     public List<CurrencyColor> getAmmoCubes() {
         return ammoCubes;
     }
 
-    public void setAmmoCubes(List<CurrencyColor> ammoCubes) {
-        this.ammoCubes = ammoCubes;
-    }
-
     public List<Powerup> getPowerups() {
         return powerups;
-    }
-
-    public void setPowerups(List<Powerup> powerups) {
-        this.powerups = powerups;
     }
 
     @Override

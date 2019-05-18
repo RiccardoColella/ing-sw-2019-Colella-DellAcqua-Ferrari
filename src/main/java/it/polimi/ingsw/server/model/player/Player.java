@@ -11,7 +11,6 @@ import it.polimi.ingsw.server.model.rewards.Reward;
 import it.polimi.ingsw.server.model.rewards.RewardFactory;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.shared.Direction;
-import it.polimi.ingsw.shared.viewmodels.Powerup;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -343,19 +342,13 @@ public class Player implements Damageable, MatchListener {
             }
         } else throw new IllegalArgumentException("Player should not discard a weapon if he only owns " + this.weapons.size() + " and the maximum is " + this.constraints.getMaxWeaponsForPlayer());
 
-        if (this.weapons.size() < constraints.getMaxWeaponsForPlayer()) {
-            //now the weapon can be grabbed if the player has enough money to pay for it
-            grabWeapon(weapon, coins);
-        } else {
-            //if the player could not pay for the weapon, the discarded weapon is given back to him
-            weapons.add(discardedWeapon);
-            throw new UnauthorizedExchangeException("Player already has " + constraints.getMaxWeaponsForPlayer() + " weapons and needs to drop one in order to buy one");
-        }
+        //now the weapon can be grabbed if the player has enough money to pay for it
+        grabWeapon(weapon, coins);
 
         //the discarded weapon is put back to the spawnpoint
         discardedWeapon.setLoaded(false);
-        getBlock().drop(weapon);
-        notifyWeaponDropped(weapon);
+        getBlock().drop(discardedWeapon);
+        notifyWeaponDropped(discardedWeapon);
     }
 
     /**
@@ -433,15 +426,7 @@ public class Player implements Damageable, MatchListener {
      * @param powerupTile discarded powerup
      */
     public void discardPowerup(PowerupTile powerupTile){
-        boolean found = false;
-        for (PowerupTile tile : this.powerups) {
-            if (tile.getColor().equals(powerupTile.getColor()) && tile.getName().equals(powerupTile.getName())) {
-                this.powerups.remove(tile);
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
+        if (!this.powerups.remove(powerupTile)) {
             throw new IllegalArgumentException("Player doesn't have the " + powerupTile.getName() + " powerup");
         }
     }
@@ -456,7 +441,6 @@ public class Player implements Damageable, MatchListener {
         } else {
             match.getBoard().getSpawnpoint(powerupTile.getColor()).addPlayer(this);
         }
-        powerups.remove(powerupTile);
         notifySelectedSpawnpoint(powerupTile);
     }
 
@@ -616,8 +600,9 @@ public class Player implements Damageable, MatchListener {
             case FINAL_FRENZY:
                 if (this.damageTokens.isEmpty()) {
                     this.currentReward = RewardFactory.create(RewardFactory.Type.FINAL_FRENZY);
-                    notifyPlayerBoardFlipped();
+                    notifyPlayerTileFlipped();
                 }
+                notifyPlayerBoardFlipped();
                 break;
             case STANDARD:
             case SUDDEN_DEATH:
@@ -626,6 +611,11 @@ public class Player implements Damageable, MatchListener {
             default:
                 throw new IllegalArgumentException("Unrecognizable match mode");
         }
+    }
+
+    private void notifyPlayerTileFlipped() {
+        PlayerEvent e = new PlayerEvent(this);
+        listeners.forEach(l -> l.onPlayerTileFlipped(e));
     }
 
     @Override

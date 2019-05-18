@@ -1,11 +1,15 @@
 package it.polimi.ingsw.server.model.battlefield;
 
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.server.model.events.WeaponEvent;
+import it.polimi.ingsw.server.model.events.listeners.SpawnpointListener;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.shared.Direction;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This class represents all blocks of the spawnpoint type, which allow a player to grab and put back weapons and also they are the starting blocks of the match
@@ -17,6 +21,8 @@ public class SpawnpointBlock extends Block {
      * This property represents the CurrencyColor associated to the spawnpoint
      */
     private final CurrencyColor color;
+
+    private Set<SpawnpointListener> listeners = new HashSet<>();
 
     /**
      * This property stores the weapons that are currently available in the spawnpoint
@@ -54,9 +60,9 @@ public class SpawnpointBlock extends Block {
      * @param weapon the weapon to grab
      */
     public void grabWeapon(WeaponTile weapon) {
-        if (this.getWeapons().contains(weapon)){
-            this.weapons.remove(weapon);
-        } else throw new IllegalArgumentException("Grabbing was not possible, the weapon is not in this spawnpoint");
+        if (!this.weapons.remove(weapon)) {
+            throw new IllegalArgumentException("Grabbing was not possible, the weapon is not in this spawnpoint");
+        }
     }
 
     /**
@@ -75,6 +81,7 @@ public class SpawnpointBlock extends Block {
     public void drop(WeaponTile weapon) {
         if (this.getWeapons().size() < maxWeapons){
             this.weapons.add(weapon);
+            notifyWeaponDropped(weapon);
         } else throw new IllegalStateException("Dropping was not possible, the spawnpoint is full");
     }
 
@@ -99,5 +106,16 @@ public class SpawnpointBlock extends Block {
 
     public int getMaxWeapons() {
         return maxWeapons;
+    }
+
+    public void addSpawnpointListener(SpawnpointListener l) {
+        listeners.add(l);
+    }
+    public void removeSpawnpointListener(SpawnpointListener l) {
+        listeners.remove(l);
+    }
+    public void notifyWeaponDropped(WeaponTile weapon) {
+        WeaponEvent e = new WeaponEvent(this, weapon);
+        listeners.forEach(l -> l.onWeaponDropped(e));
     }
 }

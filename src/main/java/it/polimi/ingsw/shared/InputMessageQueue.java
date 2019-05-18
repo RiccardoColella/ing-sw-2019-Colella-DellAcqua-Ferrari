@@ -110,9 +110,7 @@ public class InputMessageQueue {
      */
     public Message dequeueAnswer(String sessionId, int timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
         try {
-            if (!answerMessageQueues.containsKey(sessionId)) {
-                answerMessageQueues.put(sessionId, new LinkedBlockingQueue<>());
-            }
+            answerMessageQueues.putIfAbsent(sessionId, new LinkedBlockingQueue<>());
 
             return dequeue(answerMessageQueues.get(sessionId), timeout, unit);
         } finally {

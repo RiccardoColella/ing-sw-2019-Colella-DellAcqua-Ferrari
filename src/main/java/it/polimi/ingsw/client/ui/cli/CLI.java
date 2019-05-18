@@ -17,7 +17,7 @@ import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 import it.polimi.ingsw.shared.events.networkevents.*;
 import it.polimi.ingsw.shared.messages.templates.Question;
-import it.polimi.ingsw.shared.viewmodels.Powerup;
+import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -324,7 +324,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     }
 
     @Override
-    public void onNewWeaponAvailable(WeaponExchanged e) {
+    public void onNewWeaponAvailable(WeaponEvent e) {
 
     }
 
@@ -342,7 +342,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onPlayerWalletChanged(PlayerWalletChanged e) {
-        gameRepresentation.setPlayerWallet(e.getPlayer(), e.getWallet());
+        gameRepresentation.updatePlayer(e.getPlayer());
         printStream.println(w + e.getPlayer().getNickname() + "'s wallet changed!");
         printStream.println(m + e.getMessage());
     }
@@ -354,31 +354,37 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     }
 
     @Override
+    public void onPlayerTileFlipped(PlayerEvent e) {
+        // TODO: implement
+
+    }
+
+    @Override
     public void onPlayerHealthChanged(PlayerHealthChanged e) {
-        gameRepresentation.updatePlayerHealth(e);
+        gameRepresentation.updatePlayer(e.getPlayer());
         printStream.println(m + e.getPlayer().getNickname() + "'s health changed");
     }
 
     @Override
-    public void onWeaponReloaded(WeaponEvent e) {
-        gameRepresentation.setPlayerWeaponLoaded(e.getPlayer(), e.getWeaponName());
+    public void onWeaponReloaded(PlayerWeaponEvent e) {
+        gameRepresentation.updatePlayer(e.getPlayer());
         printStream.println(m + e.getPlayer().getNickname() + " reloaded his " + e.getWeaponName());
     }
 
     @Override
-    public void onWeaponUnloaded(WeaponEvent e) {
-        gameRepresentation.setPlayerWeaponUnloaded(e.getPlayer(), e.getWeaponName());
+    public void onWeaponUnloaded(PlayerWeaponEvent e) {
+        gameRepresentation.updatePlayer(e.getPlayer());
         printStream.println(m + e.getPlayer().getNickname() + " unloaded his " + e.getWeaponName());
     }
 
     @Override
-    public void onWeaponPicked(WeaponExchanged e) {
+    public void onWeaponPicked(PlayerWeaponExchanged e) {
         gameRepresentation.grabPlayerWeapon(e.getPlayer(), e.getWeaponName(), e.getRow(), e.getColumn());
         printStream.println(m + e.getPlayer().getNickname() + " picked up " + e.getWeaponName() + " on block Row" + e.getRow() + " Column" + e.getColumn());
     }
 
     @Override
-    public void onWeaponDropped(WeaponExchanged e) {
+    public void onWeaponDropped(PlayerWeaponExchanged e) {
         gameRepresentation.dropPlayerWeapon(e.getPlayer(), e.getWeaponName(), e.getRow(), e.getColumn());
         printStream.println(m + e.getPlayer().getNickname() + " dropped his " + e.getWeaponName() + " on Row" + e.getRow() + " Column" + e.getColumn());
     }

@@ -14,10 +14,9 @@ import it.polimi.ingsw.shared.messages.Message;
 import it.polimi.ingsw.shared.messages.ServerApi;
 import it.polimi.ingsw.shared.messages.templates.Answer;
 import it.polimi.ingsw.shared.messages.templates.Question;
-import it.polimi.ingsw.shared.viewmodels.Powerup;
+import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 
 import java.awt.*;
-import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -356,6 +355,11 @@ public abstract class Connector implements AutoCloseable {
                 playerListeners.forEach(l -> l.onPlayerBoardFlipped(e));
                 break;
             }
+            case PLAYER_TILE_FLIPPED_EVENT: {
+                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this, PlayerEvent.class);
+                playerListeners.forEach(l -> l.onPlayerTileFlipped(e));
+                break;
+            }
             case PLAYER_WALLET_CHANGED_EVENT: {
                 PlayerWalletChanged e = PlayerWalletChanged.fromJson(message.getPayload(), this, PlayerWalletChanged.class);
                 playerListeners.forEach(l -> l.onPlayerWalletChanged(e));
@@ -367,22 +371,22 @@ public abstract class Connector implements AutoCloseable {
                 break;
             }
             case WEAPON_RELOADED_EVENT: {
-                WeaponEvent e = WeaponEvent.fromJson(message.getPayload(), this, WeaponEvent.class);
+                PlayerWeaponEvent e = PlayerWeaponEvent.fromJson(message.getPayload(), this, PlayerWeaponEvent.class);
                 playerListeners.forEach(l -> l.onWeaponReloaded(e));
                 break;
             }
             case WEAPON_UNLOADED_EVENT: {
-                WeaponEvent e = WeaponEvent.fromJson(message.getPayload(), this, WeaponEvent.class);
+                PlayerWeaponEvent e = PlayerWeaponEvent.fromJson(message.getPayload(), this, PlayerWeaponEvent.class);
                 playerListeners.forEach(l -> l.onWeaponUnloaded(e));
                 break;
             }
             case WEAPON_PICKED_EVENT: {
-                WeaponExchanged e = WeaponExchanged.fromJson(message.getPayload(), this, WeaponExchanged.class);
+                PlayerWeaponExchanged e = PlayerWeaponExchanged.fromJson(message.getPayload(), this, PlayerWeaponExchanged.class);
                 playerListeners.forEach(l -> l.onWeaponPicked(e));
                 break;
             }
             case WEAPON_DROPPED_EVENT: {
-                WeaponExchanged e = WeaponExchanged.fromJson(message.getPayload(), this, WeaponExchanged.class);
+                PlayerWeaponExchanged e = PlayerWeaponExchanged.fromJson(message.getPayload(), this, PlayerWeaponExchanged.class);
                 playerListeners.forEach(l -> l.onWeaponDropped(e));
                 break;
             }
@@ -407,7 +411,7 @@ public abstract class Connector implements AutoCloseable {
                 break;
             }
             case NEW_WEAPON_AVAILABLE_EVENT: {
-                WeaponExchanged e = WeaponExchanged.fromJson(message.getPayload(), this, WeaponExchanged.class);
+                WeaponEvent e = WeaponEvent.fromJson(message.getPayload(), this, WeaponEvent.class);
                 boardListeners.forEach(l -> l.onNewWeaponAvailable(e));
                 break;
             }

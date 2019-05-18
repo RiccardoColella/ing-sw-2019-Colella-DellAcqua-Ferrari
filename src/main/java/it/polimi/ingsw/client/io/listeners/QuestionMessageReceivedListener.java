@@ -4,7 +4,7 @@ import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.messages.templates.Question;
-import it.polimi.ingsw.shared.viewmodels.Powerup;
+import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 
 import java.awt.*;
 import java.util.EventListener;

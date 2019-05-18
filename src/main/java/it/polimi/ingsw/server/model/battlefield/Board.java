@@ -3,7 +3,9 @@ package it.polimi.ingsw.server.model.battlefield;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.events.NewWeaponAvailable;
 import it.polimi.ingsw.server.model.events.PlayerMoved;
+import it.polimi.ingsw.server.model.events.WeaponEvent;
 import it.polimi.ingsw.server.model.events.listeners.BoardListener;
+import it.polimi.ingsw.server.model.events.listeners.SpawnpointListener;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.shared.Direction;
@@ -16,7 +18,7 @@ import static it.polimi.ingsw.server.model.battlefield.Block.BorderType.*;
 /**
  * This class implements the game board
  */
-public class Board {
+public class Board implements SpawnpointListener {
 
     private final Block[][] field;
     private final Set<BoardListener> listeners = new HashSet<>();
@@ -26,6 +28,11 @@ public class Board {
      */
     public Board(Block[][] field) {
         this.field = field;
+        for (Block block : getBlocks()) {
+            if (block instanceof SpawnpointBlock) {
+                ((SpawnpointBlock)block).addSpawnpointListener(this);
+            }
+        }
     }
 
     int getRowLength(){
@@ -246,7 +253,7 @@ public class Board {
         listeners.forEach(l -> l.onPlayerTeleported(e));
     }
 
-    public void notifyNewWeaponAvailable(WeaponTile tile, Block block) {
+    private void notifyNewWeaponAvailable(WeaponTile tile, Block block) {
         NewWeaponAvailable e = new NewWeaponAvailable(this, tile, block);
         listeners.forEach(l -> l.onNewWeaponAvailable(e));
     }
@@ -355,5 +362,10 @@ public class Board {
 
     public void addBoardListener(BoardListener l) {
         listeners.add(l);
+    }
+
+    @Override
+    public void onWeaponDropped(WeaponEvent e) {
+        notifyNewWeaponAvailable(e.getWeaponTile(), (Block) e.getSource());
     }
 }

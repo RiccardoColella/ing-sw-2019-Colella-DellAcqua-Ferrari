@@ -12,13 +12,12 @@ import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.events.networkevents.*;
 import it.polimi.ingsw.shared.messages.templates.Question;
-import it.polimi.ingsw.shared.viewmodels.Player;
-import it.polimi.ingsw.shared.viewmodels.Powerup;
+import it.polimi.ingsw.shared.datatransferobjects.Player;
+import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 import it.polimi.ingsw.utils.Tuple;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -102,8 +101,8 @@ public class GameController extends WindowController implements AutoCloseable, Q
         this.self = e.getSelf();
         initOpponentsBoards();boardContent.setMaxHeight(400);
         initPlayerBoard();
-        initAmmo();
-        initPowerups();
+        initAmmo(e.getSelf().getWallet().getAmmoCubes());
+        initPowerups(e.getSelf().getWallet().getPowerups());
         initWeapons();
         tileMsg.setText(self.getNickname() + ", " + tileMsg.getText());
 
@@ -111,9 +110,9 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     private void initPlayerBoard() {
-        playerBoardImg.setImg(UrlFinder.findPlayerBoard(self.getColor(), self.isBoardFlipped()), ImagePane.LEFT);
+        playerBoardImg.setImg(UrlFinder.findPlayerBoard(self.getColor(), false), ImagePane.LEFT);
         updatePlayerBoard(self, playerBoardImg);
-        playerTileImg.setImg(UrlFinder.findPlayerTile(self.getColor(), self.isTileFlipped()), ImagePane.RIGHT);
+        playerTileImg.setImg(UrlFinder.findPlayerTile(self.getColor(), false), ImagePane.RIGHT);
     }
 
     private void initOpponentsBoards() {
@@ -131,7 +130,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
         for (int i = 0; i < opponents.size(); i++) {
             Player opponent = opponents.get(i);
-            PlayerBoardPane opponentPane = new PlayerBoardPane(UrlFinder.findPlayerBoard(opponent.getColor(), opponent.isBoardFlipped()), ImagePane.LEFT);
+            PlayerBoardPane opponentPane = new PlayerBoardPane(UrlFinder.findPlayerBoard(opponent.getColor(), false), ImagePane.LEFT);
             opponentPane.setMaxHeight(59);
             opponentPane.setMinHeight(59);
             opponentPane.setMaxWidth(229);
@@ -166,17 +165,17 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
-    private void initAmmo() {
-        for (int i = 0; i < self.getWallet().getAmmoCubes().size(); i++) {
-            CurrencyColor ammoColor = self.getWallet().getAmmoCubes().get(i);
+    private void initAmmo(List<CurrencyColor> ammoCubes) {
+        for (int i = 0; i < ammoCubes.size(); i++) {
+            CurrencyColor ammoColor = ammoCubes.get(i);
             ImagePane ammoPane = new ImagePane(UrlFinder.findAmmo(ammoColor), ImagePane.CENTER);
             ammoContainer.add(ammoPane, i % 3, 1 + i / 3);
         }
     }
 
-    private void initPowerups() {
-        for (int i = 0; i < self.getWallet().getPowerups().size(); i++) {
-            Powerup powerup = self.getWallet().getPowerups().get(i);
+    private void initPowerups(List<Powerup> powerups) {
+        for (int i = 0; i < powerups.size(); i++) {
+            Powerup powerup = powerups.get(i);
             ImagePane powerupPane = new ImagePane(UrlFinder.findPowerup(powerup), ImagePane.CENTER);
             powerupContainer.add(powerupPane, i, 1);
             powerupPane.setOnMouseClicked(this::showFullSize);
@@ -454,7 +453,6 @@ public class GameController extends WindowController implements AutoCloseable, Q
         Platform.runLater(() -> {
             PlayerBoardPane paneToUpdate = findPlayerBoard(e.getPlayer());
             paneToUpdate.resetDamage();
-            boardContent.movePlayer(e.getPlayer().getColor(), e.getPlayer().getLocation().y, e.getPlayer().getLocation().x);
             sendNotification(e.getPlayer().getNickname() + " was brought back to life");
         });
     }
@@ -463,12 +461,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
     public void onPlayerWalletChanged(PlayerWalletChanged e) {
         Platform.runLater(() -> {
             if (e.getPlayer().getNickname().equals(self.getNickname())) {
-                self.getWallet().setPowerups(e.getWallet().getPowerups());
-                self.getWallet().setAmmoCubes(e.getWallet().getAmmoCubes());
                 ammoContainer.getChildren().clear();
-                initAmmo();
+                initAmmo(e.getPlayer().getWallet().getAmmoCubes());
                 powerupContainer.getChildren().clear();
-                initPowerups();
+                initPowerups(e.getPlayer().getWallet().getPowerups());
             }
             sendNotification(e.getMessage());
         });
@@ -477,26 +473,30 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onPlayerBoardFlipped(PlayerEvent e) {
-        if (self.getNickname().equals(e.getPlayer().getNickname()) && self.isBoardFlipped() != e.getPlayer().isBoardFlipped()) {
-            self = e.getPlayer();
-            playerBoardImg.flip(UrlFinder.findPlayerBoard(self.getColor(), self.isBoardFlipped()));
-        } else if (self.getNickname().equals(e.getPlayer().getNickname()) && self.isTileFlipped() != e.getPlayer().isTileFlipped()) {
-            self = e.getPlayer();
-            playerTileImg.setImg(UrlFinder.findPlayerTile(self.getColor(), self.isTileFlipped()));
-        } else {
-            for (Player opponent : opponents) {
-                if (opponent.getNickname().equals(e.getPlayer().getNickname())) {
-                    if (self.isBoardFlipped() != e.getPlayer().isBoardFlipped()) {
+        Platform.runLater(() -> {
+            if (self.getNickname().equals(e.getPlayer().getNickname())) {
+                self = e.getPlayer();
+                playerBoardImg.flip(UrlFinder.findPlayerBoard(self.getColor(), true));
+            } else {
+                for (Player opponent : opponents) {
+                    if (opponent.getNickname().equals(e.getPlayer().getNickname())) {
                         PlayerBoardPane boardToUpdate = findPlayerBoard(e.getPlayer());
-                        boardToUpdate.flip(UrlFinder.findPlayerBoard(e.getPlayer().getColor(), e.getPlayer().isBoardFlipped()));
-                    } else {
-                        findPlayerBoard(e.getPlayer());
+                        boardToUpdate.flip(UrlFinder.findPlayerBoard(e.getPlayer().getColor(), true));
+                        break;
                     }
-                    break;
                 }
             }
-        }
+        });
+    }
 
+    @Override
+    public void onPlayerTileFlipped(PlayerEvent e) {
+        Platform.runLater(() -> {
+            if (self.getNickname().equals(e.getPlayer().getNickname())) {
+                self = e.getPlayer();
+                playerBoardImg.flip(UrlFinder.findPlayerTile(self.getColor(), true));
+            }
+        });
     }
 
     @Override
@@ -537,7 +537,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     @Override
-    public void onWeaponReloaded(WeaponEvent e) {
+    public void onWeaponReloaded(PlayerWeaponEvent e) {
         Platform.runLater(() -> {
             if (e.getPlayer().getNickname().equals(self.getNickname())) {
                 self = e.getPlayer();
@@ -548,7 +548,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     @Override
-    public void onWeaponUnloaded(WeaponEvent e) {
+    public void onWeaponUnloaded(PlayerWeaponEvent e) {
         Platform.runLater(() -> {
             if (e.getPlayer().getNickname().equals(self.getNickname())) {
                 self = e.getPlayer();
@@ -559,7 +559,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     @Override
-    public void onWeaponPicked(WeaponExchanged e) {
+    public void onWeaponPicked(PlayerWeaponExchanged e) {
         Platform.runLater(() -> {
             if (e.getColumn() == 0) {
                 boardContent.removeWeaponLeft(e.getWeaponName());
@@ -584,7 +584,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     @Override
-    public void onWeaponDropped(WeaponExchanged e) {
+    public void onWeaponDropped(PlayerWeaponExchanged e) {
         Platform.runLater(() -> {
             if (e.getColumn() == 0) {
                 boardContent.enqueueWeaponLeft(e.getWeaponName());
@@ -638,7 +638,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     @Override
-    public void onNewWeaponAvailable(WeaponExchanged e) {
+    public void onNewWeaponAvailable(WeaponEvent e) {
         Platform.runLater(() -> {
             if (e.getColumn() == 0) {
                 boardContent.enqueueWeaponLeft(e.getWeaponName());
@@ -654,7 +654,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
     @Override
     public void onPlayerSpawned(PlayerSpawned e) {
         Platform.runLater( () -> {
-            boardContent.addPlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
+            boardContent.movePlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
             String message = " just spawned!";
             sendNotification(e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
         });
@@ -682,16 +682,18 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onKillshotTrackChanged(KillshotTrackChanged e) {
-        List<Tuple<PlayerColor, Boolean>> oldTrack = boardContent.getKillshotTrackUnmodifiable();
-        int toAdd = e.getKillshots().size() - oldTrack.size();
-        if (toAdd > 0) {
-            for (int i = 0; i < toAdd; i++) {
-                boardContent.addKillshot(e.getKillshots().get(i + toAdd - 1).getItem1());
-                if (e.getKillshots().get(i + toAdd - 1).getItem2()) {
-                    boardContent.addOverkill();
+        Platform.runLater(() -> {
+            List<Tuple<PlayerColor, Boolean>> oldTrack = boardContent.getKillshotTrackUnmodifiable();
+            int toAdd = e.getKillshots().size() - oldTrack.size();
+            if (toAdd > 0) {
+                for (int i = 0; i < toAdd; i++) {
+                    boardContent.addKillshot(e.getKillshots().get(i + toAdd - 1).getItem1());
+                    if (e.getKillshots().get(i + toAdd - 1).getItem2()) {
+                        boardContent.addOverkill();
+                    }
                 }
             }
-        }
+        });
     }
 
     @Override
@@ -700,7 +702,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     private void sendNotification(String message) {
-        /*Alert info = new Alert(Alert.AlertType.INFORMATION, message);
-        info.show();*/
+        /*Platform.runLater(() -> {
+            ;
+            Alert info = new Alert(Alert.AlertType.INFORMATION, message);
+            info.show();
+        });*/
     }
 }

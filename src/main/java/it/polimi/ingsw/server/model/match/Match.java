@@ -220,6 +220,7 @@ public class Match implements PlayerListener {
     public void changeTurn() {
         int activePlayerIndex = this.players.indexOf(this.activePlayer);
         this.activePlayer = (activePlayerIndex == this.players.size() - 1) ? this.players.get(0) : this.players.get(activePlayerIndex + 1);
+        notifyActivePlayerUpdate();
     }
 
     /**
@@ -305,6 +306,12 @@ public class Match implements PlayerListener {
 
     @Override
     public void onPlayerBoardFlipped(PlayerEvent e) {
+        // Nothing to do here
+
+    }
+
+    @Override
+    public void onPlayerTileFlipped(PlayerEvent e) {
         // Nothing to do here
 
     }
@@ -530,8 +537,8 @@ public class Match implements PlayerListener {
         return playersWhoDidFinalFrenzyTurn;
     }
 
-    public void notifyActivePlayerUpdate(Player player){
-        PlayerEvent e = new PlayerEvent(player);
+    private void notifyActivePlayerUpdate(){
+        PlayerEvent e = new PlayerEvent(activePlayer);
         this.listeners.forEach(matchListener -> matchListener.onActivePlayerChanged(e));
     }
 

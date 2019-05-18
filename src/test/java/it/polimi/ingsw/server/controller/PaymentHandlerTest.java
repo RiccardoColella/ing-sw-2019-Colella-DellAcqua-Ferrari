@@ -9,6 +9,7 @@ import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.match.MatchFactory;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.player.PlayerColor;
+import it.polimi.ingsw.server.model.player.PlayerFactory;
 import it.polimi.ingsw.server.model.player.PlayerInfo;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
@@ -180,5 +181,13 @@ class PaymentHandlerTest {
         player2.grabAmmoCubes(ammoCubesToBeGrabbed);
         assertEquals(1, player2.getPowerups().size() + player2.getAmmoCubes().size());
         assertThrows(ViewDisconnectedException.class, () -> PaymentHandler.pay(mockDebt, player2, mockView));
+    }
+
+    @Test
+    public void payWithRestrictedFunds() {
+        match.getPlayers().get(0).pay(match.getPlayers().get(0).getAmmoCubes().stream().map(x -> (Coin)x).collect(Collectors.toList()));
+        match.getPlayers().get(0).grabPowerup(match.getPowerupDeck().pick().orElseThrow());
+        match.getPlayers().get(0).grabPowerup(match.getPowerupDeck().pick().orElseThrow());
+        PaymentHandler.pay(1, match.getPlayers().get(0), new MockView(0), match.getPlayers().get(0).getPowerups().get(0));
     }
 }

@@ -5,7 +5,7 @@ import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
 import it.polimi.ingsw.shared.messages.ClientApi;
-import it.polimi.ingsw.shared.viewmodels.Powerup;
+import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 
 import javax.annotation.Nullable;
 import java.util.*;

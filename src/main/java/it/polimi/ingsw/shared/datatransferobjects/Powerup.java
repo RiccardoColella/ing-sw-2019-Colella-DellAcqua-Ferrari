@@ -1,4 +1,4 @@
-package it.polimi.ingsw.shared.viewmodels;
+package it.polimi.ingsw.shared.datatransferobjects;
 
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 

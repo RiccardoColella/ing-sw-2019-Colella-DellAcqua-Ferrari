@@ -1,13 +1,13 @@
 package it.polimi.ingsw.shared.events.networkevents;
 
-import it.polimi.ingsw.shared.viewmodels.Player;
+import it.polimi.ingsw.shared.datatransferobjects.Player;
 
-public class WeaponExchanged extends WeaponEvent {
+public class PlayerWeaponExchanged extends PlayerWeaponEvent {
 
     private final int row;
     private final int column;
 
-    public WeaponExchanged(Player owner, String weaponName, int row, int column) {
+    public PlayerWeaponExchanged(Player owner, String weaponName, int row, int column) {
         super(owner, weaponName);
         this.row = row;
         this.column = column;

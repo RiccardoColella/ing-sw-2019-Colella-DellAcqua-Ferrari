@@ -1,6 +1,6 @@
 package it.polimi.ingsw.shared.events.networkevents;
 
-import it.polimi.ingsw.shared.viewmodels.Player;
+import it.polimi.ingsw.shared.datatransferobjects.Player;
 
 public class PlayerMoved extends PlayerEvent {
 

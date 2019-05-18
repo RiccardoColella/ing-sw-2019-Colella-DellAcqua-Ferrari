@@ -1,20 +1,17 @@
 package it.polimi.ingsw.client.ui.cli;
 
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
-import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.PlayerColor;
+import it.polimi.ingsw.shared.datatransferobjects.PlayerHealth;
 import it.polimi.ingsw.shared.events.networkevents.MatchStarted;
-import it.polimi.ingsw.shared.viewmodels.Player;
-import it.polimi.ingsw.shared.viewmodels.Wallet;
+import it.polimi.ingsw.shared.datatransferobjects.Player;
+import it.polimi.ingsw.shared.datatransferobjects.Wallet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.awt.*;
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class GameRepresentationTest {
     GameRepresentation gameRepresentation;
@@ -44,25 +41,21 @@ class GameRepresentationTest {
     private Player buildPlayer(int x){
         String name = "Player" + x;
         List<PlayerColor> colors = new LinkedList<>(Arrays.asList(PlayerColor.values()));
-        return new Player(name, colors.get(x), new Wallet());
-    }
-
-    @Test
-    void printEmptyBoard() {
-        gameRepresentation.printEmptyBoard(System.out);
+        return new Player(
+                name,
+                colors.get(x),
+                new Wallet(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList()),
+                new PlayerHealth(0, Collections.emptyList(), Collections.emptyList())
+        );
     }
 
     @Test
     void positPlayersTest() {
         int i = 0;
         for (Player player : gameRepresentation.getPlayers()){
-            player.setLocation(new Point(i, i));
+            gameRepresentation.playerLocations.put(player, new Point(i, i));
             i++;
         }
-        gameRepresentation.printBoard(
-                gameRepresentation.positPlayers(),
-                System.out
-        );
     }
 
     @Test
@@ -91,10 +84,6 @@ class GameRepresentationTest {
 
     @Test
     void dropPlayerWeapon() {
-    }
-
-    @Test
-    void printEmptyBoard1() {
     }
 
     @Test

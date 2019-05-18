@@ -1,7 +1,7 @@
 package it.polimi.ingsw.shared.events.networkevents;
 
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
-import it.polimi.ingsw.shared.viewmodels.Player;
+import it.polimi.ingsw.shared.datatransferobjects.Player;
 
 import java.util.List;
 

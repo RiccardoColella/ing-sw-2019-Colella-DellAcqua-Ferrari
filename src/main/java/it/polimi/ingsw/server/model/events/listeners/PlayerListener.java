@@ -32,6 +32,8 @@ public interface PlayerListener extends EventListener {
 
     void onPlayerBoardFlipped(PlayerEvent e);
 
+    void onPlayerTileFlipped(PlayerEvent e);
+
     void onWeaponReloaded(PlayerWeaponEvent e);
 
     void onWeaponUnloaded(PlayerWeaponEvent e);

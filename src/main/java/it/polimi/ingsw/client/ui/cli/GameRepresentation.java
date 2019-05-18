@@ -8,13 +8,12 @@ import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.shared.events.networkevents.MatchStarted;
 import it.polimi.ingsw.shared.events.networkevents.PlayerHealthChanged;
-import it.polimi.ingsw.shared.viewmodels.Player;
-import it.polimi.ingsw.shared.viewmodels.Wallet;
+import it.polimi.ingsw.shared.datatransferobjects.Player;
+import it.polimi.ingsw.shared.datatransferobjects.Wallet;
 
 import java.awt.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
 
 public class GameRepresentation {
@@ -30,6 +29,8 @@ public class GameRepresentation {
     private List<String> weaponsOnRightSpawnpoint;
 
     private List<String> weaponsOnTopSpawnpoint;
+
+    Map<Player, Point> playerLocations = new HashMap<>();
 
     private static final String  TEXTS_JSON_FILE = "./resources/gameTextsForCLI.json";
 
@@ -115,12 +116,12 @@ public class GameRepresentation {
         List<String> boardWithPlayers = new LinkedList<>(board);
         for (Player player : players){
             int i = players.indexOf(player);
-            int x = player.getLocation().x;
-            int y = player.getLocation().y;
             String nick = player.getNickname();
             if (nick.length() > 14){
                 nick = nick.substring(0, 14);
             }
+            int x = playerLocations.get(player).x;
+            int y = playerLocations.get(player).y;
             // Row is the general offset for rows + the player's row + the distance of the needed block
             int row = getRowOffset() + i + getRowDistance()*x;
             // Column is the general column offset + the distance of the needed block
@@ -146,39 +147,8 @@ public class GameRepresentation {
         throw new IllegalArgumentException("Player " + playerToSelect.getNickname() + " not found in players");
     }
 
-    public void movePlayer(Player player, int r, int c){
-        selectPlayer(player).setLocation(new Point(r, c));
-    }
-
-    void setPlayerWallet(Player player, Wallet newWallet){
-        Wallet playerWallet = selectPlayer(player).getWallet();
-        playerWallet.setAmmoCubes(newWallet.getAmmoCubes());
-        playerWallet.setPowerups(newWallet.getPowerups());
-        playerWallet.setLoadedWeapons(newWallet.getLoadedWeapons());
-        playerWallet.setUnloadedWeapons(newWallet.getUnloadedWeapons());
-    }
-
-    void updatePlayerHealth(PlayerHealthChanged e){
-        Player player = selectPlayer(e.getPlayer());
-        player.setDamage(e.getDamages());
-        player.setMarks(e.getMarks());
-        player.setSkulls(e.getSkulls());
-    }
-
-    void setPlayerWeaponLoaded(Player playerWhoReloaded, String weapon){
-        Wallet playerWallet = selectPlayer(playerWhoReloaded).getWallet();
-        // Setting loaded weapons
-        playerWallet.getLoadedWeapons().add(weapon);
-        // Setting unloaded weapons
-        playerWallet.getUnloadedWeapons().remove(weapon);
-    }
-
-    void setPlayerWeaponUnloaded(Player playerWeaponUnloaded, String weapon){
-        Wallet playerWallet = selectPlayer(playerWeaponUnloaded).getWallet();
-        // Setting weapon unloaded
-        playerWallet.getUnloadedWeapons().add(weapon);
-        // Setting loaded weapons
-        playerWallet.getLoadedWeapons().remove(weapon);
+    public void movePlayer(Player player, int r, int c) {
+        playerLocations.put(selectPlayer(player), new Point(r, c));
     }
 
     void grabPlayerWeapon(Player player, String weapon, int r, int c){
@@ -206,5 +176,12 @@ public class GameRepresentation {
     }
 
 
-
+    public void updatePlayer(Player player) {
+        for (Player p : players) {
+            if (p.getNickname().equals(player.getNickname())) {
+                players.set(players.indexOf(p), player);
+                break;
+            }
+        }
+    }
 }

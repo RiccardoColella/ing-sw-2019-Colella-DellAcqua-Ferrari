@@ -11,15 +11,17 @@ public interface PlayerListener {
 
     void onPlayerBoardFlipped(PlayerEvent e);
 
+    void onPlayerTileFlipped(PlayerEvent e);
+
     void onPlayerHealthChanged(PlayerHealthChanged e);
 
-    void onWeaponReloaded(it.polimi.ingsw.shared.events.networkevents.WeaponEvent e);
+    void onWeaponReloaded(PlayerWeaponEvent e);
 
-    void onWeaponUnloaded(it.polimi.ingsw.shared.events.networkevents.WeaponEvent e);
+    void onWeaponUnloaded(PlayerWeaponEvent e);
 
-    void onWeaponPicked(WeaponExchanged e);
+    void onWeaponPicked(PlayerWeaponExchanged e);
 
-    void onWeaponDropped(WeaponExchanged e);
+    void onWeaponDropped(PlayerWeaponExchanged e);
 
     void onPlayerDisconnected(PlayerEvent e);
 
