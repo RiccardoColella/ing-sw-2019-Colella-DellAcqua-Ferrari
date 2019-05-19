@@ -39,7 +39,9 @@ class GameRepresentationTest {
                 opponents,
                 weaponTop,
                 weaponRight,
-                weaponLeft));
+                weaponLeft,
+                buildPlayer(0)
+                ));
         int i = 0;
         for (Player player : gameRepresentation.getPlayers()){
             gameRepresentation.playerLocations.put(player, new Point(i, i));
@@ -72,7 +74,9 @@ class GameRepresentationTest {
                 name,
                 colors.get(x),
                 new Wallet(loadedWeapons, unloadedWeapons, ammoCubes, powerups),
-                new PlayerHealth(8, damages, marks)
+                new PlayerHealth(8, damages, marks),
+                false,
+                false
         );
     }
 

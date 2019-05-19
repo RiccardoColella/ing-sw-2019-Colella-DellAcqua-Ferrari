@@ -10,6 +10,7 @@ import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.messages.ClientApi;
+import it.polimi.ingsw.utils.ConfigFileMaker;
 import it.polimi.ingsw.utils.EnumValueByString;
 import it.polimi.ingsw.utils.Range;
 
@@ -75,7 +76,8 @@ public class PowerupFactory {
     /**
      * The path of the JSON configuration file
      */
-    private static final String POWERUP_JSON_PATH = "./resources/powerupEffects.json";
+    private static final String POWERUP_JSON_PATH = "./config/powerupEffects.json";
+    private static final String POWERUP_JSON_PATH_RES = "/config/powerupEffects.json";
 
     /**
      * A {@code Map} associating each name to the associated {@code Powerup}
@@ -106,14 +108,11 @@ public class PowerupFactory {
         if (powerupMap == null) {
             powerupMap = new HashMap<>();
             PowerupConfig[] powerupConfigs;
-            try {
-                powerupConfigs = gson.fromJson(
-                        new FileReader(new File(POWERUP_JSON_PATH)),
-                        PowerupConfig[].class
-                );
-            } catch (FileNotFoundException e) {
-                throw new MissingConfigurationFileException("Powerup configuration file not found", e);
-            }
+
+            powerupConfigs = gson.fromJson(
+                    ConfigFileMaker.load(POWERUP_JSON_PATH, POWERUP_JSON_PATH_RES),
+                    PowerupConfig[].class
+            );
 
             for (PowerupConfig config: powerupConfigs) {
                 powerupMap.put(config.name, new Powerup(config.name, config.trigger, config.target, config.targetConstraint, config.cost, ((owner, target, interviewer) -> {
@@ -185,9 +184,13 @@ public class PowerupFactory {
 
         for (int i = 0; (i < range.getMax()) && chosenDirection.isPresent() && target.getBlock().getBorderType(chosenDirection.get()) != Block.BorderType.WALL; i++) {
             board.movePlayer(target, chosenDirection.get());
-            chosenDirection = range.getMin() > (i + 1) ?
-                    chosenDirection :
-                    interviewer.selectOptional("Continue?", Collections.singleton(chosenDirection.get()), ClientApi.DIRECTION_QUESTION);
+            if (target.getBlock().getBorderType(chosenDirection.get()).equals(Block.BorderType.WALL)) {
+                chosenDirection = Optional.empty();
+            } else {
+                chosenDirection = range.getMin() > (i + 1) ?
+                        chosenDirection :
+                        interviewer.selectOptional("Continue?", Collections.singleton(chosenDirection.get()), ClientApi.DIRECTION_QUESTION);
+            }
         }
     }
 

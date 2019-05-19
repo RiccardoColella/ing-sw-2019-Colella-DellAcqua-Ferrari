@@ -29,7 +29,7 @@ public class Message implements Serializable {
     /**
      * JSON conversion utility
      */
-    private static transient final Gson gson = new Gson();
+    private static final transient Gson gson = new Gson();
 
     /**
      * Name of the message

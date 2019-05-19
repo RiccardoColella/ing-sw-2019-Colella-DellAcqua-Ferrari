@@ -11,6 +11,7 @@ import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 import it.polimi.ingsw.shared.events.networkevents.MatchStarted;
 import it.polimi.ingsw.shared.datatransferobjects.Player;
+import it.polimi.ingsw.utils.ConfigFileMaker;
 import org.jetbrains.annotations.Contract;
 
 import java.awt.*;
@@ -48,7 +49,8 @@ public class GameRepresentation {
     /**
      * This property stores the location of the needed json file
      */
-    private static final String  TEXTS_JSON_FILE = "./resources/gameTextsForCLI.json";
+    private static final String TEXTS_JSON_PATH = "./config/gameTextsForCLI.json";
+    private static final String TEXTS_JSON_PUSH_RES = "/config/gameTextsForCLI.json";
 
     /**
      * This property stores the board as a list of strings
@@ -100,11 +102,8 @@ public class GameRepresentation {
 
         JsonElement jsonElement;
 
-        try {
-            jsonElement = new JsonParser().parse(new FileReader(new File(TEXTS_JSON_FILE)));
-        } catch (IOException ex) {
-            throw new MissingConfigurationFileException("Unable to read texts configuration file");
-        }
+        jsonElement = new JsonParser().parse(ConfigFileMaker.load(TEXTS_JSON_PATH, TEXTS_JSON_PUSH_RES));
+
         JsonObject jsonObject = jsonElement.getAsJsonObject();
         this.rowOffset = jsonObject.get("rowOffset").getAsInt();
         this.columnOffset = jsonObject.get("columnOffset").getAsInt();

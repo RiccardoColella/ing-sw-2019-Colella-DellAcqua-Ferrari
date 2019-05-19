@@ -1,0 +1,12 @@
+
+#window {
+    -fx-background-color: black;
+}
+
+#message {
+    -fx-font-family: "Roboto Mono";
+}
+
+#title {
+    -fx-font-family: "Audiowide", monospace;
+}

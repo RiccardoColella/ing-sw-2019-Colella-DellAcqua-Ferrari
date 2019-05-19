@@ -13,10 +13,13 @@ import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
+import it.polimi.ingsw.server.view.events.ViewEvent;
+import it.polimi.ingsw.server.view.events.listeners.ViewListener;
 import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
 import it.polimi.ingsw.shared.InputMessageQueue;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 import it.polimi.ingsw.shared.datatransferobjects.PlayerHealth;
+import it.polimi.ingsw.shared.events.networkevents.ClientEvent;
 import it.polimi.ingsw.shared.events.networkevents.PlayerHealthChanged;
 import it.polimi.ingsw.shared.events.networkevents.PlayerWeaponExchanged;
 import it.polimi.ingsw.shared.events.networkevents.WeaponEvent;
@@ -33,13 +36,9 @@ import it.polimi.ingsw.utils.Tuple;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.time.temporal.TemporalUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -49,10 +48,12 @@ import java.util.stream.Collectors;
  *
  * @author Carlo Dell'Acqua
  */
-public abstract class View implements Interviewer, AutoCloseable, MatchListener, PlayerListener, BoardListener {
+public abstract class View implements Interviewer, AutoCloseable, MatchListener, PlayerListener, BoardListener, ViewListener {
 
     private static final int CLOSE_TIMEOUT_MILLISECONDS = 10000;
     private static final int CLOSE_CHECK_DELAY = CLOSE_TIMEOUT_MILLISECONDS / 10;
+    private static final int DEQUEUE_TIMEOUT_MILLISECONDS = 1000;
+    private static final int HEARTBEAT_TIMEOUT = 10000;
 
 
     /**
@@ -100,6 +101,15 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     private Player player;
 
     /**
+     * Listeners of View events
+     */
+    private Set<ViewListener> listeners = new HashSet<>();
+
+    private final ExecutorService heartbeatThreadPool = Executors.newSingleThreadExecutor();
+    private final ExecutorService eventThreadPool = Executors.newSingleThreadExecutor();
+    private Instant lastHeartbeat;
+
+    /**
      * Constructs a server-side view
      *
      * @param answerTimeout maximum timeout before considering the view disconnected
@@ -125,12 +135,59 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
                         initEvent.getPayload(),
                         ClientInitializationInfo.class
                 );
+
+                lastHeartbeat = Instant.now();
+                startReceivingEvents();
+                startHeartbeat();
             } else {
                 throw new ViewDisconnectedException("Initialization event message is malformed");
             }
         } catch (TimeoutException ex) {
             throw new ViewDisconnectedException("Initialization event message not received", ex);
         }
+    }
+
+    private void startReceivingEvents() {
+        eventThreadPool.execute(() -> {
+            while (!eventThreadPool.isShutdown() && isConnected()) {
+                try {
+                    Message message = inputMessageQueue.dequeueEvent(DEQUEUE_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS);
+                    ServerApi eventType = message.getNameAsEnum(ServerApi.class);
+                    switch (eventType) {
+                        case HEARTBEAT: {
+                            lastHeartbeat = Instant.now();
+                            break;
+                        }
+                        default: {
+                            throw new UnsupportedOperationException("Event \"" + eventType + "\" not supported");
+                        }
+                    }
+                } catch (TimeoutException ignored) {
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    logger.warning("Thread interrupted " + ex);
+                }
+
+            }
+        });
+    }
+
+    private void startHeartbeat() {
+        heartbeatThreadPool.execute(() -> {
+            while (!heartbeatThreadPool.isShutdown() && isConnected()) {
+                if (lastHeartbeat.isBefore(Instant.now().minusMillis(HEARTBEAT_TIMEOUT))) {
+                    logger.info("No heartbeat received within the timeout, disconnecting " + getNickname() + "...");
+                    disconnect();
+                } else {
+                    try {
+                        Thread.sleep(HEARTBEAT_TIMEOUT);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        logger.warning("Thread stopped " + e);
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -204,12 +261,21 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
             return options.stream().filter(option -> option.equals(answer.getChoice())).findAny().orElse(null);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            connected = false;
+            disconnect();
             throw new ViewDisconnectedException("Unable to retrieve input message", e);
         } catch (TimeoutException e) {
-            connected = false;
+            disconnect();
             throw new ViewDisconnectedException("Unable to retrieve input message", e);
         }
+    }
+
+    /**
+     * Set the connection status to false and notify all the listeners
+     */
+    private void disconnect() {
+        logger.warning("Player " + getNickname() + " disconnected");
+        this.connected = false;
+        notifyViewDisconnected();
     }
 
     /**
@@ -220,7 +286,6 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
      * @param messageName the name which identifies the type of message that is been sent
      * @param <T> the type of the item in the option collection
      * @return the chosen answer
-     * @throws ViewDisconnectedException if the client wasn't able to give a correct answer within the timeout
      * @throws IllegalArgumentException if the an empty collection was provided for the "options" parameter
      */
     @Override
@@ -231,7 +296,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
             outputMessageQueue.add(message);
 
-            return awaitResponse(message.getFlowId(), options);
+            try {
+                return awaitResponse(message.getFlowId(), options);
+            } catch (ViewDisconnectedException e) {
+                return options.iterator().next(); // Fake response
+            }
         } else {
             throw new IllegalArgumentException("No option provided");
         }
@@ -245,7 +314,6 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
      * @param messageName the name which identifies the type of message that is been sent
      * @param <T> the type of the item in the option collection
      * @return the chosen answer or an empty optional
-     * @throws ViewDisconnectedException if the client wasn't able to give a correct answer within the timeout
      * @throws IllegalArgumentException if the an empty collection was provided for the "options" parameter
      */
     @Override
@@ -254,7 +322,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
             Message message = Message.createQuestion(messageName, new Question<>(questionText, options, true));
             outputMessageQueue.add(message);
 
-            return Optional.ofNullable(awaitResponse(message.getFlowId(), options));
+            try {
+                return Optional.ofNullable(awaitResponse(message.getFlowId(), options));
+            } catch (ViewDisconnectedException e) {
+                return Optional.empty(); // Fake response
+            }
         } else {
             throw new IllegalArgumentException("No option provided");
         }
@@ -284,7 +356,9 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
                 player.getPlayerInfo().getNickname(),
                 player.getPlayerInfo().getColor(),
                 mapWallets(player),
-                mapPlayerHealth(player)
+                mapPlayerHealth(player),
+                player.isTileFlipped(),
+                player.isBoardFlipped()
         );
     }
 
@@ -307,6 +381,19 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         ) {
             Thread.sleep(CLOSE_CHECK_DELAY);
         }
+
+        synchronized (heartbeatThreadPool) {
+            heartbeatThreadPool.shutdown();
+        }
+        while (!heartbeatThreadPool.awaitTermination(5, TimeUnit.SECONDS)) {
+            logger.warning("Thread pool hasn't shut down yet, waiting...");
+        }
+        synchronized (eventThreadPool) {
+            eventThreadPool.shutdown();
+        }
+        while (!eventThreadPool.awaitTermination(5, TimeUnit.SECONDS)) {
+            logger.warning("Thread pool hasn't shut down yet, waiting...");
+        }
     }
 
     public void close(Message lastMessage) throws Exception {
@@ -316,17 +403,16 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     @Override
     public void onMatchStarted(MatchEvent event) {
-        Match match = event.getMatch();
+        enqueueMatchInitializationEvent(event.getMatch(), false);
+    }
+
+    private void enqueueMatchInitializationEvent(Match match, boolean resumed) {
         List<Player> allPlayers = new LinkedList<>(match.getPlayers());
-        List<Player> opponents = allPlayers
+        List<it.polimi.ingsw.shared.datatransferobjects.Player> opponentsVM = allPlayers
                 .stream()
                 .filter(o -> !o.getPlayerInfo().getNickname().equals(setup.getNickname()))
-                .collect(Collectors.toList());
-        List<it.polimi.ingsw.shared.datatransferobjects.Player> opponentsVM = opponents
-                .stream()
                 .map(this::mapPlayer)
                 .collect(Collectors.toList());
-
         List<String> weaponTop = new LinkedList<>();
         List<String> weaponLeft = new LinkedList<>();
         List<String> weaponRight = new LinkedList<>();
@@ -341,17 +427,36 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
                 weaponRight = weapons;
             }
         }
-        it.polimi.ingsw.shared.datatransferobjects.Player selfVM = mapPlayer(player);
-        it.polimi.ingsw.shared.events.networkevents.MatchStarted e = new it.polimi.ingsw.shared.events.networkevents.MatchStarted(
-                match.getRemainingSkulls(),
-                match.getBoardPreset(),
-                selfVM,
-                opponentsVM,
-                weaponTop,
-                weaponRight,
-                weaponLeft
-        );
-        outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_STARTED_EVENT, e));
+        if (resumed) {
+            outputMessageQueue.add(Message.createEvent(
+                    ClientApi.MATCH_RESUMED_EVENT,
+                    new it.polimi.ingsw.shared.events.networkevents.MatchResumed(
+                            match.getRemainingSkulls(),
+                            match.getBoardPreset(),
+                            mapPlayer(player),
+                            opponentsVM,
+                            weaponTop,
+                            weaponRight,
+                            weaponLeft,
+                            mapPlayer(match.getActivePlayer()),
+                            match.getMode()
+                    )
+            ));
+        } else {
+            outputMessageQueue.add(Message.createEvent(
+                    ClientApi.MATCH_STARTED_EVENT,
+                    new it.polimi.ingsw.shared.events.networkevents.MatchStarted(
+                            match.getRemainingSkulls(),
+                            match.getBoardPreset(),
+                            mapPlayer(player),
+                            opponentsVM,
+                            weaponTop,
+                            weaponRight,
+                            weaponLeft,
+                            mapPlayer(match.getActivePlayer())
+                    )
+            ));
+        }
     }
 
     @Override
@@ -443,7 +548,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     public void onWalletChanged(PlayerWalletChanged e) {
         it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged convertedEvent;
         it.polimi.ingsw.shared.datatransferobjects.Player playerVM = mapPlayer(e.getPlayer());
-        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged(playerVM, playerVM.getNickname() + " grabbed new ammo cubes");
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged(playerVM, playerVM.getNickname() + "'s wallet changed");
         outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_WALLET_CHANGED_EVENT, convertedEvent));
 
     }
@@ -511,5 +616,65 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         it.polimi.ingsw.shared.datatransferobjects.Player playerVM = mapPlayer(e.getPlayer());
         it.polimi.ingsw.shared.events.networkevents.PlayerEvent convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerEvent(playerVM);
         outputMessageQueue.add(Message.createEvent(type, convertedEvent));
+    }
+
+    /**
+     * Adds ViewListener
+     * @param l the listener to add
+     */
+    public void addViewListener(ViewListener l) {
+        listeners.add(l);
+    }
+
+    /**
+     * Removed ViewListener
+     * @param l the listener to remove
+     */
+    public void removeViewListener(ViewListener l) {
+        listeners.remove(l);
+    }
+
+    /**
+     * Notifies all the ViewListener that the view has been disconnected
+     */
+    private void notifyViewDisconnected() {
+        ViewEvent e = new ViewEvent(this);
+        listeners.forEach(l -> l.onViewDisconnected(e));
+    }
+
+    /**
+     * Notifies all the ViewListener that the view is ready
+     */
+    private void notifyViewReady() {
+        ViewEvent e = new ViewEvent(this);
+        listeners.forEach(l -> l.onViewReady(e));
+    }
+
+    public void setReady() {
+        setReady(null);
+    }
+
+    public void setReady(@Nullable Match resumedMatch) {
+        notifyViewReady();
+        onViewReady(new ViewEvent(this));
+        if (resumedMatch != null) {
+            enqueueMatchInitializationEvent(resumedMatch, true);
+        }
+    }
+
+    @Override
+    public void onViewDisconnected(ViewEvent e) {
+        listeners.remove(e.getView()); // Cleaning up, there's no interest for further communications from disconnected views
+        outputMessageQueue.add(
+                Message.createEvent(
+                        ClientApi.CLIENT_DISCONNECTED_EVENT,
+                        new it.polimi.ingsw.shared.events.networkevents.ClientEvent(e.getView().getNickname())
+                )
+        );
+    }
+
+    @Override
+    public void onViewReady(ViewEvent e) {
+        outputMessageQueue.add(Message.createEvent(ClientApi.LOGIN_SUCCESS_EVENT, new ClientEvent(e.getView().getNickname())));
     }
 }

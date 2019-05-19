@@ -42,13 +42,15 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
     private final Map<String, Weapon> weaponMap;
     private Deck<PowerupTile> powerupTileDeck;
     private Map<Player, View> playerViews = new HashMap<>();
+    private int minClients;
 
-    public Controller(Match match, List<View> views) {
+    public Controller(Match match, List<View> views, int minClients) {
 
         if (views.size() != match.getPlayers().size()) {
             throw new IllegalArgumentException("View number does not match player number");
         }
 
+        this.minClients = minClients;
         this.match = match;
         this.views = views;
         this.players = match.getPlayers();
@@ -86,10 +88,16 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         }
 
         Player activePlayer;
-        while (!match.isEnded()) {
+
+        int connectedViews = views.stream().mapToInt(view -> view.isConnected() ? 1 : 0).reduce(0, Integer::sum);
+
+        while (!match.isEnded() && connectedViews >= minClients) {
             activePlayer = match.getActivePlayer();
             manageActivePlayerTurn(activePlayer, playerViews.get(activePlayer));
+
+            connectedViews = views.stream().mapToInt(view -> view.isConnected() ? 1 : 0).reduce(0, Integer::sum);
         }
+        logger.info("The match is over");
     }
 
     /**
@@ -98,9 +106,13 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
      * @param view is the interface that manages the turn
      */
     private void manageActivePlayerTurn(Player activePlayer, Interviewer view) {
-        logger.info("Managing actions...");
-        manageActions(activePlayer, view);
-        logger.info("No more actions to be managed");
+        if (playerViews.get(activePlayer).isConnected()) {
+            logger.info("Managing actions...");
+            manageActions(activePlayer, view);
+            logger.info("No more actions to be managed");
+        } else {
+            logger.info("View is not connected, skipping player turn...");
+        }
         logger.info("Ending turn. Checking for died players...");
         for (Player player : match.endTurn()) {
             //Here we iterate on the dead players returned by match.endTurn()
@@ -251,7 +263,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 .filter(weaponOfPlayer -> PaymentHandler.canAfford(weaponOfPlayer.getReloadCost(), activePlayer) && !weaponOfPlayer.isLoaded())
                 .collect(Collectors.toList());
         if (weaponsReloadable.isEmpty()){
-            throw new IllegalArgumentException("Player cannot afford to reload any weapon or all weapons are loaded. The reload shouldn't be selectable");
+            throw new IllegalStateException("Player cannot afford to reload any weapon or all weapons are loaded. The reload shouldn't be selectable");
         } else {
             WeaponTile weaponToReload;
             List<String> weaponsReloadableForView = weaponsReloadable
@@ -261,13 +273,23 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
             do {
                 Optional<String> selected = view.selectOptional("Which weapon would you like to reload?", weaponsReloadableForView, ClientApi.RELOAD_QUESTION);
                 if (selected.isPresent()) {
-                    weaponsReloadableForView.remove(selected.get());
+
                     weaponToReload = weaponsReloadable
                             .stream()
                             .filter(w -> w.getName().equals(selected.get()))
                             .findAny()
                             .orElseThrow(() -> new IllegalStateException("Weapon to reload does not exist"));
+
                     reloadWeapon(weaponToReload, activePlayer, view);
+
+                    weaponsReloadable = weaponsToReload
+                            .stream()
+                            .filter(weaponOfPlayer -> PaymentHandler.canAfford(weaponOfPlayer.getReloadCost(), activePlayer) && !weaponOfPlayer.isLoaded())
+                            .collect(Collectors.toList());
+                    weaponsReloadableForView = weaponsReloadable
+                            .stream()
+                            .map(WeaponTile::getName)
+                            .collect(Collectors.toList());
                 } else {
                     weaponToReload = null;
                 }
@@ -627,7 +649,32 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
 
     @Override
     public void onViewReconnected(ViewReconnected e) {
-        // TODO: Manage client reconnection
+        Optional<View> oldView = views.stream().filter(view -> view.isConnected() && view.getNickname().equals(e.getView().getNickname())).findAny();
+        if (oldView.isPresent()) {
+            e.consume();
+
+            e.getView().setPlayer(oldView.get().getPlayer());
+            views.set(views.indexOf(oldView.get()), e.getView());
+            playerViews.put(oldView.get().getPlayer(), e.getView());
+
+            views.forEach(view -> {
+                view.addViewListener(e.getView());
+                e.getView().addViewListener(view);
+            });
+            match.getPlayers().forEach(player -> {
+                player.addPlayerListener(e.getView());
+            });
+            match.addMatchListener(e.getView());
+            match.getBoard().addBoardListener(e.getView());
+
+            e.getView().setReady(match);
+
+            try {
+                oldView.get().close();
+            } catch (Exception ex) {
+                logger.warning("Unable to close the old view " + ex);
+            }
+        }
     }
 
     @Override

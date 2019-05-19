@@ -4,6 +4,7 @@ import com.google.gson.*;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.shared.Direction;
+import it.polimi.ingsw.utils.ConfigFileMaker;
 import it.polimi.ingsw.utils.EnumValueByString;
 
 import java.io.File;
@@ -16,7 +17,8 @@ import java.util.Map;
 
 public class BoardFactory {
 
-    private static final String BOARD_JSON_FILENAME = "./resources/boards.json";
+    private static final String BOARD_JSON_PATH = "./config/boards.json";
+    private static final String BOARD_JSON_PATH_RES = "/config/boards.json";
     private static Map<Preset, Board> boardMap;
 
 
@@ -49,12 +51,8 @@ public class BoardFactory {
     private static void initialize() {
         boardMap = new EnumMap<>(Preset.class);
         JsonElement jsonElement;
-        try {
-            jsonElement = new JsonParser().parse(new FileReader(new File(BOARD_JSON_FILENAME)));
-        } catch (IOException e) {
-            throw new MissingConfigurationFileException("Unable to read Board configuration file");
-        }
 
+        jsonElement = new JsonParser().parse(ConfigFileMaker.load(BOARD_JSON_PATH, BOARD_JSON_PATH_RES));
 
 
         for (int i = 0; i < Preset.values().length; i++) {

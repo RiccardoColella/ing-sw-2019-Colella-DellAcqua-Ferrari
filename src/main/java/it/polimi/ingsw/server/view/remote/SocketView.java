@@ -41,12 +41,6 @@ public class SocketView extends View implements AutoCloseable {
         );
     }
 
-    // TODO: Verify that the socket is automatically closed
-    @Override
-    public boolean isConnected() {
-        return super.isConnected() && socket.isConnected();
-    }
-
     @Override
     public void close() throws Exception {
         super.close();

@@ -3,6 +3,7 @@ package it.polimi.ingsw.server.model.weapons;
 import com.google.gson.Gson;
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
+import it.polimi.ingsw.utils.ConfigFileMaker;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,7 +17,8 @@ import java.util.stream.Collectors;
  */
 public final class WeaponTileFactory {
 
-    private static final String WEAPON_JSON_PATH = "./resources/weapons.json";
+    private static final String WEAPON_JSON_PATH = "config/weapons.json";
+    private static final String WEAPON_JSON_PATH_RES = "/config/weapons.json";
 
     private static Map<String, WeaponTile> weaponMap;
 
@@ -52,14 +54,11 @@ public final class WeaponTileFactory {
         if (weaponMap == null) {
             weaponMap = new HashMap<>();
             WeaponTile[] weapons;
-            try {
-                weapons = new Gson().fromJson(
-                        new FileReader(new File(WEAPON_JSON_PATH)),
-                        WeaponTile[].class
-                );
-            } catch (FileNotFoundException e) {
-                throw new MissingConfigurationFileException("WeaponTile configuration file not found", e);
-            }
+            
+            weapons = new Gson().fromJson(
+                    ConfigFileMaker.load(WEAPON_JSON_PATH, WEAPON_JSON_PATH_RES),
+                    WeaponTile[].class
+            );
 
             for (WeaponTile weapon: weapons) {
                 weaponMap.put(weapon.getName(), weapon);

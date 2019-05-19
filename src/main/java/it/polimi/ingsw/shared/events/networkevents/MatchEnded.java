@@ -17,4 +17,8 @@ public class MatchEnded extends NetworkEvent {
     public Map<Integer, List<Player>> getRankings() {
         return rankings;
     }
+
+    public boolean isTheWinner(Player p) {
+        return rankings.get(1).stream().anyMatch(w -> p.getNickname().equals(w.getNickname()));
+    }
 }

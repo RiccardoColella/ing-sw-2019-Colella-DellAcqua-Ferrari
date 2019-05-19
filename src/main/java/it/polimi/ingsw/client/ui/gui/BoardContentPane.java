@@ -27,6 +27,7 @@ import java.util.function.Function;
 
 public class BoardContentPane extends GridPane {
 
+    private int killshotIndex;
     @FXML
     private GridPane weaponTopContainer0;
     @FXML
@@ -69,7 +70,7 @@ public class BoardContentPane extends GridPane {
 
     private static final String HOVERED = "hovered";
 
-    public BoardContentPane() {
+    public BoardContentPane(int skulls) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/boardContent.fxml"));
             fxmlLoader.setRoot(this);
@@ -97,6 +98,7 @@ public class BoardContentPane extends GridPane {
         container.setOnMouseMoved(mouseEvent -> mouseEventHandler(mouseEvent, this::mouseHoverHandler, node -> !node.getStyleClass().contains(HOVERED)));
         container.setOnMouseClicked(mouseEvent -> mouseEventHandler(mouseEvent, this::mouseClickHandler, node -> true));
         skullIndex = 8;
+        killshotIndex = skulls;
         killshotTrack = new LinkedList<>();
         topQueue = new LinkedList<>();
         rightQueue = new LinkedList<>();
@@ -304,8 +306,8 @@ public class BoardContentPane extends GridPane {
     }
 
     public void addKillshot(PlayerColor color) {
-        if (skullIndex < 8) {
-            ImagePane toChange = (ImagePane) skullContainer.getChildren().get(skullContainer.getChildren().size() - skullIndex - 1);
+        if (killshotIndex > 0) {
+            ImagePane toChange = (ImagePane) skullContainer.getChildren().get(skullContainer.getChildren().size() - killshotIndex);
             toChange.setImg(UrlFinder.findToken(color));
         } else {
             ImagePane token = new ImagePane(UrlFinder.findToken(color));
@@ -313,6 +315,7 @@ public class BoardContentPane extends GridPane {
         }
         killshotTrack.add(new Tuple<>(color, false));
         skullIndex++;
+        killshotIndex--;
     }
 
     public void addOverkill() {

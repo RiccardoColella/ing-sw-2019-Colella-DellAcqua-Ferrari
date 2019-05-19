@@ -2,16 +2,17 @@ package it.polimi.ingsw.server.model.player;
 
 import com.google.gson.Gson;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
+import it.polimi.ingsw.utils.ConfigFileMaker;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
+import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
 
 public class ActionTileFactory {
 
-    private static final String ACTION_TILE_JSON_PATH = "./resources/actionTiles.json";
+    private static final String ACTION_TILE_JSON_PATH = "config/actionTiles.json";
+    private static final String ACTION_TILE_JSON_PATH_RES = "/config/actionTiles.json";
 
     private static Map<ActionTile.Type, ActionTile> actionTileMap;
 
@@ -31,14 +32,11 @@ public class ActionTileFactory {
         if (actionTileMap == null) {
             actionTileMap = new EnumMap<>(ActionTile.Type.class);
             ActionTile[] actionTiles;
-            try {
-                actionTiles = new Gson().fromJson(
-                        new FileReader(new File(ACTION_TILE_JSON_PATH)),
-                        ActionTile[].class
-                );
-            } catch (FileNotFoundException e) {
-                throw new MissingConfigurationFileException("Action tile configuration file missing");
-            }
+
+            actionTiles = new Gson().fromJson(
+                    ConfigFileMaker.load(ACTION_TILE_JSON_PATH, ACTION_TILE_JSON_PATH_RES),
+                    ActionTile[].class
+            );
 
             for (ActionTile actionTile: actionTiles) {
                 actionTileMap.put(actionTile.getType(), actionTile);

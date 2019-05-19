@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.text.Text?>
+<GridPane xmlns="http://javafx.com/javafx"
+          xmlns:fx="http://javafx.com/fxml"
+          fx:controller="it.polimi.ingsw.client.ui.gui.NotificationController"
+          fx:id="window"
+          onMouseClicked="#closeNotification"
+          prefHeight="200" prefWidth="300"
+          minHeight="200" minWidth="300"
+>
+    <columnConstraints>
+        <ColumnConstraints percentWidth="5"/>
+        <ColumnConstraints percentWidth="90"/>
+        <ColumnConstraints percentWidth="5"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints percentHeight="5" />
+        <RowConstraints percentHeight="10" />
+        <RowConstraints percentHeight="80" />
+        <RowConstraints percentHeight="5" />
+    </rowConstraints>
+    <Text fx:id="title" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+    <Text fx:id="message" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+</GridPane>

@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.server.model.match.Match;
+import it.polimi.ingsw.utils.ConfigFileMaker;
 
 import java.io.File;
 import java.io.FileReader;
@@ -13,7 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class PlayerFactory {
-    private static final String CONSTRAINTS_JSON_FILENAME = "./resources/playerConstraints.json";
+    private static final String CONSTRAINTS_JSON_PATH = "./config/playerConstraints.json";
+    private static final String CONSTRAINTS_JSON_PATH_RES = "/config/playerConstraints.json";
     private static Map<String, Integer> constraintsMap;
 
     private PlayerFactory() {
@@ -33,11 +35,9 @@ public final class PlayerFactory {
     private static void readConstraints() {
         constraintsMap = new HashMap<>();
         JsonElement jsonElement;
-        try {
-            jsonElement = new JsonParser().parse(new FileReader(new File(CONSTRAINTS_JSON_FILENAME)));
-        } catch (IOException e) {
-            throw new MissingConfigurationFileException("Unable to read Rewards configuration file", e);
-        }
+
+        jsonElement = new JsonParser().parse(ConfigFileMaker.load(CONSTRAINTS_JSON_PATH, CONSTRAINTS_JSON_PATH_RES));
+
         JsonObject constraints = jsonElement.getAsJsonObject();
         constraints.keySet().forEach(k -> constraintsMap.put(k, constraints.get(k).getAsInt()));
     }

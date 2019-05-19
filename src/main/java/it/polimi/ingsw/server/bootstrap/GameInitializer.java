@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -81,13 +82,22 @@ public class GameInitializer {
         ) {
             Thread.sleep(WAITING_ROOM_QUERY_DELAY);
 
-            participantSource.pop().ifPresent(participants::add);
             participants.removeIf(view -> !view.isConnected());
+
+            participantSource.pop().ifPresent(view -> {
+                participants.forEach(participant -> {
+                    participant.addViewListener(view);
+                    view.addViewListener(participant);
+                });
+                participants.add(view);
+                view.setReady();
+            });
 
             if (participants.size() < minParticipants) {
                 deadline = Instant.now().plus(Duration.ofMillis(matchStartTimeoutMilliseconds));
             }
         }
+
         Match match = MatchFactory.create(
                 participants.stream()
                         .map(View::getNickname)
@@ -105,8 +115,6 @@ public class GameInitializer {
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("Players nickname haven't been saved correctly in the model"));
             view.setPlayer(player);
-
-            player.addPlayerListener(view);
         });
         participants.forEach(match::addMatchListener);
         participants.forEach(match.getBoard()::addBoardListener);
@@ -119,7 +127,8 @@ public class GameInitializer {
         );
         Controller controller = new Controller(
                 match,
-                participants
+                participants,
+                minParticipants
         );
         participantSource.addViewReconnectedListener(controller);
         return controller;
