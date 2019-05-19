@@ -13,6 +13,8 @@
   "columnOffset" : 2,
   "rowDistance" : 7,
   "columnDistance" : 20,
+  "boardWidth" : 78,
+  "maxNicknamesLength" : 14,
 
   "board1" : [
     "  ----------------   ----------------   ----------------                      \n",

@@ -413,6 +413,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onActivePlayerChanged(PlayerEvent e) {
+        gameRepresentation.showUpdatedSituation(printStream);
         printStream.println(m + "Now it's " + e.getPlayer().getNickname() + " turn!");
 
     }
