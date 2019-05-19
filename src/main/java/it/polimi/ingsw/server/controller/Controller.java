@@ -42,13 +42,15 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
     private final Map<String, Weapon> weaponMap;
     private Deck<PowerupTile> powerupTileDeck;
     private Map<Player, View> playerViews = new HashMap<>();
+    private int minClients;
 
-    public Controller(Match match, List<View> views) {
+    public Controller(Match match, List<View> views, int minClients) {
 
         if (views.size() != match.getPlayers().size()) {
             throw new IllegalArgumentException("View number does not match player number");
         }
 
+        this.minClients = minClients;
         this.match = match;
         this.views = views;
         this.players = match.getPlayers();
@@ -86,9 +88,14 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         }
 
         Player activePlayer;
-        while (!match.isEnded()) {
+
+        int connectedViews = views.stream().mapToInt(view -> view.isConnected() ? 1 : 0).reduce(0, Integer::sum);
+
+        while (!match.isEnded() && connectedViews >= minClients) {
             activePlayer = match.getActivePlayer();
             manageActivePlayerTurn(activePlayer, playerViews.get(activePlayer));
+
+            connectedViews = views.stream().mapToInt(view -> view.isConnected() ? 1 : 0).reduce(0, Integer::sum);
         }
     }
 
@@ -98,9 +105,13 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
      * @param view is the interface that manages the turn
      */
     private void manageActivePlayerTurn(Player activePlayer, Interviewer view) {
-        logger.info("Managing actions...");
-        manageActions(activePlayer, view);
-        logger.info("No more actions to be managed");
+        if (playerViews.get(activePlayer).isConnected()) {
+            logger.info("Managing actions...");
+            manageActions(activePlayer, view);
+            logger.info("No more actions to be managed");
+        } else {
+            logger.info("View is not connected, skipping player turn...");
+        }
         logger.info("Ending turn. Checking for died players...");
         for (Player player : match.endTurn()) {
             //Here we iterate on the dead players returned by match.endTurn()

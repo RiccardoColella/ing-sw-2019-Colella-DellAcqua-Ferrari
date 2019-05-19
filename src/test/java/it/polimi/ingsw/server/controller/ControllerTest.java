@@ -76,7 +76,7 @@ class ControllerTest {
             mockViews.add(new Mockview(3));
         }
         Match match = MatchFactory.create(playerNames, BoardFactory.Preset.BOARD_1, 8, Match.Mode.STANDARD);
-        Controller controller = new Controller(match, mockViews);
+        Controller controller = new Controller(match, mockViews, 3);
         //controller.run();
     }
 }

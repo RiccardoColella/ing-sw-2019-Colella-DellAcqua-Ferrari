@@ -17,9 +17,8 @@ import it.polimi.ingsw.shared.messages.templates.Question;
 import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 
 import java.awt.*;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
@@ -31,6 +30,7 @@ import java.util.logging.Logger;
  */
 public abstract class Connector implements AutoCloseable {
 
+    private static final long HEARTBEAT_TIMEOUT = 1000;
     /**
      * Logging utility
      */
@@ -56,15 +56,19 @@ public abstract class Connector implements AutoCloseable {
      */
     protected LinkedBlockingQueue<Message> outputMessageQueue = new LinkedBlockingQueue<>();
 
+    private String nickname;
+
     /**
      * The thread pools that schedules the execution of the receiveAsync method for events and questions
      */
     private final ExecutorService eventThreadPool = Executors.newSingleThreadExecutor();
     private final ExecutorService questionThreadPool = Executors.newSingleThreadExecutor();
+    private final ExecutorService heartbeatThreadPool = Executors.newSingleThreadExecutor();
 
-    private final Map<Message.Type, ExecutorService> threadPools = Map.of(
-            Message.Type.QUESTION, questionThreadPool,
-            Message.Type.EVENT, eventThreadPool
+    private final List<ExecutorService> threadPools = Arrays.asList(
+            eventThreadPool,
+            questionThreadPool,
+            heartbeatThreadPool
     );
 
 
@@ -79,6 +83,7 @@ public abstract class Connector implements AutoCloseable {
      */
     private Set<MatchListener> matchListeners = new HashSet<>();
     private Set<DuplicatedNicknameListener> duplicatedNicknameListeners = new HashSet<>();
+    private Set<ClientListener> clientListeners = new HashSet<>();
     private Set<BoardListener> boardListeners = new HashSet<>();
     private Set<PlayerListener> playerListeners = new HashSet<>();
 
@@ -90,7 +95,19 @@ public abstract class Connector implements AutoCloseable {
      */
     protected void initialize(ClientInitializationInfo clientInitializationInfo) {
         outputMessageQueue.add(Message.createEvent(ServerApi.VIEW_INIT_EVENT, clientInitializationInfo));
+        nickname = clientInitializationInfo.getNickname();
         eventThreadPool.execute(() -> receiveAsync(Message.Type.EVENT));
+        heartbeatThreadPool.execute(() -> {
+            while (!heartbeatThreadPool.isShutdown()) {
+                outputMessageQueue.add(Message.createEvent(ServerApi.HEARTBEAT, new ClientEvent(nickname)));
+                try {
+                    Thread.sleep(HEARTBEAT_TIMEOUT);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    logger.warning("Thread stopped");
+                }
+            }
+        });
     }
 
     public void startListeningToQuestions() {
@@ -114,6 +131,11 @@ public abstract class Connector implements AutoCloseable {
                     } catch (TimeoutException ignored) {
                         // No message received within the timeout
                     }
+                    synchronized (eventThreadPool) {
+                        if (!eventThreadPool.isShutdown()) {
+                            eventThreadPool.execute(() -> receiveAsync(type));
+                        }
+                    }
                     break;
                 case QUESTION:
                     try {
@@ -124,13 +146,12 @@ public abstract class Connector implements AutoCloseable {
                     } catch (TimeoutException ignored) {
                         // No message received within the timeout
                     }
+                    synchronized (questionThreadPool) {
+                        if (!questionThreadPool.isShutdown()) {
+                            questionThreadPool.execute(() -> receiveAsync(type));
+                        }
+                    }
                     break;
-            }
-
-            synchronized (threadPools.get(type)) {
-                if (!threadPools.get(type).isShutdown()) {
-                    threadPools.get(type).execute(() -> receiveAsync(type));
-                }
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -287,6 +308,9 @@ public abstract class Connector implements AutoCloseable {
                 );
                 break;
             }
+            default: {
+                throw new UnsupportedOperationException("Question \"" + questionType + "\" not supported");
+            }
         }
 
     }
@@ -302,6 +326,16 @@ public abstract class Connector implements AutoCloseable {
         switch (eventType) {
             case DUPLICATE_NICKNAME_EVENT: {
                 duplicatedNicknameListeners.forEach(DuplicatedNicknameListener::onDuplicatedNickname);
+                break;
+            }
+            case CLIENT_DISCONNECTED_EVENT: {
+                ClientEvent e = ClientEvent.fromJson(message.getPayload(), this, ClientEvent.class);
+                clientListeners.forEach(l -> l.onClientDisconnected(e));
+                break;
+            }
+            case LOGIN_SUCCESS_EVENT: {
+                ClientEvent e = ClientEvent.fromJson(message.getPayload(), this, ClientEvent.class);
+                clientListeners.forEach(l -> l.onLoginSuccess(e));
                 break;
             }
             case MATCH_STARTED_EVENT: {
@@ -390,11 +424,6 @@ public abstract class Connector implements AutoCloseable {
                 playerListeners.forEach(l -> l.onWeaponDropped(e));
                 break;
             }
-            case PLAYER_DISCONNECTED_EVENT: {
-                PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this, PlayerEvent.class);
-                playerListeners.forEach(l -> l.onPlayerDisconnected(e));
-                break;
-            }
             case PLAYER_RECONNECTED_EVENT: {
                 PlayerEvent e = PlayerEvent.fromJson(message.getPayload(), this, PlayerEvent.class);
                 playerListeners.forEach(l -> l.onPlayerReconnected(e));
@@ -438,6 +467,14 @@ public abstract class Connector implements AutoCloseable {
         duplicatedNicknameListeners.remove(l);
     }
 
+    public void addClientListener(ClientListener l) {
+        clientListeners.add(l);
+    }
+
+    public void removeClientListener(ClientListener l) {
+        clientListeners.remove(l);
+    }
+
     public void addPlayerListener(PlayerListener l) {
         playerListeners.add(l);
     }
@@ -461,11 +498,11 @@ public abstract class Connector implements AutoCloseable {
      */
     @Override
     public void close() throws Exception {
-        for (Message.Type threadPoolKey : threadPools.keySet()) {
-            synchronized (threadPools.get(threadPoolKey)) {
-                threadPools.get(threadPoolKey).shutdown();
+        for (ExecutorService pool : threadPools) {
+            synchronized (pool) {
+                pool.shutdown();
             }
-            while (!threadPools.get(threadPoolKey).awaitTermination(5, TimeUnit.SECONDS)) {
+            while (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
                 logger.warning("Thread pool hasn't shut down yet, waiting...");
             }
         }

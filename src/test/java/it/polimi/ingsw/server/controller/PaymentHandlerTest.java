@@ -180,7 +180,7 @@ class PaymentHandlerTest {
         mockDebt.add(new PowerupTile(CurrencyColor.BLUE, "MockPowerup"));
         player2.grabAmmoCubes(ammoCubesToBeGrabbed);
         assertEquals(1, player2.getPowerups().size() + player2.getAmmoCubes().size());
-        assertThrows(ViewDisconnectedException.class, () -> PaymentHandler.pay(mockDebt, player2, mockView));
+        assertThrows(IllegalStateException.class, () -> PaymentHandler.pay(mockDebt, player2, mockView));
     }
 
     @Test

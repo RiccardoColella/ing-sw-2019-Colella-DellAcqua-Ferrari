@@ -4,10 +4,7 @@ import com.google.gson.*;
 import it.polimi.ingsw.client.io.Connector;
 import it.polimi.ingsw.client.io.RMIConnector;
 import it.polimi.ingsw.client.io.SocketConnector;
-import it.polimi.ingsw.client.io.listeners.BoardListener;
-import it.polimi.ingsw.client.io.listeners.MatchListener;
-import it.polimi.ingsw.client.io.listeners.PlayerListener;
-import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
+import it.polimi.ingsw.client.io.listeners.*;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
@@ -33,7 +30,7 @@ import java.util.function.Consumer;
  *
  * @author Carlo Dell'Acqua
  */
-public class CLI implements QuestionMessageReceivedListener, AutoCloseable, MatchListener, BoardListener, PlayerListener {
+public class CLI implements QuestionMessageReceivedListener, AutoCloseable, MatchListener, BoardListener, PlayerListener, ClientListener {
     /**
      * JSON conversion utility
      */
@@ -390,8 +387,14 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     }
 
     @Override
-    public void onPlayerDisconnected(PlayerEvent e) {
-        printStream.println(w + e.getPlayer().getNickname() + "disconnected");
+    public void onLoginSuccess(ClientEvent e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onClientDisconnected(ClientEvent e) {
+        printStream.println(w + e.getNickname() + "disconnected");
     }
 
     @Override

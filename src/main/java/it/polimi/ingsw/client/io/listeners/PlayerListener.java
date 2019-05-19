@@ -23,8 +23,6 @@ public interface PlayerListener {
 
     void onWeaponDropped(PlayerWeaponExchanged e);
 
-    void onPlayerDisconnected(PlayerEvent e);
-
     void onPlayerReconnected(PlayerEvent e);
 
     void onPlayerSpawned(PlayerSpawned e);

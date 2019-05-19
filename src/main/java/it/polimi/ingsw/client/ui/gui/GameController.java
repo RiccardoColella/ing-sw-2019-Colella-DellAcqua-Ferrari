@@ -1,10 +1,7 @@
 package it.polimi.ingsw.client.ui.gui;
 
 import it.polimi.ingsw.client.io.Connector;
-import it.polimi.ingsw.client.io.listeners.BoardListener;
-import it.polimi.ingsw.client.io.listeners.MatchListener;
-import it.polimi.ingsw.client.io.listeners.PlayerListener;
-import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
+import it.polimi.ingsw.client.io.listeners.*;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.BasicAction;
@@ -34,7 +31,7 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class GameController extends WindowController implements AutoCloseable, QuestionMessageReceivedListener, PlayerListener, BoardListener, MatchListener {
+public class GameController extends WindowController implements AutoCloseable, QuestionMessageReceivedListener, PlayerListener, BoardListener, MatchListener, ClientListener {
 
     private Logger logger = Logger.getLogger(this.getClass().getName());
 
@@ -610,8 +607,14 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     @Override
-    public void onPlayerDisconnected(PlayerEvent e) {
-        sendNotification(e.getPlayer().getNickname() + " just disconnected from the match");
+    public void onLoginSuccess(ClientEvent e) {
+        // TODO: implement
+
+    }
+
+    @Override
+    public void onClientDisconnected(ClientEvent e) {
+        sendNotification(e.getNickname() + " just disconnected from the match");
     }
 
     @Override

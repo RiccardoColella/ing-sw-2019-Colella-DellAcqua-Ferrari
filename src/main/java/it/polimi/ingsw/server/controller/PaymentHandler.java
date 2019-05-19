@@ -131,7 +131,7 @@ public class PaymentHandler {
             } else if (!ammoCubes.isEmpty()) {
                 actualColor = coinOwed.getColor();
                 paymentMethod = PAYMENT_METHOD_AMMO_CUBES;
-            } else throw new ViewDisconnectedException("Invalid player wallet status, cannot pay the debt");
+            } else throw new IllegalStateException("Invalid player wallet status, cannot pay the debt");
 
             switch (paymentMethod)  {
                 case PAYMENT_METHOD_AMMO_CUBES:
@@ -146,7 +146,7 @@ public class PaymentHandler {
                         PowerupTile choice = powerupTiles.stream()
                                 .filter(p -> p.getName().equals(powerup.getName()) && p.getColor().equals(powerup.getColor()))
                                 .findFirst()
-                                .orElseThrow(() -> new ViewDisconnectedException("Invalid response: " + powerup));
+                                .orElse(powerupTiles.get(0)); // Forced response in case of communication errors
                         chosenPowerups.add(choice);
                     } else {
                         chosenPowerups.add(powerupTiles.get(0));
