@@ -185,9 +185,13 @@ public class PowerupFactory {
 
         for (int i = 0; (i < range.getMax()) && chosenDirection.isPresent() && target.getBlock().getBorderType(chosenDirection.get()) != Block.BorderType.WALL; i++) {
             board.movePlayer(target, chosenDirection.get());
-            chosenDirection = range.getMin() > (i + 1) ?
-                    chosenDirection :
-                    interviewer.selectOptional("Continue?", Collections.singleton(chosenDirection.get()), ClientApi.DIRECTION_QUESTION);
+            if (target.getBlock().getBorderType(chosenDirection.get()).equals(Block.BorderType.WALL)) {
+                chosenDirection = Optional.empty();
+            } else {
+                chosenDirection = range.getMin() > (i + 1) ?
+                        chosenDirection :
+                        interviewer.selectOptional("Continue?", Collections.singleton(chosenDirection.get()), ClientApi.DIRECTION_QUESTION);
+            }
         }
     }
 

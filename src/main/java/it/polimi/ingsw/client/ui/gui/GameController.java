@@ -1,6 +1,12 @@
 package it.polimi.ingsw.client.ui.gui;
 
 import it.polimi.ingsw.client.io.Connector;
+import it.polimi.ingsw.client.io.listeners.BoardListener;
+import it.polimi.ingsw.client.io.listeners.MatchListener;
+import it.polimi.ingsw.client.io.listeners.PlayerListener;
+import it.polimi.ingsw.client.io.listeners.QuestionMessageReceivedListener;
+import it.polimi.ingsw.client.ui.gui.events.NotificationClosed;
+import it.polimi.ingsw.client.ui.gui.events.listeners.NotificationListener;
 import it.polimi.ingsw.client.io.listeners.*;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
@@ -15,12 +21,14 @@ import it.polimi.ingsw.utils.Tuple;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -31,7 +39,7 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class GameController extends WindowController implements AutoCloseable, QuestionMessageReceivedListener, PlayerListener, BoardListener, MatchListener, ClientListener {
+public class GameController extends WindowController implements AutoCloseable, QuestionMessageReceivedListener, PlayerListener, BoardListener, MatchListener, NotificationListener, ClientListener {
 
     private Logger logger = Logger.getLogger(this.getClass().getName());
 
@@ -66,9 +74,13 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     private final BoardContentPane boardContent;
 
+    private Queue<NotificationController> notifications;
+
+    private NotificationController currentNotification = null;
+
     public GameController(Connector connector, MatchStarted e) {
         super("Adrenalina", "/fxml/game.fxml", "/css/game.css");
-
+        this.notifications = new LinkedList<>();
         this.connector = connector;
         this.preset = e.getPreset();
         BoardPane board = new BoardPane(preset);
@@ -77,7 +89,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
         board.setMinHeight(400);
         board.setMaxHeight(400);
         boardContainer.getChildren().add(board);
-        boardContent = new BoardContentPane();
+        boardContent = new BoardContentPane(e.getSkulls());
         ColumnConstraints cc = new ColumnConstraints();
         cc.setPercentWidth(100);
         RowConstraints rc = new RowConstraints();
@@ -442,7 +454,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onPlayerDied(PlayerEvent e) {
-        sendNotification(e.getPlayer().getNickname() + " just died");
+        sendNotification("Death",e.getPlayer().getNickname() + " just died");
     }
 
     @Override
@@ -450,7 +462,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
         Platform.runLater(() -> {
             PlayerBoardPane paneToUpdate = findPlayerBoard(e.getPlayer());
             paneToUpdate.resetDamage();
-            sendNotification(e.getPlayer().getNickname() + " was brought back to life");
+            sendNotification("Rebirth", e.getPlayer().getNickname() + " was brought back to life");
         });
     }
 
@@ -463,7 +475,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
                 powerupContainer.getChildren().clear();
                 initPowerups(e.getPlayer().getWallet().getPowerups());
             }
-            sendNotification(e.getMessage());
+            sendNotification("Wallet", e.getMessage());
         });
 
     }
@@ -491,7 +503,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
         Platform.runLater(() -> {
             if (self.getNickname().equals(e.getPlayer().getNickname())) {
                 self = e.getPlayer();
-                playerBoardImg.flip(UrlFinder.findPlayerTile(self.getColor(), true));
+                playerTileImg.setImg(UrlFinder.findPlayerTile(self.getColor(), true));
             }
         });
     }
@@ -513,7 +525,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
             for (PlayerColor c : e.getMarks()) {
                 paneToUpdate.addMark(c);
             }
-            sendNotification(e.getPlayer().getNickname() + " now has " + e.getSkulls() + " skulls, " + e.getDamages().size() + " damage tokens and " + e.getMarks().size() + " marks.");
+            sendNotification("Health",e.getPlayer().getNickname() + " now has " + e.getSkulls() + " skulls, " + e.getDamages().size() + " damage tokens and " + e.getMarks().size() + " marks.");
 
         });
     }
@@ -540,7 +552,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
                 self = e.getPlayer();
                 initWeapons();
             }
-            sendNotification(e.getPlayer().getNickname() + " reloaded their " + e.getWeaponName());
+            sendNotification("Weapon", e.getPlayer().getNickname() + " reloaded their " + e.getWeaponName());
         });
     }
 
@@ -551,7 +563,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
                 self = e.getPlayer();
                 initWeapons();
             }
-            sendNotification(e.getPlayer().getNickname() + " shot with " + e.getWeaponName() + ", which is now unloaded");
+            sendNotification("Weapon", e.getPlayer().getNickname() + " shot with " + e.getWeaponName() + ", which is now unloaded");
         });
     }
 
@@ -614,12 +626,12 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onClientDisconnected(ClientEvent e) {
-        sendNotification(e.getNickname() + " just disconnected from the match");
+        sendNotification("Disconnection", e.getNickname() + " just disconnected from the match");
     }
 
     @Override
     public void onPlayerReconnected(PlayerEvent e) {
-        sendNotification(e.getPlayer().getNickname() + " is back!");
+        sendNotification("Reconnection", e.getPlayer().getNickname() + " is back!");
     }
 
     @Override
@@ -627,7 +639,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
         Platform.runLater( () -> {
             boardContent.movePlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
             String message = " just moved!";
-            sendNotification(e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
+            sendNotification("Movement", e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
         });
     }
 
@@ -636,7 +648,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
         Platform.runLater( () -> {
             boardContent.movePlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
             String message = " just teleported!";
-            sendNotification(e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
+            sendNotification("Movement", e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
         });
     }
 
@@ -650,7 +662,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
             } else {
                 boardContent.enqueueWeaponRight(e.getWeaponName());
             }
-            sendNotification(e.getWeaponName() + " can now be bought");
+            sendNotification("Weapon", e.getWeaponName() + " can now be bought");
         });
     }
 
@@ -659,18 +671,18 @@ public class GameController extends WindowController implements AutoCloseable, Q
         Platform.runLater( () -> {
             boardContent.movePlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
             String message = " just spawned!";
-            sendNotification(e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
+            sendNotification("Movement", e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
         });
     }
 
     @Override
     public void onPlayerOverkilled(PlayerEvent e) {
-        sendNotification(e.getPlayer().getNickname() + " was overkilled!");
+        sendNotification("Health", e.getPlayer().getNickname() + " was overkilled!");
     }
 
     @Override
     public void onActivePlayerChanged(PlayerEvent e) {
-        sendNotification("It's " + e.getPlayer().getNickname() + "'s turn");
+        sendNotification("Logistics", "It's " + e.getPlayer().getNickname() + "'s turn");
     }
 
     @Override
@@ -680,7 +692,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onMatchModeChanged(MatchModeChanged e) {
-        sendNotification("New match mode was triggered: " + e.getMode().toString().toLowerCase());
+        sendNotification("Logistics", "New match mode was triggered: " + e.getMode().toString().toLowerCase());
     }
 
     @Override
@@ -701,14 +713,48 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onMatchEnded(MatchEnded e) {
-
+        String youLost = "The match is over, YOU LOSE\n";
+        String youWin = "The match is over, and CONGRATULATIONS: YOU WIN\n";
+        String rankings = "\n-----RANKINGS------\n";
+        String result = e.getRankings().entrySet()
+                .stream()
+                .map(ranking -> ranking.getKey() + ") " + ranking.getValue()
+                        .stream()
+                        .map(Player::getNickname)
+                        .collect(Collectors.joining(",", " ", "")))
+                .collect(Collectors.joining("\n"));
+        Platform.runLater(() -> {
+            Alert end = new Alert(Alert.AlertType.INFORMATION);
+            end.setContentText((e.isTheWinner(self) ? youWin : youLost) + rankings + result);
+            end.show();
+        });
     }
 
-    private void sendNotification(String message) {
-        /*Platform.runLater(() -> {
-            ;
-            Alert info = new Alert(Alert.AlertType.INFORMATION, message);
-            info.show();
-        });*/
+    private void sendNotification(String title, String message) {
+        Platform.runLater(() -> {
+            NotificationController nc = new NotificationController(title, message);
+            nc.addNotificationListener(this);
+            addNotification(nc);
+        });
+    }
+
+    private void addNotification(NotificationController nc) {
+        notifications.add(nc);
+        showNewNotification();
+    }
+
+    private void showNewNotification() {
+        if (currentNotification == null) {
+            currentNotification = notifications.poll();
+            if (currentNotification != null) {
+                currentNotification.showWithAutoClose();
+            }
+        }
+    }
+
+    @Override
+    public void onNotificationClosed(NotificationClosed e) {
+        currentNotification = null;
+        showNewNotification();
     }
 }

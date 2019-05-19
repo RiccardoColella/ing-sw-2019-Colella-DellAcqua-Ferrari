@@ -600,9 +600,9 @@ public class Player implements Damageable, MatchListener {
             case FINAL_FRENZY:
                 if (this.damageTokens.isEmpty()) {
                     this.currentReward = RewardFactory.create(RewardFactory.Type.FINAL_FRENZY);
-                    notifyPlayerTileFlipped();
+                    notifyPlayerBoardFlipped();
                 }
-                notifyPlayerBoardFlipped();
+                notifyPlayerTileFlipped();
                 break;
             case STANDARD:
             case SUDDEN_DEATH:

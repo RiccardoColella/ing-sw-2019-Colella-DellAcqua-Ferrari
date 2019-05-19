@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import java.lang.*?>
-<AnchorPane
+<GridPane
     xmlns="http://javafx.com/javafx"
     xmlns:fx="http://javafx.com/fxml"
     fx:id="window"
@@ -131,4 +131,4 @@
         </FlowPane>
 
     </FlowPane>
-</AnchorPane>
+</GridPane>

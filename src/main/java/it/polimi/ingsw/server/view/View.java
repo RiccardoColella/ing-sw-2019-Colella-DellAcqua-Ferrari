@@ -528,7 +528,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     public void onWalletChanged(PlayerWalletChanged e) {
         it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged convertedEvent;
         it.polimi.ingsw.shared.datatransferobjects.Player playerVM = mapPlayer(e.getPlayer());
-        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged(playerVM, playerVM.getNickname() + " grabbed new ammo cubes");
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged(playerVM, playerVM.getNickname() + "'s wallet changed");
         outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_WALLET_CHANGED_EVENT, convertedEvent));
 
     }
