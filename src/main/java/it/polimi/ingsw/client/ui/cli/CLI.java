@@ -15,6 +15,7 @@ import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 import it.polimi.ingsw.shared.events.networkevents.*;
 import it.polimi.ingsw.shared.messages.templates.Question;
 import it.polimi.ingsw.shared.datatransferobjects.Powerup;
+import it.polimi.ingsw.utils.ConfigFileMaker;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -56,7 +57,8 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
      */
     private GameRepresentation gameRepresentation;
 
-    private static final String  TEXTS_JSON_FILE = "./resources/gameTextsForCLI.json";
+    private static final String TEXTS_JSON_PATH = "./config/gameTextsForCLI.json";
+    private static final String TEXTS_JSON_PATH_RES = "/config/gameTextsForCLI.json";
     private final String w;
     private final String m;
     private final String title;
@@ -70,11 +72,9 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     public CLI(InputStream inputStream, OutputStream outputStream) {
         StringBuilder stringBuilder = new StringBuilder();
         JsonElement jsonElement;
-        try {
-            jsonElement = new JsonParser().parse(new FileReader(new File(TEXTS_JSON_FILE)));
-        } catch (IOException e) {
-            throw new MissingConfigurationFileException("Unable to read texts configuration file");
-        }
+
+        jsonElement = new JsonParser().parse(ConfigFileMaker.load(TEXTS_JSON_PATH, TEXTS_JSON_PATH_RES));
+
         JsonObject jsonObject =jsonElement.getAsJsonObject();
         this.m = jsonObject.get("message").toString();
         this.w = jsonObject.get("warning").toString();

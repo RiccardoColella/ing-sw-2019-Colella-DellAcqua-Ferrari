@@ -115,8 +115,6 @@ public class GameInitializer {
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("Players nickname haven't been saved correctly in the model"));
             view.setPlayer(player);
-
-            player.addPlayerListener(view);
         });
         participants.forEach(match::addMatchListener);
         participants.forEach(match.getBoard()::addBoardListener);

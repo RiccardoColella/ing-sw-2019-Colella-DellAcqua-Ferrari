@@ -15,8 +15,9 @@ public class MatchStarted extends NetworkEvent {
     private final List<String> weaponRight;
     private final List<String> weaponLeft;
     private final int skulls;
+    private final Player currentActivePlayer;
 
-    public MatchStarted(int skulls, BoardFactory.Preset preset, Player self, List<Player> opponents, List<String> weaponTop, List<String> weaponRight, List<String> weaponLeft) {
+    public MatchStarted(int skulls, BoardFactory.Preset preset, Player self, List<Player> opponents, List<String> weaponTop, List<String> weaponRight, List<String> weaponLeft, Player currentActivePlayer) {
         this.preset = preset;
         this.opponents = opponents;
         this.self = self;
@@ -24,6 +25,7 @@ public class MatchStarted extends NetworkEvent {
         this.weaponRight = weaponRight;
         this.weaponLeft = weaponLeft;
         this.skulls = skulls;
+        this.currentActivePlayer = currentActivePlayer;
     }
 
     public BoardFactory.Preset getPreset() {
@@ -52,5 +54,9 @@ public class MatchStarted extends NetworkEvent {
 
     public int getSkulls() {
         return skulls;
+    }
+
+    public Player getCurrentActivePlayer() {
+        return currentActivePlayer;
     }
 }

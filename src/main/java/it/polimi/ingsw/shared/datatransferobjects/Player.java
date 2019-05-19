@@ -11,12 +11,16 @@ public class Player {
     private final PlayerColor color;
     private final Wallet wallet;
     private final PlayerHealth health;
+    private boolean isTileFlipped;
+    private boolean isBoardFlipped;
 
-    public Player(String nickname, PlayerColor color, Wallet wallet, PlayerHealth health) {
+    public Player(String nickname, PlayerColor color, Wallet wallet, PlayerHealth health, boolean isTileFlipped, boolean isBoardFlipped) {
         this.nickname = nickname;
         this.color = color;
         this.wallet = wallet;
         this.health = health;
+        this.isTileFlipped = isTileFlipped;
+        this.isBoardFlipped = isBoardFlipped;
     }
 
     public String getNickname() {
@@ -41,6 +45,18 @@ public class Player {
 
     public List<PlayerColor> getMarks() {
         return health.getMarks();
+    }
+
+    public PlayerHealth getHealth() {
+        return health;
+    }
+
+    public boolean isTileFlipped() {
+        return isTileFlipped;
+    }
+
+    public boolean isBoardFlipped() {
+        return isBoardFlipped;
     }
 
     @Override

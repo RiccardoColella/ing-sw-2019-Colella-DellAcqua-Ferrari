@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server;
 
 import com.google.gson.Gson;
+import it.polimi.ingsw.utils.ConfigFileMaker;
 
 import java.io.File;
 import java.io.FileReader;
@@ -8,7 +9,8 @@ import java.io.IOException;
 
 public class Main {
 
-    private static final String SERVER_CONFIG_JSON_FILENAME = "./resources/serverConfig.json";
+    private static final String SERVER_CONFIG_JSON_PATH = "./config/serverConfig.json";
+    private static final String SERVER_CONFIG_JSON_PATH_RES = "/config/serverConfig.json";
 
     /**
      * This method is the entry-point of our application. After reading the basic configuration file, command line
@@ -31,7 +33,7 @@ public class Main {
          * "rmiHostname"
          */
 
-        ServerConfig config = new Gson().fromJson(new FileReader(new File(SERVER_CONFIG_JSON_FILENAME)), ServerConfig.class);
+        ServerConfig config = new Gson().fromJson(ConfigFileMaker.load(SERVER_CONFIG_JSON_PATH, SERVER_CONFIG_JSON_PATH_RES), ServerConfig.class);
 
         // CLI argument meaning is based on its position
         int settingCount = 0;

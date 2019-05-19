@@ -16,6 +16,7 @@ import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.messages.ClientApi;
+import it.polimi.ingsw.utils.ConfigFileMaker;
 import it.polimi.ingsw.utils.EnumValueByString;
 import it.polimi.ingsw.utils.Range;
 import it.polimi.ingsw.utils.TriConsumer;
@@ -40,7 +41,8 @@ public class WeaponFactory {
     /**
      * The path of the json configuration file
      */
-    private static final String WEAPON_JSON_PATH = "./resources/attacks.json";
+    private static final String WEAPON_JSON_PATH = "config/attacks.json";
+    private static final String WEAPON_JSON_PATH_RES = "/config/attacks.json";
 
     /**
      * Enum representing the field values encountered in the json
@@ -197,11 +199,8 @@ public class WeaponFactory {
     private static void readFromFile() {
         weaponMap = new HashMap<>();
         JsonElement jsonElement;
-        try {
-            jsonElement = new JsonParser().parse(new FileReader(new File(WEAPON_JSON_PATH)));
-        } catch (FileNotFoundException e) {
-            throw new MissingConfigurationFileException("WeaponTile configuration file not found");
-        }
+
+        jsonElement = new JsonParser().parse(ConfigFileMaker.load(WEAPON_JSON_PATH, WEAPON_JSON_PATH_RES));
 
         jsonElement.getAsJsonArray().forEach(weaponJson -> {
             JsonObject weaponObject = weaponJson.getAsJsonObject();

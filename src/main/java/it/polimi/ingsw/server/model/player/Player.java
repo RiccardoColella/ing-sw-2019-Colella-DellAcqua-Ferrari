@@ -99,6 +99,16 @@ public class Player implements Damageable, MatchListener {
     private final PlayerConstraints constraints;
 
     /**
+     * Keeps track of the flip status of the action tile
+     */
+    private boolean tileFlipped = false;
+
+    /**
+     * Keeps track of the flip status of the player board
+     */
+    private boolean boardFlipped = false;
+
+    /**
      * This constructor creates a player from the basic info: the player will be empty and ready to start a new match
      * @param match the match this new player belongs to
      * @param info a PlayerInfo object containing the basic info
@@ -600,9 +610,9 @@ public class Player implements Damageable, MatchListener {
             case FINAL_FRENZY:
                 if (this.damageTokens.isEmpty()) {
                     this.currentReward = RewardFactory.create(RewardFactory.Type.FINAL_FRENZY);
-                    notifyPlayerBoardFlipped();
+                    flipPlayerBoard();
                 }
-                notifyPlayerTileFlipped();
+                flipPlayerTile();
                 break;
             case STANDARD:
             case SUDDEN_DEATH:
@@ -611,6 +621,12 @@ public class Player implements Damageable, MatchListener {
             default:
                 throw new IllegalArgumentException("Unrecognizable match mode");
         }
+    }
+
+    private void flipPlayerTile() {
+
+        tileFlipped = true;
+        notifyPlayerTileFlipped();
     }
 
     private void notifyPlayerTileFlipped() {
@@ -752,9 +768,15 @@ public class Player implements Damageable, MatchListener {
         damageTokens.clear();
         if (match.getMode() == FINAL_FRENZY) { // when a player dies during final frenzy, he flips his board
             this.currentReward = RewardFactory.create(RewardFactory.Type.FINAL_FRENZY);
-            notifyPlayerBoardFlipped();
+            flipPlayerBoard();
         }
         notifyPlayerBroughtBackToLife();
+    }
+
+    private void flipPlayerBoard() {
+
+        boardFlipped = true;
+        notifyPlayerBoardFlipped();
     }
 
     /**
@@ -878,5 +900,13 @@ public class Player implements Damageable, MatchListener {
         } else {
             throw new IllegalStateException(weapon.getName() + " cannot be active");
         }
+    }
+
+    public boolean isTileFlipped() {
+        return tileFlipped;
+    }
+
+    public boolean isBoardFlipped() {
+        return boardFlipped;
     }
 }

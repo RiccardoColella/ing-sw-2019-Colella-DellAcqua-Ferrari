@@ -176,10 +176,9 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         heartbeatThreadPool.execute(() -> {
             while (!heartbeatThreadPool.isShutdown() && isConnected()) {
                 if (lastHeartbeat.isBefore(Instant.now().minusMillis(HEARTBEAT_TIMEOUT))) {
-                    logger.info("No heartbeat received within the timeout, disconnecting " + getNickname());
+                    logger.info("No heartbeat received within the timeout, disconnecting " + getNickname() + "...");
                     disconnect();
                 } else {
-                    logger.info("Last heartbeat from " + getNickname() + " was at " + lastHeartbeat);
                     try {
                         Thread.sleep(HEARTBEAT_TIMEOUT);
                     } catch (InterruptedException e) {
@@ -274,6 +273,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
      * Set the connection status to false and notify all the listeners
      */
     private void disconnect() {
+        logger.warning("Player " + getNickname() + " disconnected");
         this.connected = false;
         notifyViewDisconnected();
     }
@@ -356,7 +356,9 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
                 player.getPlayerInfo().getNickname(),
                 player.getPlayerInfo().getColor(),
                 mapWallets(player),
-                mapPlayerHealth(player)
+                mapPlayerHealth(player),
+                player.isTileFlipped(),
+                player.isBoardFlipped()
         );
     }
 
@@ -401,17 +403,16 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     @Override
     public void onMatchStarted(MatchEvent event) {
-        Match match = event.getMatch();
+        enqueueMatchInitializationEvent(event.getMatch(), false);
+    }
+
+    private void enqueueMatchInitializationEvent(Match match, boolean resumed) {
         List<Player> allPlayers = new LinkedList<>(match.getPlayers());
-        List<Player> opponents = allPlayers
+        List<it.polimi.ingsw.shared.datatransferobjects.Player> opponentsVM = allPlayers
                 .stream()
                 .filter(o -> !o.getPlayerInfo().getNickname().equals(setup.getNickname()))
-                .collect(Collectors.toList());
-        List<it.polimi.ingsw.shared.datatransferobjects.Player> opponentsVM = opponents
-                .stream()
                 .map(this::mapPlayer)
                 .collect(Collectors.toList());
-
         List<String> weaponTop = new LinkedList<>();
         List<String> weaponLeft = new LinkedList<>();
         List<String> weaponRight = new LinkedList<>();
@@ -426,17 +427,36 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
                 weaponRight = weapons;
             }
         }
-        it.polimi.ingsw.shared.datatransferobjects.Player selfVM = mapPlayer(player);
-        it.polimi.ingsw.shared.events.networkevents.MatchStarted e = new it.polimi.ingsw.shared.events.networkevents.MatchStarted(
-                match.getRemainingSkulls(),
-                match.getBoardPreset(),
-                selfVM,
-                opponentsVM,
-                weaponTop,
-                weaponRight,
-                weaponLeft
-        );
-        outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_STARTED_EVENT, e));
+        if (resumed) {
+            outputMessageQueue.add(Message.createEvent(
+                    ClientApi.MATCH_RESUMED_EVENT,
+                    new it.polimi.ingsw.shared.events.networkevents.MatchResumed(
+                            match.getRemainingSkulls(),
+                            match.getBoardPreset(),
+                            mapPlayer(player),
+                            opponentsVM,
+                            weaponTop,
+                            weaponRight,
+                            weaponLeft,
+                            mapPlayer(match.getActivePlayer()),
+                            match.getMode()
+                    )
+            ));
+        } else {
+            outputMessageQueue.add(Message.createEvent(
+                    ClientApi.MATCH_STARTED_EVENT,
+                    new it.polimi.ingsw.shared.events.networkevents.MatchStarted(
+                            match.getRemainingSkulls(),
+                            match.getBoardPreset(),
+                            mapPlayer(player),
+                            opponentsVM,
+                            weaponTop,
+                            weaponRight,
+                            weaponLeft,
+                            mapPlayer(match.getActivePlayer())
+                    )
+            ));
+        }
     }
 
     @Override
@@ -631,8 +651,15 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     }
 
     public void setReady() {
+        setReady(null);
+    }
+
+    public void setReady(@Nullable Match resumedMatch) {
         notifyViewReady();
         onViewReady(new ViewEvent(this));
+        if (resumedMatch != null) {
+            enqueueMatchInitializationEvent(resumedMatch, true);
+        }
     }
 
     @Override

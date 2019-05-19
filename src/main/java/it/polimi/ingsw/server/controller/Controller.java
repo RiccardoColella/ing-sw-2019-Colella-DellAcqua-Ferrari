@@ -263,7 +263,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 .filter(weaponOfPlayer -> PaymentHandler.canAfford(weaponOfPlayer.getReloadCost(), activePlayer) && !weaponOfPlayer.isLoaded())
                 .collect(Collectors.toList());
         if (weaponsReloadable.isEmpty()){
-            throw new IllegalArgumentException("Player cannot afford to reload any weapon or all weapons are loaded. The reload shouldn't be selectable");
+            throw new IllegalStateException("Player cannot afford to reload any weapon or all weapons are loaded. The reload shouldn't be selectable");
         } else {
             WeaponTile weaponToReload;
             List<String> weaponsReloadableForView = weaponsReloadable
@@ -273,13 +273,23 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
             do {
                 Optional<String> selected = view.selectOptional("Which weapon would you like to reload?", weaponsReloadableForView, ClientApi.RELOAD_QUESTION);
                 if (selected.isPresent()) {
-                    weaponsReloadableForView.remove(selected.get());
+
                     weaponToReload = weaponsReloadable
                             .stream()
                             .filter(w -> w.getName().equals(selected.get()))
                             .findAny()
                             .orElseThrow(() -> new IllegalStateException("Weapon to reload does not exist"));
+
                     reloadWeapon(weaponToReload, activePlayer, view);
+
+                    weaponsReloadable = weaponsToReload
+                            .stream()
+                            .filter(weaponOfPlayer -> PaymentHandler.canAfford(weaponOfPlayer.getReloadCost(), activePlayer) && !weaponOfPlayer.isLoaded())
+                            .collect(Collectors.toList());
+                    weaponsReloadableForView = weaponsReloadable
+                            .stream()
+                            .map(WeaponTile::getName)
+                            .collect(Collectors.toList());
                 } else {
                     weaponToReload = null;
                 }
@@ -639,7 +649,32 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
 
     @Override
     public void onViewReconnected(ViewReconnected e) {
-        // TODO: Manage client reconnection
+        Optional<View> oldView = views.stream().filter(view -> view.isConnected() && view.getNickname().equals(e.getView().getNickname())).findAny();
+        if (oldView.isPresent()) {
+            e.consume();
+
+            e.getView().setPlayer(oldView.get().getPlayer());
+            views.set(views.indexOf(oldView.get()), e.getView());
+            playerViews.put(oldView.get().getPlayer(), e.getView());
+
+            views.forEach(view -> {
+                view.addViewListener(e.getView());
+                e.getView().addViewListener(view);
+            });
+            match.getPlayers().forEach(player -> {
+                player.addPlayerListener(e.getView());
+            });
+            match.addMatchListener(e.getView());
+            match.getBoard().addBoardListener(e.getView());
+
+            e.getView().setReady(match);
+
+            try {
+                oldView.get().close();
+            } catch (Exception ex) {
+                logger.warning("Unable to close the old view " + ex);
+            }
+        }
     }
 
     @Override

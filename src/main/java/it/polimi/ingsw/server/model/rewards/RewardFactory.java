@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
+import it.polimi.ingsw.utils.ConfigFileMaker;
 import it.polimi.ingsw.utils.EnumValueByString;
 
 import java.io.File;
@@ -24,7 +25,8 @@ public final class RewardFactory {
         DOUBLE_KILL;
     }
 
-    private static final String REWARDS_JSON_FILENAME = "./resources/rewards.json";
+    private static final String REWARDS_JSON_PATH = "./config/rewards.json";
+    private static final String REWARDS_JSON_PATH_RES = "/config/rewards.json";
     private static Map<RewardFactory.Type, Reward> rewardMap;
 
     private RewardFactory() {
@@ -41,13 +43,8 @@ public final class RewardFactory {
         if (rewardMap == null) {
             rewardMap = new EnumMap<>(Type.class);
             JsonElement jsonElement;
-            try {
-                jsonElement = new JsonParser().parse(new FileReader(new File(REWARDS_JSON_FILENAME)));
-            } catch (IOException e) {
-                throw new MissingConfigurationFileException("Unable to read Rewards configuration file", e);
-            }
 
-
+            jsonElement = new JsonParser().parse(ConfigFileMaker.load(REWARDS_JSON_PATH, REWARDS_JSON_PATH_RES));
 
             for (int i = 0; i < Type.values().length; i++) {
 

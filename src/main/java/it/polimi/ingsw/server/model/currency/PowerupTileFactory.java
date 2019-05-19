@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
+import it.polimi.ingsw.utils.ConfigFileMaker;
 import it.polimi.ingsw.utils.EnumValueByString;
 
 import java.io.File;
@@ -20,7 +21,8 @@ import java.util.Map;
  */
 public final class PowerupTileFactory {
 
-    private static final String POWERUP_DECK_JSON_FILENAME = "./resources/powerupDeck.json";
+    private static final String POWERUP_DECK_JSON_PATH = "./config/powerupDeck.json";
+    private static final String POWERUP_DECK_JSON_PATH_RES = "/config/powerupDeck.json";
     private static Map<PowerupTile, Integer> tileQuantityMap;
 
     /**
@@ -61,11 +63,9 @@ public final class PowerupTileFactory {
     private static void readTiles() {
         tileQuantityMap = new HashMap<>();
         JsonElement jsonElement;
-        try {
-            jsonElement = new JsonParser().parse(new FileReader(new File(POWERUP_DECK_JSON_FILENAME)));
-        } catch (IOException e) {
-            throw new MissingConfigurationFileException("Unable to read Powerup Deck configuration file", e);
-        }
+
+        jsonElement = new JsonParser().parse(ConfigFileMaker.load(POWERUP_DECK_JSON_PATH, POWERUP_DECK_JSON_PATH_RES));
+
         JsonArray jsonTileArray = jsonElement.getAsJsonArray();
         jsonTileArray.forEach(
             tile -> tileQuantityMap.put(

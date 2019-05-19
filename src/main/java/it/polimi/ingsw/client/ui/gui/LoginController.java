@@ -77,6 +77,7 @@ public class LoginController extends WindowController implements MatchListener, 
     private Connector connector;
 
     private Button sendButton;
+    private boolean closeConnector = true;
 
     public LoginController(String title) {
         super(title, "/fxml/login.fxml", "/css/login.css");
@@ -215,6 +216,7 @@ public class LoginController extends WindowController implements MatchListener, 
 
     @Override
     public void onMatchStarted(MatchStarted e) {
+        closeConnector = false;
         connector.removeMatchListener(this);
         connector.removeDuplicatedNicknameListener(this);
         connector.removeClientListener(this);
@@ -271,13 +273,15 @@ public class LoginController extends WindowController implements MatchListener, 
     @Override
     public void close() {
         super.close();
-        new Thread(() -> {
-            try {
-                connector.close();
-            } catch (Exception ex) {
-                logger.warning("Could not close the connector");
-            }
-        }).start();
+        if (connector != null && closeConnector) {
+            new Thread(() -> {
+                try {
+                    connector.close();
+                } catch (Exception ex) {
+                    logger.warning("Could not close the connector");
+                }
+            }).start();
+        }
     }
 
     @Override

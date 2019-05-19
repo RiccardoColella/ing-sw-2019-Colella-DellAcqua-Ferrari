@@ -7,9 +7,8 @@ import com.google.gson.JsonParser;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.shared.events.networkevents.MatchStarted;
-import it.polimi.ingsw.shared.events.networkevents.PlayerHealthChanged;
 import it.polimi.ingsw.shared.datatransferobjects.Player;
-import it.polimi.ingsw.shared.datatransferobjects.Wallet;
+import it.polimi.ingsw.utils.ConfigFileMaker;
 
 import java.awt.*;
 import java.io.*;
@@ -32,7 +31,8 @@ public class GameRepresentation {
 
     Map<Player, Point> playerLocations = new HashMap<>();
 
-    private static final String  TEXTS_JSON_FILE = "./resources/gameTextsForCLI.json";
+    private static final String TEXTS_JSON_PATH = "./config/gameTextsForCLI.json";
+    private static final String TEXTS_JSON_PUSH_RES = "/config/gameTextsForCLI.json";
 
     private List<String> board;
 
@@ -54,11 +54,8 @@ public class GameRepresentation {
 
         JsonElement jsonElement;
 
-        try {
-            jsonElement = new JsonParser().parse(new FileReader(new File(TEXTS_JSON_FILE)));
-        } catch (IOException ex) {
-            throw new MissingConfigurationFileException("Unable to read texts configuration file");
-        }
+        jsonElement = new JsonParser().parse(ConfigFileMaker.load(TEXTS_JSON_PATH, TEXTS_JSON_PUSH_RES));
+
         JsonObject jsonObject = jsonElement.getAsJsonObject();
         this.rowOffset = jsonObject.get("rowOffset").getAsInt();
         this.columnOffset = jsonObject.get("columnOffset").getAsInt();

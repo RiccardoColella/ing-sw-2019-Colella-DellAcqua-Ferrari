@@ -49,17 +49,17 @@ public class RMIConnector extends Connector {
                     try {
                         return messageProxy.receiveMessage(timeout, unit);
                     } catch (RemoteException e) {
-                        throw new ViewDisconnectedException("Remote exception occurred " + e);
+                        throw new ViewDisconnectedException(e.toString());
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        throw new ViewDisconnectedException("Remote exception occurred " + e);
+                        throw new ViewDisconnectedException(e.toString());
                     }
                 },
-                (message) -> {
+                message -> {
                     try {
                         messageProxy.sendMessage(message);
                     } catch (RemoteException e) {
-                        throw new ViewDisconnectedException("Remote exception occurred " + e);
+                        throw new ViewDisconnectedException(e.toString());
                     }
                 }
         );
@@ -73,11 +73,11 @@ public class RMIConnector extends Connector {
     @Override
     public void close() throws Exception {
         try {
-            if (messageDispatcher != null) {
-                messageDispatcher.close();
-            }
             if (messageProxy != null) {
                 messageProxy.close();
+            }
+            if (messageDispatcher != null) {
+                messageDispatcher.close();
             }
         } catch (ViewDisconnectedException|NoSuchObjectException ex) {
             logger.info("The server already disconnected this client");

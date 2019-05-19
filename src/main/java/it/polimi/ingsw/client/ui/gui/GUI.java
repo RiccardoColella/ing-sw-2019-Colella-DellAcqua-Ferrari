@@ -19,6 +19,7 @@ public class GUI extends Application {
     @Override
     public void start(Stage stage) {
 
+        Platform.setImplicitExit(true);
 
         //debug();
         LoginController loginController = new LoginController();
@@ -26,8 +27,6 @@ public class GUI extends Application {
         Optional<GameController> gameController = loginController.getGameController();
         if (gameController.isPresent()) {
             gameController.get().showAsModal();
-        } else {
-            Platform.exit();
         }
     }
 

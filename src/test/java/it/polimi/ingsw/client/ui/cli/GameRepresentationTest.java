@@ -35,7 +35,9 @@ class GameRepresentationTest {
                 opponents,
                 weaponTop,
                 weaponRight,
-                weaponLeft));
+                weaponLeft,
+                buildPlayer(0)
+                ));
     }
 
     private Player buildPlayer(int x){
@@ -45,7 +47,9 @@ class GameRepresentationTest {
                 name,
                 colors.get(x),
                 new Wallet(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList()),
-                new PlayerHealth(0, Collections.emptyList(), Collections.emptyList())
+                new PlayerHealth(0, Collections.emptyList(), Collections.emptyList()),
+                false,
+                false
         );
     }
 

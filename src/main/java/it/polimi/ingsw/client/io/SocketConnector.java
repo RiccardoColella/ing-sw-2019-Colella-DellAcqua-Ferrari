@@ -64,14 +64,15 @@ public class SocketConnector extends Connector {
     @Override
     public void close() throws Exception {
 
+        if (socket != null) {
+            socket.close();
+        }
+
         if (inputMessageStreamSupplier != null) {
             inputMessageStreamSupplier.close();
         }
         if (messageDispatcher != null) {
             messageDispatcher.close();
-        }
-        if (socket != null) {
-            socket.close();
         }
 
         super.close();

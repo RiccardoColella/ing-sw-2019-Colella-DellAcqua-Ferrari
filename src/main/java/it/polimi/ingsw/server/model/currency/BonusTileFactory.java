@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
+import it.polimi.ingsw.utils.ConfigFileMaker;
 import it.polimi.ingsw.utils.EnumValueByString;
 
 import java.io.File;
@@ -17,7 +18,8 @@ import java.util.Map;
 
 public final class BonusTileFactory {
 
-    private static final String BONUS_DECK_JSON_FILENAME = "./resources/bonusDeck.json";
+    private static final String BONUS_DECK_JSON_PATH = "./config/bonusDeck.json";
+    private static final String BONUS_DECK_JSON_PATH_RES = "/config/bonusDeck.json";
     private static Map<BonusTile, Integer> tileQuantityMap;
     /**
      * Empty private constructor
@@ -40,11 +42,9 @@ public final class BonusTileFactory {
     private static void readTiles() {
         tileQuantityMap = new HashMap<>();
         JsonElement jsonElement;
-        try {
-            jsonElement = new JsonParser().parse(new FileReader(new File(BONUS_DECK_JSON_FILENAME)));
-        } catch (IOException e) {
-            throw new MissingConfigurationFileException("Unable to read Bonus Deck configuration file");
-        }
+
+        jsonElement = new JsonParser().parse(ConfigFileMaker.load(BONUS_DECK_JSON_PATH, BONUS_DECK_JSON_PATH_RES));
+
         JsonArray jsonTileArray = jsonElement.getAsJsonArray();
         jsonTileArray.forEach(
                 tile -> {
