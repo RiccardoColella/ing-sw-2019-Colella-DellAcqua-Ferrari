@@ -1,11 +1,15 @@
 package it.polimi.ingsw.client.ui.gui;
 
 import it.polimi.ingsw.utils.Tuple;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
@@ -48,7 +52,10 @@ public class SelectPane extends DialogPane {
         for (int i = 0; i < optionNumber; i++) {
             options.get(i).getItem1().setMinSize(200, 250);
             container.add(options.get(i).getItem1(), i, 0);
-            getButtonTypes().add(new ButtonType(options.get(i).getItem2(), ButtonBar.ButtonData.LEFT));
+            ButtonType bt = new ButtonType(options.get(i).getItem2(), ButtonBar.ButtonData.LEFT);
+            getButtonTypes().add(bt);
+            options.get(i).getItem1().setOnMouseClicked(e -> ((Button) lookupButton(bt)).fire()
+            );
         }
     }
 

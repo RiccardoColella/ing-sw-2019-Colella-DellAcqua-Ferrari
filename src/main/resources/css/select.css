@@ -18,3 +18,8 @@ Button {
 .dialog-pane:header .header-panel .label {
     -fx-font-family: "Roboto Mono";
 }
+
+ImagePane:hover {
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.8), 15, 0, 0, 0);
+}

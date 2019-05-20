@@ -11,8 +11,10 @@ import javafx.scene.text.Text;
 import javafx.stage.Screen;
 import javafx.stage.StageStyle;
 
-import java.awt.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class NotificationController extends WindowController {
 

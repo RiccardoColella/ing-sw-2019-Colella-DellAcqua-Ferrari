@@ -2,6 +2,7 @@ package it.polimi.ingsw.client.ui.gui;
 
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.utils.Tuple;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.HPos;
@@ -16,10 +17,13 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -70,6 +74,13 @@ public class BoardContentPane extends GridPane {
 
     private static final String HOVERED = "hovered";
 
+    private final Map<Point, Point[]> blocks;
+
+    private EventHandler<MouseEvent> blockSelectionHandler;
+    private EventHandler<MouseEvent> blockHoverHandler;
+    private boolean isHoveringWeapons = false;
+    private boolean isHoveringBlocks = false;
+
     public BoardContentPane(int skulls) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/boardContent.fxml"));
@@ -103,6 +114,15 @@ public class BoardContentPane extends GridPane {
         topQueue = new LinkedList<>();
         rightQueue = new LinkedList<>();
         leftQueue = new LinkedList<>();
+        blocks = new HashMap<>();
+        for (int r = 0, y = 80; r < 3; r++, y += 88) {
+            for (int c = 0, x = 75; c < 4; c++, x += 90) {
+                Point[] boundaries = new Point[2];
+                boundaries[0] = new Point(x, y);
+                boundaries[1] = new Point(x + 90, y + 88);
+                blocks.put(new Point(c, r), boundaries);
+            }
+        }
     }
 
     private void mouseEventHandler(MouseEvent mouseEvent, Consumer<Parent> consumer, Function<Node, Boolean> additionalCondition) {
@@ -180,7 +200,9 @@ public class BoardContentPane extends GridPane {
                 || isTop && !(isTopFirst || isTopSecond || isTopThird)
         ) {
             clearHovers();
-            container.setCursor(Cursor.DEFAULT);
+            if (!isHoveringBlocks) {
+                container.setCursor(Cursor.DEFAULT);
+            }
         }
     }
 
@@ -188,6 +210,7 @@ public class BoardContentPane extends GridPane {
         clearHovers();
         node.getStyleClass().add(HOVERED);
         container.setCursor(Cursor.HAND);
+        isHoveringWeapons = true;
     }
 
     private void mouseClickHandler(Parent node) {
@@ -211,6 +234,7 @@ public class BoardContentPane extends GridPane {
         Arrays.stream(leftContainers).forEach(c -> c.getStyleClass().remove(HOVERED));
         Arrays.stream(rightContainers).forEach(c -> c.getStyleClass().remove(HOVERED));
         Arrays.stream(topContainers).forEach(c -> c.getStyleClass().remove(HOVERED));
+        isHoveringWeapons = false;
     }
 
     public void addWeaponTop(String weaponName, int index) {
@@ -339,5 +363,49 @@ public class BoardContentPane extends GridPane {
             ((BoardBlockPane) pane).removePlayer(color);
         }
         addPlayer(color, row, col);
+    }
+
+    public void waitForBlockSelection(List<Point> availableCoordinates, Consumer<Point> consumer, Text message) {
+        blockSelectionHandler = e -> blockSelection(e, availableCoordinates, consumer, message);
+        blockHoverHandler = e -> blockHover(e, availableCoordinates);
+        container.addEventHandler(MouseEvent.MOUSE_MOVED, blockHoverHandler);
+        container.addEventHandler(MouseEvent.MOUSE_CLICKED, blockSelectionHandler);
+    }
+
+    private void blockHover(MouseEvent e, List<Point> hoverable) {
+        boolean keepHovering = false;
+        isHoveringBlocks = false;
+        for (Point p : hoverable) {
+            Point[] boundaries = blocks.get(p);
+            if (e.getX() < boundaries[1].x && e.getX() > boundaries[0].x && e.getY() < boundaries[1].y && e.getY() > boundaries[0].y) {
+                keepHovering = true;
+                isHoveringBlocks = true;
+            }
+        }
+        if (keepHovering) {
+            container.setCursor(Cursor.HAND);
+        } else if (!isHoveringWeapons){
+            container.setCursor(Cursor.DEFAULT);
+        }
+    }
+
+    private void removeBlockSelection(Text message) {
+        container.removeEventHandler(MouseEvent.MOUSE_CLICKED, blockSelectionHandler);
+        container.removeEventHandler(MouseEvent.MOUSE_MOVED, blockHoverHandler);
+        isHoveringBlocks = false;
+        if (!isHoveringWeapons) {
+            container.setCursor(Cursor.DEFAULT);
+        }
+        message.setText("");
+    }
+
+    private void blockSelection(MouseEvent e, List<Point> selectable, Consumer<Point> consumer, Text message) {
+        for (Point p : selectable) {
+            Point[] boundaries = blocks.get(p);
+            if (e.getX() < boundaries[1].x && e.getX() > boundaries[0].x && e.getY() < boundaries[1].y && e.getY() > boundaries[0].y) {
+                consumer.accept(p);
+                removeBlockSelection(message);
+            }
+        }
     }
 }

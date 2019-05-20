@@ -4,12 +4,13 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.Label?>
 <?import it.polimi.ingsw.client.ui.gui.PlayerBoardPane?>
+<?import javafx.scene.text.Text?>
 <GridPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="it.polimi.ingsw.client.ui.gui.GameController"
-            fx:id="window"
-            prefHeight="700" prefWidth="1050"
-            minHeight="700" minWidth="1050">
+          xmlns:fx="http://javafx.com/fxml"
+          fx:controller="it.polimi.ingsw.client.ui.gui.GameController"
+          fx:id="window"
+          prefHeight="700" prefWidth="1050"
+          minHeight="700" minWidth="1050">
     <columnConstraints>
         <ColumnConstraints percentWidth="100" />
     </columnConstraints>
@@ -32,8 +33,11 @@
                 <StackPane fx:id="boardContainer" minHeight="400" maxHeight="400" minWidth="500" maxWidth="500" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
                 </StackPane>
             </GridPane>
+            <Text fx:id="message" wrappingWidth="500">
+                <properties height="8%" width="100%"/>
+            </Text>
             <Label styleClass="h1">
-                <properties height="20%" width="100%"/>
+                <properties height="12%" width="100%"/>
                 Adrenalina
             </Label>
             <GridPane fx:id="tile">

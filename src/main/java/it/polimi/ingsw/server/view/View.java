@@ -461,7 +461,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     @Override
     public void onMatchEnded(MatchEnded event) {
-        // TODO: Bind Model to ViewModel and enqueue the event
+        it.polimi.ingsw.shared.events.networkevents.MatchEnded convertedEvent;
+        Map<Integer, List<it.polimi.ingsw.shared.datatransferobjects.Player>> mappedRankings = new HashMap<>();
+        event.getRankings().forEach((key, value) -> mappedRankings.put(key, value.stream().map(this::mapPlayer).collect(Collectors.toList())));
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.MatchEnded(mappedRankings);
+        outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_ENDED_EVENT, convertedEvent));
     }
 
     @Override

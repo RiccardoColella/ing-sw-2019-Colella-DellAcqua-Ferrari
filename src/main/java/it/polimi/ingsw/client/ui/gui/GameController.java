@@ -19,6 +19,7 @@ import it.polimi.ingsw.shared.datatransferobjects.Player;
 import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 import it.polimi.ingsw.utils.Tuple;
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -26,8 +27,11 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -63,6 +67,8 @@ public class GameController extends WindowController implements AutoCloseable, Q
     private Label tileMsg;
     @FXML
     private GridPane right;
+    @FXML
+    private Text message;
 
     private BoardFactory.Preset preset;
 
@@ -77,6 +83,8 @@ public class GameController extends WindowController implements AutoCloseable, Q
     private Queue<NotificationController> notifications;
 
     private NotificationController currentNotification = null;
+
+    private EventHandler<KeyEvent> directionHandler;
 
     public GameController(Connector connector, MatchStarted e) {
         super("Adrenalina", "/fxml/game.fxml", "/css/game.css");
@@ -114,7 +122,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
         initPowerups(e.getSelf().getWallet().getPowerups());
         initWeapons();
         tileMsg.setText(self.getNickname() + ", " + tileMsg.getText());
-
+        message.setFill(Color.rgb(194, 194, 214));
         stage.setOnCloseRequest(ignored -> this.close());
     }
 
@@ -329,17 +337,45 @@ public class GameController extends WindowController implements AutoCloseable, Q
     @Override
     public void onDirectionQuestion(Question<Direction> question, Consumer<Direction> answerCallback) {
         Platform.runLater(() -> {
-            Dialog<Direction> dialog = new Dialog<>();
-            dialog.setTitle("Direction question");
-            SelectPane sp = new SelectPane();
-            sp.setHeaderText(question.getText());
-            sp.setTextOnlyOptions(question.getAvailableOptions().stream().map(e -> e.toString().toLowerCase()).collect(Collectors.toList()));
-            sp.setSkippable(question.isSkippable());
-            dialog.setDialogPane(sp);
-            dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippableDirection() : CallbackFactory.unskippableDirection());
-            dialog.showAndWait();
-            answerCallback.accept(dialog.getResult());
+            String skip = question.isSkippable() ? ", press SPACE to skip" : "";
+            message.setText(question.getText() + " Use the arrow keys" + skip);
+            directionHandler = e -> arrowKeyListener(e, question.getAvailableOptions(), answerCallback, question.isSkippable());
+            stage.addEventHandler(KeyEvent.KEY_PRESSED, directionHandler);
         });
+    }
+
+    private void arrowKeyListener(KeyEvent e, Collection<Direction> directions, Consumer<Direction> answerCallback, boolean isSkippable) {
+        switch (e.getCode()) {
+            case UP:
+                checkDirection(directions, Direction.NORTH, answerCallback);
+                break;
+            case DOWN:
+                checkDirection(directions, Direction.SOUTH, answerCallback);
+                break;
+            case LEFT:
+                checkDirection(directions, Direction.WEST, answerCallback);
+                break;
+            case RIGHT:
+                checkDirection(directions, Direction.EAST, answerCallback);
+                break;
+            case SPACE:
+                if (isSkippable) {
+                    stage.removeEventHandler(KeyEvent.KEY_PRESSED, directionHandler);
+                    message.setText("");
+                    answerCallback.accept(null);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void checkDirection(Collection<Direction> directions, Direction selected, Consumer<Direction> answerCallback) {
+        if (directions.contains(selected)) {
+            stage.removeEventHandler(KeyEvent.KEY_PRESSED, directionHandler);
+            message.setText("");
+            answerCallback.accept(selected);
+        }
     }
 
     @Override
@@ -366,16 +402,8 @@ public class GameController extends WindowController implements AutoCloseable, Q
     @Override
     public void onBlockQuestion(Question<Point> question, Consumer<Point> answerCallback) {
         Platform.runLater(() -> {
-            Dialog<Point> dialog = new Dialog<>();
-            dialog.setTitle("Block question");
-            SelectPane sp = new SelectPane();
-            sp.setHeaderText(question.getText());
-            sp.setTextOnlyOptions(question.getAvailableOptions().stream().map(point -> point.x + " " + point.y).collect(Collectors.toList()));
-            sp.setSkippable(question.isSkippable());
-            dialog.setDialogPane(sp);
-            dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippablePoint() : CallbackFactory.unskippablePoint());
-            dialog.showAndWait();
-            answerCallback.accept(dialog.getResult());
+            message.setText(question.getText() + " Click on the block!");
+            boardContent.waitForBlockSelection(new LinkedList<>(question.getAvailableOptions()), answerCallback, message);
         });
     }
 
