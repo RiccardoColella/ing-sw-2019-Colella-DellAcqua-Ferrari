@@ -277,6 +277,7 @@ public class LoginController extends WindowController implements MatchListener, 
             new Thread(() -> {
                 try {
                     connector.close();
+                    Platform.exit();
                 } catch (Exception ex) {
                     logger.warning("Could not close the connector");
                 }
@@ -301,7 +302,9 @@ public class LoginController extends WindowController implements MatchListener, 
 
     @Override
     public void onClientDisconnected(ClientEvent e) {
-        NotificationController nc = new NotificationController("Disconnection", e.getNickname() + " disconnected");
-        nc.showWithAutoClose();
+        Platform.runLater(() -> {
+            NotificationController nc = new NotificationController("Disconnection", e.getNickname() + " disconnected");
+            nc.showWithAutoClose();
+        });
     }
 }

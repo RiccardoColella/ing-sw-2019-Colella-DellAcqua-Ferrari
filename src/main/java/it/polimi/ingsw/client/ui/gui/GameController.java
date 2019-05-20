@@ -267,6 +267,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
         new Thread(() -> {
             try {
                 connector.close();
+                Platform.exit();
             } catch (Exception ex) {
                 logger.warning("Could not close the connector");
             }
