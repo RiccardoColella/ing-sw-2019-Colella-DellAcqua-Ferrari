@@ -118,11 +118,11 @@ public abstract class Block {
     }
 
     /**
-     * On spawnpoints this method drops a WeaponTile
+     * Drop an item on this block
      *
-     * @param weapon the weapon to drop
+     * @param item the item to drop
      */
-    public abstract void drop(WeaponTile weapon);
+    public abstract void drop(Droppable item);
 
     /**
      * Creates a copy of the current block

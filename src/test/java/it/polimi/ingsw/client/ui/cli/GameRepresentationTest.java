@@ -40,7 +40,8 @@ class GameRepresentationTest {
                 weaponTop,
                 weaponRight,
                 weaponLeft,
-                buildPlayer(0)
+                buildPlayer(0),
+                new HashSet<>()
                 ));
         int i = 0;
         for (Player player : gameRepresentation.getPlayers()){

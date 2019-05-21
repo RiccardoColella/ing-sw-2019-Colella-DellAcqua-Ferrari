@@ -1,24 +1,25 @@
 package it.polimi.ingsw.server.model.battlefield;
 
+import it.polimi.ingsw.server.model.currency.BonusTile;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
-import it.polimi.ingsw.server.model.events.NewWeaponAvailable;
-import it.polimi.ingsw.server.model.events.PlayerMoved;
-import it.polimi.ingsw.server.model.events.WeaponEvent;
+import it.polimi.ingsw.server.model.events.*;
 import it.polimi.ingsw.server.model.events.listeners.BoardListener;
 import it.polimi.ingsw.server.model.events.listeners.SpawnpointListener;
+import it.polimi.ingsw.server.model.events.listeners.TurretBlockListener;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.utils.Range;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static it.polimi.ingsw.server.model.battlefield.Block.BorderType.*;
 
 /**
  * This class implements the game board
  */
-public class Board implements SpawnpointListener {
+public class Board implements SpawnpointListener, TurretBlockListener {
 
     private final Block[][] field;
     private final Set<BoardListener> listeners = new HashSet<>();
@@ -31,6 +32,8 @@ public class Board implements SpawnpointListener {
         for (Block block : getBlocks()) {
             if (block instanceof SpawnpointBlock) {
                 ((SpawnpointBlock)block).addSpawnpointListener(this);
+            } else {
+                ((TurretBlock)block).addTurretBlockListener(this);
             }
         }
     }
@@ -298,6 +301,14 @@ public class Board implements SpawnpointListener {
         return blocks;
     }
 
+    public Set<TurretBlock> getTurretBlocks() {
+        return getBlocks()
+                .stream()
+                .filter(x -> x instanceof TurretBlock)
+                .map(x -> (TurretBlock)x)
+                .collect(Collectors.toSet());
+    }
+
     public Set<Block> getReachableBlocks(Block startingPoint, Range range) {
         Set<Block> toCheck = new HashSet<>();
         Set<Block> alreadyChecked = new HashSet<>();
@@ -367,5 +378,27 @@ public class Board implements SpawnpointListener {
     @Override
     public void onWeaponDropped(WeaponEvent e) {
         notifyNewWeaponAvailable(e.getWeaponTile(), (Block) e.getSource());
+    }
+
+    @Override
+    public void onBonusTileDropped(BonusTileEvent e) {
+        notifyBonusTileDropped(e.getBonusTile(), (Block) e.getSource());
+
+    }
+
+    @Override
+    public void onBonusTileGrabbed(BonusTileEvent e) {
+        notifyBonusTileGrabbed(e.getBonusTile(), (Block) e.getSource());
+
+    }
+
+    private void notifyBonusTileGrabbed(BonusTile tile, Block block) {
+        BonusTileBoardEvent e = new BonusTileBoardEvent(this, tile, block);
+        listeners.forEach(l -> l.onBonusTileGrabbed(e));
+    }
+
+    private void notifyBonusTileDropped(BonusTile tile, Block block) {
+        BonusTileBoardEvent e = new BonusTileBoardEvent(this, tile, block);
+        listeners.forEach(l -> l.onBonusTileDropped(e));
     }
 }

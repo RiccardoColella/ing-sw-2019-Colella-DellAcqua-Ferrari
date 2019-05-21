@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server.model.player;
 
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.server.model.battlefield.SpawnpointBlock;
 import it.polimi.ingsw.server.model.currency.*;
 import it.polimi.ingsw.server.model.events.PlayerDamaged;
 import it.polimi.ingsw.server.model.events.PlayerDied;
@@ -145,11 +146,14 @@ class PlayerTest {
      */
     @Test
     void chooseWeapon() {
+        SpawnpointBlock spawnpointBlock = match.getBoard().getSpawnpoint(CurrencyColor.BLUE);
         //making sure the player under test actually owns a weapon
         player = match.getActivePlayer();
         while (player.getWeapons().isEmpty()) {
             Optional<WeaponTile> weapon = match.getWeaponDeck().pick();
             if (weapon.isPresent()) {
+                spawnpointBlock.grabWeapon(spawnpointBlock.getWeapons().get(0));
+                spawnpointBlock.drop(weapon.get());
                 player.grabAmmoCubes(weapon.get().getAcquisitionCost());
                 player.grabWeapon(weapon.get(), weapon.get().getAcquisitionCost(), new ArrayList<>());
             } else { //if there are no more weapons in the deck, someone must have them right now
@@ -196,13 +200,15 @@ class PlayerTest {
      */
     @Test
     void grabWeapon() {
+        SpawnpointBlock spawnpointBlock = match.getBoard().getSpawnpoint(CurrencyColor.BLUE);
+
         // FILLING UP THE WALLET SO THAT THE PLAYER CAN BUY A WEAPON
         player.pay(player.getAmmoCubes().stream().map(a -> (Coin) a).collect(Collectors.toList()));
-        Optional<WeaponTile> currentWeapon = match.getWeaponDeck().pick();
+        Optional<WeaponTile> currentWeapon = Optional.of(spawnpointBlock.getWeapons().get(0));
         int playerAmmoCubes = player.getAmmoCubes().size();
 
         //if there is a weapon available to buy and the player can buy more, let's buy one
-        if (currentWeapon.isPresent() && player.getConstraints().getMaxWeaponsForPlayer() >= player.getWeapons().size() + 1) {
+        if (player.getConstraints().getMaxWeaponsForPlayer() >= player.getWeapons().size() + 1) {
             player.grabAmmoCubes(currentWeapon.get().getAcquisitionCost());
             playerAmmoCubes += currentWeapon.get().getAcquisitionCost().size();
             //BUYING AN AFFORDABLE WEAPON WHILE HAVING LESS THAN MAX WEAPONS
@@ -224,6 +230,7 @@ class PlayerTest {
         //if a non-free weapon was found and the player can buy more, the player will try to buy a new weapon without paying
         if (currentWeapon.isPresent() && player.getConstraints().getMaxWeaponsForPlayer() >= player.getWeapons().size() + 1) {
             WeaponTile costlyWeapon = currentWeapon.get();
+            spawnpointBlock.drop(costlyWeapon);
             assertThrows(MissingOwnershipException.class,
                     () -> player.grabWeapon(
                             costlyWeapon,
@@ -265,6 +272,8 @@ class PlayerTest {
         currentWeapon = match.getWeaponDeck().pick();
         while (currentWeapon.isPresent() && player.getConstraints().getMaxWeaponsForPlayer() >= player.getWeapons().size() + 1) {
 
+            spawnpointBlock.drop(currentWeapon.get());
+
             //FILLING UP THE WALLET TO BUY AS MANY WEAPONS AS POSSIBLE
             player.grabAmmoCubes(currentWeapon.get().getAcquisitionCost());
             playerAmmoCubes += currentWeapon.get().getAcquisitionCost().size();
@@ -285,6 +294,7 @@ class PlayerTest {
 
         //if there still are weapons to be bought, the player now has to discard an owned weapon to buy a new one
         if (currentWeapon.isPresent()) {
+            spawnpointBlock.drop(currentWeapon.get());
             // PLAYER CAN'T BUY ANY MORE WEAPONS WITHOUT DISCARDING AN OLD ONE
             player.grabAmmoCubes(currentWeapon.get().getAcquisitionCost());
             playerAmmoCubes += currentWeapon.get().getAcquisitionCost().size();
@@ -393,11 +403,14 @@ class PlayerTest {
      */
     @Test
     void reload() {
+        SpawnpointBlock spawnpointBlock = match.getBoard().getSpawnpoint(CurrencyColor.BLUE);
         //making sure the player has a weapon
         player = match.getActivePlayer();
         while (player.getWeapons().isEmpty()) {
             Optional<WeaponTile> weapon = match.getWeaponDeck().pick();
             if (weapon.isPresent()) {
+                spawnpointBlock.grabWeapon(spawnpointBlock.getWeapons().get(0));
+                spawnpointBlock.drop(weapon.get());
                 player.grabAmmoCubes(weapon.get().getAcquisitionCost());
                 player.grabWeapon(weapon.get(), weapon.get().getAcquisitionCost(), new ArrayList<>());
             } else {

@@ -1,5 +1,7 @@
 package it.polimi.ingsw.server.model.currency;
 
+import it.polimi.ingsw.server.model.battlefield.Droppable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -7,12 +9,12 @@ import java.util.List;
 /**
  * This class represents the tiles that are picked during the game when a grab is executed on a turret block
  */
-public class BonusTile {
+public class BonusTile implements Droppable {
 
     /**
      * variable set to true if the BonusTile is not full
      */
-    private final boolean canPick;
+    private final boolean canPickPowerup;
 
     /**
      * This property stores the ammoCubes that can be picked by who has this tile
@@ -25,11 +27,8 @@ public class BonusTile {
      * @param ammoCube2 the second AmmoCube cube
      */
     public BonusTile(AmmoCube ammoCube1, AmmoCube ammoCube2) {
-        this.canPick = true;
-        List<AmmoCube> cubes = new ArrayList<>();
-        cubes.add(ammoCube1);
-        cubes.add(ammoCube2);
-        this.ammoCubes = Collections.unmodifiableList(cubes);
+        this.canPickPowerup = true;
+        this.ammoCubes = List.of(ammoCube1, ammoCube2);
     }
 
     /**
@@ -39,12 +38,8 @@ public class BonusTile {
      * @param ammoCube3 the third AmmoCube cube
      */
     public BonusTile(AmmoCube ammoCube1, AmmoCube ammoCube2, AmmoCube ammoCube3) {
-        this.canPick = false;
-        List<AmmoCube> cubes = new ArrayList<>();
-        cubes.add(ammoCube1);
-        cubes.add(ammoCube2);
-        cubes.add(ammoCube3);
-        this.ammoCubes = Collections.unmodifiableList(cubes);
+        this.canPickPowerup = false;
+        this.ammoCubes = List.of(ammoCube1, ammoCube2, ammoCube3);
     }
 
     /**
@@ -52,7 +47,7 @@ public class BonusTile {
      * @param copy the BonusTile that will be copied
      */
     public BonusTile(BonusTile copy) {
-        this.canPick = copy.canPick;
+        this.canPickPowerup = copy.canPickPowerup;
         this.ammoCubes = Collections.unmodifiableList(copy.ammoCubes);
     }
 
@@ -69,6 +64,6 @@ public class BonusTile {
      * @return true if you can pick a Powerup
      */
     public boolean canPickPowerup() {
-        return canPick;
+        return canPickPowerup;
     }
 }

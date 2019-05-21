@@ -326,6 +326,16 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     }
 
     @Override
+    public void onBonusTileGrabbed(BonusTileEvent e) {
+        // TODO: implement
+    }
+
+    @Override
+    public void onBonusTileDropped(BonusTileEvent e) {
+        // TODO: implement
+    }
+
+    @Override
     public void onPlayerDied(PlayerEvent e) {
         // TODO: implement
 

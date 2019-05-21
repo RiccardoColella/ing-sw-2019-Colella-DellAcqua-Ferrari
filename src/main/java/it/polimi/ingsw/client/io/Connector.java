@@ -444,6 +444,16 @@ public abstract class Connector implements AutoCloseable {
                 boardListeners.forEach(l -> l.onNewWeaponAvailable(e));
                 break;
             }
+            case BONUS_TILE_GRABBED_EVENT: {
+                BonusTileEvent e = BonusTileEvent.fromJson(message.getPayload(), this, BonusTileEvent.class);
+                boardListeners.forEach(l -> l.onBonusTileGrabbed(e));
+                break;
+            }
+            case BONUS_TILE_DROPPED_EVENT: {
+                BonusTileEvent e = BonusTileEvent.fromJson(message.getPayload(), this, BonusTileEvent.class);
+                boardListeners.forEach(l -> l.onBonusTileDropped(e));
+                break;
+            }
             default: {
                 throw new UnsupportedOperationException("Event \"" + eventType + "\" not supported");
             }

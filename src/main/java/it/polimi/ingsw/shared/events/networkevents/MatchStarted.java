@@ -1,9 +1,13 @@
 package it.polimi.ingsw.shared.events.networkevents;
 
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.shared.datatransferobjects.BonusTile;
 import it.polimi.ingsw.shared.datatransferobjects.Player;
 
+import java.awt.*;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MatchStarted extends NetworkEvent {
 
@@ -16,8 +20,9 @@ public class MatchStarted extends NetworkEvent {
     private final List<String> weaponLeft;
     private final int skulls;
     private final Player currentActivePlayer;
+    private final Set<BonusTile> turretBonusTiles;
 
-    public MatchStarted(int skulls, BoardFactory.Preset preset, Player self, List<Player> opponents, List<String> weaponTop, List<String> weaponRight, List<String> weaponLeft, Player currentActivePlayer) {
+    public MatchStarted(int skulls, BoardFactory.Preset preset, Player self, List<Player> opponents, List<String> weaponTop, List<String> weaponRight, List<String> weaponLeft, Player currentActivePlayer, Set<BonusTile> turretBonusTiles) {
         this.preset = preset;
         this.opponents = opponents;
         this.self = self;
@@ -26,6 +31,7 @@ public class MatchStarted extends NetworkEvent {
         this.weaponLeft = weaponLeft;
         this.skulls = skulls;
         this.currentActivePlayer = currentActivePlayer;
+        this.turretBonusTiles = turretBonusTiles;
     }
 
     public BoardFactory.Preset getPreset() {
@@ -58,5 +64,9 @@ public class MatchStarted extends NetworkEvent {
 
     public Player getCurrentActivePlayer() {
         return currentActivePlayer;
+    }
+
+    public Set<BonusTile> getTurretBonusTiles() {
+        return turretBonusTiles;
     }
 }

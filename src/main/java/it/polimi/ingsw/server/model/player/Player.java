@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server.model.player;
 
 import it.polimi.ingsw.server.model.battlefield.Block;
+import it.polimi.ingsw.server.model.battlefield.SpawnpointBlock;
 import it.polimi.ingsw.server.model.currency.*;
 import it.polimi.ingsw.server.model.events.*;
 import it.polimi.ingsw.server.model.events.listeners.*;
@@ -397,6 +398,7 @@ public class Player implements Damageable, MatchListener {
             this.pay(coins);
             weapon.setLoaded(true);
             weapons.add(weapon);
+            ((SpawnpointBlock)getBlock()).grabWeapon(weapon);
             notifyWeaponPicked(weapon);
         } else throw new UnauthorizedExchangeException("Player already has " + constraints.getMaxWeaponsForPlayer() + " weapons and needs to drop one in order to buy one");
     }

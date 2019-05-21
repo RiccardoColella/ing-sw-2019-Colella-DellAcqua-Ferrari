@@ -1,13 +1,27 @@
 package it.polimi.ingsw.server.model.battlefield;
 
+import it.polimi.ingsw.server.model.currency.BonusTile;
+import it.polimi.ingsw.server.model.events.BonusTileEvent;
+import it.polimi.ingsw.server.model.events.WeaponEvent;
+import it.polimi.ingsw.server.model.events.listeners.SpawnpointListener;
+import it.polimi.ingsw.server.model.events.listeners.TurretBlockListener;
 import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.shared.Direction;
+
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * This class represents all blocks of turret type, which are the blocks that refer to the bonus deck when a grab action occurs
  */
 public class TurretBlock extends Block {
+
+    private BonusTile bonusTile;
+
+    private Set<TurretBlockListener> listeners = new HashSet<>();
+
     /**
      * Class constructor given the position in the board and every BoarderType
      * @param row an int representing the row of the block in the board
@@ -22,13 +36,41 @@ public class TurretBlock extends Block {
     }
 
     /**
-     * Turret blocks do not support the dropping action, so an exception must be thrown
+     * Set the turret block BonusTile
      *
-     * @param weapon the weapon to drop
+     * @param bonusTile the bonus tile to set
      */
     @Override
-    public void drop(WeaponTile weapon) {
-        throw new UnauthorizedExchangeException("Player is trying to drop a weapon in a Turret");
+    public void drop(Droppable bonusTile) {
+        if (bonusTile instanceof BonusTile) {
+            this.bonusTile = (BonusTile)bonusTile;
+            notifyBonusTileDropped((BonusTile)bonusTile);
+        } else throw new IllegalArgumentException("Dropping was not possible, the turret only accepts bonus tiles");
+    }
+
+    /**
+     * Grab the placed bonus tiles if present, otherwise return Optional.empty()
+     *
+     * @return the previously placed bonus tile
+     */
+    public Optional<BonusTile> grab() {
+        if (bonusTile != null) {
+            notifyBonusTileGrabbed(this.bonusTile);
+            BonusTile result = this.bonusTile;
+            this.bonusTile = null;
+            return Optional.of(result);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Get the current placed bonus tile
+     *
+     * @return the currently available bonus tile
+     */
+    public Optional<BonusTile> getBonusTile() {
+        return Optional.ofNullable(this.bonusTile);
     }
 
     /**
@@ -46,6 +88,21 @@ public class TurretBlock extends Block {
                 this.getBorderType(Direction.SOUTH),
                 this.getBorderType(Direction.WEST)
         );
+    }
+
+    public void addTurretBlockListener(TurretBlockListener l) {
+        listeners.add(l);
+    }
+    public void removeTurretBlockListener(TurretBlockListener l) {
+        listeners.remove(l);
+    }
+    public void notifyBonusTileDropped(BonusTile bonusTile) {
+        BonusTileEvent e = new BonusTileEvent(this, bonusTile);
+        listeners.forEach(l -> l.onBonusTileDropped(e));
+    }
+    public void notifyBonusTileGrabbed(BonusTile bonusTile) {
+        BonusTileEvent e = new BonusTileEvent(this, bonusTile);
+        listeners.forEach(l -> l.onBonusTileGrabbed(e));
     }
 
 }

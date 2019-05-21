@@ -2,11 +2,12 @@ package it.polimi.ingsw.shared.datatransferobjects;
 
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Wallet {
+public class Wallet implements Serializable {
     private List<String> loadedWeapons;
     private List<String> unloadedWeapons;
     private List<CurrencyColor> ammoCubes;

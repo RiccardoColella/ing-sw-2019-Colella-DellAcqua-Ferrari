@@ -1,13 +1,8 @@
 package it.polimi.ingsw.server.model.match;
 
-import it.polimi.ingsw.server.model.battlefield.Block;
-import it.polimi.ingsw.server.model.battlefield.Board;
-import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.server.model.battlefield.*;
 import it.polimi.ingsw.server.model.collections.Deck;
-import it.polimi.ingsw.server.model.currency.BonusTile;
-import it.polimi.ingsw.server.model.currency.BonusTileFactory;
-import it.polimi.ingsw.server.model.currency.PowerupTile;
-import it.polimi.ingsw.server.model.currency.PowerupTileFactory;
+import it.polimi.ingsw.server.model.currency.*;
 import it.polimi.ingsw.server.model.events.*;
 import it.polimi.ingsw.server.model.events.listeners.MatchListener;
 import it.polimi.ingsw.server.model.events.listeners.PlayerListener;
@@ -126,6 +121,19 @@ public class Match implements PlayerListener {
         this.listeners = new HashSet<>();
         this.playersWhoDidFinalFrenzyTurn = new LinkedList<>();
         this.boardPreset = boardPreset;
+        for (CurrencyColor currencyColor : CurrencyColor.values()){
+            SpawnpointBlock block = board.getSpawnpoint(currencyColor);
+            for (int i = 0; i < block.getMaxWeapons(); i++) {
+                WeaponTile weaponTile = weaponDeck.pick().orElseThrow(() -> new IllegalStateException("Not enough weapons to build the board"));
+                block.drop(weaponTile);
+            }
+        }
+        for (TurretBlock block : board.getTurretBlocks()) {
+            block.drop(
+                    bonusDeck.pick()
+                            .orElseThrow(() -> new IllegalStateException("Not enough bonus tiles to build the board"))
+            );
+        }
     }
 
     public void start() {
@@ -224,11 +232,17 @@ public class Match implements PlayerListener {
     }
 
     /**
-     * This method must be called by the Controller before "changeTurn" in order to score points, then it should bring the returned list of dead players back to life
+     * This method must be called by the Controller before "changeTurn" in order to score points and refill turret blocks, then it should bring the returned list of dead players back to life
      *
      * @return the deadPlayers list waiting for a user decision to respawn
      */
     public List<Player> endTurn() {
+
+        board.getTurretBlocks().stream()
+                .filter(turretBlock -> turretBlock.getBonusTile().isEmpty())
+                .forEach(turretBlock -> turretBlock.drop(bonusDeck.pick().orElseThrow(() -> new IllegalStateException("Bonus deck is empty"))));
+
+
         List<Player> deadPlayers = this.getPlayers()
                 .stream()
                 .filter(player -> !player.isAlive())

@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.model.events.listeners;
 
+import it.polimi.ingsw.server.model.events.BonusTileBoardEvent;
 import it.polimi.ingsw.server.model.events.NewWeaponAvailable;
 import it.polimi.ingsw.server.model.events.PlayerMoved;
 
@@ -12,4 +13,8 @@ public interface BoardListener extends EventListener {
     void onPlayerMoved(PlayerMoved e);
 
     void onNewWeaponAvailable(NewWeaponAvailable e);
+
+    void onBonusTileGrabbed(BonusTileBoardEvent e);
+
+    void onBonusTileDropped(BonusTileBoardEvent e);
 }

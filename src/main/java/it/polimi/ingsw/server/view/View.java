@@ -1,8 +1,10 @@
 package it.polimi.ingsw.server.view;
 
 import com.google.gson.Gson;
+import it.polimi.ingsw.server.model.battlefield.Board;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.battlefield.SpawnpointBlock;
+import it.polimi.ingsw.server.model.battlefield.TurretBlock;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.events.*;
@@ -18,6 +20,7 @@ import it.polimi.ingsw.server.view.events.listeners.ViewListener;
 import it.polimi.ingsw.server.view.exceptions.ViewDisconnectedException;
 import it.polimi.ingsw.shared.InputMessageQueue;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
+import it.polimi.ingsw.shared.datatransferobjects.BonusTile;
 import it.polimi.ingsw.shared.datatransferobjects.PlayerHealth;
 import it.polimi.ingsw.shared.events.networkevents.ClientEvent;
 import it.polimi.ingsw.shared.events.networkevents.PlayerHealthChanged;
@@ -32,12 +35,15 @@ import it.polimi.ingsw.shared.messages.templates.gsonadapters.AnswerOf;
 import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 import it.polimi.ingsw.shared.datatransferobjects.Wallet;
 import it.polimi.ingsw.utils.Tuple;
+import javafx.util.Pair;
 
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.TemporalUnit;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -439,6 +445,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
                             weaponRight,
                             weaponLeft,
                             mapPlayer(match.getActivePlayer()),
+                            mapTurretBonusTiles(match.getBoard()),
                             match.getMode()
                     )
             ));
@@ -453,10 +460,28 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
                             weaponTop,
                             weaponRight,
                             weaponLeft,
-                            mapPlayer(match.getActivePlayer())
+                            mapPlayer(match.getActivePlayer()),
+                            mapTurretBonusTiles(match.getBoard())
                     )
             ));
         }
+    }
+
+    private Set<BonusTile> mapTurretBonusTiles(Board board) {
+        return board.getTurretBlocks()
+                .stream()
+                .map(block ->
+                        new BonusTile(
+                                block.getBonusTile()
+                                        .orElseThrow(() -> new IllegalStateException("No bonus tile present on turret"))
+                                        .getRewards()
+                                        .stream()
+                                        .map(AmmoCube::getColor)
+                                        .collect(Collectors.toList()),
+                                new Point(block.getColumn(), block.getRow())
+                        )
+                )
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -589,6 +614,33 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
                 e.getBlock().getColumn()
         );
         outputMessageQueue.add(Message.createEvent(ClientApi.NEW_WEAPON_AVAILABLE_EVENT, convertedEvent));
+    }
+
+    private it.polimi.ingsw.shared.events.networkevents.BonusTileEvent mapBonusTileEvent(BonusTileBoardEvent e) {
+        return new it.polimi.ingsw.shared.events.networkevents.BonusTileEvent(
+                new BonusTile(
+                        ((TurretBlock)e.getLocation())
+                                .getBonusTile()
+                                .orElseThrow(() -> new IllegalStateException("No bonus tile present on turret"))
+                                .getRewards()
+                                .stream()
+                                .map(AmmoCube::getColor)
+                                .collect(Collectors.toList()),
+                        new Point(e.getLocation().getColumn(), e.getLocation().getRow())
+                )
+        );
+    }
+
+    @Override
+    public void onBonusTileGrabbed(BonusTileBoardEvent e) {
+        it.polimi.ingsw.shared.events.networkevents.BonusTileEvent convertedEvent = mapBonusTileEvent(e);
+        outputMessageQueue.add(Message.createEvent(ClientApi.BONUS_TILE_GRABBED_EVENT, convertedEvent));
+    }
+
+    @Override
+    public void onBonusTileDropped(BonusTileBoardEvent e) {
+        it.polimi.ingsw.shared.events.networkevents.BonusTileEvent convertedEvent = mapBonusTileEvent(e);
+        outputMessageQueue.add(Message.createEvent(ClientApi.BONUS_TILE_DROPPED_EVENT, convertedEvent));
     }
 
     @Override

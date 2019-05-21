@@ -3,11 +3,12 @@ package it.polimi.ingsw.shared.datatransferobjects;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PlayerHealth {
+public class PlayerHealth implements Serializable {
     private int skulls;
     private List<PlayerColor> damages;
     private List<PlayerColor> marks;

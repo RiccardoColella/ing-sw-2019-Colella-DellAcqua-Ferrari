@@ -223,6 +223,7 @@ public class LoginController extends WindowController implements MatchListener, 
         Platform.runLater(
                 () -> {
                     this.gameController = new GameController(connector, e);
+                    connector.addClientListener(gameController);
                     connector.addQuestionMessageReceivedListener(gameController);
                     connector.addMatchListener(gameController);
                     connector.addBoardListener(gameController);

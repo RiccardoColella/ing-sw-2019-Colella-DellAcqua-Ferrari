@@ -8,6 +8,7 @@ import it.polimi.ingsw.server.controller.weapons.Weapon;
 import it.polimi.ingsw.server.controller.weapons.WeaponFactory;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.battlefield.SpawnpointBlock;
+import it.polimi.ingsw.server.model.battlefield.TurretBlock;
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.currency.*;
 import it.polimi.ingsw.server.model.events.*;
@@ -58,13 +59,6 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         this.players.forEach(player -> player.addPlayerListener(this));
         this.weaponMap = WeaponFactory.createWeaponDictionary(match.getBoard());
         powerupTileDeck = match.getPowerupDeck();
-        for (CurrencyColor currencyColor : CurrencyColor.values()){
-            SpawnpointBlock block = match.getBoard().getSpawnpoint(currencyColor);
-            for (int i = 0; i < block.getMaxWeapons(); i++) {
-                WeaponTile weaponTile = match.getWeaponDeck().pick().orElseThrow(() -> new IllegalStateException("Not enough weapons to build the board"));
-                block.drop(weaponTile);
-            }
-        }
         match.start();
     }
 
@@ -154,9 +148,8 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
      * @param basicActionChosen is the action chosen
      * @param activePlayer is the player who is acting the move
      * @param view is the interface that manages the chosen action
-     * @param pickedTurredBlocks list of all turret blocks where the player has just picked up in the current turn
      */
-    private void manageChosenAction(BasicAction basicActionChosen, Player activePlayer, Interviewer view, List<Block> pickedTurredBlocks){
+    private void manageChosenAction(BasicAction basicActionChosen, Player activePlayer, Interviewer view){
         switch (basicActionChosen){
             case GRAB:
                 logger.info("Managing GRAB move...");
@@ -166,7 +159,6 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                     }
                 } else {
                     grabNotOnASpawnpoint(activePlayer);
-                    pickedTurredBlocks.add(activePlayer.getBlock());
                 }
                 break;
             case MOVE:
@@ -214,19 +206,15 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
      */
     private void grabNotOnASpawnpoint(Player activePlayer){
         logger.info("Grabbing some ammo...");
-        Optional<BonusTile> optionalCard = match.getBonusDeck().pick();
-        if (optionalCard.isPresent()){
-            BonusTile card = optionalCard.get();
-            activePlayer.grabAmmoCubes(card.getRewards());
-            match.getBonusDeck().discard(card);
-            //Maybe here we should tell the player he got some ammos
-            if (card.canPickPowerup() &&
-                    activePlayer.getPowerups().size() < activePlayer.getConstraints().getMaxPowerupsForPlayer()){
-                logger.info("Grabbing power-up too...");
-                powerupTileDeck.pick().ifPresent(activePlayer::grabPowerup);
-            }
-
-        } else throw new NullPointerException("Card from bonusDeck while grabbing ammo is Optional.empty()");
+        BonusTile card = ((TurretBlock)activePlayer.getBlock()).grab().orElseThrow(() -> new IllegalStateException("Grabbing from an empty turret"));
+        activePlayer.grabAmmoCubes(card.getRewards());
+        match.getBonusDeck().discard(card);
+        //Maybe here we should tell the player he got some ammos
+        if (card.canPickPowerup() &&
+                activePlayer.getPowerups().size() < activePlayer.getConstraints().getMaxPowerupsForPlayer()){
+            logger.info("Grabbing power-up too...");
+            powerupTileDeck.pick().ifPresent(activePlayer::grabPowerup);
+        }
     }
 
     /**
@@ -305,8 +293,6 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
      */
     private void pickUpWeapon(WeaponTile weapon, Player activePlayer, Interviewer view){
         List<AmmoCube> acquisitionCost = weapon.getAcquisitionCost();
-        SpawnpointBlock spawnpointBlock = (SpawnpointBlock) activePlayer.getBlock();
-        spawnpointBlock.grabWeapon(weapon);
         List<Coin> paymentMethod = PaymentHandler.collectCoins(acquisitionCost, activePlayer, view);
         if (activePlayer.getWeapons().size() == activePlayer.getConstraints().getMaxWeaponsForPlayer()) {
             WeaponTile weaponToDiscard = selectWeaponTile("Which weapon do you want to discard?", activePlayer.getWeapons(), view);
@@ -355,7 +341,6 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
      * @param view is the interface who decides how to manage the player
      */
     private void manageActions(Player player, Interviewer view){
-        List<Block> pickedTurretBlocks = new LinkedList<>();
         ActionTile tile = player.getAvailableMacroActions();
         for (List<CompoundAction> compoundActions : tile.getCompoundActions()) {
             managePowerups(player, null, Powerup.Trigger.IN_BETWEEN_ACTIONS, "Do you want to use a powerup?");
@@ -366,7 +351,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 //Here we select the possible basic actions the player can do
                 Set<BasicAction> availableActions = candidateBasicActions(playedActions, compoundActions)
                         .stream()
-                        .filter(basicAction -> canPerformAction(player, basicAction, pickedTurretBlocks))
+                        .filter(basicAction -> canPerformAction(player, basicAction))
                         .collect(Collectors.toSet());
                 //Here we ask the view to choose a basic action
                 move = availableActions.isEmpty() ?
@@ -374,7 +359,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                         view.selectOptional("Which move would you like to execute?", availableActions, ClientApi.BASIC_ACTION_QUESTION);
                 //Here we execute that basic action
                 move.ifPresent(basicAction -> {
-                    manageChosenAction(basicAction, player, view, pickedTurretBlocks);
+                    manageChosenAction(basicAction, player, view);
                     playedActions.add(basicAction);
                 });
             } while (move.isPresent());
@@ -432,10 +417,9 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
      * Returns true if the player can do the given action
      * @param player the player who wants to execute the action
      * @param action the action that needs to be executed
-     * @param pickedTurretBlocks list of all Turret Blocks from which the player has picked-up in the current turn
      * @return true if the player can execute the action
      */
-    private boolean canPerformAction(Player player, BasicAction action, List<Block> pickedTurretBlocks){
+    private boolean canPerformAction(Player player, BasicAction action){
         switch (action) {
             case MOVE:
                 //A player can always perform a move
@@ -458,7 +442,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 } else {
                     //if he is on a turret block he shouldn't have just picked up from that block in the present turn and
                     //he should not be full of ammo and powerups
-                    return !pickedTurretBlocks.contains(player.getBlock()) && !player.isFullOfAmmoAndPowerups();
+                    return ((TurretBlock)player.getBlock()).getBonusTile().isPresent() && !player.isFullOfAmmoAndPowerups();
                 }
             case RELOAD:
                 //A player can reload if he has some weapons to reload and he can afford the reload cost

@@ -1,8 +1,11 @@
 package it.polimi.ingsw.server.model.battlefield;
 
+import it.polimi.ingsw.server.model.currency.AmmoCube;
+import it.polimi.ingsw.server.model.currency.BonusTile;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.events.WeaponEvent;
 import it.polimi.ingsw.server.model.events.listeners.SpawnpointListener;
+import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.shared.Direction;
 
@@ -22,6 +25,9 @@ public class SpawnpointBlock extends Block {
      */
     private final CurrencyColor color;
 
+    /**
+     * List of event listeners
+     */
     private Set<SpawnpointListener> listeners = new HashSet<>();
 
     /**
@@ -78,11 +84,13 @@ public class SpawnpointBlock extends Block {
      * @param weapon the weapon to drop
      */
     @Override
-    public void drop(WeaponTile weapon) {
-        if (this.getWeapons().size() < maxWeapons){
-            this.weapons.add(weapon);
-            notifyWeaponDropped(weapon);
-        } else throw new IllegalStateException("Dropping was not possible, the spawnpoint is full");
+    public void drop(Droppable weapon) {
+        if (weapon instanceof WeaponTile) {
+            if (this.getWeapons().size() < maxWeapons) {
+                this.weapons.add((WeaponTile)weapon);
+                notifyWeaponDropped((WeaponTile)weapon);
+            } else throw new IllegalStateException("Dropping was not possible, the spawnpoint is full");
+        } else throw new IllegalArgumentException("Dropping was not possible, the spawnpoint only accepts weapons");
     }
 
     /**

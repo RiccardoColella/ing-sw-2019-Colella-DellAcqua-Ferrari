@@ -1,11 +1,12 @@
 package it.polimi.ingsw.server.model.weapons;
 
+import it.polimi.ingsw.server.model.battlefield.Droppable;
 import it.polimi.ingsw.server.model.currency.AmmoCube;
 
 import java.util.Collections;
 import java.util.List;
 
-public class WeaponTile {
+public class WeaponTile implements Droppable {
     private boolean loaded = true;
     private final String name;
     private final List<AmmoCube> acquisitionCost;

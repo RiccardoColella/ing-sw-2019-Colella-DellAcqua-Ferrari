@@ -275,6 +275,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
                 Platform.exit();
             } catch (Exception ex) {
                 logger.warning("Could not close the connector");
+                Platform.exit();
             }
         }).start();
     }
@@ -748,6 +749,16 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
     @Override
+    public void onBonusTileGrabbed(BonusTileEvent e) {
+        // TODO: implement
+    }
+
+    @Override
+    public void onBonusTileDropped(BonusTileEvent e) {
+        // TODO: implement
+    }
+
+    @Override
     public void onPlayerSpawned(PlayerSpawned e) {
         Platform.runLater( () -> {
             boardContent.movePlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
@@ -828,6 +839,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
             currentNotification = notifications.poll();
             if (currentNotification != null) {
                 currentNotification.showWithAutoClose();
+                stage.requestFocus();
             }
         }
     }
