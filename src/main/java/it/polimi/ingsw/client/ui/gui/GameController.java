@@ -27,6 +27,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
@@ -85,6 +86,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
     private NotificationController currentNotification = null;
 
     private EventHandler<KeyEvent> directionHandler;
+
+    private EventHandler<KeyEvent> basicActionHandler;
+
+    private EventHandler<KeyEvent> skipHandler;
 
     public GameController(Connector connector, MatchStarted e) {
         super("Adrenalina", "/fxml/game.fxml", "/css/game.css");
@@ -302,8 +307,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
                                     o)
                             )
                             .collect(Collectors.toList());
-                    sp.setOptions(options);
-                    sp.setSkippable(question.isSkippable());
+                    sp.setOptions(question.isSkippable(), options);
                     dialog.setDialogPane(sp);
                     dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippableWeapon() : CallbackFactory.unskippableWeapon());
                     dialog.showAndWait();
@@ -325,8 +329,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
                                     o.getColor().toString().toLowerCase() + " " + o.getName())
                             )
                             .collect(Collectors.toList());
-                    sp.setOptions(options);
-                    sp.setSkippable(question.isSkippable());
+                    sp.setOptions(question.isSkippable(), options);
                     dialog.setDialogPane(sp);
                     dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippablePowerup() : CallbackFactory.unskippablePowerup());
                     dialog.showAndWait();
@@ -371,9 +374,51 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
+    private void actionTypeKeyListener(KeyEvent e, Collection<BasicAction> actions, Consumer<BasicAction> answerCallback, boolean isSkippable) {
+        switch (e.getCode()) {
+            case S:
+                checkBasicAction(actions, BasicAction.SHOOT, answerCallback);
+                break;
+            case R:
+                checkBasicAction(actions, BasicAction.RELOAD, answerCallback);
+                break;
+            case G:
+                checkBasicAction(actions, BasicAction.GRAB, answerCallback);
+                break;
+            case M:
+                checkBasicAction(actions, BasicAction.MOVE, answerCallback);
+                break;
+            case SPACE:
+                if (isSkippable) {
+                    stage.removeEventHandler(KeyEvent.KEY_PRESSED, basicActionHandler);
+                    message.setText("");
+                    answerCallback.accept(null);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void skipListener(KeyEvent e, Consumer<Text> consumer) {
+        if (e.getCode().equals(KeyCode.SPACE)) {
+            stage.removeEventHandler(KeyEvent.KEY_PRESSED, skipHandler);
+            consumer.accept(message);
+        }
+    }
+
     private void checkDirection(Collection<Direction> directions, Direction selected, Consumer<Direction> answerCallback) {
         if (directions.contains(selected)) {
             stage.removeEventHandler(KeyEvent.KEY_PRESSED, directionHandler);
+            message.setText("");
+            answerCallback.accept(selected);
+        }
+    }
+
+
+    private void checkBasicAction(Collection<BasicAction> basicActions, BasicAction selected, Consumer<BasicAction> answerCallback) {
+        if (basicActions.contains(selected)) {
+            stage.removeEventHandler(KeyEvent.KEY_PRESSED, basicActionHandler);
             message.setText("");
             answerCallback.accept(selected);
         }
@@ -387,23 +432,30 @@ public class GameController extends WindowController implements AutoCloseable, Q
     @Override
     public void onBasicActionQuestion(Question<BasicAction> question, Consumer<BasicAction> answerCallback) {
         Platform.runLater(() -> {
-            Dialog<BasicAction> dialog = new Dialog<>();
-            dialog.setTitle("Basic action question");
-            SelectPane sp = new SelectPane();
-            sp.setHeaderText(question.getText());
-            sp.setTextOnlyOptions(question.getAvailableOptions().stream().map(e -> e.toString().toLowerCase()).collect(Collectors.toList()));
-            sp.setSkippable(question.isSkippable());
-            dialog.setDialogPane(sp);
-            dialog.setResultConverter(question.isSkippable() ? CallbackFactory.skippableBasicAction() : CallbackFactory.unskippableBasicAction());
-            dialog.showAndWait();
-            answerCallback.accept(dialog.getResult());
+            String skip = question.isSkippable() ? "- SPACE to skip" : "";
+            String press = "Press: ";
+            String move = question.getAvailableOptions().contains(BasicAction.MOVE) ? "- M to move " : "";
+            String grab = question.getAvailableOptions().contains(BasicAction.GRAB) ? "- G to grab " : "";
+            String shoot = question.getAvailableOptions().contains(BasicAction.SHOOT) ? "- S to shoot"  : "";
+            String reload = question.getAvailableOptions().contains(BasicAction.RELOAD) ? "- R to reload " : "";
+            message.setText(press + move + grab + shoot + reload + skip);
+            basicActionHandler = e -> actionTypeKeyListener(e, question.getAvailableOptions(), answerCallback, question.isSkippable());
+            stage.addEventHandler(KeyEvent.KEY_PRESSED, basicActionHandler);
         });
     }
 
     @Override
     public void onBlockQuestion(Question<Point> question, Consumer<Point> answerCallback) {
         Platform.runLater(() -> {
-            message.setText(question.getText() + " Click on the block!");
+            if (question.isSkippable()) {
+                message.setText(question.getText() + " Click on the block or press SPACE to skip");
+                skipHandler = e -> {
+                    skipListener(e, boardContent::removeBlockSelection);
+                    answerCallback.accept(null);
+                };
+            } else {
+                message.setText(question.getText() + " Click on the block!");
+            }
             boardContent.waitForBlockSelection(new LinkedList<>(question.getAvailableOptions()), answerCallback, message);
         });
     }
@@ -749,13 +801,12 @@ public class GameController extends WindowController implements AutoCloseable, Q
                 .stream()
                 .map(ranking -> ranking.getKey() + ") " + ranking.getValue()
                         .stream()
-                        .map(Player::getNickname)
+                        .map(player -> player.getNickname() + " " + "pt. " + e.getScore(player.getNickname()))
                         .collect(Collectors.joining(",", " ", "")))
                 .collect(Collectors.joining("\n"));
         Platform.runLater(() -> {
-            Alert end = new Alert(Alert.AlertType.INFORMATION);
-            end.setContentText((e.isTheWinner(self) ? youWin : youLost) + rankings + result);
-            end.show();
+            NotificationController nc = new NotificationController("Rankings", (e.isTheWinner(self) ? youWin : youLost) + rankings + result);
+            nc.show();
         });
     }
 

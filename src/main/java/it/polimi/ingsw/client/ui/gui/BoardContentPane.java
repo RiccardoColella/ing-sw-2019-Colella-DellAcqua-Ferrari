@@ -56,6 +56,8 @@ public class BoardContentPane extends GridPane {
     private GridPane skullContainer;
     @FXML
     private GridPane playerContainer;
+    @FXML
+    private GridPane bonusTilesContainer;
 
     private GridPane[] rightContainers;
     private GridPane[] leftContainers;
@@ -389,7 +391,7 @@ public class BoardContentPane extends GridPane {
         }
     }
 
-    private void removeBlockSelection(Text message) {
+    public void removeBlockSelection(Text message) {
         container.removeEventHandler(MouseEvent.MOUSE_CLICKED, blockSelectionHandler);
         container.removeEventHandler(MouseEvent.MOUSE_MOVED, blockHoverHandler);
         isHoveringBlocks = false;

@@ -9,9 +9,15 @@ public class MatchEnded extends NetworkEvent {
 
 
     private final Map<Integer, List<Player>> rankings;
+    private final Map<String, Integer> scores;
 
-    public MatchEnded(Map<Integer, List<Player>> rankings) {
+    public MatchEnded(Map<Integer, List<Player>> rankings, Map<String, Integer> scores) {
+        this.scores = scores;
         this.rankings = rankings;
+    }
+
+    public int getScore(String playerName) {
+        return scores.get(playerName);
     }
 
     public Map<Integer, List<Player>> getRankings() {

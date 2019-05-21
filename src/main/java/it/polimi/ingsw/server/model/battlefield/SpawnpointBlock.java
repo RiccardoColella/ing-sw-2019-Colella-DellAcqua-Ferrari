@@ -114,7 +114,7 @@ public class SpawnpointBlock extends Block {
     public void removeSpawnpointListener(SpawnpointListener l) {
         listeners.remove(l);
     }
-    public void notifyWeaponDropped(WeaponTile weapon) {
+    private void notifyWeaponDropped(WeaponTile weapon) {
         WeaponEvent e = new WeaponEvent(this, weapon);
         listeners.forEach(l -> l.onWeaponDropped(e));
     }

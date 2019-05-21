@@ -4,6 +4,8 @@ import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 
+import java.util.List;
+
 public final class UrlFinder {
 
     private UrlFinder() {}
@@ -40,5 +42,20 @@ public final class UrlFinder {
 
     public static String findAvatar(PlayerColor color) {
         return "/assets/avatars/" + color.toString() + ".png";
+    }
+
+    public static String findBonusTile(List<CurrencyColor> colors) {
+        int red = (int) colors.stream().filter(c -> c.equals(CurrencyColor.RED)).count();
+        int blue = (int) colors.stream().filter(c -> c.equals(CurrencyColor.BLUE)).count();
+        int yellow = (int) colors.stream().filter(c -> c.equals(CurrencyColor.YELLOW)).count();
+        if (red + blue + yellow == 3) {
+            CurrencyColor single = red == 1 ? CurrencyColor.RED : yellow == 1 ? CurrencyColor.YELLOW : CurrencyColor.BLUE;
+            CurrencyColor couple = red == 2 ? CurrencyColor.RED : yellow == 2 ? CurrencyColor.YELLOW : CurrencyColor.BLUE;
+            return "/assets/bonus_tiles/" + single.toString() + "_" + couple.toString() + "_" + couple.toString() + ".png";
+        } else if (red + blue + yellow == 2) {
+            return "/assets/bouns_tiles/" + colors.get(0).toString() + "_" + colors.get(1).toString() + ".png";
+        } else {
+            throw new IllegalArgumentException("Unrecognized color set");
+        }
     }
 }

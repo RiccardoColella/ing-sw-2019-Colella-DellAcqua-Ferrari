@@ -464,7 +464,10 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         it.polimi.ingsw.shared.events.networkevents.MatchEnded convertedEvent;
         Map<Integer, List<it.polimi.ingsw.shared.datatransferobjects.Player>> mappedRankings = new HashMap<>();
         event.getRankings().forEach((key, value) -> mappedRankings.put(key, value.stream().map(this::mapPlayer).collect(Collectors.toList())));
-        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.MatchEnded(mappedRankings);
+        Map<String, Integer> scores = new HashMap<>();
+        event.getRankings()
+                .forEach((key, value) -> value.forEach(p -> scores.put(p.getPlayerInfo().getNickname(), p.getPoints())));
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.MatchEnded(mappedRankings, scores);
         outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_ENDED_EVENT, convertedEvent));
     }
 
@@ -518,17 +521,17 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     @Override
     public void onWeaponReloaded(PlayerWeaponEvent e) {
-        it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged convertedEvent;
+        it.polimi.ingsw.shared.events.networkevents.PlayerWeaponEvent convertedEvent;
         it.polimi.ingsw.shared.datatransferobjects.Player playerVM = mapPlayer(e.getPlayer());
-        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged(playerVM, playerVM.getNickname() + " reloaded their " + e.getWeaponTile().getName());
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWeaponEvent(playerVM, playerVM.getNickname() + " reloaded their " + e.getWeaponTile().getName());
         outputMessageQueue.add(Message.createEvent(ClientApi.WEAPON_RELOADED_EVENT, convertedEvent));
     }
 
     @Override
     public void onWeaponUnloaded(PlayerWeaponEvent e) {
-        it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged convertedEvent;
+        it.polimi.ingsw.shared.events.networkevents.PlayerWeaponEvent convertedEvent;
         it.polimi.ingsw.shared.datatransferobjects.Player playerVM = mapPlayer(e.getPlayer());
-        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged(playerVM, playerVM.getNickname() + " unloaded their " + e.getWeaponTile().getName());
+        convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerWeaponEvent(playerVM, playerVM.getNickname() + " unloaded their " + e.getWeaponTile().getName());
         outputMessageQueue.add(Message.createEvent(ClientApi.WEAPON_UNLOADED_EVENT, convertedEvent));
 
     }

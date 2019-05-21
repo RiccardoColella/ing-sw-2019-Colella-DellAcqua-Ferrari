@@ -40,7 +40,7 @@ Label {
 }
 
 #weaponContainer ImagePane:hover, #powerupContainer ImagePane:hover, #opponentsContainer PlayerBoardPane:hover {
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 15, 0, 0, 0);
+    -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.8), 15, 0, 0, 0);
 }
 
 .h2 {

@@ -37,8 +37,9 @@ public class SelectPane extends DialogPane {
 
     }
 
-    public void setOptions(List<Tuple<ImagePane, String>> options) {
+    public void setOptions(boolean isSkippable, List<Tuple<ImagePane, String>> options) {
         int optionNumber = options.size();
+        optionNumber += isSkippable ? 2 : 0;
         List<ColumnConstraints> ccs = new LinkedList<>();
         for (int i = 0; i < optionNumber; i++) {
             ColumnConstraints cc = new ColumnConstraints();
@@ -49,7 +50,7 @@ public class SelectPane extends DialogPane {
         RowConstraints rc = new RowConstraints();
         rc.setPercentHeight(100);
         container.getRowConstraints().add(rc);
-        for (int i = 0; i < optionNumber; i++) {
+        for (int i = 0; i < options.size(); i++) {
             options.get(i).getItem1().setMinSize(200, 250);
             container.add(options.get(i).getItem1(), i, 0);
             ButtonType bt = new ButtonType(options.get(i).getItem2(), ButtonBar.ButtonData.LEFT);
@@ -57,6 +58,7 @@ public class SelectPane extends DialogPane {
             options.get(i).getItem1().setOnMouseClicked(e -> ((Button) lookupButton(bt)).fire()
             );
         }
+        setSkippable(isSkippable);
     }
 
     public void setTextOnlyOptions(List<String> textualOptions) {
@@ -72,7 +74,7 @@ public class SelectPane extends DialogPane {
     }
 
     @SafeVarargs
-    public final void setOptions(Tuple<ImagePane, String>... images) {
-        setOptions(Arrays.asList(images));
+    public final void setOptions(boolean isSkippable, Tuple<ImagePane, String>... images) {
+        setOptions(isSkippable, Arrays.asList(images));
     }
 }
