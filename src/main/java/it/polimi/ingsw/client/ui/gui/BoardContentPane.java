@@ -1,6 +1,7 @@
 package it.polimi.ingsw.client.ui.gui;
 
 import it.polimi.ingsw.server.model.player.PlayerColor;
+import it.polimi.ingsw.shared.datatransferobjects.BonusTile;
 import it.polimi.ingsw.utils.Tuple;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -409,5 +410,20 @@ public class BoardContentPane extends GridPane {
                 removeBlockSelection(message);
             }
         }
+    }
+
+    public void addTiles(Set<BonusTile> turretBonusTiles) {
+        for (BonusTile tile : turretBonusTiles) {
+           addTile(tile);
+        }
+    }
+
+    public void addTile(BonusTile tile) {
+        ImagePane tileImg = new ImagePane(UrlFinder.findBonusTile(tile.getAmmoCubes()));
+        ((BoardBlockPane) bonusTilesContainer.getChildren().get(tile.getLocation().y * 4 + tile.getLocation().x)).addTile(tileImg);
+    }
+
+    public void removeTile(Point tileLocation) {
+        ((BoardBlockPane) bonusTilesContainer.getChildren().get(tileLocation.y * 4 + tileLocation.x)).clearCell();
     }
 }

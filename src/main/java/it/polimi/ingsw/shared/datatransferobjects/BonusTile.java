@@ -15,7 +15,7 @@ public class BonusTile {
     /**
      * Bonus tile location
      */
-    private Point location;
+    private final Point location;
 
     /**
      * Bonus tile coins color
@@ -34,6 +34,10 @@ public class BonusTile {
 
     public List<CurrencyColor> getAmmoCubes() {
         return ammoCubes;
+    }
+
+    public Point getLocation() {
+        return location;
     }
 
     @Override

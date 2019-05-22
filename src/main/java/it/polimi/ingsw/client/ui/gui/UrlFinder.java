@@ -53,7 +53,7 @@ public final class UrlFinder {
             CurrencyColor couple = red == 2 ? CurrencyColor.RED : yellow == 2 ? CurrencyColor.YELLOW : CurrencyColor.BLUE;
             return "/assets/bonus_tiles/" + single.toString() + "_" + couple.toString() + "_" + couple.toString() + ".png";
         } else if (red + blue + yellow == 2) {
-            return "/assets/bouns_tiles/" + colors.get(0).toString() + "_" + colors.get(1).toString() + ".png";
+            return "/assets/bonus_tiles/" + colors.get(0).toString() + "_" + colors.get(1).toString() + ".png";
         } else {
             throw new IllegalArgumentException("Unrecognized color set");
         }

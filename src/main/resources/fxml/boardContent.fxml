@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import it.polimi.ingsw.client.ui.gui.BoardContentPane?>
 <?import it.polimi.ingsw.client.ui.gui.BoardBlockPane?>
-<fx:root type="it.polimi.ingsw.client.ui.gui.BoardContentPane" xmlns:fx="http://javafx.com/fxml" fx:controller="it.polimi.ingsw.client.ui.gui.ImagePane">
+<fx:root type="GridPane" xmlns:fx="http://javafx.com/fxml" fx:controller="it.polimi.ingsw.client.ui.gui.BoardContentPane">
     <columnConstraints>
         <ColumnConstraints percentWidth="100" />
     </columnConstraints>
@@ -137,7 +137,7 @@
                 <ColumnConstraints percentWidth="49.3" />
             </columnConstraints>
         </GridPane>
-        <GridPane fx:id="playerContainer">
+        <GridPane fx:id="bonusTilesContainer">
             <columnConstraints>
                 <ColumnConstraints percentWidth="15" />
                 <ColumnConstraints percentWidth="18" />
@@ -166,7 +166,7 @@
             <BoardBlockPane GridPane.rowIndex="3" GridPane.columnIndex="3"/>
             <BoardBlockPane GridPane.rowIndex="3" GridPane.columnIndex="4"/>
         </GridPane>
-        <GridPane fx:id="bonusTilesContainer">
+        <GridPane fx:id="playerContainer">
             <columnConstraints>
                 <ColumnConstraints percentWidth="15" />
                 <ColumnConstraints percentWidth="18" />

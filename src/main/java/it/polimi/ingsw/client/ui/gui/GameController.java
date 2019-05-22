@@ -118,14 +118,14 @@ public class GameController extends WindowController implements AutoCloseable, Q
             boardContent.addWeaponLeft(e.getWeaponLeft().get(i), i);
         }
         boardContent.setSkulls(e.getSkulls());
-
         this.opponents = e.getOpponents();
         this.self = e.getSelf();
-        initOpponentsBoards();boardContent.setMaxHeight(400);
+        initOpponentsBoards();
         initPlayerBoard();
         initAmmo(e.getSelf().getWallet().getAmmoCubes());
         initPowerups(e.getSelf().getWallet().getPowerups());
         initWeapons();
+        boardContent.addTiles(e.getTurretBonusTiles());
         tileMsg.setText(self.getNickname() + ", " + tileMsg.getText());
         message.setFill(Color.rgb(194, 194, 214));
         stage.setOnCloseRequest(ignored -> this.close());
@@ -750,20 +750,24 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     @Override
     public void onBonusTileGrabbed(BonusTileEvent e) {
-        // TODO: implement
+        Platform.runLater(() -> {
+            boardContent.removeTile(e.getBonusTile().getLocation());
+        });
     }
 
     @Override
     public void onBonusTileDropped(BonusTileEvent e) {
-        // TODO: implement
+        Platform.runLater(() -> {
+            boardContent.addTile(e.getBonusTile());
+        });
     }
 
     @Override
     public void onPlayerSpawned(PlayerSpawned e) {
         Platform.runLater( () -> {
             boardContent.movePlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
-            String message = " just spawned!";
-            sendNotification("Movement", e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
+            String msg = " just spawned!";
+            sendNotification("Movement", e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + msg : e.getPlayer().getNickname() + message);
         });
     }
 

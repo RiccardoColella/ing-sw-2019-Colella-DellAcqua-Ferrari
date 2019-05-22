@@ -43,4 +43,14 @@ public class BoardBlockPane extends GridPane {
     public void removePlayer(PlayerColor color) {
         container.getChildren().remove(avatars.get(color));
     }
+
+    public void addTile(ImagePane tile) {
+        tile.setPrefSize(40, 40);
+        tile.setMinSize(40, 40);
+        tile.setMaxSize(40, 40);
+        container.getChildren().add(tile);
+    }
+    public void clearCell() {
+        container.getChildren().clear();
+    }
 }
