@@ -58,4 +58,9 @@ public class Powerup {
             return this.name.equals(((Powerup) other).name) && this.color.equals(((Powerup) other).color);
         }
     }
+
+    @Override
+    public String toString() {
+        return this.name + " (Color: " + this.color.toString() + ")";
+    }
 }

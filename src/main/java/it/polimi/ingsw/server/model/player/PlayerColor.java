@@ -8,5 +8,14 @@ public enum PlayerColor {
     GREEN,
     PURPLE,
     GRAY,
-    TURQUOISE
+    TURQUOISE;
+
+    public static boolean contains(String string){
+        try {
+            PlayerColor.valueOf(string);
+            return true;
+        } catch (Exception e){
+            return false;
+        }
+    }
 }

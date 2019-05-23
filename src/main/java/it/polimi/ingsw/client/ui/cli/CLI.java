@@ -6,7 +6,6 @@ import it.polimi.ingsw.client.io.RMIConnector;
 import it.polimi.ingsw.client.io.SocketConnector;
 import it.polimi.ingsw.client.io.listeners.*;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
-import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.BasicAction;
@@ -31,7 +30,7 @@ import java.util.function.Consumer;
  *
  * @author Carlo Dell'Acqua
  */
-public class CLI implements QuestionMessageReceivedListener, AutoCloseable, MatchListener, BoardListener, PlayerListener, ClientListener {
+public class CLI implements AutoCloseable, QuestionMessageReceivedListener, BoardListener, MatchListener, PlayerListener, ClientListener, DuplicatedNicknameListener {
     /**
      * JSON conversion utility
      */
@@ -52,6 +51,8 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
      */
     private final PrintStream printStream;
 
+    private String nickname;
+
     /**
      * This variable stores and knows how to represent the game situation
      */
@@ -61,6 +62,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     private static final String TEXTS_JSON_PATH_RES = "/config/gameTextsForCLI.json";
     private final String w;
     private final String m;
+    private final String q;
     private final String title;
 
     /**
@@ -76,10 +78,12 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
         jsonElement = new JsonParser().parse(ConfigFileMaker.load(TEXTS_JSON_PATH, TEXTS_JSON_PATH_RES));
 
         JsonObject jsonObject =jsonElement.getAsJsonObject();
-        this.m = jsonObject.get("message").toString();
-        this.w = jsonObject.get("warning").toString();
-        JsonArray title = jsonObject.get("gameTitle").getAsJsonArray();
-        for (JsonElement line : title){
+        this.m = jsonObject.get("message").toString().replace("\"", "");
+        this.w = jsonObject.get("warning").toString().replace("\"", "");
+        this.q = jsonObject.get("question").toString().replace("\"", "");
+
+        JsonArray gameTitle = jsonObject.get("gameTitle").getAsJsonArray();
+        for (JsonElement line : gameTitle){
             stringBuilder.append(line.getAsString());
         }
         this.title = stringBuilder.toString();
@@ -112,7 +116,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
         );
 
         printStream.println("Enter a nickname");
-        String nickname = scanner.nextLine();
+        this.nickname = scanner.nextLine();
 
         BoardFactory.Preset preset = askForSelection(
                 "Choose a board preset",
@@ -129,7 +133,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
         }
 
         Match.Mode mode = askForSelection(
-                "Choose a board preset",
+                "Choose a match mode",
                 Arrays.asList(Match.Mode.values()),
                 false
         );
@@ -138,10 +142,12 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
             switch (connectionType) {
                 case "RMI":
                     connector = new RMIConnector();
+                    addAllListeners();
                     ((RMIConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9090));
                     break;
                 case "Socket":
                     connector = new SocketConnector();
+                    addAllListeners();
                     ((SocketConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9000));
                     break;
                 default:
@@ -152,6 +158,16 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
         }
 
         connector.addQuestionMessageReceivedListener(this);
+    }
+
+    private void addAllListeners(){
+        connector.addMatchListener(this);
+        connector.addDuplicatedNicknameListener(this);
+        connector.addClientListener(this);
+        connector.addQuestionMessageReceivedListener(this);
+        connector.addBoardListener(this);
+        connector.addPlayerListener(this);
+        connector.startListeningToQuestions();
     }
 
     /**
@@ -173,9 +189,15 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
                 printStream.println("0) Skip");
             }
             for (int i = 0; i < options.size(); i++) {
-                printStream.println(String.format("%d) %s", (i + 1), options.get(i).toString()));
+                String option = ANSIColor.parseColor(options.get(i).toString());
+                printStream.println(String.format("%d) %s", (i + 1), option));
             }
-            chosenIndex = Integer.parseInt(scanner.nextLine());
+            try {
+                chosenIndex = Integer.parseInt(scanner.nextLine());
+            } catch (Exception ex) {
+                printStream.println(w + "Please, insert a valid number!");
+                chosenIndex = -1;
+            }
         } while (!((skippable ? 0 : 1) <= chosenIndex && chosenIndex <= options.size()));
 
         if (chosenIndex == 0) {
@@ -199,7 +221,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onDirectionQuestion(Question<Direction> question, Consumer<Direction> answerCallback) {
-
+        printStream.println(q + "Direction question");
         answerCallback.accept(
             askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
         );
@@ -208,6 +230,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onAttackQuestion(Question<String> question, Consumer<String> answerCallback) {
+        printStream.println(q + "Attack question");
         answerCallback.accept(
             askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
         );
@@ -216,6 +239,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onBasicActionQuestion(Question<BasicAction> question, Consumer<BasicAction> answerCallback) {
+        printStream.println(q + "Basic action question");
         answerCallback.accept(
             askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
         );
@@ -224,6 +248,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onBlockQuestion(Question<Point> question, Consumer<Point> answerCallback) {
+        printStream.println(q + "Block question");
         answerCallback.accept(
             askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
         );
@@ -232,6 +257,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onPaymentMethodQuestion(Question<String> question, Consumer<String> answerCallback) {
+        printStream.println(q + "Payment method question");
         answerCallback.accept(
             askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
         );
@@ -240,6 +266,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onPowerupQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback) {
+        printStream.println(q + "Powerup question");
         answerCallback.accept(
             askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
         );
@@ -248,6 +275,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onWeaponQuestion(Question<String> question, Consumer<String> answerCallback) {
+        printStream.println(q + "Weapon question");
         answerCallback.accept(
             askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
         );
@@ -256,6 +284,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onReloadQuestion(Question<String> question, Consumer<String> answerCallback) {
+        printStream.println(q + "Reload question");
         answerCallback.accept(
             askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
         );
@@ -264,6 +293,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onSpawnpointQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback) {
+        printStream.println(q + "Spawnpoint question");
         answerCallback.accept(
             askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
         );
@@ -272,6 +302,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onTargetQuestion(Question<String> question, Consumer<String> answerCallback) {
+        printStream.println(q + "Target question");
         answerCallback.accept(
             askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
         );
@@ -280,17 +311,26 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onTargetSetQuestion(Question<Set<String>> question, Consumer<Set<String>> answerCallback) {
-        // TODO: Implement the selection
+        printStream.println(q + "Target set question");
+        answerCallback.accept(
+                askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
+        );
+
     }
 
     @Override
     public void onPaymentColorQuestion(Question<CurrencyColor> question, Consumer<CurrencyColor> answerCallback) {
+        printStream.println(q + "Payment color question");
+        answerCallback.accept(
+                askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
+        );
 
     }
 
     @Override
     public void onMatchStarted(MatchStarted e) {
         gameRepresentation = new GameRepresentation(e);
+        gameRepresentation.showUpdatedSituation(printStream);
     }
 
     @Override
@@ -306,6 +346,7 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onMatchEnded(MatchEnded e) {
+        printStream.println("Match ended!");
         // TODO: implement
 
     }
@@ -313,16 +354,20 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
     @Override
     public void onPlayerMoved(PlayerMoved e) {
         gameRepresentation.movePlayer(e.getPlayer(), e.getRow(), e.getColumn());
+        printStream.println(m + e.getPlayer().getNickname() + " moved to block in row " + e.getRow() + " and column " + e.getColumn());
     }
 
     @Override
     public void onPlayerTeleported(PlayerMoved e) {
         gameRepresentation.movePlayer(e.getPlayer(), e.getRow(), e.getColumn());
+        printStream.println(m + e.getPlayer().getNickname() + " teleported to block in row " + e.getRow() + " and column " + e.getColumn());
     }
 
     @Override
     public void onNewWeaponAvailable(WeaponEvent e) {
-
+        if (gameRepresentation != null){
+            printStream.println(m + "Weapon " + e.getWeaponName() + " dropped on spawnpoint " + gameRepresentation.addWeaponToSpawnpoint(e.getWeaponName(), e.getRow(), e.getColumn()));
+        }
     }
 
     @Override
@@ -337,14 +382,16 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onPlayerDied(PlayerEvent e) {
-        // TODO: implement
-
+        gameRepresentation.updatePlayer(e.getPlayer());
+        gameRepresentation.setPlayerDied(e.getPlayer());
+        printStream.println(m + "Player " + e.getPlayer().getNickname() + " died!");
     }
 
     @Override
     public void onPlayerReborn(PlayerEvent e) {
-        // TODO: implement
-
+        gameRepresentation.updatePlayer(e.getPlayer());
+        gameRepresentation.setPlayerAlive(e.getPlayer());
+        printStream.println(m + "Player " + e.getPlayer().getNickname() + " reborn!");
     }
 
     @Override
@@ -398,13 +445,14 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onLoginSuccess(ClientEvent e) {
-        // TODO: implement
-
+        if (e.getNickname().equals(this.nickname)){
+            printStream.println("LOGIN SUCCESSFUL! Your nickname is: " + e.getNickname());
+        } else printStream.println();
     }
 
     @Override
     public void onClientDisconnected(ClientEvent e) {
-        printStream.println(w + e.getNickname() + "disconnected");
+        printStream.println(w + e.getNickname() + " disconnected");
     }
 
     @Override
@@ -414,8 +462,9 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
 
     @Override
     public void onPlayerSpawned(PlayerSpawned e) {
+        gameRepresentation.setPlayerAlive(e.getPlayer());
         gameRepresentation.movePlayer(e.getPlayer(), e.getRow(), e.getColumn());
-        printStream.println(w + e.getPlayer().getNickname() + " respowned on Row" + e.getRow() + " Column" + e.getColumn());
+        printStream.println(m + e.getPlayer().getNickname() + " re-spawned on Row" + e.getRow() + " Column" + e.getColumn());
     }
 
     @Override
@@ -429,5 +478,12 @@ public class CLI implements QuestionMessageReceivedListener, AutoCloseable, Matc
         gameRepresentation.showUpdatedSituation(printStream);
         printStream.println(m + "Now it's " + e.getPlayer().getNickname() + " turn!");
 
+    }
+
+    @Override
+    public void onDuplicatedNickname() {
+        printStream.println("Nickname " + nickname + " not available. Choose another nick!");
+        nickname = scanner.nextLine();
+        // TODO restart connection
     }
 }

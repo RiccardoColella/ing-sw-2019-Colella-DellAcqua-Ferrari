@@ -9,8 +9,9 @@ import it.polimi.ingsw.client.ui.cli.CLI;
  */
 public class Main {
     public static void main( String[] args ) {
-
-        try (CLI cli = new CLI(System.in, System.out)) {
+        CLI cli;
+        try {
+            cli = new CLI(System.in, System.out);
             cli.initialize();
         } catch (Exception e) {
             System.out.println("Could not initialize a valid client, shutting down...");

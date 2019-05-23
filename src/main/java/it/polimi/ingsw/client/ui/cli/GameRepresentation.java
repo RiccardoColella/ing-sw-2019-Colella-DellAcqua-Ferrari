@@ -87,6 +87,8 @@ public class GameRepresentation {
      */
     private ANSIColor colors;
 
+    private Map<Player, Boolean> alivePlayers;
+
     GameRepresentation(MatchStarted e){
 
         this.preset = e.getPreset();
@@ -97,6 +99,11 @@ public class GameRepresentation {
         this.weaponsOnSpawnpoint.put(CurrencyColor.BLUE, e.getWeaponTop());
         this.weaponsOnSpawnpoint.put(CurrencyColor.RED, e.getWeaponLeft());
         this.weaponsOnSpawnpoint.put(CurrencyColor.YELLOW, e.getWeaponRight());
+
+        alivePlayers = new HashMap<>();
+        for (Player player : players){
+            alivePlayers.put(player, false);
+        }
 
         this.colors = new ANSIColor();
 
@@ -187,6 +194,14 @@ public class GameRepresentation {
         }
     }
 
+    public void setPlayerAlive(Player playerAlive){
+        alivePlayers.put(playerAlive, true);
+    }
+
+    public void setPlayerDied(Player playerDied){
+        alivePlayers.put(playerDied, false);
+    }
+
     /**
      * This method builds a board containing all the player in this.playerLocations variable
      * @param board board to which add the players
@@ -195,25 +210,27 @@ public class GameRepresentation {
     public List<String> positPlayers(List<String> board){
         List<String> boardWithPlayers = new LinkedList<>(board);
         for (Player player : players){
-            int i = players.indexOf(player);
-            String nick = player.getNickname();
-            if (nick.length() > this.maxNicknamesLength){
-                nick = nick.substring(0, this.maxNicknamesLength);
+            if (alivePlayers.get(player)){
+                int i = players.indexOf(player);
+                String nick = player.getNickname();
+                if (nick.length() > this.maxNicknamesLength){
+                    nick = nick.substring(0, this.maxNicknamesLength);
+                }
+                int x = playerLocations.get(player).x;
+                int y = playerLocations.get(player).y;
+                // Row is the general offset for rows + the player's row + the distance of the needed block
+                int row = getRowOffset() + i + getRowDistance()*x;
+                // Column is the general column offset + the distance of the needed block
+                int column = getColumnOffset() + getColumnDistance()*y;
+                String line = board.get(row);
+                String newLine = line.substring(0, column) +
+                        colors.getEscape(player.getColor()) +
+                        nick +
+                        colors.getEscapeReset() +
+                        line.substring(column + nick.length(), line.length()-1) +
+                        "\n";
+                boardWithPlayers.set(row, newLine);
             }
-            int x = playerLocations.get(player).x;
-            int y = playerLocations.get(player).y;
-            // Row is the general offset for rows + the player's row + the distance of the needed block
-            int row = getRowOffset() + i + getRowDistance()*x;
-            // Column is the general column offset + the distance of the needed block
-            int column = getColumnOffset() + getColumnDistance()*y;
-            String line = board.get(row);
-            String newLine = line.substring(0, column) +
-                    colors.getEscape(player.getColor()) +
-                    nick +
-                    colors.getEscapeReset() +
-                    line.substring(column + nick.length(), line.length()-1) +
-                    "\n";
-            boardWithPlayers.set(row, newLine);
         }
         return boardWithPlayers;
     }
@@ -435,7 +452,7 @@ public class GameRepresentation {
      */
     private Player selectPlayer(Player playerToSelect){
         for (Player player : players){
-            if (player == playerToSelect){
+            if (player.getNickname().equals(playerToSelect.getNickname())){
                 return player;
             }
         }
@@ -482,6 +499,13 @@ public class GameRepresentation {
         } else selectPlayer(player).getWallet().getUnloadedWeapons().remove(weapon);
     }
 
+    public String addWeaponToSpawnpoint(String weapon, int r, int c){
+        List<String> spawnpointWeapons = getSpawnpointWeapons(r, c);
+        if (!spawnpointWeapons.contains(weapon)){
+            spawnpointWeapons.add(weapon);
+        }
+        return getSpawnpointColor(r, c).toString();
+    }
     /**
      * This method returns the list of weapons of the chose spawnpoint
      * @param r row of the chosen spawnpoint
@@ -494,6 +518,15 @@ public class GameRepresentation {
         } else if (c == 0){
             return weaponsOnSpawnpoint.get(CurrencyColor.BLUE);
         } else return weaponsOnSpawnpoint.get(CurrencyColor.YELLOW);
+
+    }
+
+    private CurrencyColor getSpawnpointColor(int r, int c){
+        if (r == 0){
+            return CurrencyColor.RED;
+        } else if (c == 0){
+            return CurrencyColor.BLUE;
+        } else return CurrencyColor.YELLOW;
 
     }
 
@@ -522,6 +555,5 @@ public class GameRepresentation {
         for (String line : updatedBoard){
             printStream.print(line);
         }
-
     }
 }

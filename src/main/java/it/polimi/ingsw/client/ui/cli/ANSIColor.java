@@ -3,6 +3,9 @@ package it.polimi.ingsw.client.ui.cli;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 class ANSIColor {
     private static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_BLACK = "\u001B[30m";
@@ -21,11 +24,11 @@ class ANSIColor {
     private static final String ANSI_PURPLE_BACKGROUND = "\u001B[45m";
     private static final String ANSI_CYAN_BACKGROUND = "\u001B[46m";
 
-    String getEscapeReset(){
+    static String getEscapeReset(){
         return ANSI_RESET;
     }
 
-    String getEscape(CurrencyColor color){
+    static String getEscape(CurrencyColor color){
         switch (color){
             case YELLOW:
                 return ANSI_YELLOW;
@@ -38,7 +41,7 @@ class ANSIColor {
         }
     }
 
-    String getEscape(PlayerColor color){
+    static String getEscape(PlayerColor color){
         switch (color){
             case YELLOW:
                 return ANSI_YELLOW;
@@ -55,7 +58,7 @@ class ANSIColor {
         }
     }
 
-    String getEscapeBackground(CurrencyColor color){
+    static String getEscapeBackground(CurrencyColor color){
         switch (color){
             case YELLOW:
                 return ANSI_YELLOW_BACKGROUND;
@@ -68,7 +71,7 @@ class ANSIColor {
         }
     }
 
-    String getEscapeBackground(PlayerColor color){
+    static String getEscapeBackground(PlayerColor color){
         switch (color){
             case YELLOW:
                 return ANSI_YELLOW_BACKGROUND;
@@ -85,6 +88,15 @@ class ANSIColor {
         }
     }
 
-
-
+    static String parseColor(String stringToParse) {
+        Matcher m = Pattern.compile(".*(\\w*)(Color: ([A-Z]+))").matcher(stringToParse);
+        if (m.find()) {
+            if (CurrencyColor.contains(m.group(3))){
+                return getEscape(CurrencyColor.valueOf(m.group(3))) + stringToParse + getEscapeReset();
+            } else if (PlayerColor.contains(m.group(3))){
+                return getEscape(PlayerColor.valueOf(m.group(3))) + stringToParse + getEscapeReset();
+            }
+        }
+        return stringToParse;
+    }
 }

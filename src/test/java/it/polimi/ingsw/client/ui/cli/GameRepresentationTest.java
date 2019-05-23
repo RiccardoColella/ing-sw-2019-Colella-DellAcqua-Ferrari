@@ -46,6 +46,7 @@ class GameRepresentationTest {
         int i = 0;
         for (Player player : gameRepresentation.getPlayers()){
             gameRepresentation.playerLocations.put(player, new Point(i, i));
+            gameRepresentation.setPlayerAlive(player);
             i++;
         }
     }

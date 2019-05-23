@@ -9,6 +9,7 @@
   ],
   "message" : "[ MESSAGE ] ",
   "warning" : "[ WARNING ] ",
+  "question" : "[ QUESTION ] ",
   "rowOffset" : 2,
   "columnOffset" : 2,
   "rowDistance" : 7,
