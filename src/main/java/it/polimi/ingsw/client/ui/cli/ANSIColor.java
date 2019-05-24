@@ -24,6 +24,14 @@ class ANSIColor {
     private static final String ANSI_PURPLE_BACKGROUND = "\u001B[45m";
     private static final String ANSI_CYAN_BACKGROUND = "\u001B[46m";
 
+    private static final String ANSI_BOLD = "\u001B[1m";
+    private static final String ANSI_UNDERLINED = "\u001B[4m";
+    private static final String ANSI_REVERSED = "\u001B[7m";
+
+    private ANSIColor(){
+        throw new IllegalStateException("An utility class, as ANSIColor is, should not be constructed");
+    }
+
     static String getEscapeReset(){
         return ANSI_RESET;
     }
@@ -88,6 +96,18 @@ class ANSIColor {
         }
     }
 
+    static String getEscapeBold() {
+        return ANSI_BOLD;
+    }
+
+    static String getEscapeUnderlined() {
+        return ANSI_UNDERLINED;
+    }
+
+    static String getEscapeReversed() {
+        return ANSI_REVERSED;
+    }
+
     static String parseColor(String stringToParse) {
         Matcher m = Pattern.compile(".*(\\w*)(Color: ([A-Z]+))").matcher(stringToParse);
         if (m.find()) {
@@ -98,5 +118,16 @@ class ANSIColor {
             }
         }
         return stringToParse;
+    }
+
+    static String parseLettersToBackground(String line){
+        line = line.replace("ρ", ANSI_RED_BACKGROUND + " " + getEscapeReset());
+        line = line.replace("γ", ANSI_GREEN_BACKGROUND + " " + getEscapeReset());
+        line = line.replace("ψ", ANSI_YELLOW_BACKGROUND + " " + getEscapeReset());
+        line = line.replace("β", ANSI_BLUE_BACKGROUND + " " + getEscapeReset());
+        line = line.replace("π", ANSI_PURPLE_BACKGROUND + " " + getEscapeReset());
+        line = line.replace("χ", ANSI_CYAN_BACKGROUND + " " + getEscapeReset());
+        line = line.replace("κ", ANSI_BLACK_BACKGROUND + " " + getEscapeReset());
+        return line;
     }
 }

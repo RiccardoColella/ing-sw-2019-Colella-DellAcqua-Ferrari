@@ -20,10 +20,10 @@ import javax.annotation.Nullable;
 import java.awt.*;
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.rmi.NotBoundException;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * This class represents a command line implementation of the user interface of the game
@@ -95,12 +95,8 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     /**
      * Initializes the CLI with the needed settings asking the user for his preferences
-     *
-     * @throws IOException if a network error occur
-     * @throws NotBoundException if the message proxy was not found in the remote RMI registry
-     * @throws InterruptedException if the thread was forced to stop before construction completion
      */
-    public void initialize() throws InterruptedException, IOException, NotBoundException {
+    public void initialize() {
 
         List<String> availableConnectionOptions = Arrays.asList("RMI", "Socket");
         List<Integer> availableSkulls = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8);
@@ -137,8 +133,16 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
                 Arrays.asList(Match.Mode.values()),
                 false
         );
-
         if (connectionType != null) {
+            setConnector(serverAddress, connectionType, preset, skulls, mode);
+        } else throw new IllegalStateException("The user had to choose between Socket or RMI, null returned");
+
+
+        connector.addQuestionMessageReceivedListener(this);
+    }
+
+    private void setConnector(String serverAddress, String connectionType, BoardFactory.Preset preset, int skulls, Match.Mode mode){
+        try {
             switch (connectionType) {
                 case "RMI":
                     connector = new RMIConnector();
@@ -153,11 +157,9 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
                 default:
                     throw new IllegalStateException("The user had to choose between Socket or RMI, unrecognized option " + connectionType);
             }
-        } else {
-            throw new IllegalStateException("The user had to choose between Socket or RMI, null returned");
+        } catch (Exception ex) {
+            printStream.println("Unhandled exception in connector initializing...");
         }
-
-        connector.addQuestionMessageReceivedListener(this);
     }
 
     private void addAllListeners(){
@@ -183,6 +185,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
     private <T> T askForSelection(String questionText, Collection<T> optionCollection, boolean skippable) {
         List<T> options = new LinkedList<>(optionCollection);
         int chosenIndex;
+        String answer = "";
         do {
             printStream.println(questionText);
             if (skippable) {
@@ -193,10 +196,25 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
                 printStream.println(String.format("%d) %s", (i + 1), option));
             }
             try {
-                chosenIndex = Integer.parseInt(scanner.nextLine());
+                answer = scanner.nextLine();
+                chosenIndex = Integer.parseInt(answer);
             } catch (Exception ex) {
-                printStream.println(w + "Please, insert a valid number!");
                 chosenIndex = -1;
+                switch (answer) {
+                    case "all":
+                        gameRepresentation.showUpdatedSituation(printStream);
+                        break;
+                    case "map":
+                        gameRepresentation.showUpdatedMap(printStream);
+                        break;
+                    case "wallets":
+                        gameRepresentation.showPlayersInfo(printStream);
+                        break;
+                    default:
+                        printStream.println(w + "Please, insert a valid number!");
+                        printStream.println("Write 'all', 'map', or 'wallets' to get info about the state of the game");
+                        break;
+                }
             }
         } while (!((skippable ? 0 : 1) <= chosenIndex && chosenIndex <= options.size()));
 
@@ -346,21 +364,34 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     @Override
     public void onMatchEnded(MatchEnded e) {
-        printStream.println("Match ended!");
-        // TODO: implement
-
+        printStream.println(m + "Match ended!");
+        printStream.println(m + "Your score is: " + e.getScore(nickname));
+        String results = e.getRankings()
+                .entrySet()
+                .stream()
+                .map(placement -> placement.getKey() + " - " + placement.getValue()
+                        .stream()
+                        .map(player -> player.getNickname() + " " + e.getScore(player.getNickname()) + "pt.")
+                        .collect(Collectors.joining(",", " ", " "))
+                        )
+                .collect(Collectors.joining("\n"));
+        printStream.println(results);
     }
 
     @Override
     public void onPlayerMoved(PlayerMoved e) {
         gameRepresentation.movePlayer(e.getPlayer(), e.getRow(), e.getColumn());
-        printStream.println(m + e.getPlayer().getNickname() + " moved to block in row " + e.getRow() + " and column " + e.getColumn());
+        if (!e.getPlayer().getNickname().equals(nickname)){
+            printStream.println(m + e.getPlayer().getNickname() + " moved to block in row " + e.getRow() + " and column " + e.getColumn());
+        }
     }
 
     @Override
     public void onPlayerTeleported(PlayerMoved e) {
         gameRepresentation.movePlayer(e.getPlayer(), e.getRow(), e.getColumn());
-        printStream.println(m + e.getPlayer().getNickname() + " teleported to block in row " + e.getRow() + " and column " + e.getColumn());
+        if (!e.getPlayer().getNickname().equals(nickname)) {
+            printStream.println(m + e.getPlayer().getNickname() + " teleported to block in row " + e.getRow() + " and column " + e.getColumn());
+        }
     }
 
     @Override
@@ -384,70 +415,97 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
     public void onPlayerDied(PlayerEvent e) {
         gameRepresentation.updatePlayer(e.getPlayer());
         gameRepresentation.setPlayerDied(e.getPlayer());
-        printStream.println(m + "Player " + e.getPlayer().getNickname() + " died!");
+        if (!e.getPlayer().getNickname().equals(nickname)) {
+            printStream.println(m + "Player " + e.getPlayer().getNickname() + " died!");
+        } else {
+            printStream.println(m + "You died!");
+        }
     }
 
     @Override
     public void onPlayerReborn(PlayerEvent e) {
         gameRepresentation.updatePlayer(e.getPlayer());
         gameRepresentation.setPlayerAlive(e.getPlayer());
-        printStream.println(m + "Player " + e.getPlayer().getNickname() + " reborn!");
+        if (!e.getPlayer().getNickname().equals(nickname)) {
+            printStream.println(m + "Player " + e.getPlayer().getNickname() + " reborn!");
+        } else {
+            printStream.println(m + "You reborn!");
+        }
     }
 
     @Override
     public void onPlayerWalletChanged(PlayerWalletChanged e) {
         gameRepresentation.updatePlayer(e.getPlayer());
-        printStream.println(w + e.getPlayer().getNickname() + "'s wallet changed!");
-        printStream.println(m + e.getMessage());
+        if (!e.getPlayer().getNickname().equals(nickname)) {
+            printStream.println(w + e.getPlayer().getNickname() + "'s wallet changed!");
+            printStream.println(m + e.getMessage());
+        }
     }
 
     @Override
     public void onPlayerBoardFlipped(PlayerEvent e) {
-        // TODO: implement
-
+        if (e.getPlayer().getNickname().equals(nickname)){
+            printStream.println(w + "Your board just flipped!");
+        }
+        printStream.println(w + e.getPlayer().getNickname() + "'s board flipped");
     }
 
     @Override
     public void onPlayerTileFlipped(PlayerEvent e) {
-        // TODO: implement
-
+        gameRepresentation.updatePlayer(e.getPlayer());
+        if (e.getPlayer().getNickname().equals(nickname)){
+            printStream.println(w + "Your tile just flipped!");
+        }
+        printStream.println(w + e.getPlayer().getNickname() + "'s tile flipped");
     }
 
     @Override
     public void onPlayerHealthChanged(PlayerHealthChanged e) {
         gameRepresentation.updatePlayer(e.getPlayer());
-        printStream.println(m + e.getPlayer().getNickname() + "'s health changed");
+        if (!e.getPlayer().getNickname().equals(nickname)) {
+            printStream.println(m + e.getPlayer().getNickname() + "'s health changed");
+        } else{
+            printStream.println(m + "Your health changed!");
+        }
     }
 
     @Override
     public void onWeaponReloaded(PlayerWeaponEvent e) {
         gameRepresentation.updatePlayer(e.getPlayer());
-        printStream.println(m + e.getPlayer().getNickname() + " reloaded his " + e.getWeaponName());
+        if (!e.getPlayer().getNickname().equals(nickname)) {
+            printStream.println(m + e.getPlayer().getNickname() + " reloaded his " + e.getWeaponName());
+        }
     }
 
     @Override
     public void onWeaponUnloaded(PlayerWeaponEvent e) {
         gameRepresentation.updatePlayer(e.getPlayer());
-        printStream.println(m + e.getPlayer().getNickname() + " unloaded his " + e.getWeaponName());
+        if (!e.getPlayer().getNickname().equals(nickname)) {
+            printStream.println(m + e.getPlayer().getNickname() + " now has his " + e.getWeaponName() + " unloaded");
+        }
     }
 
     @Override
     public void onWeaponPicked(PlayerWeaponExchanged e) {
         gameRepresentation.grabPlayerWeapon(e.getPlayer(), e.getWeaponName(), e.getRow(), e.getColumn());
-        printStream.println(m + e.getPlayer().getNickname() + " picked up " + e.getWeaponName() + " on block Row" + e.getRow() + " Column" + e.getColumn());
+        if (!e.getPlayer().getNickname().equals(nickname)) {
+            printStream.println(m + e.getPlayer().getNickname() + " picked up " + e.getWeaponName() + " on block Row" + e.getRow() + " Column" + e.getColumn());
+        }
     }
 
     @Override
     public void onWeaponDropped(PlayerWeaponExchanged e) {
         gameRepresentation.dropPlayerWeapon(e.getPlayer(), e.getWeaponName(), e.getRow(), e.getColumn());
-        printStream.println(m + e.getPlayer().getNickname() + " dropped his " + e.getWeaponName() + " on Row" + e.getRow() + " Column" + e.getColumn());
+        if (!e.getPlayer().getNickname().equals(nickname)) {
+            printStream.println(m + e.getPlayer().getNickname() + " dropped his " + e.getWeaponName() + " on Row" + e.getRow() + " Column" + e.getColumn());
+        }
     }
 
     @Override
     public void onLoginSuccess(ClientEvent e) {
         if (e.getNickname().equals(this.nickname)){
             printStream.println("LOGIN SUCCESSFUL! Your nickname is: " + e.getNickname());
-        } else printStream.println();
+        } else printStream.println(e.getNickname() + " connected to the game");
     }
 
     @Override
@@ -464,13 +522,16 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
     public void onPlayerSpawned(PlayerSpawned e) {
         gameRepresentation.setPlayerAlive(e.getPlayer());
         gameRepresentation.movePlayer(e.getPlayer(), e.getRow(), e.getColumn());
-        printStream.println(m + e.getPlayer().getNickname() + " re-spawned on Row" + e.getRow() + " Column" + e.getColumn());
+        if (!e.getPlayer().getNickname().equals(nickname)) {
+            printStream.println(m + e.getPlayer().getNickname() + " spawned on Row: " + e.getRow() + " and Column: " + e.getColumn());
+        }
     }
 
     @Override
     public void onPlayerOverkilled(PlayerEvent e) {
-        // TODO: implement
-
+        if (e.getPlayer().getNickname().equals(nickname)){
+            printStream.println(w + "You have been overkilled!");
+        } else printStream.println(w + e.getPlayer().getNickname() + " has been overkilled");
     }
 
     @Override
@@ -483,7 +544,6 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
     @Override
     public void onDuplicatedNickname() {
         printStream.println("Nickname " + nickname + " not available. Choose another nick!");
-        nickname = scanner.nextLine();
-        // TODO restart connection
+        // TODO: close
     }
 }
