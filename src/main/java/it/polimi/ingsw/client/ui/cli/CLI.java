@@ -379,6 +379,12 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
     }
 
     @Override
+    public void onMatchResumed(MatchResumed e) {
+        // TODO: implement
+
+    }
+
+    @Override
     public void onPlayerMoved(PlayerMoved e) {
         gameRepresentation.movePlayer(e.getPlayer(), e.getRow(), e.getColumn());
         if (!e.getPlayer().getNickname().equals(nickname)){

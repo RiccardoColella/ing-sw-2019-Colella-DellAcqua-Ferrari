@@ -822,6 +822,11 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    @Override
+    public void onMatchResumed(MatchResumed e) {
+        // TODO: implement
+    }
+
     private void sendNotification(String title, String message) {
         Platform.runLater(() -> {
             NotificationController nc = new NotificationController(title, message);

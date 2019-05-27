@@ -454,6 +454,11 @@ public abstract class Connector implements AutoCloseable {
                 boardListeners.forEach(l -> l.onBonusTileDropped(e));
                 break;
             }
+            case MATCH_RESUMED_EVENT: {
+                MatchResumed e = MatchResumed.fromJson(message.getPayload(), this, MatchResumed.class);
+                matchListeners.forEach(l -> l.onMatchResumed(e));
+                break;
+            }
             default: {
                 throw new UnsupportedOperationException("Event \"" + eventType + "\" not supported");
             }

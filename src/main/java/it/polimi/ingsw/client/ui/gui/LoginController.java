@@ -254,6 +254,12 @@ public class LoginController extends WindowController implements MatchListener, 
     }
 
     @Override
+    public void onMatchResumed(MatchResumed e) {
+        // Nothing to do here
+
+    }
+
+    @Override
     public void onDuplicatedNickname() {
         connector.removeMatchListener(this);
         connector.removeDuplicatedNicknameListener(this);
