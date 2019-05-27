@@ -21,6 +21,8 @@ import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.server.view.Interviewer;
 import it.polimi.ingsw.server.view.View;
+import it.polimi.ingsw.server.view.events.ViewEvent;
+import it.polimi.ingsw.server.view.events.listeners.ViewListener;
 import it.polimi.ingsw.shared.messages.ClientApi;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,7 +33,7 @@ import java.util.stream.Collectors;
 /**
  * This class has the purpose of managing the game flow
  */
-public class Controller implements Runnable, PlayerListener, ViewReconnectedListener {
+public class Controller implements Runnable, PlayerListener, ViewReconnectedListener, ViewListener {
     /**
      * Logging utility
      */
@@ -56,6 +58,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         this.views = views;
         this.players = match.getPlayers();
         views.forEach(view -> this.playerViews.put(view.getPlayer(), view));
+        views.forEach(view -> view.addViewListener(this));
         this.players.forEach(player -> player.addPlayerListener(this));
         this.weaponMap = WeaponFactory.createWeaponDictionary(match.getBoard());
         powerupTileDeck = match.getPowerupDeck();
@@ -91,6 +94,9 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
 
             connectedViews = views.stream().mapToInt(view -> view.isConnected() ? 1 : 0).reduce(0, Integer::sum);
         }
+        if (!match.isEnded()) {
+            // TODO: save or force close?
+        }
         logger.info("The match is over");
     }
 
@@ -99,8 +105,8 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
      * @param activePlayer is the player who has to execute his turn
      * @param view is the interface that manages the turn
      */
-    private void manageActivePlayerTurn(Player activePlayer, Interviewer view) {
-        if (playerViews.get(activePlayer).isConnected()) {
+    private void manageActivePlayerTurn(Player activePlayer, View view) {
+        if (view.isConnected()) {
             logger.info("Managing actions...");
             manageActions(activePlayer, view);
             logger.info("No more actions to be managed");
@@ -340,7 +346,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
      * @param player is the player who is currently player
      * @param view is the interface who decides how to manage the player
      */
-    private void manageActions(Player player, Interviewer view){
+    private void manageActions(Player player, View view){
         ActionTile tile = player.getAvailableMacroActions();
         for (List<CompoundAction> compoundActions : tile.getCompoundActions()) {
             managePowerups(player, null, Powerup.Trigger.IN_BETWEEN_ACTIONS, "Do you want to use a powerup?");
@@ -362,7 +368,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                     manageChosenAction(basicAction, player, view);
                     playedActions.add(basicAction);
                 });
-            } while (move.isPresent());
+            } while (move.isPresent() && view.isConnected());
         }
         managePowerups(player, null, Powerup.Trigger.IN_BETWEEN_ACTIONS, "Do you want to use a powerup?");
     }
@@ -633,11 +639,12 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
 
     @Override
     public void onViewReconnected(ViewReconnected e) {
-        Optional<View> oldView = views.stream().filter(view -> view.isConnected() && view.getNickname().equals(e.getView().getNickname())).findAny();
+        Optional<View> oldView = views.stream().filter(view -> !view.isConnected() && view.getNickname().equals(e.getView().getNickname())).findAny();
         if (oldView.isPresent()) {
             e.consume();
 
             e.getView().setPlayer(oldView.get().getPlayer());
+            e.getView().addViewListener(this);
             views.set(views.indexOf(oldView.get()), e.getView());
             playerViews.put(oldView.get().getPlayer(), e.getView());
 
@@ -652,12 +659,6 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
             match.getBoard().addBoardListener(e.getView());
 
             e.getView().setReady(match);
-
-            try {
-                oldView.get().close();
-            } catch (Exception ex) {
-                logger.warning("Unable to close the old view " + ex);
-            }
         }
     }
 
@@ -693,5 +694,20 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 .collect(Collectors.toList());
 
         return view.select(message, playerPowerupsVM, ClientApi.SPAWNPOINT_QUESTION);
+    }
+
+    @Override
+    public void onViewDisconnected(ViewEvent e) {
+        try {
+            e.getView().removeViewListener(this);
+            e.getView().close();
+        } catch (Exception ex) {
+            logger.warning("Could't close view " + ex);
+        }
+    }
+
+    @Override
+    public void onViewReady(ViewEvent e) {
+        // Nothing to do here
     }
 }

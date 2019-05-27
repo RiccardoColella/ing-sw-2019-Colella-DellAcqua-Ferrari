@@ -278,7 +278,7 @@ public class LoginController extends WindowController implements MatchListener, 
             new Thread(() -> {
                 try {
                     connector.close();
-                    Platform.exit();
+                    System.exit(0);
                 } catch (Exception ex) {
                     logger.warning("Could not close the connector");
                 }

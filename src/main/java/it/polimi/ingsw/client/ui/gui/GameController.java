@@ -272,10 +272,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         new Thread(() -> {
             try {
                 connector.close();
-                Platform.exit();
+                System.exit(0);
             } catch (Exception ex) {
                 logger.warning("Could not close the connector");
-                Platform.exit();
+                System.exit(0);
             }
         }).start();
     }
@@ -720,8 +720,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
     public void onPlayerMoved(PlayerMoved e) {
         Platform.runLater( () -> {
             boardContent.movePlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
-            String message = " just moved!";
-            sendNotification("Movement", e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
+            sendNotification("Movement", (e.getPlayer().getNickname().equals(self.getNickname()) ? "You " : e.getPlayer().getNickname()) + " just moved!");
         });
     }
 
@@ -729,8 +728,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
     public void onPlayerTeleported(PlayerMoved e) {
         Platform.runLater( () -> {
             boardContent.movePlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
-            String message = " just teleported!";
-            sendNotification("Movement", e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + message: e.getPlayer().getNickname() + message);
+            sendNotification("Movement", (e.getPlayer().getNickname().equals(self.getNickname()) ? "You " : e.getPlayer().getNickname()) + " just teleported!");
         });
     }
 
@@ -766,8 +764,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
     public void onPlayerSpawned(PlayerSpawned e) {
         Platform.runLater( () -> {
             boardContent.movePlayer(e.getPlayer().getColor(), e.getRow(), e.getColumn());
-            String msg = " just spawned!";
-            sendNotification("Movement", e.getPlayer().getNickname().equals(self.getNickname()) ? "You" + msg : e.getPlayer().getNickname() + message);
+            sendNotification("Movement", (e.getPlayer().getNickname().equals(self.getNickname()) ? "You " : e.getPlayer().getNickname()) + " just spawned!");
         });
     }
 

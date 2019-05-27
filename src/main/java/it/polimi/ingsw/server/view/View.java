@@ -109,7 +109,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     /**
      * Listeners of View events
      */
-    private Set<ViewListener> listeners = new HashSet<>();
+    private final Set<ViewListener> listeners = Collections.synchronizedSet(new HashSet<>());
 
     private final ExecutorService heartbeatThreadPool = Executors.newSingleThreadExecutor();
     private final ExecutorService eventThreadPool = Executors.newSingleThreadExecutor();
@@ -682,7 +682,9 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
      * @param l the listener to add
      */
     public void addViewListener(ViewListener l) {
-        listeners.add(l);
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
 
     /**
@@ -690,7 +692,9 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
      * @param l the listener to remove
      */
     public void removeViewListener(ViewListener l) {
-        listeners.remove(l);
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
     }
 
     /**
@@ -698,7 +702,9 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
      */
     private void notifyViewDisconnected() {
         ViewEvent e = new ViewEvent(this);
-        listeners.forEach(l -> l.onViewDisconnected(e));
+        synchronized (listeners) {
+            listeners.forEach(l -> l.onViewDisconnected(e));
+        }
     }
 
     /**
@@ -706,7 +712,9 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
      */
     private void notifyViewReady() {
         ViewEvent e = new ViewEvent(this);
-        listeners.forEach(l -> l.onViewReady(e));
+        synchronized (listeners) {
+            listeners.forEach(l -> l.onViewReady(e));
+        }
     }
 
     public void setReady() {
@@ -723,7 +731,9 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     @Override
     public void onViewDisconnected(ViewEvent e) {
-        listeners.remove(e.getView()); // Cleaning up, there's no interest for further communications from disconnected views
+        synchronized (listeners) {
+            listeners.remove(e.getView()); // Cleaning up, there's no interest for further communications from disconnected views
+        }
         outputMessageQueue.add(
                 Message.createEvent(
                         ClientApi.CLIENT_DISCONNECTED_EVENT,
