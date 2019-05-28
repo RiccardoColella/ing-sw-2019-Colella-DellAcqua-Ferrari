@@ -6,8 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
-import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.server.model.player.PlayerColor;
+import it.polimi.ingsw.shared.datatransferobjects.BonusTile;
 import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 import it.polimi.ingsw.shared.events.networkevents.MatchStarted;
 import it.polimi.ingsw.shared.datatransferobjects.Player;
@@ -40,6 +40,11 @@ class GameRepresentation {
      * This property stores all weapons on all spawnpoint.
      */
     private Map<CurrencyColor, List<String>> weaponsOnSpawnpoint;
+
+    /**
+     * This map stores the data about the bonus on the game board
+     */
+    Map<Point, List<CurrencyColor>> bonusMap;
 
     /**
      * This property stores all player's positions
@@ -84,7 +89,7 @@ class GameRepresentation {
 
     private Map<Player, Boolean> alivePlayers;
 
-    GameRepresentation(MatchStarted e){
+    GameRepresentation(MatchStarted e) {
 
         this.preset = e.getPreset();
         this.players = new LinkedList<>(e.getOpponents());
@@ -94,6 +99,8 @@ class GameRepresentation {
         this.weaponsOnSpawnpoint.put(CurrencyColor.BLUE, e.getWeaponTop());
         this.weaponsOnSpawnpoint.put(CurrencyColor.RED, e.getWeaponLeft());
         this.weaponsOnSpawnpoint.put(CurrencyColor.YELLOW, e.getWeaponRight());
+        this.bonusMap = new HashMap<>();
+        initializeBonusMap(e.getTurretBonusTiles());
 
         alivePlayers = new HashMap<>();
         for (Player player : players){
@@ -129,6 +136,20 @@ class GameRepresentation {
         }
     }
 
+    private void initializeBonusMap(Collection<BonusTile> bonusTiles) {
+        for (BonusTile tile : bonusTiles){
+            bonusMap.put(tile.getLocation(), tile.getAmmoCubes());
+        }
+    }
+
+    void removeBonusFromMap(BonusTile tile) {
+        bonusMap.remove(tile.getLocation());
+    }
+
+    void addBonusToMap(BonusTile tile) {
+        bonusMap.put(tile.getLocation(), tile.getAmmoCubes());
+    }
+
     /**
      * Board getter
      * @return the board
@@ -142,7 +163,7 @@ class GameRepresentation {
      * @param elem name of the element that contains the board in the json file
      * @param jsonObject json object from which extract the board
      */
-    private void setBoard(String elem, JsonObject jsonObject){
+    private void setBoard(String elem, JsonObject jsonObject) {
         List<String> boardUnderConstruction = new LinkedList<>();
 
         JsonArray boardDescription = jsonObject.get(elem).getAsJsonArray();
@@ -164,14 +185,14 @@ class GameRepresentation {
     @Contract(pure = true)
     private int getColumnDistance() { return columnDistance; }
 
-    protected List<Player> getPlayers(){ return this.players; }
+    protected List<Player> getPlayers() { return this.players; }
 
     /**
      * This method prints the given board to the given output
      * @param board board to be printed
      * @param printStream output stream to which print to
      */
-    void printBoard(List<String> board, PrintStream printStream){
+    void printBoard(List<String> board, PrintStream printStream) {
         for (String line : board){
             printStream.print(line);
         }
@@ -181,7 +202,7 @@ class GameRepresentation {
      * This method prints the board as caught from the json file
      * @param printStream output stream to which print to
      */
-    void printEmptyBoard(PrintStream printStream){
+    void printEmptyBoard(PrintStream printStream) {
         for (String line : board){
             printStream.print(line);
         }
@@ -200,7 +221,7 @@ class GameRepresentation {
      * @param board board to which add the players
      * @return the built board
      */
-    private List<String> positPlayers(List<String> board){
+    private List<String> positPlayers(List<String> board) {
         List<String> boardWithPlayers = new LinkedList<>(board);
         for (Player player : players){
             if (alivePlayers.get(player)){
@@ -234,7 +255,7 @@ class GameRepresentation {
      * @param board board to which add the players
      * @return the built board
      */
-    private List<String> positSpawnpointsWeapons(List<String> board){
+    private List<String> positSpawnpointsWeapons(List<String> board) {
         List<String> boardWithWeapons = new LinkedList<>(board);
         String separator = " - ";
         weaponsOnSpawnpoint
@@ -249,7 +270,7 @@ class GameRepresentation {
                             ANSIColor.getEscapeReset() +
                             "\n";
                     boardWithWeapons.set(index, line);
-                    for (String weapon : weapons){
+                    for (String weapon : weapons) {
                         index++;
                         line = board.get(index);
                         line = line.substring(0, line.length() - 2) +
@@ -267,7 +288,7 @@ class GameRepresentation {
      * @param board board to which add the players
      * @return the built board
      */
-    List<String> positPlayerInfo(List<String> board){
+    List<String> positPlayerInfo(List<String> board) {
         List<String> boardUpdated = new LinkedList<>(board);
         String separator = ". ";
         for (Player player : players){
@@ -347,7 +368,7 @@ class GameRepresentation {
      * @param player player we're considering
      * @param infoSeparator separator between infos
      */
-    private void addPlayerHealth(StringBuilder stringBuilder, final Player player, String infoSeparator){
+    private void addPlayerHealth(StringBuilder stringBuilder, final Player player, String infoSeparator) {
         stringBuilder.append("Skulls: ");
         stringBuilder.append(player.getSkulls());
         stringBuilder.append(infoSeparator);
@@ -372,7 +393,7 @@ class GameRepresentation {
      * @param stringBuilder string to which add infos
      * @param list list of color to be added to the list
      */
-    private void appendLettersOnColoredBackground(StringBuilder stringBuilder, List<PlayerColor> list){
+    private void appendLettersOnColoredBackground(StringBuilder stringBuilder, List<PlayerColor> list) {
         for (PlayerColor color : list){
             switch (color) {
                 case TURQUOISE:
@@ -401,7 +422,7 @@ class GameRepresentation {
      * @param color chosen color
      * @param string string to be added
      */
-    private void appendColoredString(StringBuilder stringBuilder, PlayerColor color, String string){
+    private void appendColoredString(StringBuilder stringBuilder, PlayerColor color, String string) {
         stringBuilder.append(ANSIColor.getEscape(color));
         stringBuilder.append(string);
         stringBuilder.append(ANSIColor.getEscapeReset());
@@ -413,7 +434,7 @@ class GameRepresentation {
      * @param color chosen color
      * @param string string to be added
      */
-    private void appendColoredBoldString(StringBuilder stringBuilder, PlayerColor color, String string){
+    private void appendColoredBoldString(StringBuilder stringBuilder, PlayerColor color, String string) {
         stringBuilder.append(ANSIColor.getEscape(color));
         stringBuilder.append(ANSIColor.getEscapeBold());
         stringBuilder.append(string);
@@ -426,7 +447,7 @@ class GameRepresentation {
      * @param color chosen color
      * @param stringToAdd string to be added
      */
-    private void appendColoredString(StringBuilder originalString, CurrencyColor color, String stringToAdd){
+    private void appendColoredString(StringBuilder originalString, CurrencyColor color, String stringToAdd) {
         originalString.append(ANSIColor.getEscape(color));
         originalString.append(stringToAdd);
         originalString.append(ANSIColor.getEscapeReset());
@@ -438,7 +459,7 @@ class GameRepresentation {
      * @param color chosen color
      * @param stringToAdd string to be added
      */
-    private void appendColoredBackgroundString(StringBuilder originalString, CurrencyColor color, String stringToAdd){
+    private void appendColoredBackgroundString(StringBuilder originalString, CurrencyColor color, String stringToAdd) {
         originalString.append(ANSIColor.getEscapeBackground(color));
         originalString.append(stringToAdd);
         originalString.append(ANSIColor.getEscapeReset());
@@ -450,7 +471,7 @@ class GameRepresentation {
      * @param color chosen color
      * @param stringToAdd string to be added
      */
-    private void appendColoredBackgroundString(StringBuilder originalString, PlayerColor color, String stringToAdd){
+    private void appendColoredBackgroundString(StringBuilder originalString, PlayerColor color, String stringToAdd) {
         originalString.append(ANSIColor.getEscapeBackground(color));
         originalString.append(stringToAdd);
         originalString.append(ANSIColor.getEscapeReset());
@@ -461,7 +482,7 @@ class GameRepresentation {
      * @param playerToSelect player to select
      * @return the chosen player from the list of all players
      */
-    private Player selectPlayer(Player playerToSelect){
+    private Player selectPlayer(Player playerToSelect) {
         for (Player player : players){
             if (player.getNickname().equals(playerToSelect.getNickname())){
                 return player;
@@ -487,7 +508,7 @@ class GameRepresentation {
      * @param r row of the block from which to grab
      * @param c row of the block from which to grab
      */
-    void grabPlayerWeapon(Player player, String weapon, int r, int c){
+    void grabPlayerWeapon(Player player, String weapon, int r, int c) {
         // Here we select the spawnpoint from which remove the weapon grabbed
         getSpawnpointWeapons(r, c).remove(weapon);
         // then we add the weapon to player's wallet
@@ -501,7 +522,7 @@ class GameRepresentation {
      * @param r row of the block to which drop
      * @param c row of the block to which drop
      */
-    void dropPlayerWeapon(Player player, String weapon, int r, int c){
+    void dropPlayerWeapon(Player player, String weapon, int r, int c) {
         // Here we select the spawnpoint to which add the weapon dropped
         getSpawnpointWeapons(r, c).add(weapon);
         // then we remove the weapon from player's wallet
@@ -510,7 +531,7 @@ class GameRepresentation {
         } else selectPlayer(player).getWallet().getUnloadedWeapons().remove(weapon);
     }
 
-    String addWeaponToSpawnpoint(String weapon, int r, int c){
+    String addWeaponToSpawnpoint(String weapon, int r, int c) {
         List<String> spawnpointWeapons = getSpawnpointWeapons(r, c);
         if (!spawnpointWeapons.contains(weapon)){
             spawnpointWeapons.add(weapon);
@@ -523,7 +544,7 @@ class GameRepresentation {
      * @param c column of the chosen spawnpoint
      * @return list of weapons of the chosen spawnpoint
      */
-    private List<String> getSpawnpointWeapons(int r, int c){
+    private List<String> getSpawnpointWeapons(int r, int c) {
         if (r == 0){
             return weaponsOnSpawnpoint.get(CurrencyColor.BLUE);
         } else if (c == 0){
@@ -532,13 +553,12 @@ class GameRepresentation {
 
     }
 
-    private CurrencyColor getSpawnpointColor(int r, int c){
+    private CurrencyColor getSpawnpointColor(int r, int c) {
         if (r == 0){
             return CurrencyColor.RED;
         } else if (c == 0){
             return CurrencyColor.BLUE;
         } else return CurrencyColor.YELLOW;
-
     }
 
     /**
@@ -558,7 +578,7 @@ class GameRepresentation {
      * This method shows a map with all the stored infos in this class
      * @param printStream output to which print the map
      */
-    void showUpdatedSituation(PrintStream printStream){
+    void showUpdatedSituation(PrintStream printStream) {
         List<String> updatedBoard = new LinkedList<>(getBoard());
         updatedBoard = positPlayers(updatedBoard);
         updatedBoard = positSpawnpointsWeapons(updatedBoard);
@@ -571,7 +591,7 @@ class GameRepresentation {
      * This method shows a map with the stored infos in this class without detailed players's info
      * @param printStream output to which print the map
      */
-    void showUpdatedMap(PrintStream printStream){
+    void showUpdatedMap(PrintStream printStream) {
         List<String> updatedBoard = new LinkedList<>(getBoard());
         updatedBoard = positPlayers(updatedBoard);
         updatedBoard = positSpawnpointsWeapons(updatedBoard);
@@ -580,10 +600,45 @@ class GameRepresentation {
         }
     }
 
-    void showPlayersInfo(PrintStream printStream){
+    void showPlayersInfo(PrintStream printStream) {
         List<String> playersInfo = positPlayerInfo(new LinkedList<>());
         for (String line : playersInfo){
-            printStream.println(line);
+            printStream.print(line);
+        }
+    }
+
+    /**
+     * This method shows the situations of ammos on the board
+     * @param printStream stream to which print the info
+     */
+    void showBonusMap(PrintStream printStream) {
+        List<String> boardToPrint = new LinkedList<>(getBoard());
+        int ammoToDisplayLenght = getColumnDistance()/3;
+        for (Map.Entry<Point, List<CurrencyColor>> bonusTileEntry : bonusMap.entrySet()) {
+            int x = (int) (getColumnOffset() + bonusTileEntry.getKey().getX()*getColumnDistance() + 4);
+            int y = (int) (getRowOffset()    + bonusTileEntry.getKey().getY()*getRowDistance());
+            int i = 0;
+            for (CurrencyColor color : bonusTileEntry.getValue()){
+                StringBuilder ammoToDisplay = new StringBuilder();
+                for (int k = 0; k < ammoToDisplayLenght; k++){
+                    ammoToDisplay.append(ANSIColor.parseSymbolToBeParsedAsColor(color));
+                }
+                String newLine = boardToPrint.get(y + i);
+                newLine = newLine.substring(0, x) + ammoToDisplay.toString() + newLine.substring(x + ammoToDisplayLenght);
+                boardToPrint.remove(y + i);
+                boardToPrint.add(y + i, newLine);
+                i++;
+            }
+            if (bonusTileEntry.getValue().size() < 3) {
+                String powerupString = "Pow-Up";
+                String newLine = boardToPrint.get(y + i);
+                newLine = newLine.substring(0, x) + powerupString + newLine.substring(x + powerupString.length(), newLine.length());
+                boardToPrint.remove(y + i);
+                boardToPrint.add(y + i, newLine);
+            }
+        }
+        for (String line : boardToPrint){
+            printStream.print(ANSIColor.parseLettersToBackground(line));
         }
     }
 

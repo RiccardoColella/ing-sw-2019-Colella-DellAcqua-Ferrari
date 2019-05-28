@@ -7,5 +7,5 @@
   "maxClients": 5,
   "rmiPort": 9090,
   "socketPort": 9000,
-  "rmiHostname": "localhost"
+  "rmiHostname": "192.168.43.99"
 }

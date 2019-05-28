@@ -120,7 +120,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
             PowerupTile deckPowerup = powerupTileDeck.pick().orElseThrow(() -> new IllegalStateException("Run out of powerups!"));
             List<PowerupTile> playerPowerups = new LinkedList<>(player.getPowerups());
             playerPowerups.add(deckPowerup);
-            PowerupTile playerPowerup = selectSpawnpointFromPowerup(playerPowerups, player, view);
+            PowerupTile playerPowerup = selectSpawnpointFromPowerup(playerPowerups, player, playerViews.get(player));
             if (playerPowerup != deckPowerup) {
                 player.discardPowerup(playerPowerup);
                 player.grabPowerup(deckPowerup);

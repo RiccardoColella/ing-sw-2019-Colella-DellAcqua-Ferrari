@@ -120,7 +120,7 @@ class ANSIColor {
         return stringToParse;
     }
 
-    static String parseLettersToBackground(String line){
+    static String parseLettersToBackground(String line) {
         line = line.replace("ρ", ANSI_RED_BACKGROUND + " " + getEscapeReset());
         line = line.replace("γ", ANSI_GREEN_BACKGROUND + " " + getEscapeReset());
         line = line.replace("ψ", ANSI_YELLOW_BACKGROUND + " " + getEscapeReset());
@@ -129,5 +129,18 @@ class ANSIColor {
         line = line.replace("χ", ANSI_CYAN_BACKGROUND + " " + getEscapeReset());
         line = line.replace("κ", ANSI_BLACK_BACKGROUND + " " + getEscapeReset());
         return line;
+    }
+
+    static String parseSymbolToBeParsedAsColor(CurrencyColor color) {
+        switch (color) {
+            case YELLOW:
+                return "ψ";
+            case RED:
+                return "ρ";
+            case BLUE:
+                return "χ";
+            default:
+                return "";
+        }
     }
 }

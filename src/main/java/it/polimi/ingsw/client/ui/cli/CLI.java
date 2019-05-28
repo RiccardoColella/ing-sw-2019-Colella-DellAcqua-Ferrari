@@ -52,6 +52,14 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
     private final PrintStream printStream;
 
     private String nickname;
+    private String serverAddress;
+    private String connectionType;
+    private BoardFactory.Preset preset;
+    private Integer skulls;
+    private Match.Mode mode;
+
+    private boolean matchOnGoing = false;
+
 
     /**
      * This variable stores and knows how to represent the game situation
@@ -103,9 +111,9 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
         printStream.print(title);
         printStream.println("Enter the server address");
-        String serverAddress = scanner.nextLine();
+        serverAddress = scanner.nextLine();
 
-        String connectionType = askForSelection(
+        connectionType = askForSelection(
                 "Choose the connection type you'd like to use",
                 availableConnectionOptions,
                 false
@@ -114,12 +122,12 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         printStream.println("Enter a nickname");
         this.nickname = scanner.nextLine();
 
-        BoardFactory.Preset preset = askForSelection(
+        preset = askForSelection(
                 "Choose a board preset",
                 Arrays.asList(BoardFactory.Preset.values()),
                 false
         );
-        Integer skulls = askForSelection(
+        skulls = askForSelection(
                 "Choose a number of skulls",
                 availableSkulls,
                 false
@@ -128,9 +136,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
             throw new IllegalStateException("The user had to choose a number of skulls, null returned");
         }
 
-        Match.Mode mode = askForSelection(
+        List<Match.Mode> modes = new LinkedList<>(Arrays.asList(Match.Mode.values()));
+        modes.remove(Match.Mode.FINAL_FRENZY);
+        mode = askForSelection(
                 "Choose a match mode",
-                Arrays.asList(Match.Mode.values()),
+                modes,
                 false
         );
         if (connectionType != null) {
@@ -172,6 +182,23 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         connector.startListeningToQuestions();
     }
 
+    private void removeAllListeners(){
+        connector.removeMatchListener(this);
+        connector.removeDuplicatedNicknameListener(this);
+        connector.removeClientListener(this);
+        connector.removeQuestionMessageReceivedListener(this);
+        connector.removeBoardListener(this);
+        connector.removePlayerListener(this);
+    }
+
+    public void setMatchOnGoing(boolean value) {
+        this.matchOnGoing = value;
+    }
+
+    public boolean isMatchOnGoing() {
+        return matchOnGoing;
+    }
+
     /**
      * Method used for interacting with the user. It asks a question and wait for a valid user selection between the available options
      *
@@ -210,9 +237,12 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
                     case "wallets":
                         gameRepresentation.showPlayersInfo(printStream);
                         break;
+                    case "bonus":
+                        gameRepresentation.showBonusMap(printStream);
+                        break;
                     default:
                         printStream.println(w + "Please, insert a valid number!");
-                        printStream.println("Write 'all', 'map', or 'wallets' to get info about the state of the game");
+                        printStream.println("Write 'all', 'map', 'bonus' or 'wallets' to get info about the state of the game");
                         break;
                 }
             }
@@ -333,7 +363,6 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         answerCallback.accept(
                 askForSelection(question.getText(), question.getAvailableOptions(), question.isSkippable())
         );
-
     }
 
     @Override
@@ -348,7 +377,8 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
     @Override
     public void onMatchStarted(MatchStarted e) {
         gameRepresentation = new GameRepresentation(e);
-        gameRepresentation.showUpdatedSituation(printStream);
+        setMatchOnGoing(true);
+        printStream.println(m + "Match started!");
     }
 
     @Override
@@ -364,6 +394,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     @Override
     public void onMatchEnded(MatchEnded e) {
+        setMatchOnGoing(false);
         printStream.println(m + "Match ended!");
         printStream.println(m + "Your score is: " + e.getScore(nickname));
         String results = e.getRankings()
@@ -409,12 +440,12 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     @Override
     public void onBonusTileGrabbed(BonusTileEvent e) {
-        // TODO: implement
+        gameRepresentation.removeBonusFromMap(e.getBonusTile());
     }
 
     @Override
     public void onBonusTileDropped(BonusTileEvent e) {
-        // TODO: implement
+        gameRepresentation.addBonusToMap(e.getBonusTile());
     }
 
     @Override
@@ -542,14 +573,28 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     @Override
     public void onActivePlayerChanged(PlayerEvent e) {
-        gameRepresentation.showUpdatedSituation(printStream);
-        printStream.println(m + "Now it's " + e.getPlayer().getNickname() + " turn!");
-
+        if (isMatchOnGoing()) {
+            printStream.println(m + "Now it's " + e.getPlayer().getNickname() + " turn!");
+            gameRepresentation.showUpdatedMap(printStream);
+        } else printStream.println(m + "Game over!");
     }
 
     @Override
     public void onDuplicatedNickname() {
         printStream.println("Nickname " + nickname + " not available. Choose another nick!");
-        // TODO: close
+        removeAllListeners();
+
+        new Thread(() -> {
+            try {
+                connector.close();
+            } catch (Exception ex) {
+                printStream.println("Could not close the connector");
+            }
+        }).start();
+
+        printStream.println("Enter another nickname");
+        this.nickname = scanner.nextLine();
+
+        setConnector(serverAddress, connectionType, preset, skulls, mode);
     }
 }

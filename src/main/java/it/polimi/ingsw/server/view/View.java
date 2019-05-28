@@ -729,7 +729,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     private void notifyViewDisconnected() {
         ViewEvent e = new ViewEvent(this);
         synchronized (listeners) {
-            listeners.forEach(l -> l.onViewDisconnected(e));
+            new LinkedList<>(listeners).forEach(l -> l.onViewDisconnected(e));
         }
     }
 
