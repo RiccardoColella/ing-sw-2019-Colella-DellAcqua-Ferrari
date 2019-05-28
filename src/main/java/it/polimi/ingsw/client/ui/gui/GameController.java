@@ -10,6 +10,7 @@ import it.polimi.ingsw.client.ui.gui.events.listeners.NotificationListener;
 import it.polimi.ingsw.client.io.listeners.*;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
+import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.shared.Direction;
@@ -131,10 +132,43 @@ public class GameController extends WindowController implements AutoCloseable, Q
         stage.setOnCloseRequest(ignored -> this.close());
     }
 
+    public GameController(Connector connector, MatchResumed e) {
+        this(connector, (MatchStarted) e);
+        for (Player opponent : e.getOpponents()) {
+            PlayerBoardPane paneToUpdate = findPlayerBoard(opponent);
+            for (PlayerColor damage : opponent.getDamage()) {
+                paneToUpdate.addToken(damage);
+            }
+            for (PlayerColor mark : opponent.getMarks()) {
+                paneToUpdate.addMark(mark);
+            }
+            for (int i = 0; i < opponent.getSkulls(); i++) {
+                paneToUpdate.addSkull();
+            }
+        }
+        PlayerBoardPane paneToUpdate = findPlayerBoard(e.getSelf());
+        for (PlayerColor damage : e.getSelf().getDamage()) {
+            paneToUpdate.addToken(damage);
+        }
+        for (PlayerColor mark : e.getSelf().getMarks()) {
+            paneToUpdate.addMark(mark);
+        }
+        for (int i = 0; i < e.getSelf().getSkulls(); i++) {
+            paneToUpdate.addSkull();
+        }
+        for (Tuple<PlayerColor, Boolean> killshot : e.getKillshots()) {
+            boardContent.addKillshot(killshot.getItem1());
+            if (killshot.getItem2()) {
+                boardContent.addOverkill();
+            }
+        }
+        e.getPlayerLocations().forEach((p, l) -> boardContent.addPlayer(p, l.y, l.x));
+    }
+
     private void initPlayerBoard() {
-        playerBoardImg.setImg(UrlFinder.findPlayerBoard(self.getColor(), false), ImagePane.LEFT);
+        playerBoardImg.setImg(UrlFinder.findPlayerBoard(self.getColor(), self.isBoardFlipped()), ImagePane.LEFT);
         updatePlayerBoard(self, playerBoardImg);
-        playerTileImg.setImg(UrlFinder.findPlayerTile(self.getColor(), false), ImagePane.RIGHT);
+        playerTileImg.setImg(UrlFinder.findPlayerTile(self.getColor(), self.isTileFlipped()), ImagePane.RIGHT);
     }
 
     private void initOpponentsBoards() {
@@ -152,7 +186,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
         for (int i = 0; i < opponents.size(); i++) {
             Player opponent = opponents.get(i);
-            PlayerBoardPane opponentPane = new PlayerBoardPane(UrlFinder.findPlayerBoard(opponent.getColor(), false), ImagePane.LEFT);
+            PlayerBoardPane opponentPane = new PlayerBoardPane(UrlFinder.findPlayerBoard(opponent.getColor(), opponent.isBoardFlipped()), ImagePane.LEFT);
             opponentPane.setMaxHeight(59);
             opponentPane.setMinHeight(59);
             opponentPane.setMaxWidth(229);

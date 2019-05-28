@@ -434,10 +434,34 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
             }
         }
         if (resumed) {
+            int totalSkulls = match.getRemainingSkulls();
+            List<Integer> givenSkulls = match.getPlayers()
+                    .stream()
+                    .map(Player::getSkulls)
+                    .collect(Collectors.toList());
+            for (Integer s : givenSkulls) {
+                totalSkulls += s;
+            }
+            Map<PlayerColor, Point> playerLocations = match
+                    .getPlayers()
+                    .stream()
+                    .filter(p -> {
+                        try {
+                            p.getBlock();
+                            return true;
+                        }
+                        catch (IllegalStateException e) {
+                            return false;
+                        }
+                    })
+                    .collect(Collectors.toMap((
+                            p -> p.getPlayerInfo().getColor()),
+                            p -> new Point(p.getBlock().getColumn(), p.getBlock().getRow())
+                    ));
             outputMessageQueue.add(Message.createEvent(
                     ClientApi.MATCH_RESUMED_EVENT,
                     new it.polimi.ingsw.shared.events.networkevents.MatchResumed(
-                            match.getRemainingSkulls(),
+                            totalSkulls,
                             match.getBoardPreset(),
                             mapPlayer(player),
                             opponentsVM,
@@ -446,7 +470,9 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
                             weaponLeft,
                             mapPlayer(match.getActivePlayer()),
                             mapTurretBonusTiles(match.getBoard()),
-                            match.getMode()
+                            match.getMode(),
+                            match.getKillshots().stream().map(k -> new Tuple<>(k.getDamageToken().getAttacker().getPlayerInfo().getColor(), k.isOverkill())).collect(Collectors.toList()),
+                            playerLocations
                     )
             ));
         } else {

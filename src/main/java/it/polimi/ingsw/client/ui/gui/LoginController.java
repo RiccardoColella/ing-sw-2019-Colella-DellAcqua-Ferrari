@@ -255,8 +255,22 @@ public class LoginController extends WindowController implements MatchListener, 
 
     @Override
     public void onMatchResumed(MatchResumed e) {
-        // Nothing to do here
-
+        closeConnector = false;
+        connector.removeMatchListener(this);
+        connector.removeDuplicatedNicknameListener(this);
+        connector.removeClientListener(this);
+        Platform.runLater(
+                () -> {
+                    this.gameController = new GameController(connector, e);
+                    connector.addClientListener(gameController);
+                    connector.addQuestionMessageReceivedListener(gameController);
+                    connector.addMatchListener(gameController);
+                    connector.addBoardListener(gameController);
+                    connector.addPlayerListener(gameController);
+                    connector.startListeningToQuestions();
+                    this.close();
+                }
+        );
     }
 
     @Override
