@@ -98,6 +98,7 @@ public class Server implements ControllerListener {
                     config.getMaxClients()
             );
             Controller controller = initializer.initialize();
+            controller.addListener(this);
             activeRooms.add(controller);
             logger.info("Room setup completed, starting the match controller...");
 

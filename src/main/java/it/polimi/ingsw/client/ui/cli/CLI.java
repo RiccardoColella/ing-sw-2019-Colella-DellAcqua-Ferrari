@@ -162,7 +162,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
                 case "Socket":
                     connector = new SocketConnector();
                     addAllListeners();
-                    ((SocketConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9000));
+                    ((SocketConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9001));
                     break;
                 default:
                     throw new IllegalStateException("The user had to choose between Socket or RMI, unrecognized option " + connectionType);

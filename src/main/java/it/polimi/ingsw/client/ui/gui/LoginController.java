@@ -171,7 +171,7 @@ public class LoginController extends WindowController implements MatchListener, 
                     connector.addMatchListener(this);
                     connector.addDuplicatedNicknameListener(this);
                     connector.addClientListener(this);
-                    ((SocketConnector) connector).initialize(info, new InetSocketAddress(serverAddressField.getText(), 9000));
+                    ((SocketConnector) connector).initialize(info, new InetSocketAddress(serverAddressField.getText(), 9001));
                     break;
                 default:
                     throw new IllegalStateException("The user had to choose between Socket or RMI, unrecognized option " + connection);

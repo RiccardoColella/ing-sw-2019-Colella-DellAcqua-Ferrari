@@ -175,7 +175,7 @@ public class PowerupFactory {
                 .filter(dir -> start.getBorderType(dir) != Block.BorderType.WALL)
                 .collect(Collectors.toSet());
 
-        String question = "In which direction do you want to move" + (target == owner ? " yourself" : target.getPlayerInfo().getNickname()) + "?";
+        String question = "In which direction do you want to move " + (target == owner ? " yourself" : target.getPlayerInfo().getNickname()) + "?";
 
         Optional<Direction> chosenDirection =
                 (range.getMin() > 0) ?

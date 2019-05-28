@@ -1,7 +1,10 @@
 package it.polimi.ingsw.server.controller;
 
+import it.polimi.ingsw.server.Server;
 import it.polimi.ingsw.server.bootstrap.events.ViewReconnected;
 import it.polimi.ingsw.server.bootstrap.events.listeners.ViewReconnectedListener;
+import it.polimi.ingsw.server.controller.events.MatchEnded;
+import it.polimi.ingsw.server.controller.events.listeners.ControllerListener;
 import it.polimi.ingsw.server.controller.powerup.Powerup;
 import it.polimi.ingsw.server.controller.powerup.PowerupFactory;
 import it.polimi.ingsw.server.controller.weapons.Weapon;
@@ -46,6 +49,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
     private Deck<PowerupTile> powerupTileDeck;
     private Map<Player, View> playerViews = new HashMap<>();
     private int minClients;
+    private Set<ControllerListener> listeners = new HashSet<>();
 
     public Controller(Match match, List<View> views, int minClients) {
 
@@ -98,6 +102,23 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
             // TODO: save or force close?
         }
         logger.info("The match is over");
+
+        for (View view: views) {
+            if (view.isConnected()) {
+                try {
+                    view.close();
+                } catch (Exception e) {
+                    logger.warning("Couldn't close the view " + e);
+                }
+            }
+        }
+
+        notifyMatchEnded();
+    }
+
+    private void notifyMatchEnded() {
+        MatchEnded e = new MatchEnded(this);
+        listeners.forEach(l -> l.onMatchEnd(e));
     }
 
     /**
@@ -649,8 +670,10 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
             playerViews.put(oldView.get().getPlayer(), e.getView());
 
             views.forEach(view -> {
-                view.addViewListener(e.getView());
-                e.getView().addViewListener(view);
+                if (e.getView() != view) {
+                    view.addViewListener(e.getView());
+                    e.getView().addViewListener(view);
+                }
             });
             match.getPlayers().forEach(player -> {
                 player.addPlayerListener(e.getView());
@@ -698,16 +721,22 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
 
     @Override
     public void onViewDisconnected(ViewEvent e) {
-        try {
-            e.getView().removeViewListener(this);
-            e.getView().close();
-        } catch (Exception ex) {
-            logger.warning("Could't close view " + ex);
-        }
+        e.getView().removeViewListener(this);
+        new Thread(() -> {
+            try {
+                e.getView().close();
+            } catch (Exception ex) {
+                logger.warning("Couldn't close view " + ex);
+            }
+        }).start();
     }
 
     @Override
     public void onViewReady(ViewEvent e) {
         // Nothing to do here
+    }
+
+    public void addListener(ControllerListener l) {
+        listeners.add(l);
     }
 }

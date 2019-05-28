@@ -260,6 +260,10 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     @Nullable
     private  <T> T awaitResponse(String flowId, Collection<T> options) {
 
+        if (!connected) {
+            throw new ViewDisconnectedException("Unable to retrieve input message, view is not connected");
+        }
+
         try {
             Message response = inputMessageQueue.dequeueAnswer(flowId, answerTimeout, answerTimeoutUnit);
             Answer<T> answer = gson.fromJson(response.getPayload(), new AnswerOf<>(options.iterator().next().getClass()));
@@ -279,9 +283,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
      * Set the connection status to false and notify all the listeners
      */
     private void disconnect() {
-        logger.warning("Player " + getNickname() + " disconnected");
-        this.connected = false;
-        notifyViewDisconnected();
+        if (connected) {
+            logger.warning("Player " + getNickname() + " disconnected");
+            this.connected = false;
+            notifyViewDisconnected();
+        }
     }
 
     /**
@@ -379,6 +385,9 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     @Override
     public void close() throws Exception {
+
+        disconnect();
+
         java.time.Instant deadline = Instant.now().plus(Duration.ofMillis(CLOSE_TIMEOUT_MILLISECONDS));
 
         while (
@@ -392,13 +401,13 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
             heartbeatThreadPool.shutdown();
         }
         while (!heartbeatThreadPool.awaitTermination(5, TimeUnit.SECONDS)) {
-            logger.warning("Thread pool hasn't shut down yet, waiting...");
+            logger.warning(getNickname() + ": heartbeatThreadPool hasn't shut down yet, waiting...");
         }
         synchronized (eventThreadPool) {
             eventThreadPool.shutdown();
         }
         while (!eventThreadPool.awaitTermination(5, TimeUnit.SECONDS)) {
-            logger.warning("Thread pool hasn't shut down yet, waiting...");
+            logger.warning(getNickname() + ": eventThreadPool hasn't shut down yet, waiting...");
         }
     }
 
@@ -729,8 +738,10 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     private void notifyViewDisconnected() {
         ViewEvent e = new ViewEvent(this);
         synchronized (listeners) {
+            // Cloned list to prevent ConcurrentModificationException
             new LinkedList<>(listeners).forEach(l -> l.onViewDisconnected(e));
         }
+        onViewDisconnected(e);
     }
 
     /**

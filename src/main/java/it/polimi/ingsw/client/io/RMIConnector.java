@@ -6,6 +6,7 @@ import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
 import it.polimi.ingsw.shared.rmi.RMIMessageProxy;
 import it.polimi.ingsw.shared.rmi.RMIStreamProvider;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
@@ -49,17 +50,17 @@ public class RMIConnector extends Connector {
                     try {
                         return messageProxy.receiveMessage(timeout, unit);
                     } catch (RemoteException e) {
-                        throw new ViewDisconnectedException(e.toString());
+                        throw new IOException(e.toString());
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        throw new ViewDisconnectedException(e.toString());
+                        throw new IOException(e.toString());
                     }
                 },
                 message -> {
                     try {
                         messageProxy.sendMessage(message);
                     } catch (RemoteException e) {
-                        throw new ViewDisconnectedException(e.toString());
+                        throw new IOException(e.toString());
                     }
                 }
         );
