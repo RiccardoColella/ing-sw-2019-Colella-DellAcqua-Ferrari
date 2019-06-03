@@ -12,6 +12,7 @@ import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 import it.polimi.ingsw.shared.events.networkevents.MatchStarted;
 import it.polimi.ingsw.shared.datatransferobjects.Player;
 import it.polimi.ingsw.utils.ConfigFileMaker;
+import it.polimi.ingsw.utils.Tuple;
 import org.jetbrains.annotations.Contract;
 
 import java.awt.*;
@@ -44,7 +45,12 @@ class GameRepresentation {
     /**
      * This map stores the data about the bonus on the game board
      */
-    Map<Point, List<CurrencyColor>> bonusMap;
+    private Map<Point, List<CurrencyColor>> bonusMap;
+
+    /**
+     * This list stores the kills executed by every player in the correct order
+     */
+    private List<Tuple<PlayerColor, Boolean>> killshots;
 
     /**
      * This property stores all player's positions
@@ -95,6 +101,7 @@ class GameRepresentation {
         this.players = new LinkedList<>(e.getOpponents());
         this.players.add(0, e.getSelf());
         this.skulls = e.getSkulls();
+        this.killshots = new LinkedList<>();
         this.weaponsOnSpawnpoint = new EnumMap<>(CurrencyColor.class);
         this.weaponsOnSpawnpoint.put(CurrencyColor.BLUE, e.getWeaponTop());
         this.weaponsOnSpawnpoint.put(CurrencyColor.RED, e.getWeaponLeft());
@@ -136,16 +143,28 @@ class GameRepresentation {
         }
     }
 
+    /**
+     * This functions initialize the bonus map when the match is starting
+     * @param bonusTiles the collection of all ammocubes and powerups on the board, and their locations
+     */
     private void initializeBonusMap(Collection<BonusTile> bonusTiles) {
         for (BonusTile tile : bonusTiles){
             bonusMap.put(tile.getLocation(), tile.getAmmoCubes());
         }
     }
 
+    /**
+     * This method removes a bonus from bonus the map
+     * @param tile the bonus to be added
+     */
     void removeBonusFromMap(BonusTile tile) {
         bonusMap.remove(tile.getLocation());
     }
 
+    /**
+     * This method adds a bonus to the bonus map
+     * @param tile the bonus to be added
+     */
     void addBonusToMap(BonusTile tile) {
         bonusMap.put(tile.getLocation(), tile.getAmmoCubes());
     }
@@ -173,18 +192,38 @@ class GameRepresentation {
         this.board = boardUnderConstruction;
     }
 
+    /**
+     * This method returns the row offset
+     * @return the row offset
+     */
     @Contract(pure = true)
     private int getRowOffset() { return rowOffset; }
 
+    /**
+     * This method returns the column offset
+     * @return the column offset
+     */
     @Contract(pure = true)
     private int getColumnOffset() { return columnOffset; }
 
+    /**
+     * This method returns the row distance from one block to another
+     * @return the row distance
+     */
     @Contract(pure = true)
     private int getRowDistance() { return rowDistance; }
 
+    /**
+     * This method returns the column distance from one block to another
+     * @return the column distance
+     */
     @Contract(pure = true)
     private int getColumnDistance() { return columnDistance; }
 
+    /**
+     * This method returns the list of all players
+     * @return the list of all players
+     */
     protected List<Player> getPlayers() { return this.players; }
 
     /**
@@ -208,12 +247,28 @@ class GameRepresentation {
         }
     }
 
+    /**
+     * This method sets a player as alive
+     * @param playerAlive player to be setted as alive
+     */
     void setPlayerAlive(Player playerAlive){
         alivePlayers.put(playerAlive, true);
     }
 
+    /**
+     * This method sets a player as died
+     * @param playerDied player to be setted as died
+     */
     void setPlayerDied(Player playerDied){
         alivePlayers.put(playerDied, false);
+    }
+
+    /**
+     * This method update the killshots variable
+     * @param killshots new killshot track to be setted
+     */
+    void setKillshots(List<Tuple<PlayerColor, Boolean>> killshots){
+        this.killshots = killshots;
     }
 
     /**
@@ -248,6 +303,26 @@ class GameRepresentation {
             }
         }
         return boardWithPlayers;
+    }
+
+    /**
+     * This method posit on the return list of strings the kill-shots track as last line of the given board
+     * @param board the list of strings to which add the kill-shots track
+     * @return the list of strings with the kill-shots track added as last element
+     */
+    List<String> positKillshots(List<String> board){
+        List<String> boardWithKillshots = new LinkedList<>(board);
+        String killshotsString = " - Killshots: [";
+        StringBuilder killshotsLine = new StringBuilder(killshotsString);
+        for (Tuple<PlayerColor, Boolean> kill : killshots){
+            if (kill.getItem2()){
+                appendColoredBoldBackgroundString(killshotsLine, kill.getItem1(), "K");
+            } else appendColoredBackgroundString(killshotsLine, kill.getItem1(), "k");
+        }
+        appendBoldRepeatedString(killshotsLine, "-", skulls - killshots.size());
+        killshotsLine.append("]");
+        boardWithKillshots.add(killshotsLine.toString());
+        return boardWithKillshots;
     }
 
     /**
@@ -288,8 +363,8 @@ class GameRepresentation {
      * @param board board to which add the players
      * @return the built board
      */
-    List<String> positPlayerInfo(List<String> board) {
-        List<String> boardUpdated = new LinkedList<>(board);
+    private List<String> positPlayerInfo(List<String> board) {
+        List<String> boardUpdated = positKillshots(board);
         String separator = ". ";
         for (Player player : players){
             List<String> linesToAdd = new LinkedList<>();
@@ -436,8 +511,31 @@ class GameRepresentation {
      */
     private void appendColoredBoldString(StringBuilder stringBuilder, PlayerColor color, String string) {
         stringBuilder.append(ANSIColor.getEscape(color));
+        appendBoldRepeatedString(stringBuilder, string, 1);
+    }
+
+    /**
+     * This method appends a coloured bold string to a given string
+     * @param stringBuilder string to which add infos
+     * @param color chosen color
+     * @param string string to be added
+     */
+    private void appendColoredBoldBackgroundString(StringBuilder stringBuilder, PlayerColor color, String string) {
+        stringBuilder.append(ANSIColor.getEscapeBackground(color));
+        appendBoldRepeatedString(stringBuilder, string, 1);
+    }
+
+    /**
+     * This method appends a coloured bold string to a given string
+     * @param stringBuilder string to which add infos
+     * @param string string to be added
+     * @param times the number of times the string needs to be repeated
+     */
+    private void appendBoldRepeatedString(StringBuilder stringBuilder, String string, int times) {
         stringBuilder.append(ANSIColor.getEscapeBold());
-        stringBuilder.append(string);
+        for (int i = 0; i < times; i++){
+            stringBuilder.append(string);
+        }
         stringBuilder.append(ANSIColor.getEscapeReset());
     }
 
@@ -531,6 +629,13 @@ class GameRepresentation {
         } else selectPlayer(player).getWallet().getUnloadedWeapons().remove(weapon);
     }
 
+    /**
+     * This string adds a weapon to a spawnpoint
+     * @param weapon weapon to be added to the spawnpoint
+     * @param r row of the spawnpoint
+     * @param c column of the spawnpoint
+     * @return the spawnpoint color as string
+     */
     String addWeaponToSpawnpoint(String weapon, int r, int c) {
         List<String> spawnpointWeapons = getSpawnpointWeapons(r, c);
         if (!spawnpointWeapons.contains(weapon)){
@@ -553,6 +658,12 @@ class GameRepresentation {
 
     }
 
+    /**
+     * This method returns the color of the spawnpoint given it's position
+     * @param r the row of the spawnpoint
+     * @param c the column of the spawnpoint
+     * @return the spawnpoint's color
+     */
     private CurrencyColor getSpawnpointColor(int r, int c) {
         if (r == 0){
             return CurrencyColor.RED;
@@ -600,6 +711,10 @@ class GameRepresentation {
         }
     }
 
+    /**
+     * This method prints on the given print stream the players's info
+     * @param printStream the print stream to which print the players's info
+     */
     void showPlayersInfo(PrintStream printStream) {
         List<String> playersInfo = positPlayerInfo(new LinkedList<>());
         for (String line : playersInfo){

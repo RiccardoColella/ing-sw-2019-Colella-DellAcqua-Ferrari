@@ -155,6 +155,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
      * This method lets the player choose the spawnpoint at the beginning of the match or when he die
      * @param powerups list of powerups to discard to choose spawnpoint
      * @param player active player
+     * @param view the view to be asked
      * @return the selected powerup to be discarded
      */
     private PowerupTile selectSpawnpointFromPowerup(List<PowerupTile> powerups, Player player, Interviewer view){

@@ -51,13 +51,40 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
      */
     private final PrintStream printStream;
 
+    /**
+     *  This variable stores the nickname sent to the server
+     */
     private String nickname;
+
+    /**
+     * This variable stores the address of the server
+     */
     private String serverAddress;
+
+    /**
+     * This variable stores the connection type as a string. May be RMI or Socket
+     */
     private String connectionType;
+
+    /**
+     * This variable stores the preferred preset sent to the server during login
+     */
     private BoardFactory.Preset preset;
+
+    /**
+     * This variable stores the preferred number of skulls sent to the server during login
+     */
     private Integer skulls;
+
+    /**
+     * This variable stores the preferred match mode sent to the server during login
+     */
     private Match.Mode mode;
 
+    /**
+     * This variable tells the CLI if there is an active play or not. It is useful for different
+     * behaviour during execution depending on different situations
+     */
     private boolean matchOnGoing = false;
 
 
@@ -112,6 +139,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         printStream.print(title);
         printStream.println("Enter the server address");
         serverAddress = scanner.nextLine();
+        //If the player didn't insert anything we consider the preference as localhost
+        if (serverAddress.equals("")){
+            serverAddress = "localhost";
+        }
 
         connectionType = askForSelection(
                 "Choose the connection type you'd like to use",
@@ -137,6 +168,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
 
         List<Match.Mode> modes = new LinkedList<>(Arrays.asList(Match.Mode.values()));
+        //Final Frienzy is not a valid preferred match mode for the start
         modes.remove(Match.Mode.FINAL_FRENZY);
         mode = askForSelection(
                 "Choose a match mode",
@@ -144,14 +176,16 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
                 false
         );
         if (connectionType != null) {
-            setConnector(serverAddress, connectionType, preset, skulls, mode);
+            setConnector();
         } else throw new IllegalStateException("The user had to choose between Socket or RMI, null returned");
-
 
         connector.addQuestionMessageReceivedListener(this);
     }
 
-    private void setConnector(String serverAddress, String connectionType, BoardFactory.Preset preset, int skulls, Match.Mode mode){
+    /**
+     * This method sets up the connector, after having received the preferences
+     */
+    private void setConnector(){
         try {
             switch (connectionType) {
                 case "RMI":
@@ -162,7 +196,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
                 case "Socket":
                     connector = new SocketConnector();
                     addAllListeners();
-                    ((SocketConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9001));
+                    ((SocketConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9000));
                     break;
                 default:
                     throw new IllegalStateException("The user had to choose between Socket or RMI, unrecognized option " + connectionType);
@@ -172,6 +206,9 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This method adds the listeners needed for the game to be played
+     */
     private void addAllListeners(){
         connector.addMatchListener(this);
         connector.addDuplicatedNicknameListener(this);
@@ -182,6 +219,9 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         connector.startListeningToQuestions();
     }
 
+    /**
+     * This method removes all the listeners previously added
+     */
     private void removeAllListeners(){
         connector.removeMatchListener(this);
         connector.removeDuplicatedNicknameListener(this);
@@ -191,11 +231,19 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         connector.removePlayerListener(this);
     }
 
-    public void setMatchOnGoing(boolean value) {
+    /**
+     * This setting method sets the matchOnGoing variable
+     * @param value value to be assigned to matchOnGoing
+     */
+    private void setMatchOnGoing(boolean value) {
         this.matchOnGoing = value;
     }
 
-    public boolean isMatchOnGoing() {
+    /**
+     * This methods tells if there is an active play
+     * @return true if the play is ongoing
+     */
+    private boolean isMatchOnGoing() {
         return matchOnGoing;
     }
 
@@ -211,7 +259,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
     @Nullable
     private <T> T askForSelection(String questionText, Collection<T> optionCollection, boolean skippable) {
         List<T> options = new LinkedList<>(optionCollection);
-        int chosenIndex;
+        int chosenIndex = -1;
         String answer = "";
         do {
             printStream.println(questionText);
@@ -226,25 +274,9 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
                 answer = scanner.nextLine();
                 chosenIndex = Integer.parseInt(answer);
             } catch (Exception ex) {
-                chosenIndex = -1;
-                switch (answer) {
-                    case "all":
-                        gameRepresentation.showUpdatedSituation(printStream);
-                        break;
-                    case "map":
-                        gameRepresentation.showUpdatedMap(printStream);
-                        break;
-                    case "wallets":
-                        gameRepresentation.showPlayersInfo(printStream);
-                        break;
-                    case "bonus":
-                        gameRepresentation.showBonusMap(printStream);
-                        break;
-                    default:
-                        printStream.println(w + "Please, insert a valid number!");
-                        printStream.println("Write 'all', 'map', 'bonus' or 'wallets' to get info about the state of the game");
-                        break;
-                }
+                if (matchOnGoing) {
+                    manageRepresentationAsks(answer);
+                } else printStream.println(w + "Insert a valid number!");
             }
         } while (!((skippable ? 0 : 1) <= chosenIndex && chosenIndex <= options.size()));
 
@@ -252,6 +284,27 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
             return null;
         } else {
             return options.get(chosenIndex - 1);
+        }
+    }
+
+    private void manageRepresentationAsks(String answer) {
+        switch (answer) {
+            case "all":
+                gameRepresentation.showUpdatedSituation(printStream);
+                break;
+            case "map":
+                gameRepresentation.showUpdatedMap(printStream);
+                break;
+            case "wallets":
+                gameRepresentation.showPlayersInfo(printStream);
+                break;
+            case "bonus":
+                gameRepresentation.showBonusMap(printStream);
+                break;
+            default:
+                printStream.println(w + "Please, insert a valid number!");
+                printStream.println("Write 'all', 'map', 'bonus' or 'wallets' to get info about the state of the game");
+                break;
         }
     }
 
@@ -267,6 +320,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This method is called when the player should choose the direction in which to moove
+     * @param question The question sent to the print stream
+     * @param answerCallback The possible answers
+     */
     @Override
     public void onDirectionQuestion(Question<Direction> question, Consumer<Direction> answerCallback) {
         printStream.println(q + "Direction question");
@@ -276,6 +334,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     }
 
+    /**
+     * This method is called when the player should choose the attack to perform
+     * @param question the question sent to the print stream
+     * @param answerCallback the possible answers
+     */
     @Override
     public void onAttackQuestion(Question<String> question, Consumer<String> answerCallback) {
         printStream.println(q + "Attack question");
@@ -285,6 +348,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     }
 
+    /**
+     * This method is called when the player should choose the action to perform
+     * @param question the question sent to the print stream
+     * @param answerCallback the possible actions
+     */
     @Override
     public void onBasicActionQuestion(Question<BasicAction> question, Consumer<BasicAction> answerCallback) {
         printStream.println(q + "Basic action question");
@@ -294,6 +362,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     }
 
+    /**
+     * This method is called when the player should choose a block to which move
+     * @param question the question sent to the print stream
+     * @param answerCallback the possible answers
+     */
     @Override
     public void onBlockQuestion(Question<Point> question, Consumer<Point> answerCallback) {
         printStream.println(q + "Block question");
@@ -303,6 +376,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     }
 
+    /**
+     * This method is called when the player should choose the payment method
+     * @param question the question sent to the print stream
+     * @param answerCallback the possible answers
+     */
     @Override
     public void onPaymentMethodQuestion(Question<String> question, Consumer<String> answerCallback) {
         printStream.println(q + "Payment method question");
@@ -312,6 +390,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     }
 
+    /**
+     * This method is called when the player should choose the powerup to use
+     * @param question the question sent to the print stream
+     * @param answerCallback the possible answers
+     */
     @Override
     public void onPowerupQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback) {
         printStream.println(q + "Powerup question");
@@ -321,6 +404,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     }
 
+    /**
+     * This method is called when the player should choose a weapon to use
+     * @param question the question sent to the print stream
+     * @param answerCallback the possible answers
+     */
     @Override
     public void onWeaponQuestion(Question<String> question, Consumer<String> answerCallback) {
         printStream.println(q + "Weapon question");
@@ -330,6 +418,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     }
 
+    /**
+     * This method is called when the player should choose which weapon to reload
+     * @param question the question sent to the print stream
+     * @param answerCallback the possible answers
+     */
     @Override
     public void onReloadQuestion(Question<String> question, Consumer<String> answerCallback) {
         printStream.println(q + "Reload question");
@@ -339,6 +432,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     }
 
+    /**
+     * This method is called when the player should choose the powerup to discard to choose the spawnpoint
+     * @param question the question sent to the print stream
+     * @param answerCallback the possible answers
+     */
     @Override
     public void onSpawnpointQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback) {
         printStream.println(q + "Spawnpoint question");
@@ -348,6 +446,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     }
 
+    /**
+     * This method is called when the player should choose the targets to select
+     * @param question the question sent to the print stream
+     * @param answerCallback the possible answers
+     */
     @Override
     public void onTargetQuestion(Question<String> question, Consumer<String> answerCallback) {
         printStream.println(q + "Target question");
@@ -357,6 +460,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     }
 
+    /**
+     * This method is called when the player should choose a set of targets to select
+     * @param question the question sent to the print stream
+     * @param answerCallback the possible answers
+     */
     @Override
     public void onTargetSetQuestion(Question<Set<String>> question, Consumer<Set<String>> answerCallback) {
         printStream.println(q + "Target set question");
@@ -365,6 +473,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         );
     }
 
+    /**
+     * This method is called when the player should choose the payment method to be used
+     * @param question the question sent to the print stream
+     * @param answerCallback the possible answers
+     */
     @Override
     public void onPaymentColorQuestion(Question<CurrencyColor> question, Consumer<CurrencyColor> answerCallback) {
         printStream.println(q + "Payment color question");
@@ -374,6 +487,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     }
 
+    /**
+     * This event is called when the match starts
+     * @param e The matchStarted event
+     */
     @Override
     public void onMatchStarted(MatchStarted e) {
         gameRepresentation = new GameRepresentation(e);
@@ -381,17 +498,29 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         printStream.println(m + "Match started!");
     }
 
+    /**
+     * This event is called when the match mode changes
+     * @param e the matchModeChanged event
+     */
     @Override
     public void onMatchModeChanged(MatchModeChanged e) {
         printStream.print(w + "Match mode changed! It now is: " + e.getMode().toString());
     }
 
+    /**
+     * This event is called when the kill-shot track has some changes.
+     * @param e The killshotTrackChanged event containing the new kill shots track
+     */
     @Override
     public void onKillshotTrackChanged(KillshotTrackChanged e) {
-        // TODO: implement
+        gameRepresentation.setKillshots(e.getKillshots());
 
     }
 
+    /**
+     * This event is called when the match ends. It shows the final rankings
+     * @param e the MatchEnded event
+     */
     @Override
     public void onMatchEnded(MatchEnded e) {
         setMatchOnGoing(false);
@@ -415,6 +544,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     }
 
+    /**
+     * This event is called when a player on the board moves
+     * @param e the PlayerMoved event
+     */
     @Override
     public void onPlayerMoved(PlayerMoved e) {
         gameRepresentation.movePlayer(e.getPlayer(), e.getRow(), e.getColumn());
@@ -423,6 +556,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This event is called when a player on the board teleports
+     * @param e the PlayerMoved event containing informations about the player who teleported
+     */
     @Override
     public void onPlayerTeleported(PlayerMoved e) {
         gameRepresentation.movePlayer(e.getPlayer(), e.getRow(), e.getColumn());
@@ -431,6 +568,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This event is called when a new weapon is available on the field
+     * @param e the WeaponEvent containing informations about the weapon
+     */
     @Override
     public void onNewWeaponAvailable(WeaponEvent e) {
         if (gameRepresentation != null){
@@ -438,16 +579,28 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This event is called when an ammo or a powerup is grabbed from the field
+     * @param e the bonusTileEvent containing info about the grabbed bonus
+     */
     @Override
     public void onBonusTileGrabbed(BonusTileEvent e) {
         gameRepresentation.removeBonusFromMap(e.getBonusTile());
     }
 
+    /**
+     * This event is called when an ammo or a powerup is dropped on the field
+     * @param e the bonusTileEvent containing info about the dropped bonus
+     */
     @Override
     public void onBonusTileDropped(BonusTileEvent e) {
         gameRepresentation.addBonusToMap(e.getBonusTile());
     }
 
+    /**
+     * This event is called when a player dies
+     * @param e the PlayerEvent containing info about the player who died
+     */
     @Override
     public void onPlayerDied(PlayerEvent e) {
         gameRepresentation.updatePlayer(e.getPlayer());
@@ -459,6 +612,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This event is called when a player reborn
+     * @param e the PlayerEvent containing info about the player who reborn
+     */
     @Override
     public void onPlayerReborn(PlayerEvent e) {
         gameRepresentation.updatePlayer(e.getPlayer());
@@ -470,6 +627,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This event is called when a player's wallet changes
+     * @param e the event containing info about the new wallet of the player
+     */
     @Override
     public void onPlayerWalletChanged(PlayerWalletChanged e) {
         gameRepresentation.updatePlayer(e.getPlayer());
@@ -479,6 +640,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This event is called when a player's board filps
+     * @param e the event containing info about the player who flipped his board
+     */
     @Override
     public void onPlayerBoardFlipped(PlayerEvent e) {
         if (e.getPlayer().getNickname().equals(nickname)){
@@ -487,6 +652,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         printStream.println(w + e.getPlayer().getNickname() + "'s board flipped");
     }
 
+    /**
+     * This event is called when a player tile's flips
+     * @param e the event containing info about the player who flipped his tile
+     */
     @Override
     public void onPlayerTileFlipped(PlayerEvent e) {
         gameRepresentation.updatePlayer(e.getPlayer());
@@ -496,6 +665,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         printStream.println(w + e.getPlayer().getNickname() + "'s tile flipped");
     }
 
+    /**
+     * This event is called when a player's health changes
+     * @param e the event containing info about the player's health
+     */
     @Override
     public void onPlayerHealthChanged(PlayerHealthChanged e) {
         gameRepresentation.updatePlayer(e.getPlayer());
@@ -506,6 +679,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This event is called when a weapon is reloaded
+     * @param e the event containing info about the player and the reloaded weapon
+     */
     @Override
     public void onWeaponReloaded(PlayerWeaponEvent e) {
         gameRepresentation.updatePlayer(e.getPlayer());
@@ -514,6 +691,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This event is called when a weapon becomes unloaded
+     * @param e the event containing info about the player and the unloaded weapon
+     */
     @Override
     public void onWeaponUnloaded(PlayerWeaponEvent e) {
         gameRepresentation.updatePlayer(e.getPlayer());
@@ -522,6 +703,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This event is called when a weapon is picked up
+     * @param e the event containing info about the player and the picked up weapon
+     */
     @Override
     public void onWeaponPicked(PlayerWeaponExchanged e) {
         gameRepresentation.grabPlayerWeapon(e.getPlayer(), e.getWeaponName(), e.getRow(), e.getColumn());
@@ -530,6 +715,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This event is called when a weapon is dropped
+     * @param e the event containing info about the player and the dropped weapon
+     */
     @Override
     public void onWeaponDropped(PlayerWeaponExchanged e) {
         gameRepresentation.dropPlayerWeapon(e.getPlayer(), e.getWeaponName(), e.getRow(), e.getColumn());
@@ -538,6 +727,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This event is called when a player completes successfully the login
+     * @param e the ClientEvent containing info about the new client connected
+     */
     @Override
     public void onLoginSuccess(ClientEvent e) {
         if (e.getNickname().equals(this.nickname)){
@@ -545,16 +738,28 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         } else printStream.println(e.getNickname() + " connected to the game");
     }
 
+    /**
+     * This event is called when a clients disconnected
+     * @param e the ClientEvent containing info about the new client connected
+     */
     @Override
     public void onClientDisconnected(ClientEvent e) {
         printStream.println(w + e.getNickname() + " disconnected");
     }
 
+    /**
+     * This event is called when a clients reconnected
+     * @param e the ClientEvent containing info about the client reconnected
+     */
     @Override
     public void onPlayerReconnected(PlayerEvent e) {
         printStream.println(w + e.getPlayer().getNickname() + " reconnected");
     }
 
+    /**
+     * This event is called when a player spawns on a spawnpoint
+     * @param e The event containing info about the player who spawns and his location
+     */
     @Override
     public void onPlayerSpawned(PlayerSpawned e) {
         gameRepresentation.setPlayerAlive(e.getPlayer());
@@ -564,6 +769,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         }
     }
 
+    /**
+     * This event is called when a player gets overkilled
+     * @param e the Player event containing info about the player who has been overkilled
+     */
     @Override
     public void onPlayerOverkilled(PlayerEvent e) {
         if (e.getPlayer().getNickname().equals(nickname)){
@@ -571,6 +780,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         } else printStream.println(w + e.getPlayer().getNickname() + " has been overkilled");
     }
 
+    /**
+     * This event is called when the active player changes
+     * @param e The PlayerEvent containing info about the new active player
+     */
     @Override
     public void onActivePlayerChanged(PlayerEvent e) {
         if (isMatchOnGoing()) {
@@ -579,6 +792,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         } else printStream.println(m + "Game over!");
     }
 
+    /**
+     * This event is called during login if the print stream choose a nickname already selected by a connected player
+     * to the server. This event lets the print stream choose another nickname
+     */
     @Override
     public void onDuplicatedNickname() {
         printStream.println("Nickname " + nickname + " not available. Choose another nick!");
@@ -595,6 +812,6 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         printStream.println("Enter another nickname");
         this.nickname = scanner.nextLine();
 
-        setConnector(serverAddress, connectionType, preset, skulls, mode);
+        setConnector();
     }
 }

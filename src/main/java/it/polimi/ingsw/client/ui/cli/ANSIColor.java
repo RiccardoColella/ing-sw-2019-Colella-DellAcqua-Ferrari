@@ -32,10 +32,19 @@ class ANSIColor {
         throw new IllegalStateException("An utility class, as ANSIColor is, should not be constructed");
     }
 
+    /**
+     * This method returns the ANSI_RESET value
+     * @return the ANSI_RESET value
+     */
     static String getEscapeReset(){
         return ANSI_RESET;
     }
 
+    /**
+     * This method returns the ANSI escape for the given color
+     * @param color selected color
+     * @return the ANSI escape for the given color
+     */
     static String getEscape(CurrencyColor color){
         switch (color){
             case YELLOW:
@@ -49,6 +58,11 @@ class ANSIColor {
         }
     }
 
+    /**
+     * This method returns the ANSI escape for the given color
+     * @param color selected color
+     * @return the ANSI escape for the given color
+     */
     static String getEscape(PlayerColor color){
         switch (color){
             case YELLOW:
@@ -66,6 +80,11 @@ class ANSIColor {
         }
     }
 
+    /**
+     * This method returns the ANSI escape for the given background color
+     * @param color selected color
+     * @return the ANSI escape for the given background color
+     */
     static String getEscapeBackground(CurrencyColor color){
         switch (color){
             case YELLOW:
@@ -79,6 +98,11 @@ class ANSIColor {
         }
     }
 
+    /**
+     * This method returns the ANSI escape for the given background color
+     * @param color selected color
+     * @return the ANSI escape for the given background color
+     */
     static String getEscapeBackground(PlayerColor color){
         switch (color){
             case YELLOW:
@@ -96,18 +120,35 @@ class ANSIColor {
         }
     }
 
+    /**
+     * This method returns the ANSI escape for the bold writing
+     * @return the ANSI escape for the bold writing
+     */
     static String getEscapeBold() {
         return ANSI_BOLD;
     }
 
+    /**
+     * This method returns the ANSI escape for the underlined writing
+     * @return the ANSI escape for the underlined writing
+     */
     static String getEscapeUnderlined() {
         return ANSI_UNDERLINED;
     }
 
+    /**
+     * This method returns the ANSI escape for the reversed writing
+     * @return the ANSI escape for the reversed writing
+     */
     static String getEscapeReversed() {
         return ANSI_REVERSED;
     }
 
+    /**
+     * This method parse colors for string using formats as WordToBeWrittenInColor (Color: COLOR)
+     * @param stringToParse the string to be parsed
+     * @return the colored string
+     */
     static String parseColor(String stringToParse) {
         Matcher m = Pattern.compile(".*(\\w*)(Color: ([A-Z]+))").matcher(stringToParse);
         if (m.find()) {
@@ -120,6 +161,11 @@ class ANSIColor {
         return stringToParse;
     }
 
+    /**
+     * This method parses some special characters to a background-colored space
+     * @param line the String to be parsed
+     * @return the parsed String
+     */
     static String parseLettersToBackground(String line) {
         line = line.replace("ρ", ANSI_RED_BACKGROUND + " " + getEscapeReset());
         line = line.replace("γ", ANSI_GREEN_BACKGROUND + " " + getEscapeReset());
@@ -131,6 +177,11 @@ class ANSIColor {
         return line;
     }
 
+    /**
+     * This method encodes special colors to characters
+     * @param color color to be encoded
+     * @return the special character encoded
+     */
     static String parseSymbolToBeParsedAsColor(CurrencyColor color) {
         switch (color) {
             case YELLOW:

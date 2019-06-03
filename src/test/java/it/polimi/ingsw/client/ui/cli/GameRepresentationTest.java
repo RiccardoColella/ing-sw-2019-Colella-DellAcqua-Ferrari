@@ -8,15 +8,13 @@ import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 import it.polimi.ingsw.shared.events.networkevents.MatchStarted;
 import it.polimi.ingsw.shared.datatransferobjects.Player;
 import it.polimi.ingsw.shared.datatransferobjects.Wallet;
+import it.polimi.ingsw.utils.Tuple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GameRepresentationTest {
     private GameRepresentation gameRepresentation;
@@ -81,6 +79,69 @@ class GameRepresentationTest {
                 false,
                 false
         );
+    }
+
+    @Test
+    void positKillshots() {
+        //Test without kill-shots
+        List<Tuple<PlayerColor, Boolean>> killshots = new LinkedList<>();
+        List<String> boardWithKillshots = new LinkedList<>();
+        boardWithKillshots.add("┌──────────────────┬──────────────────┬──────────────────┐                    \n");
+        boardWithKillshots.add("│ββββββββββββββββββββββββββββββββββββββ SPAWN BLUE ββββββ│                    \n");
+        boardWithKillshots.add("│β                                                      β│                    \n");
+        boardWithKillshots.add("│β                                                      β│                    \n");
+        boardWithKillshots.add("│β                                                      β│                    \n");
+        boardWithKillshots.add("│β                                                      β│                    \n");
+        boardWithKillshots.add("│ββββββ      ββββββββββββββββββββββββββββββββ      ββββββ│                    \n");
+        boardWithKillshots.add("├──────      ──────┼──────────────────┼──────      ──────┼──────────────────┐ \n");
+        boardWithKillshots.add("│ρρρρρρ      ρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρ      ρρρρρρ│ψψψψψψψψψψψψψψψψψψ│ \n");
+        boardWithKillshots.add("│ρ                                                      ρ│                 ψ│ \n");
+        boardWithKillshots.add("│ρ                                                                         ψ│ \n");
+        boardWithKillshots.add("│ρ                                                                         ψ│ \n");
+        boardWithKillshots.add("│ρ                                                      ρ│ψ                ψ│ \n");
+        boardWithKillshots.add("│ SPAWN RED ρρρρρρρρρρρρρρ      ρρρρρρρρρρρρρρρρρρρρρρρρρ│ψ                ψ│ \n");
+        boardWithKillshots.add("└──────────────────┼──────      ──────┼──────────────────┼─ψ              ψ─┤ \n");
+        boardWithKillshots.add("                   │κκκκκκ      κκκκκκκκκκκκκκκκκκκκκκκκκ│ψ                ψ│ \n");
+        boardWithKillshots.add("                   │κ                                   κ│ψ                ψ│ \n");
+        boardWithKillshots.add("                   │κ                                                      ψ│ \n");
+        boardWithKillshots.add("                   │κ                                                      ψ│ \n");
+        boardWithKillshots.add("                   │κ                                   κ│ψ                ψ│ \n");
+        boardWithKillshots.add("                   │κκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκ│ψψψψ SPAWN YELLOW │ \n");
+        boardWithKillshots.add("                   └──────────────────┴──────────────────┴──────────────────┘ \n");
+        boardWithKillshots.add(" - Killshots: [\u001B[1m--------\u001B[0m]");
+        //assertEquals(boardWithKillshots, gameRepresentation.positKillshots(gameRepresentation.getBoard()));
+
+        //Test with 2 kill-shots
+        Tuple<PlayerColor, Boolean> tupleToAdd = new Tuple<>(PlayerColor.YELLOW, Boolean.TRUE);
+        killshots.add(tupleToAdd);
+        tupleToAdd = new Tuple<>(PlayerColor.GREEN, Boolean.FALSE);
+        killshots.add(tupleToAdd);
+        gameRepresentation.setKillshots(killshots);
+        boardWithKillshots = new LinkedList<>();
+        boardWithKillshots.add("┌──────────────────┬──────────────────┬──────────────────┐                    \n");
+        boardWithKillshots.add("│ββββββββββββββββββββββββββββββββββββββ SPAWN BLUE ββββββ│                    \n");
+        boardWithKillshots.add("│β                                                      β│                    \n");
+        boardWithKillshots.add("│β                                                      β│                    \n");
+        boardWithKillshots.add("│β                                                      β│                    \n");
+        boardWithKillshots.add("│β                                                      β│                    \n");
+        boardWithKillshots.add("│ββββββ      ββββββββββββββββββββββββββββββββ      ββββββ│                    \n");
+        boardWithKillshots.add("├──────      ──────┼──────────────────┼──────      ──────┼──────────────────┐ \n");
+        boardWithKillshots.add("│ρρρρρρ      ρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρ      ρρρρρρ│ψψψψψψψψψψψψψψψψψψ│ \n");
+        boardWithKillshots.add("│ρ                                                      ρ│                 ψ│ \n");
+        boardWithKillshots.add("│ρ                                                                         ψ│ \n");
+        boardWithKillshots.add("│ρ                                                                         ψ│ \n");
+        boardWithKillshots.add("│ρ                                                      ρ│ψ                ψ│ \n");
+        boardWithKillshots.add("│ SPAWN RED ρρρρρρρρρρρρρρ      ρρρρρρρρρρρρρρρρρρρρρρρρρ│ψ                ψ│ \n");
+        boardWithKillshots.add("└──────────────────┼──────      ──────┼──────────────────┼─ψ              ψ─┤ \n");
+        boardWithKillshots.add("                   │κκκκκκ      κκκκκκκκκκκκκκκκκκκκκκκκκ│ψ                ψ│ \n");
+        boardWithKillshots.add("                   │κ                                   κ│ψ                ψ│ \n");
+        boardWithKillshots.add("                   │κ                                                      ψ│ \n");
+        boardWithKillshots.add("                   │κ                                                      ψ│ \n");
+        boardWithKillshots.add("                   │κ                                   κ│ψ                ψ│ \n");
+        boardWithKillshots.add("                   │κκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκ│ψψψψ SPAWN YELLOW │ \n");
+        boardWithKillshots.add("                   └──────────────────┴──────────────────┴──────────────────┘ \n");
+        boardWithKillshots.add(" - Killshots: [\u001B[43m\u001B[1mK\u001B[0m\u001B[42mk\u001B[0m\u001B[1m------\u001B[0m]");
+        //assertEquals(boardWithKillshots, gameRepresentation.positKillshots(gameRepresentation.getBoard()));
     }
 
     @Test
@@ -178,37 +239,4 @@ class GameRepresentationTest {
         boardWithPlayerInfo.add("\t      | Ammocubes: |\u001B[44m B \u001B[0m|\u001B[41m R \u001B[0m|\u001B[43m Y \u001B[0m| p: \u001B[34mpowerupBLUE2\u001B[0m. p: \u001B[31mpowerupRED2\u001B[0m. p: \u001B[33mpowerupYELLOW2\u001B[0m. \n");
         //assertEquals(boardWithPlayerInfo, gameRepresentation.positPlayerInfo(gameRepresentation.getBoard()));
     }
-
-    @Test
-    void movePlayer() {
-    }
-
-    @Test
-    void setPlayerWallet() {
-    }
-
-    @Test
-    void updatePlayerHealth() {
-    }
-
-    @Test
-    void setPlayerWeaponLoaded() {
-    }
-
-    @Test
-    void setPlayerWeaponUnloaded() {
-    }
-
-    @Test
-    void grabPlayerWeapon() {
-    }
-
-    @Test
-    void dropPlayerWeapon() {
-    }
-
-    @Test
-    void movePlayer1() {
-    }
-
 }
