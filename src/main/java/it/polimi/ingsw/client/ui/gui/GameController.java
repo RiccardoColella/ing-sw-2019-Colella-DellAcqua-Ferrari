@@ -10,7 +10,6 @@ import it.polimi.ingsw.client.ui.gui.events.listeners.NotificationListener;
 import it.polimi.ingsw.client.io.listeners.*;
 import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
-import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.shared.Direction;
@@ -23,7 +22,6 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -34,7 +32,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -118,7 +115,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
             boardContent.addWeaponRight(e.getWeaponRight().get(i), i);
             boardContent.addWeaponLeft(e.getWeaponLeft().get(i), i);
         }
-        boardContent.setSkulls(e.getSkulls());
+        boardContent.initSkulls(e.getSkulls());
         this.opponents = e.getOpponents();
         this.self = e.getSelf();
         initOpponentsBoards();
