@@ -16,6 +16,8 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class GameRepresentationTest {
     private GameRepresentation gameRepresentation;
     @BeforeEach
@@ -31,7 +33,7 @@ class GameRepresentationTest {
         List<String> weaponRight = new LinkedList<>();
         weaponRight.add("weaponRight1");
 
-        this.gameRepresentation = new GameRepresentation(new MatchStarted(
+        this.gameRepresentation = GameRepresentationFactory.create(new MatchStarted(
                 8,
                 BoardFactory.Preset.BOARD_1,
                 buildPlayer(0),
@@ -44,7 +46,7 @@ class GameRepresentationTest {
                 ));
         int i = 0;
         for (Player player : gameRepresentation.getPlayers()){
-            gameRepresentation.playerLocations.put(player, new Point(i + 1, i));
+            gameRepresentation.playerLocations.put(player, new Point(i, i + 1));
             gameRepresentation.setPlayerAlive(player);
             i++;
         }
@@ -92,10 +94,12 @@ class GameRepresentationTest {
         boardWithKillshots.add("│β                                                      β│                    \n");
         boardWithKillshots.add("│β                                                      β│                    \n");
         boardWithKillshots.add("│β                                                      β│                    \n");
+        boardWithKillshots.add("│β                                                      β│                    \n");
         boardWithKillshots.add("│ββββββ      ββββββββββββββββββββββββββββββββ      ββββββ│                    \n");
         boardWithKillshots.add("├──────      ──────┼──────────────────┼──────      ──────┼──────────────────┐ \n");
         boardWithKillshots.add("│ρρρρρρ      ρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρ      ρρρρρρ│ψψψψψψψψψψψψψψψψψψ│ \n");
         boardWithKillshots.add("│ρ                                                      ρ│                 ψ│ \n");
+        boardWithKillshots.add("│ρ                                                                         ψ│ \n");
         boardWithKillshots.add("│ρ                                                                         ψ│ \n");
         boardWithKillshots.add("│ρ                                                                         ψ│ \n");
         boardWithKillshots.add("│ρ                                                      ρ│ψ                ψ│ \n");
@@ -103,6 +107,7 @@ class GameRepresentationTest {
         boardWithKillshots.add("└──────────────────┼──────      ──────┼──────────────────┼─ψ              ψ─┤ \n");
         boardWithKillshots.add("                   │κκκκκκ      κκκκκκκκκκκκκκκκκκκκκκκκκ│ψ                ψ│ \n");
         boardWithKillshots.add("                   │κ                                   κ│ψ                ψ│ \n");
+        boardWithKillshots.add("                   │κ                                                      ψ│ \n");
         boardWithKillshots.add("                   │κ                                                      ψ│ \n");
         boardWithKillshots.add("                   │κ                                                      ψ│ \n");
         boardWithKillshots.add("                   │κ                                   κ│ψ                ψ│ \n");
@@ -124,10 +129,12 @@ class GameRepresentationTest {
         boardWithKillshots.add("│β                                                      β│                    \n");
         boardWithKillshots.add("│β                                                      β│                    \n");
         boardWithKillshots.add("│β                                                      β│                    \n");
+        boardWithKillshots.add("│β                                                      β│                    \n");
         boardWithKillshots.add("│ββββββ      ββββββββββββββββββββββββββββββββ      ββββββ│                    \n");
         boardWithKillshots.add("├──────      ──────┼──────────────────┼──────      ──────┼──────────────────┐ \n");
         boardWithKillshots.add("│ρρρρρρ      ρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρ      ρρρρρρ│ψψψψψψψψψψψψψψψψψψ│ \n");
         boardWithKillshots.add("│ρ                                                      ρ│                 ψ│ \n");
+        boardWithKillshots.add("│ρ                                                                         ψ│ \n");
         boardWithKillshots.add("│ρ                                                                         ψ│ \n");
         boardWithKillshots.add("│ρ                                                                         ψ│ \n");
         boardWithKillshots.add("│ρ                                                      ρ│ψ                ψ│ \n");
@@ -135,6 +142,7 @@ class GameRepresentationTest {
         boardWithKillshots.add("└──────────────────┼──────      ──────┼──────────────────┼─ψ              ψ─┤ \n");
         boardWithKillshots.add("                   │κκκκκκ      κκκκκκκκκκκκκκκκκκκκκκκκκ│ψ                ψ│ \n");
         boardWithKillshots.add("                   │κ                                   κ│ψ                ψ│ \n");
+        boardWithKillshots.add("                   │κ                                                      ψ│ \n");
         boardWithKillshots.add("                   │κ                                                      ψ│ \n");
         boardWithKillshots.add("                   │κ                                                      ψ│ \n");
         boardWithKillshots.add("                   │κ                                   κ│ψ                ψ│ \n");
@@ -148,26 +156,29 @@ class GameRepresentationTest {
     void positPlayers() {
         List<String> boardWithPlayers = new LinkedList<>();
         boardWithPlayers.add("┌──────────────────┬──────────────────┬──────────────────┐                    \n");
-        boardWithPlayers.add("│BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB│                    \n");
-        boardWithPlayers.add("│B                    \u001B[33mPlayer0\u001B[0m                           B│                    \n");
-        boardWithPlayers.add("│B                                                      B│                    \n");
-        boardWithPlayers.add("│B                                                      B│                    \n");
-        boardWithPlayers.add("│B                                                      B│                    \n");
-        boardWithPlayers.add("│BBBBBB      BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB      BBBBBB│                    \n");
+        boardWithPlayers.add("│ββββββββββββββββββββββββββββββββββββββ SPAWN BLUE ββββββ│                    \n");
+        boardWithPlayers.add("│β                    \u001B[33m\u001B[1mPlayer0\u001B[0m                           β│                    \n");
+        boardWithPlayers.add("│β                                                      β│                    \n");
+        boardWithPlayers.add("│β                                                      β│                    \n");
+        boardWithPlayers.add("│β                                                      β│                    \n");
+        boardWithPlayers.add("│β                                                      β│                    \n");
+        boardWithPlayers.add("│ββββββ      ββββββββββββββββββββββββββββββββ      ββββββ│                    \n");
         boardWithPlayers.add("├──────      ──────┼──────────────────┼──────      ──────┼──────────────────┐ \n");
-        boardWithPlayers.add("│RRRRRR      RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR      RRRRRR│YYYYYYYYYYYYYYYYYY│ \n");
-        boardWithPlayers.add("│R                                                      R│                 Y│ \n");
-        boardWithPlayers.add("│R                                       \u001B[32mPlayer1\u001B[0m                           Y│ \n");
-        boardWithPlayers.add("│R                                                                         Y│ \n");
-        boardWithPlayers.add("│R                                                      R│Y                Y│ \n");
-        boardWithPlayers.add("│RRRRRRRRRRRRRRRRRRRRRRRRR      RRRRRRRRRRRRRRRRRRRRRRRRR│Y                Y│ \n");
-        boardWithPlayers.add("└──────────────────┼──────      ──────┼──────────────────┼─Y              Y─┤ \n");
-        boardWithPlayers.add("                   │KKKKKK      KKKKKKKKKKKKKKKKKKKKKKKKK│Y                Y│ \n");
-        boardWithPlayers.add("                   │K                                   K│Y                Y│ \n");
-        boardWithPlayers.add("                   │K                                                      Y│ \n");
-        boardWithPlayers.add("                   │K                                       \u001B[35mPlayer2\u001B[0m        Y│ \n");
-        boardWithPlayers.add("                   │K                                   K│Y                Y│ \n");
-        boardWithPlayers.add("                   │KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK│YYYYYYYYYYYYYYYYYY│ \n");
+        boardWithPlayers.add("│ρρρρρρ      ρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρ      ρρρρρρ│ψψψψψψψψψψψψψψψψψψ│ \n");
+        boardWithPlayers.add("│ρ                                                      ρ│                 ψ│ \n");
+        boardWithPlayers.add("│ρ                                       \u001B[32m\u001B[1mPlayer1\u001B[0m                           ψ│ \n");
+        boardWithPlayers.add("│ρ                                                                         ψ│ \n");
+        boardWithPlayers.add("│ρ                                                                         ψ│ \n");
+        boardWithPlayers.add("│ρ                                                      ρ│ψ                ψ│ \n");
+        boardWithPlayers.add("│ SPAWN RED ρρρρρρρρρρρρρρ      ρρρρρρρρρρρρρρρρρρρρρρρρρ│ψ                ψ│ \n");
+        boardWithPlayers.add("└──────────────────┼──────      ──────┼──────────────────┼─ψ              ψ─┤ \n");
+        boardWithPlayers.add("                   │κκκκκκ      κκκκκκκκκκκκκκκκκκκκκκκκκ│ψ                ψ│ \n");
+        boardWithPlayers.add("                   │κ                                   κ│ψ                ψ│ \n");
+        boardWithPlayers.add("                   │κ                                                      ψ│ \n");
+        boardWithPlayers.add("                   │κ                                       \u001B[35m\u001B[1mPlayer2\u001B[0m        ψ│ \n");
+        boardWithPlayers.add("                   │κ                                                      ψ│ \n");
+        boardWithPlayers.add("                   │κ                                   κ│ψ                ψ│ \n");
+        boardWithPlayers.add("                   │κκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκ│ψψψψ SPAWN YELLOW │ \n");
         boardWithPlayers.add("                   └──────────────────┴──────────────────┴──────────────────┘ \n");
         //assertEquals(boardWithPlayers, gameRepresentation.positPlayers(gameRepresentation.getBoard()));
     }
@@ -176,26 +187,29 @@ class GameRepresentationTest {
     void positSpawnpointsWeapons() {
         List<String> boardWithWeapons = new LinkedList<>();
         boardWithWeapons.add("┌──────────────────┬──────────────────┬──────────────────┐                    \n");
-        boardWithWeapons.add("│BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB SPAWN BLUE BBBBBB│                   \u001B[34m BLUESPAWNPOINT\u001B[0m\n");
-        boardWithWeapons.add("│B                                                      B│                    - weaponTop1\n");
-        boardWithWeapons.add("│B                                                      B│                    \n");
-        boardWithWeapons.add("│B                                                      B│                    \n");
-        boardWithWeapons.add("│B                                                      B│                    \n");
-        boardWithWeapons.add("│BBBBBB      BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB      BBBBBB│                    \n");
+        boardWithWeapons.add("│ββββββββββββββββββββββββββββββββββββββ SPAWN BLUE ββββββ│                   \u001B[34m BLUESPAWNPOINT\u001B[0m\n");
+        boardWithWeapons.add("│β                                                      β│                    - weaponTop1\n");
+        boardWithWeapons.add("│β                                                      β│                    \n");
+        boardWithWeapons.add("│β                                                      β│                    \n");
+        boardWithWeapons.add("│β                                                      β│                    \n");
+        boardWithWeapons.add("│β                                                      β│                    \n");
+        boardWithWeapons.add("│ββββββ      ββββββββββββββββββββββββββββββββ      ββββββ│                    \n");
         boardWithWeapons.add("├──────      ──────┼──────────────────┼──────      ──────┼──────────────────┐ \n");
-        boardWithWeapons.add("│RRRRRR      RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR      RRRRRR│YYYYYYYYYYYYYYYYYY│\u001B[31m REDSPAWNPOINT\u001B[0m\n");
-        boardWithWeapons.add("│R                                                      R│                 Y│ - weaponLeft1\n");
-        boardWithWeapons.add("│R                                                                         Y│ \n");
-        boardWithWeapons.add("│R                                                                         Y│ \n");
-        boardWithWeapons.add("│R                                                      R│Y                Y│ \n");
-        boardWithWeapons.add("│ SPAWN RED RRRRRRRRRRRRRR      RRRRRRRRRRRRRRRRRRRRRRRRR│Y                Y│ \n");
-        boardWithWeapons.add("└──────────────────┼──────      ──────┼──────────────────┼─Y              Y─┤ \n");
-        boardWithWeapons.add("                   │KKKKKK      KKKKKKKKKKKKKKKKKKKKKKKKK│Y                Y│\u001B[33m YELLOWSPAWNPOINT\u001B[0m\n");
-        boardWithWeapons.add("                   │K                                   K│Y                Y│ - weaponRight1\n");
-        boardWithWeapons.add("                   │K                                                      Y│ \n");
-        boardWithWeapons.add("                   │K                                                      Y│ \n");
-        boardWithWeapons.add("                   │K                                   K│Y                Y│ \n");
-        boardWithWeapons.add("                   │KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK│YYYYY SPAWN YELLOW│ \n");
+        boardWithWeapons.add("│ρρρρρρ      ρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρ      ρρρρρρ│ψψψψψψψψψψψψψψψψψψ│\u001B[31m REDSPAWNPOINT\u001B[0m\n");
+        boardWithWeapons.add("│ρ                                                      ρ│                 ψ│ - weaponLeft1\n");
+        boardWithWeapons.add("│ρ                                                                         ψ│ \n");
+        boardWithWeapons.add("│ρ                                                                         ψ│ \n");
+        boardWithWeapons.add("│ρ                                                                         ψ│ \n");
+        boardWithWeapons.add("│ρ                                                      ρ│ψ                ψ│ \n");
+        boardWithWeapons.add("│ SPAWN RED ρρρρρρρρρρρρρρ      ρρρρρρρρρρρρρρρρρρρρρρρρρ│ψ                ψ│ \n");
+        boardWithWeapons.add("└──────────────────┼──────      ──────┼──────────────────┼─ψ              ψ─┤ \n");
+        boardWithWeapons.add("                   │κκκκκκ      κκκκκκκκκκκκκκκκκκκκκκκκκ│ψ                ψ│\u001B[33m YELLOWSPAWNPOINT\u001B[0m\n");
+        boardWithWeapons.add("                   │κ                                   κ│ψ                ψ│ - weaponRight1\n");
+        boardWithWeapons.add("                   │κ                                                      ψ│ \n");
+        boardWithWeapons.add("                   │κ                                                      ψ│ \n");
+        boardWithWeapons.add("                   │κ                                                      ψ│ \n");
+        boardWithWeapons.add("                   │κ                                   κ│ψ                ψ│ \n");
+        boardWithWeapons.add("                   │κκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκ│ψψψψ SPAWN YELLOW │ \n");
         boardWithWeapons.add("                   └──────────────────┴──────────────────┴──────────────────┘ \n");
         //assertEquals(boardWithWeapons, gameRepresentation.positSpawnpointsWeapons(gameRepresentation.getBoard()));
     }
@@ -204,37 +218,40 @@ class GameRepresentationTest {
     void positPlayerInfo() {
         List<String> boardWithPlayerInfo = new LinkedList<>();
         boardWithPlayerInfo.add("┌──────────────────┬──────────────────┬──────────────────┐                    \n");
-        boardWithPlayerInfo.add("│BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB SPAWN BLUE BBBBBB│                    \n");
-        boardWithPlayerInfo.add("│B                                                      B│                    \n");
-        boardWithPlayerInfo.add("│B                                                      B│                    \n");
-        boardWithPlayerInfo.add("│B                                                      B│                    \n");
-        boardWithPlayerInfo.add("│B                                                      B│                    \n");
-        boardWithPlayerInfo.add("│BBBBBB      BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB      BBBBBB│                    \n");
+        boardWithPlayerInfo.add("│ββββββββββββββββββββββββββββββββββββββ SPAWN BLUE ββββββ│                    \n");
+        boardWithPlayerInfo.add("│β                                                      β│                    \n");
+        boardWithPlayerInfo.add("│β                                                      β│                    \n");
+        boardWithPlayerInfo.add("│β                                                      β│                    \n");
+        boardWithPlayerInfo.add("│β                                                      β│                    \n");
+        boardWithPlayerInfo.add("│β                                                      β│                    \n");
+        boardWithPlayerInfo.add("│ββββββ      ββββββββββββββββββββββββββββββββ      ββββββ│                    \n");
         boardWithPlayerInfo.add("├──────      ──────┼──────────────────┼──────      ──────┼──────────────────┐ \n");
-        boardWithPlayerInfo.add("│RRRRRR      RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR      RRRRRR│YYYYYYYYYYYYYYYYYY│ \n");
-        boardWithPlayerInfo.add("│R                                                      R│                 Y│ \n");
-        boardWithPlayerInfo.add("│R                                                                         Y│ \n");
-        boardWithPlayerInfo.add("│R                                                                         Y│ \n");
-        boardWithPlayerInfo.add("│R                                                      R│Y                Y│ \n");
-        boardWithPlayerInfo.add("│ SPAWN RED RRRRRRRRRRRRRR      RRRRRRRRRRRRRRRRRRRRRRRRR│Y                Y│ \n");
-        boardWithPlayerInfo.add("└──────────────────┼──────      ──────┼──────────────────┼─Y              Y─┤ \n");
-        boardWithPlayerInfo.add("                   │KKKKKK      KKKKKKKKKKKKKKKKKKKKKKKKK│Y                Y│ \n");
-        boardWithPlayerInfo.add("                   │K                                   K│Y                Y│ \n");
-        boardWithPlayerInfo.add("                   │K                                                      Y│ \n");
-        boardWithPlayerInfo.add("                   │K                                                      Y│ \n");
-        boardWithPlayerInfo.add("                   │K                                   K│Y                Y│ \n");
-        boardWithPlayerInfo.add("                   │KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK│YYYYY SPAWN YELLOW│ \n");
+        boardWithPlayerInfo.add("│ρρρρρρ      ρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρρ      ρρρρρρ│ψψψψψψψψψψψψψψψψψψ│ \n");
+        boardWithPlayerInfo.add("│ρ                                                      ρ│                 ψ│ \n");
+        boardWithPlayerInfo.add("│ρ                                                                         ψ│ \n");
+        boardWithPlayerInfo.add("│ρ                                                                         ψ│ \n");
+        boardWithPlayerInfo.add("│ρ                                                                         ψ│ \n");
+        boardWithPlayerInfo.add("│ρ                                                      ρ│ψ                ψ│ \n");
+        boardWithPlayerInfo.add("│ SPAWN RED ρρρρρρρρρρρρρρ      ρρρρρρρρρρρρρρρρρρρρρρρρρ│ψ                ψ│ \n");
+        boardWithPlayerInfo.add("└──────────────────┼──────      ──────┼──────────────────┼─ψ              ψ─┤ \n");
+        boardWithPlayerInfo.add("                   │κκκκκκ      κκκκκκκκκκκκκκκκκκκκκκκκκ│ψ                ψ│ \n");
+        boardWithPlayerInfo.add("                   │κ                                   κ│ψ                ψ│ \n");
+        boardWithPlayerInfo.add("                   │κ                                                      ψ│ \n");
+        boardWithPlayerInfo.add("                   │κ                                                      ψ│ \n");
+        boardWithPlayerInfo.add("                   │κ                                                      ψ│ \n");
+        boardWithPlayerInfo.add("                   │κ                                   κ│ψ                ψ│ \n");
+        boardWithPlayerInfo.add("                   │κκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκκ│ψψψψ SPAWN YELLOW │ \n");
         boardWithPlayerInfo.add("                   └──────────────────┴──────────────────┴──────────────────┘ \n");
-        boardWithPlayerInfo.add("\n");
-        boardWithPlayerInfo.add(" - \u001B[33mPlayer0\u001B[0m. \u001B[33mYELLOW\u001B[0m. Skulls: 8. Damages: 0. Marks: 5 \u001B[43mY\u001B[0m\u001B[42mG\u001B[0m\u001B[45mP\u001B[0m\u001B[30mB\u001B[0m\u001B[46mT\u001B[0m\n");
+        boardWithPlayerInfo.add(" - Killshots: [\u001B[1m--------\u001B[0m], \n");
+        boardWithPlayerInfo.add(" - \u001B[33m\u001B[1mPlayer0\u001B[0m. \u001B[33mYELLOW\u001B[0m. Skulls: 8. Damages: 0. Marks: 5 \u001B[43mY\u001B[0m\u001B[42mG\u001B[0m\u001B[45mP\u001B[0m\u001B[30mB\u001B[0m\u001B[46mT\u001B[0m BoardFlipped: false ActionsTileFlipped: false\n");
         boardWithPlayerInfo.add("\twallet| lw: loadedWeapon1. uw: unloadedWeapon1. uw: unloadedWeapon2. \n");
         boardWithPlayerInfo.add("\t      | Ammocubes: |\u001B[44m B \u001B[0m|\u001B[41m R \u001B[0m|\u001B[43m Y \u001B[0m| p: \u001B[34mpowerupBLUE0\u001B[0m. p: \u001B[31mpowerupRED0\u001B[0m. p: \u001B[33mpowerupYELLOW0\u001B[0m. \n");
         boardWithPlayerInfo.add("\n");
-        boardWithPlayerInfo.add(" - \u001B[32mPlayer1\u001B[0m. \u001B[32mGREEN\u001B[0m. Skulls: 8. Damages: 5. \u001B[43mY\u001B[0m\u001B[42mG\u001B[0m\u001B[45mP\u001B[0m\u001B[30mB\u001B[0m\u001B[46mT\u001B[0m. Marks: 5 \u001B[43mY\u001B[0m\u001B[42mG\u001B[0m\u001B[45mP\u001B[0m\u001B[30mB\u001B[0m\u001B[46mT\u001B[0m\n");
+        boardWithPlayerInfo.add(" - \u001B[32m\u001B[1mPlayer1\u001B[0m. \u001B[32mGREEN\u001B[0m. Skulls: 8. Damages: 5. \u001B[43mY\u001B[0m\u001B[42mG\u001B[0m\u001B[45mP\u001B[0m\u001B[30mB\u001B[0m\u001B[46mT\u001B[0m. Marks: 5 \u001B[43mY\u001B[0m\u001B[42mG\u001B[0m\u001B[45mP\u001B[0m\u001B[30mB\u001B[0m\u001B[46mT\u001B[0m BoardFlipped: false ActionsTileFlipped: false\n");
         boardWithPlayerInfo.add("\twallet| lw: loadedWeapon1. uw: unloadedWeapon1. uw: unloadedWeapon2. \n");
         boardWithPlayerInfo.add("\t      | Ammocubes: |\u001B[44m B \u001B[0m|\u001B[41m R \u001B[0m|\u001B[43m Y \u001B[0m| p: \u001B[34mpowerupBLUE1\u001B[0m. p: \u001B[31mpowerupRED1\u001B[0m. p: \u001B[33mpowerupYELLOW1\u001B[0m. \n");
         boardWithPlayerInfo.add("\n");
-        boardWithPlayerInfo.add(" - \u001B[35mPlayer2\u001B[0m. \u001B[35mPURPLE\u001B[0m. Skulls: 8. Damages: 0. Marks: 5 \u001B[43mY\u001B[0m\u001B[42mG\u001B[0m\u001B[45mP\u001B[0m\u001B[30mB\u001B[0m\u001B[46mT\u001B[0m\n");
+        boardWithPlayerInfo.add(" - \u001B[35m\u001B[1mPlayer2\u001B[0m. \u001B[35mPURPLE\u001B[0m. Skulls: 8. Damages: 0. Marks: 5 \u001B[43mY\u001B[0m\u001B[42mG\u001B[0m\u001B[45mP\u001B[0m\u001B[30mB\u001B[0m\u001B[46mT\u001B[0m BoardFlipped: false ActionsTileFlipped: false\n");
         boardWithPlayerInfo.add("\twallet| lw: loadedWeapon1. uw: unloadedWeapon1. uw: unloadedWeapon2. \n");
         boardWithPlayerInfo.add("\t      | Ammocubes: |\u001B[44m B \u001B[0m|\u001B[41m R \u001B[0m|\u001B[43m Y \u001B[0m| p: \u001B[34mpowerupBLUE2\u001B[0m. p: \u001B[31mpowerupRED2\u001B[0m. p: \u001B[33mpowerupYELLOW2\u001B[0m. \n");
         //assertEquals(boardWithPlayerInfo, gameRepresentation.positPlayerInfo(gameRepresentation.getBoard()));

@@ -1,17 +1,10 @@
 package it.polimi.ingsw.client.ui.cli;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.shared.datatransferobjects.BonusTile;
 import it.polimi.ingsw.shared.datatransferobjects.Powerup;
-import it.polimi.ingsw.shared.events.networkevents.MatchStarted;
 import it.polimi.ingsw.shared.datatransferobjects.Player;
-import it.polimi.ingsw.utils.ConfigFileMaker;
 import it.polimi.ingsw.utils.Tuple;
 import org.jetbrains.annotations.Contract;
 
@@ -22,10 +15,6 @@ import java.util.List;
 
 class GameRepresentation {
 
-    /**
-     * Board preset
-     */
-    private BoardFactory.Preset preset;
 
     /**
      * List of all players
@@ -58,89 +47,100 @@ class GameRepresentation {
     Map<Player, Point> playerLocations = new HashMap<>();
 
     /**
-     * This property stores the location of the needed json file
-     */
-    private static final String TEXTS_JSON_PATH = "./config/gameTextsForCLI.json";
-    private static final String TEXTS_JSON_PUSH_RES = "/config/gameTextsForCLI.json";
-
-    /**
      * This property stores the board as a list of strings
      */
     private List<String> board;
 
-    /**
-     * This property stores the first useful char for writing on a row
-     */
-    private final int rowOffset;
-    /**
-     * This property stores the first useful char for writing on a column
-     */
-    private final int columnOffset;
-    /**
-     * This property stores the horizontal distance in char between two blocks
-     */
-    private final int rowDistance;
-    /**
-     * This property stores the vertical distance in lines between two blocks
-     */
-    private final int columnDistance;
-    /**
-     * This property stores the width in char of the whole board
-     */
-    private final int boardWidth;
-    /**
-     * This property stores the max length in char for a name to be written in a block
-     */
-    private final int maxNicknamesLength;
+    private final RepresentationSettings settings;
 
+    static class RepresentationSettings {
+        /**
+         * This property stores the first useful char for writing on a row
+         */
+        private final int rowOffset;
+        /**
+         * This property stores the first useful char for writing on a column
+         */
+        private final int columnOffset;
+        /**
+         * This property stores the horizontal distance in char between two blocks
+         */
+        private final int rowDistance;
+        /**
+         * This property stores the vertical distance in lines between two blocks
+         */
+        private final int columnDistance;
+        /**
+         * This property stores the max length in char for a name to be written in a block
+         */
+        private final int maxNicknamesLength;
+
+        RepresentationSettings(
+                int rowOffset,
+                int rowDistance,
+                int columnOffset,
+                int columnDistance,
+                int maxNicknamesLength
+        ) {
+            this.rowOffset = rowOffset;
+            this.rowDistance = rowDistance;
+            this.columnOffset = columnOffset;
+            this.columnDistance = columnDistance;
+            this.maxNicknamesLength = maxNicknamesLength;
+        }
+
+        private int getRowOffset() {
+            return rowOffset;
+        }
+
+        private int getColumnOffset() {
+            return columnOffset;
+        }
+
+        private int getRowDistance() {
+            return rowDistance;
+        }
+
+        private int getColumnDistance() {
+            return columnDistance;
+        }
+
+        private int getMaxNicknamesLength() {
+            return maxNicknamesLength;
+        }
+    }
+
+
+    /**
+     * This property stores info about alive players
+     */
     private Map<Player, Boolean> alivePlayers;
 
-    GameRepresentation(MatchStarted e) {
+    GameRepresentation(
+            List<String>  board,
+            List<Player> players,
+            int skulls,
+            Map<CurrencyColor, List<String>> weaponsOnSpawnpoint,
+            Set<BonusTile> bonusTiles,
 
-        this.preset = e.getPreset();
-        this.players = new LinkedList<>(e.getOpponents());
-        this.players.add(0, e.getSelf());
-        this.skulls = e.getSkulls();
+            RepresentationSettings settings
+
+    ) {
+        this.board = board;
+        this.players = players;
+        this.skulls = skulls;
         this.killshots = new LinkedList<>();
-        this.weaponsOnSpawnpoint = new EnumMap<>(CurrencyColor.class);
-        this.weaponsOnSpawnpoint.put(CurrencyColor.BLUE, e.getWeaponTop());
-        this.weaponsOnSpawnpoint.put(CurrencyColor.RED, e.getWeaponLeft());
-        this.weaponsOnSpawnpoint.put(CurrencyColor.YELLOW, e.getWeaponRight());
+        this.weaponsOnSpawnpoint = weaponsOnSpawnpoint;
         this.bonusMap = new HashMap<>();
-        initializeBonusMap(e.getTurretBonusTiles());
+        initializeBonusMap(bonusTiles);
 
         alivePlayers = new HashMap<>();
         for (Player player : players){
             alivePlayers.put(player, false);
         }
 
-        JsonElement jsonElement;
+        this.settings = settings;
 
-        jsonElement = new JsonParser().parse(ConfigFileMaker.load(TEXTS_JSON_PATH, TEXTS_JSON_PUSH_RES));
-
-        JsonObject jsonObject = jsonElement.getAsJsonObject();
-        this.rowOffset = jsonObject.get("rowOffset").getAsInt();
-        this.columnOffset = jsonObject.get("columnOffset").getAsInt();
-        this.rowDistance =jsonObject.get("rowDistance").getAsInt();
-        this.columnDistance = jsonObject.get("columnDistance").getAsInt();
-        this.boardWidth = jsonObject.get("boardWidth").getAsInt();
-        this.maxNicknamesLength = jsonObject.get("maxNicknamesLength").getAsInt();
-
-        switch (preset){
-            case BOARD_1:
-                setBoard("board1", jsonObject);
-                break;
-            case BOARD_2:
-                setBoard("board2", jsonObject);
-                break;
-            case BOARD_3:
-                setBoard("board3", jsonObject);
-                break;
-            case BOARD_4:
-                setBoard("board4", jsonObject);
-                break;
-            default: throw new IllegalArgumentException("Cannot find preset " + e.getPreset().toString());
-        }
     }
 
     /**
@@ -177,48 +177,41 @@ class GameRepresentation {
         return board;
     }
 
-    /**
-     * Board setter. This method simplifies the class's constructor method
-     * @param elem name of the element that contains the board in the json file
-     * @param jsonObject json object from which extract the board
-     */
-    private void setBoard(String elem, JsonObject jsonObject) {
-        List<String> boardUnderConstruction = new LinkedList<>();
-
-        JsonArray boardDescription = jsonObject.get(elem).getAsJsonArray();
-        for (JsonElement line : boardDescription){
-            boardUnderConstruction.add(line.getAsString());
-        }
-        this.board = boardUnderConstruction;
-    }
 
     /**
      * This method returns the row offset
      * @return the row offset
      */
     @Contract(pure = true)
-    private int getRowOffset() { return rowOffset; }
+    private int getRowOffset() { return this.settings.getRowOffset(); }
 
     /**
      * This method returns the column offset
      * @return the column offset
      */
     @Contract(pure = true)
-    private int getColumnOffset() { return columnOffset; }
+    private int getColumnOffset() { return this.settings.getColumnOffset(); }
+
+    /**
+     * This method returns the max nickname length to be represented on the board
+     * @return the max nickname length to be represented on the board
+     */
+    @Contract(pure = true)
+    private int getMaxNicknamesLength() { return this.settings.getMaxNicknamesLength(); }
 
     /**
      * This method returns the row distance from one block to another
      * @return the row distance
      */
     @Contract(pure = true)
-    private int getRowDistance() { return rowDistance; }
+    private int getRowDistance() { return settings.getRowDistance(); }
 
     /**
      * This method returns the column distance from one block to another
      * @return the column distance
      */
     @Contract(pure = true)
-    private int getColumnDistance() { return columnDistance; }
+    private int getColumnDistance() { return this.settings.getColumnDistance(); }
 
     /**
      * This method returns the list of all players
@@ -249,10 +242,18 @@ class GameRepresentation {
 
     /**
      * This method sets a player as alive
-     * @param playerAlive player to be setted as alive
+     * @param playerAlive player to be set as alive
      */
     void setPlayerAlive(Player playerAlive){
         alivePlayers.put(playerAlive, true);
+    }
+
+    /**
+     * This method sets a player as alive
+     * @param playerAlive player to be set as alive
+     */
+    void setPlayerAlive(PlayerColor playerAlive){
+        alivePlayers.put(selectPlayer(playerAlive), true);
     }
 
     /**
@@ -261,6 +262,19 @@ class GameRepresentation {
      */
     void setPlayerDied(Player playerDied){
         alivePlayers.put(playerDied, false);
+    }
+
+
+    /**
+     * This method sets a player as died
+     * @param playerDied player to be setted as died
+     */
+    void setPlayerDied(String playerDied){
+        for (Player player : players) {
+            if (player.getNickname().equals(playerDied)) {
+                alivePlayers.put(player, false);
+            }
+        }
     }
 
     /**
@@ -276,14 +290,14 @@ class GameRepresentation {
      * @param board board to which add the players
      * @return the built board
      */
-    private List<String> positPlayers(List<String> board) {
+    List<String> positPlayers(List<String> board) {
         List<String> boardWithPlayers = new LinkedList<>(board);
         for (Player player : players){
             if (alivePlayers.get(player)){
                 int i = players.indexOf(player);
                 String nick = player.getNickname();
-                if (nick.length() > this.maxNicknamesLength){
-                    nick = nick.substring(0, this.maxNicknamesLength);
+                if (nick.length() > getMaxNicknamesLength()){
+                    nick = nick.substring(0, getMaxNicknamesLength());
                 }
                 int x = playerLocations.get(player).x;
                 int y = playerLocations.get(player).y;
@@ -330,14 +344,14 @@ class GameRepresentation {
      * @param board board to which add the players
      * @return the built board
      */
-    private List<String> positSpawnpointsWeapons(List<String> board) {
+    List<String> positSpawnpointsWeapons(List<String> board) {
         List<String> boardWithWeapons = new LinkedList<>(board);
         String separator = " - ";
         weaponsOnSpawnpoint
                 .forEach( (spawnpointColor, weapons) -> {
                     int index =
-                            rowOffset - 1 +
-                            rowDistance* Arrays.asList(CurrencyColor.values()).indexOf(spawnpointColor);
+                            getRowOffset() - 1 +
+                            getRowDistance()* Arrays.asList(CurrencyColor.values()).indexOf(spawnpointColor);
                     String line = board.get(index);
                     line = line.substring(0, line.length() - 2) +
                             ANSIColor.getEscape(spawnpointColor) +
@@ -363,7 +377,7 @@ class GameRepresentation {
      * @param board board to which add the players
      * @return the built board
      */
-    private List<String> positPlayerInfo(List<String> board) {
+    List<String> positPlayerInfo(List<String> board) {
         List<String> boardUpdated = positKillshots(board);
         String separator = ". ";
         for (Player player : players){
@@ -590,12 +604,36 @@ class GameRepresentation {
     }
 
     /**
+     * This player returns the chosen player from the list of all players
+     * @param playerToSelect player to select
+     * @return the chosen player from the list of all players
+     */
+    private Player selectPlayer(PlayerColor playerToSelect) {
+        for (Player player : players){
+            if (player.getColor().equals(playerToSelect)){
+                return player;
+            }
+        }
+        throw new IllegalArgumentException("Player " + playerToSelect.toString() + " not found in players");
+    }
+
+    /**
      * This method updates the player's position
      * @param player player to be updated
      * @param r new row
      * @param c new column
      */
     void movePlayer(Player player, int r, int c) {
+        playerLocations.put(selectPlayer(player), new Point(r, c));
+    }
+
+    /**
+     * This method updates the player's position
+     * @param player player to be updated
+     * @param r new row
+     * @param c new column
+     */
+    void movePlayer(PlayerColor player, int r, int c) {
         playerLocations.put(selectPlayer(player), new Point(r, c));
     }
 
@@ -747,7 +785,7 @@ class GameRepresentation {
             if (bonusTileEntry.getValue().size() < 3) {
                 String powerupString = "Pow-Up";
                 String newLine = boardToPrint.get(y + i);
-                newLine = newLine.substring(0, x) + powerupString + newLine.substring(x + powerupString.length(), newLine.length());
+                newLine = newLine.substring(0, x) + powerupString + newLine.substring(x + powerupString.length());
                 boardToPrint.remove(y + i);
                 boardToPrint.add(y + i, newLine);
             }

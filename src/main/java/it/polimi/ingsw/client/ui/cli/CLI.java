@@ -196,7 +196,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
                 case "Socket":
                     connector = new SocketConnector();
                     addAllListeners();
-                    ((SocketConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9000));
+                    ((SocketConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9001));
                     break;
                 default:
                     throw new IllegalStateException("The user had to choose between Socket or RMI, unrecognized option " + connectionType);
@@ -267,7 +267,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
                 printStream.println("0) Skip");
             }
             for (int i = 0; i < options.size(); i++) {
-                String option = ANSIColor.parseColor(options.get(i).toString());
+                String option = ANSIColor.parseString(options.get(i).toString());
                 printStream.println(String.format("%d) %s", (i + 1), option));
             }
             try {
@@ -493,7 +493,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
      */
     @Override
     public void onMatchStarted(MatchStarted e) {
-        gameRepresentation = new GameRepresentation(e);
+        gameRepresentation = GameRepresentationFactory.create(e);
         setMatchOnGoing(true);
         printStream.println(m + "Match started!");
     }
@@ -540,7 +540,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
 
     @Override
     public void onMatchResumed(MatchResumed e) {
-        // TODO: implement
+        gameRepresentation = GameRepresentationFactory.create(e);
 
     }
 
@@ -745,6 +745,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
     @Override
     public void onClientDisconnected(ClientEvent e) {
         printStream.println(w + e.getNickname() + " disconnected");
+        gameRepresentation.setPlayerDied(e.getNickname());
     }
 
     /**
@@ -753,6 +754,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
      */
     @Override
     public void onPlayerReconnected(PlayerEvent e) {
+        gameRepresentation.setPlayerAlive(e.getPlayer());
         printStream.println(w + e.getPlayer().getNickname() + " reconnected");
     }
 

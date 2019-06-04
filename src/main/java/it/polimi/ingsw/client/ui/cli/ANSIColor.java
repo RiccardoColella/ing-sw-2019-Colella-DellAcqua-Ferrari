@@ -149,14 +149,18 @@ class ANSIColor {
      * @param stringToParse the string to be parsed
      * @return the colored string
      */
-    static String parseColor(String stringToParse) {
-        Matcher m = Pattern.compile(".*(\\w*)(Color: ([A-Z]+))").matcher(stringToParse);
-        if (m.find()) {
-            if (CurrencyColor.contains(m.group(3))){
-                return getEscape(CurrencyColor.valueOf(m.group(3))) + stringToParse + getEscapeReset();
-            } else if (PlayerColor.contains(m.group(3))){
-                return getEscape(PlayerColor.valueOf(m.group(3))) + stringToParse + getEscapeReset();
+    static String parseString(String stringToParse) {
+        Matcher m1 = Pattern.compile(".*(\\w*)(Color: ([A-Z]+))").matcher(stringToParse);
+        if (m1.find()) {
+            if (CurrencyColor.contains(m1.group(3))){
+                return getEscape(CurrencyColor.valueOf(m1.group(3))) + stringToParse + getEscapeReset();
+            } else if (PlayerColor.contains(m1.group(3))){
+                return getEscape(PlayerColor.valueOf(m1.group(3))) + stringToParse + getEscapeReset();
             }
+        }
+        Matcher m2 = Pattern.compile(".*x=(\\d)+,y=(\\d)+]").matcher(stringToParse);
+        if (m2.find()) {
+            return "x = " + m2.group(1) + " | y = " + m2.group(2);
         }
         return stringToParse;
     }
