@@ -18,14 +18,35 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Representation of the main window of the GUI, which should be extended by the specific implementations, such as the
+ * actual game window or the login screen
+ *
+ * @author Carlo Dell'Acqua, Adriana Ferrari
+ */
 public abstract class WindowController {
 
-
+    /**
+     * Nodes that are adaptive when the screen is resized
+     */
     private final List<Region> autoResizableNodes = new LinkedList<>();
+
+    /**
+     * The main Pane
+     */
     private Pane window;
 
+    /**
+     * The Stage containing the scene
+     */
     protected Stage stage = new Stage();
 
+    /**
+     * Constructor which allows to set a title, a fxml source and multiple CSS stylesheets
+     * @param title the title of the window
+     * @param fxml the path to the fxml file
+     * @param customStylesheets a list of the CSS stylesheets to apply
+     */
     protected WindowController(String title, String fxml, List<String> customStylesheets) {
 
         try {
@@ -40,6 +61,8 @@ public abstract class WindowController {
             stage.setScene(scene);
             stage.setMinWidth(root.getMinWidth());
             stage.setMinHeight(root.getMinHeight());
+            stage.setWidth(root.getWidth());
+            stage.setHeight(root.getHeight());
             stage.widthProperty().addListener((obs, obj, newVal) -> this.onResize());
             stage.heightProperty().addListener((obs, obj, newVal) -> this.onResize());
             stage.setTitle(title);
@@ -48,41 +71,83 @@ public abstract class WindowController {
         }
     }
 
+    /**
+     * Constructor which allows to set a title, a fxml source and a single CSS stylesheet
+     * @param title the title of the window
+     * @param fxml the path to the fxml file
+     * @param customStylesheet the path to the CSS file
+     */
     protected WindowController(String title, String fxml, String customStylesheet) {
         this(title, fxml, Collections.singletonList(customStylesheet));
     }
 
+    /**
+     * Constructor which allows to set a title and a fxml source
+     * @param title the title of the window
+     * @param fxml the path to the fxml file
+     */
     protected WindowController(String title, String fxml) {
         this(title, fxml, Collections.emptyList());
     }
 
+    /**
+     * Constructor which allows to a fxml source
+     * @param fxml the path to the fxml file
+     */
     protected WindowController(String fxml) {
         this("", fxml);
     }
 
+    /**
+     * Shows the window in a non-blocking way
+     */
     public void show() {
         stage.show();
     }
 
+    /**
+     * Shows the window in a blocking way
+     */
     public void showAsModal() {
         stage.showAndWait();
     }
 
+    /**
+     * Closes the stage associated to this window
+     */
     public void close() {
         this.stage.close();
     }
 
+    /**
+     * Sets the viewport used for properties represented in vw and vh
+     * @param window the viewport
+     */
     protected void setupViewport(Pane window) {
         this.window = window;
         initializeViewport(window);
         autoResizeNodes(window.getPrefWidth(), window.getPrefHeight());
     }
 
+    /**
+     * Enum of possible dimensions
+     */
     private enum Dimension {
         WIDTH,
         HEIGHT
     }
 
+    /**
+     * Gives the consumer an updated value based on the viewport dimension
+     *
+     * @param vw the width of the viewport
+     * @param vh the height of the viewport
+     * @param parentWidth the width of the parent element
+     * @param parentHeight the height of the parent element
+     * @param dimension the dimension of the parent element to which the measurement is relative
+     * @param setter the consumer of the updated double value
+     * @param rawValue the string representing the actual measurement unit in vw, vh or %
+     */
     private void setViewportSize(double vw, double vh, double parentWidth, double parentHeight, Dimension dimension, Consumer<Double> setter, String rawValue) {
 
         Matcher m = Pattern.compile("^(\\d+(\\.\\d+)?)(.*)$").matcher(rawValue);
@@ -106,14 +171,20 @@ public abstract class WindowController {
         }
     }
 
+    /**
+     * Resizes the autoresizable nodes according to the new size of the main window
+     *
+     * @param vw viewport width
+     * @param vh viewporth height
+     */
     protected void autoResizeNodes(double vw, double vh) {
         for (Region node : autoResizableNodes) {
             if (node.getProperties().containsKey("height")) {
                 setViewportSize(
                         vw,
                         vh,
-                        node.getParent().prefWidth(0),
-                        node.getParent().prefHeight(0),
+                        node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                        node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                         Dimension.HEIGHT,
                         node::setPrefHeight,
                         (String)node.getProperties().get("height")
@@ -123,8 +194,8 @@ public abstract class WindowController {
                 setViewportSize(
                         vw,
                         vh,
-                        node.getParent().prefWidth(0),
-                        node.getParent().prefHeight(0),
+                        node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                        node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                         Dimension.WIDTH,
                         node::setPrefWidth,
                         (String)node.getProperties().get("width")
@@ -143,13 +214,20 @@ public abstract class WindowController {
         }
     }
 
+    /**
+     * If a node is a FlowPane, it has more properties that can be set: vgap, hgap and wrap
+     *
+     * @param node the FlowPane that shall be resized
+     * @param vw viewport width
+     * @param vh viewport height
+     */
     private void readFlowPane(FlowPane node, double vw, double vh) {
         if (node.getProperties().containsKey("vgap")) {
             setViewportSize(
                     vw,
                     vh,
-                    node.getParent().prefWidth(0),
-                    node.getParent().prefHeight(0),
+                    node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                    node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                     Dimension.HEIGHT,
                     node::setVgap,
                     (String)node.getProperties().get("vgap")
@@ -159,8 +237,8 @@ public abstract class WindowController {
             setViewportSize(
                     vw,
                     vh,
-                    node.getParent().prefWidth(0),
-                    node.getParent().prefHeight(0),
+                    node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                    node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                     Dimension.WIDTH,
                     node::setHgap,
                     (String)node.getProperties().get("hgap")
@@ -170,8 +248,8 @@ public abstract class WindowController {
             setViewportSize(
                     vw,
                     vh,
-                    node.getParent().prefWidth(0),
-                    node.getParent().prefHeight(0),
+                    node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                    node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                     Dimension.WIDTH,
                     node::setPrefWrapLength,
                     (String)node.getProperties().get("wrap")
@@ -179,13 +257,20 @@ public abstract class WindowController {
         }
     }
 
+    /**
+     * If a node is a GridPane, it has more properties that can be set: vgap and hgap
+     *
+     * @param node the GridPane that shall be resized
+     * @param vw viewport width
+     * @param vh viewport height
+     */
     private void readGridPane(GridPane node, double vw, double vh) {
         if (node.getProperties().containsKey("vgap")) {
             setViewportSize(
                     vw,
                     vh,
-                    node.getParent().prefWidth(0),
-                    node.getParent().prefHeight(0),
+                    node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                    node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                     Dimension.HEIGHT,
                     node::setVgap,
                     (String)node.getProperties().get("vgap")
@@ -195,21 +280,29 @@ public abstract class WindowController {
             setViewportSize(
                     vw,
                     vh,
-                    node.getParent().prefWidth(0),
-                    node.getParent().prefHeight(0),
+                    node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                    node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                     Dimension.WIDTH,
                     node::setHgap,
                     (String)node.getProperties().get("hgap")
             );
         }
     }
+
+    /**
+     * Updates the padding of a node according to the dimension of the whole window
+     *
+     * @param node the node that shall be updated
+     * @param vw viewport width
+     * @param vh viewport height
+     */
     private void readPadding(Region node, double vw, double vh) {
         if (node.getProperties().containsKey("padding")) {
             setViewportSize(
                     vw,
                     vh,
-                    node.getParent().prefWidth(0),
-                    node.getParent().prefHeight(0),
+                    node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                    node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                     Dimension.WIDTH,
                     padding -> node.setPadding(new Insets(padding)),
                     (String)node.getProperties().get("padding")
@@ -220,8 +313,8 @@ public abstract class WindowController {
             setViewportSize(
                     vw,
                     vh,
-                    node.getParent().prefWidth(0),
-                    node.getParent().prefHeight(0),
+                    node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                    node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                     Dimension.WIDTH,
                     padding -> node.setPadding(
                             new Insets(
@@ -238,8 +331,8 @@ public abstract class WindowController {
             setViewportSize(
                     vw,
                     vh,
-                    node.getParent().prefWidth(0),
-                    node.getParent().prefHeight(0),
+                    node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                    node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                     Dimension.HEIGHT,
                     padding -> node.setPadding(
                             new Insets(
@@ -257,8 +350,8 @@ public abstract class WindowController {
             setViewportSize(
                     vw,
                     vh,
-                    node.getParent().prefWidth(0),
-                    node.getParent().prefHeight(0),
+                    node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                    node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                     Dimension.WIDTH,
                     padding -> node.setPadding(
                             new Insets(
@@ -275,8 +368,8 @@ public abstract class WindowController {
             setViewportSize(
                     vw,
                     vh,
-                    node.getParent().prefWidth(0),
-                    node.getParent().prefHeight(0),
+                    node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                    node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                     Dimension.WIDTH,
                     padding -> node.setPadding(
                             new Insets(
@@ -293,8 +386,8 @@ public abstract class WindowController {
             setViewportSize(
                     vw,
                     vh,
-                    node.getParent().prefWidth(0),
-                    node.getParent().prefHeight(0),
+                    node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                    node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                     Dimension.HEIGHT,
                     padding -> node.setPadding(
                             new Insets(
@@ -311,8 +404,8 @@ public abstract class WindowController {
             setViewportSize(
                     vw,
                     vh,
-                    node.getParent().prefWidth(0),
-                    node.getParent().prefHeight(0),
+                    node.getParent() != null ? node.getParent().prefWidth(0) : node.getPrefWidth(),
+                    node.getParent() != null ? node.getParent().prefHeight(0) : node.getPrefHeight(),
                     Dimension.HEIGHT,
                     padding -> node.setPadding(
                             new Insets(
@@ -327,6 +420,11 @@ public abstract class WindowController {
         }
     }
 
+    /**
+     * Initializes the viewport and its children, which are added to the autoResizableNodes if they have adaptive properties
+     *
+     * @param parent the viewport
+     */
     protected void initializeViewport(Region parent) {
         for (Node child : parent.getChildrenUnmodifiable()) {
 
@@ -339,6 +437,9 @@ public abstract class WindowController {
         }
     }
 
+    /**
+     * Updates the elements of the window when the viewport is resized
+     */
     public void onResize() {
         autoResizeNodes(window.getWidth(), window.getHeight());
     }

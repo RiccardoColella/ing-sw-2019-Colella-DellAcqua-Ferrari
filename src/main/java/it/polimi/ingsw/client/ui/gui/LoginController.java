@@ -24,6 +24,11 @@ import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.logging.Logger;
 
+/**
+ * Class that manages the login screen
+ *
+ * @author Adriana Ferrari
+ */
 public class LoginController extends WindowController implements MatchListener, DuplicatedNicknameListener, ClientListener {
 
     /**
@@ -31,80 +36,164 @@ public class LoginController extends WindowController implements MatchListener, 
      */
     private final Logger logger = Logger.getLogger(this.getClass().getName());
 
+    /**
+     * The title of the login screen
+     */
     @FXML
     private Label title;
+
+    /**
+     * The field containing the username entered by the user
+     */
     @FXML
     private TextField usernameField;
+
+    /**
+     * The container window
+     */
     @FXML
     private GridPane window;
+
+    /**
+     * The field containing the server address entered by the user
+     */
     @FXML
     private TextField serverAddressField;
+
+    /**
+     * Radio button selecting socket
+     */
     @FXML
     private RadioButton socket;
+
+    /**
+     * Radio button selecting rmi
+     */
     @FXML
     private RadioButton rmi;
+
+    /**
+     * Radio button selecting the first board
+     */
     @FXML
     private RadioButton b1;
+
+    /**
+     * Radio button selecting the second board
+     */
     @FXML
     private RadioButton b2;
+
+    /**
+     * Radio button selecting the third board
+     */
     @FXML
     private RadioButton b3;
+
+    /**
+     * Radio button selecting the fourth board
+     */
     @FXML
     private RadioButton b4;
+
+    /**
+     * Image of the first board
+     */
     @FXML
     private BoardPane b1Img;
+
+    /**
+     * Image of the second board
+     */
     @FXML
     private BoardPane b2Img;
+
+    /**
+     * Image of the third board
+     */
     @FXML
     private BoardPane b3Img;
+
+    /**
+     * Image of the fourth board
+     */
     @FXML
     private BoardPane b4Img;
+
+    /**
+     * Allows the selection of the match mode
+     */
     @FXML
     private ChoiceBox modeChoice;
+
+    /**
+     * Allows the selection of the number of skulls for the match
+     */
     @FXML
     private ChoiceBox skullsChoice;
 
+    /**
+     * Toggle group for the boards
+     */
     private ToggleGroup toggleBoard;
 
+    /**
+     * List of the possible boards
+     */
     private List<BoardPane> boardPanes;
 
+    /**
+     * List of the radios related to the boards
+     */
     private List<RadioButton> boardRadios;
 
+    /**
+     * The game controller which will manage the main game screen
+     */
     private GameController gameController;
 
+    /**
+     * Maps the string representing the match mode to its corresponding enum
+     */
     private Map<String, Match.Mode> modeChoiceMap = new HashMap<>();
 
+    /**
+     * The connector used to establish the connection with the server
+     */
     private Connector connector;
 
+    /**
+     * The button which will send the inserted data to the server
+     */
     private Button sendButton;
+
+    /**
+     * Whether the connector should be closed if the window is closed by the user
+     */
     private boolean closeConnector = true;
 
+    /**
+     * Constructor which allows to set a custom title
+     *
+     * @param title the custom title
+     */
     public LoginController(String title) {
         super(title, "/fxml/login.fxml", "/css/login.css");
         modeChoiceMap.put("STANDARD", Match.Mode.STANDARD);
         modeChoiceMap.put("SUDDEN DEATH", Match.Mode.SUDDEN_DEATH);
         stage.setOnCloseRequest(ignored -> this.close());
-        // Debug
-        /*new Thread(() -> {
-            try {
-                Thread.sleep(5000);
-                Platform.runLater(() -> {
-                    usernameField.setText(UUID.randomUUID().toString());
-                    boardRadios.get(0).setSelected(true);
-                    socket.setSelected(true);
-                    onSend();
-                });
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                logger.warning(e.toString());
-            }
-        }).start();*/
     }
 
+    /**
+     * Default constructor
+     */
     public LoginController() {
         this("Login");
     }
 
+    /**
+     * Initializes the controller of the FXML
+     */
     @FXML
     public void initialize() {
         title.setText("ADRENALINA");
@@ -129,6 +218,11 @@ public class LoginController extends WindowController implements MatchListener, 
         setupViewport(window);
     }
 
+    /**
+     * Manages the sending of the data entered by the user
+     *
+     * @param e the mouse event triggered by the user
+     */
     @FXML
     public void onSend(MouseEvent e) {
         sendButton = ((Button) e.getSource());
@@ -150,6 +244,11 @@ public class LoginController extends WindowController implements MatchListener, 
         }
     }
 
+    /**
+     * Attempts a connection to the given server address
+     *
+     * @param connection the type of connection (rmi or socket)
+     */
     private void connect(String connection) {
         ClientInitializationInfo info = new ClientInitializationInfo(
                 usernameField.getText(),
@@ -183,26 +282,49 @@ public class LoginController extends WindowController implements MatchListener, 
 
     }
 
+    /**
+     * Gets the GameController created by this login, if any
+     * @return an optional with the GameController or an empty optional
+     */
     public Optional<GameController> getGameController() {
         return Optional.ofNullable(gameController);
     }
 
+    /**
+     * Shows a warning message
+     *
+     * @param message the message that will be displayed
+     */
     private void sendWarning(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING, message);
         styleAlert(alert);
     }
 
+    /**
+     * Shows an error message
+     *
+     * @param message the message that will be displayed
+     */
     private void sendError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR, message);
         styleAlert(alert);
     }
 
+    /**
+     * Styles alert messages
+     *
+     * @param alert the alert message that shall be styled
+     */
     private void styleAlert(Alert alert) {
         alert.setHeaderText(alert.getHeaderText().toUpperCase());
         alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/global.css").toExternalForm());
         alert.show();
     }
 
+    /**
+     * Select one of the boards based on user input
+     * @param e the mouse click event
+     */
     @FXML
     private void selectBoard(MouseEvent e) {
         for (int i = 0; i < boardPanes.size(); i++) {
@@ -214,6 +336,11 @@ public class LoginController extends WindowController implements MatchListener, 
         }
     }
 
+    /**
+     * Handles the start of a new match
+     *
+     * @param e the MatchStarted event sent by the server
+     */
     @Override
     public void onMatchStarted(MatchStarted e) {
         closeConnector = false;
@@ -235,24 +362,40 @@ public class LoginController extends WindowController implements MatchListener, 
 
     }
 
+    /**
+     * MatchModeChanged event is ignored by the LoginController
+     * @param e the MatchModeChanged event
+     */
     @Override
     public void onMatchModeChanged(MatchModeChanged e) {
         // Nothing to do here
 
     }
 
+    /**
+     * KillshotTrackChanged event is ignored by the LoginController
+     * @param e the KillshotTrackChanged event
+     */
     @Override
     public void onKillshotTrackChanged(KillshotTrackChanged e) {
         // Nothing to do here
 
     }
 
+    /**
+     * MatchEnded event is ignored by the LoginController
+     * @param e the MatchEnded event
+     */
     @Override
     public void onMatchEnded(MatchEnded e) {
         // Nothing to do here
 
     }
 
+    /**
+     * Handles the creation of a GameController when the match is resumed
+     * @param e the MatchResumed event
+     */
     @Override
     public void onMatchResumed(MatchResumed e) {
         closeConnector = false;
@@ -273,6 +416,9 @@ public class LoginController extends WindowController implements MatchListener, 
         );
     }
 
+    /**
+     * Resets the connector if the inserted nickname is not valid
+     */
     @Override
     public void onDuplicatedNickname() {
         connector.removeMatchListener(this);
@@ -291,6 +437,9 @@ public class LoginController extends WindowController implements MatchListener, 
         }).start();
     }
 
+    /**
+     * Closes itself and the connector
+     */
     @Override
     public void close() {
         super.close();
@@ -306,6 +455,11 @@ public class LoginController extends WindowController implements MatchListener, 
         }
     }
 
+    /**
+     * Shows the waiting screen after a connection has been successfully established and sends a notification for the new connected clients
+     *
+     *  @param e the ClientEvent signalling the connection
+     */
     @Override
     public void onLoginSuccess(ClientEvent e) {
         Platform.runLater(() -> {
@@ -321,6 +475,11 @@ public class LoginController extends WindowController implements MatchListener, 
 
     }
 
+    /**
+     * Sends a notification if one of the previously connected clients disconnects from the server
+     *
+     * @param e the ClientEvent signalling the end of the connection
+     */
     @Override
     public void onClientDisconnected(ClientEvent e) {
         Platform.runLater(() -> {
