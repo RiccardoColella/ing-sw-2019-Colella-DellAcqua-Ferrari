@@ -114,7 +114,7 @@ class GameRepresentation {
     /**
      * This property stores info about alive players
      */
-    private Map<Player, Boolean> alivePlayers;
+    private Map<String, Boolean> alivePlayers;
 
     GameRepresentation(
             List<String>  board,
@@ -136,7 +136,7 @@ class GameRepresentation {
 
         alivePlayers = new HashMap<>();
         for (Player player : players){
-            alivePlayers.put(player, false);
+            alivePlayers.put(player.getNickname(), false);
         }
 
         this.settings = settings;
@@ -245,6 +245,14 @@ class GameRepresentation {
      * @param playerAlive player to be set as alive
      */
     void setPlayerAlive(Player playerAlive){
+        alivePlayers.put(playerAlive.getNickname(), true);
+    }
+
+    /**
+     * This method sets a player as alive
+     * @param playerAlive player to be set as alive
+     */
+    void setPlayerAlive(String playerAlive){
         alivePlayers.put(playerAlive, true);
     }
 
@@ -253,7 +261,7 @@ class GameRepresentation {
      * @param playerAlive player to be set as alive
      */
     void setPlayerAlive(PlayerColor playerAlive){
-        alivePlayers.put(selectPlayer(playerAlive), true);
+        alivePlayers.put(selectPlayer(playerAlive).getNickname(), true);
     }
 
     /**
@@ -261,7 +269,7 @@ class GameRepresentation {
      * @param playerDied player to be setted as died
      */
     void setPlayerDied(Player playerDied){
-        alivePlayers.put(playerDied, false);
+        alivePlayers.put(playerDied.getNickname(), false);
     }
 
 
@@ -269,12 +277,8 @@ class GameRepresentation {
      * This method sets a player as died
      * @param playerDied player to be setted as died
      */
-    void setPlayerDied(String playerDied){
-        for (Player player : players) {
-            if (player.getNickname().equals(playerDied)) {
-                alivePlayers.put(player, false);
-            }
-        }
+    void setPlayerDied(String playerDied) {
+        alivePlayers.put(playerDied, false);
     }
 
     /**
@@ -290,10 +294,10 @@ class GameRepresentation {
      * @param board board to which add the players
      * @return the built board
      */
-    List<String> positPlayers(List<String> board) {
+    private List<String> positPlayers(List<String> board) {
         List<String> boardWithPlayers = new LinkedList<>(board);
         for (Player player : players){
-            if (alivePlayers.get(player)){
+            if (alivePlayers.get(selectPlayer(player).getNickname())){
                 int i = players.indexOf(player);
                 String nick = player.getNickname();
                 if (nick.length() > getMaxNicknamesLength()){
@@ -324,7 +328,7 @@ class GameRepresentation {
      * @param board the list of strings to which add the kill-shots track
      * @return the list of strings with the kill-shots track added as last element
      */
-    List<String> positKillshots(List<String> board){
+    private List<String> positKillshots(List<String> board){
         List<String> boardWithKillshots = new LinkedList<>(board);
         String killshotsString = " - Killshots: [";
         StringBuilder killshotsLine = new StringBuilder(killshotsString);
@@ -344,7 +348,7 @@ class GameRepresentation {
      * @param board board to which add the players
      * @return the built board
      */
-    List<String> positSpawnpointsWeapons(List<String> board) {
+    private List<String> positSpawnpointsWeapons(List<String> board) {
         List<String> boardWithWeapons = new LinkedList<>(board);
         String separator = " - ";
         weaponsOnSpawnpoint
@@ -377,7 +381,7 @@ class GameRepresentation {
      * @param board board to which add the players
      * @return the built board
      */
-    List<String> positPlayerInfo(List<String> board) {
+    private List<String> positPlayerInfo(List<String> board) {
         List<String> boardUpdated = positKillshots(board);
         String separator = ". ";
         for (Player player : players){
@@ -614,7 +618,7 @@ class GameRepresentation {
                 return player;
             }
         }
-        throw new IllegalArgumentException("Player " + playerToSelect.toString() + " not found in players");
+        throw new IllegalArgumentException("PlayerColor " + playerToSelect.toString() + " not found in players");
     }
 
     /**
@@ -634,7 +638,7 @@ class GameRepresentation {
      * @param c new column
      */
     void movePlayer(PlayerColor player, int r, int c) {
-        playerLocations.put(selectPlayer(player), new Point(r, c));
+        movePlayer(selectPlayer(player), r, c);
     }
 
     /**

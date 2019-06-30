@@ -29,6 +29,12 @@ public class GameRepresentationFactory {
     private static final String TEXTS_JSON_PATH = "./config/gameTextsForCLI.json";
     private static final String TEXTS_JSON_PUSH_RES = "/config/gameTextsForCLI.json";
 
+
+    /**
+     * This method creates a game representation for cli
+     * @param e MatchStarted event, containing info about the starting match
+     * @return the expected game representation
+     */
     public static GameRepresentation create(MatchStarted e) {
 
         List<Player> players = new LinkedList<>(e.getOpponents());
@@ -81,13 +87,18 @@ public class GameRepresentationFactory {
         );
     }
 
+    /**
+     * This method creates a game representation for cli when it is resumed
+     * @param e MatchResumed event, containing info about the resumed match
+     * @return the expected game representation
+     */
     public static GameRepresentation create(MatchResumed e) {
         GameRepresentation gameRepresentation = create((MatchStarted) e);
         gameRepresentation.setKillshots(e.getKillshots());
         e.getPlayerLocations().entrySet()
                 .stream()
                 .forEach(player -> {
-                    gameRepresentation.movePlayer(player.getKey(), player.getValue().x, player.getValue().y);
+                    gameRepresentation.movePlayer(player.getKey(), player.getValue().y, player.getValue().x);
                     gameRepresentation.setPlayerAlive(player.getKey());
                 });
         return gameRepresentation;

@@ -274,7 +274,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
                 answer = scanner.nextLine();
                 chosenIndex = Integer.parseInt(answer);
             } catch (Exception ex) {
-                if (matchOnGoing) {
+                if (isMatchOnGoing()) {
                     manageRepresentationAsks(answer);
                 } else printStream.println(w + "Insert a valid number!");
             }
@@ -538,10 +538,16 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         printStream.println(results);
     }
 
+    /**
+     * If this event is called, it handles the resuming of the match
+     * @param e Match Resumed event, containing info about the match
+     */
     @Override
     public void onMatchResumed(MatchResumed e) {
         gameRepresentation = GameRepresentationFactory.create(e);
-
+        setMatchOnGoing(true);
+        gameRepresentation.showUpdatedSituation(printStream);
+        printStream.println(m + "Match resumed!");
     }
 
     /**
@@ -735,7 +741,12 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
     public void onLoginSuccess(ClientEvent e) {
         if (e.getNickname().equals(this.nickname)){
             printStream.println("LOGIN SUCCESSFUL! Your nickname is: " + e.getNickname());
-        } else printStream.println(e.getNickname() + " connected to the game");
+        } else {
+            if (isMatchOnGoing()) {
+                gameRepresentation.setPlayerAlive(e.getNickname());
+            }
+            printStream.println(e.getNickname() + " connected to the game");
+        }
     }
 
     /**
@@ -754,6 +765,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
      */
     @Override
     public void onPlayerReconnected(PlayerEvent e) {
+        gameRepresentation.updatePlayer(e.getPlayer());
         gameRepresentation.setPlayerAlive(e.getPlayer());
         printStream.println(w + e.getPlayer().getNickname() + " reconnected");
     }
@@ -791,7 +803,10 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         if (isMatchOnGoing()) {
             printStream.println(m + "Now it's " + e.getPlayer().getNickname() + " turn!");
             gameRepresentation.showUpdatedMap(printStream);
-        } else printStream.println(m + "Game over!");
+        } else {
+            removeAllListeners();
+            printStream.println(m + "Game over!");
+        }
     }
 
     /**
