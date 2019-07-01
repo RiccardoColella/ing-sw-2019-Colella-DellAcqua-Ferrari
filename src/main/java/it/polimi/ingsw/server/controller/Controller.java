@@ -99,7 +99,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
             connectedViews = views.stream().mapToInt(view -> view.isConnected() ? 1 : 0).reduce(0, Integer::sum);
         }
         if (!match.isEnded()) {
-            // TODO: save or force close?
+            match.close();
         }
         logger.info("The match is over");
 

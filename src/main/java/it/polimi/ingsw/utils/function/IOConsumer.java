@@ -5,8 +5,9 @@ import java.io.IOException;
 /**
  * A simple consumer that might throw an IOException during it's execution
  *
- * @author Carlo Dell'Acqua
  * @param <T> the type of the item to consume
+ *
+ * @author Carlo Dell'Acqua
  */
 public interface IOConsumer<T> {
 

@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 
 /**
  * This class creates all the weapons of the game
+ *
+ * @author Carlo Dell'Acqua
  */
 public final class WeaponTileFactory {
 

@@ -2,6 +2,8 @@ package it.polimi.ingsw.server.model.player;
 
 /**
  * This class stores the information necessary to uniquely identify players
+ *
+ * @author Adriana Ferrari
  */
 public class PlayerInfo {
     /**

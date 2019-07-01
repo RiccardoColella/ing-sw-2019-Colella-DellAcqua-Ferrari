@@ -1227,7 +1227,7 @@ public class GameController extends WindowController implements AutoCloseable, Q
      */
     @Override
     public void onMatchResumed(MatchResumed e) {
-        // TODO: implement
+        // Nothing to do here
     }
 
     /**

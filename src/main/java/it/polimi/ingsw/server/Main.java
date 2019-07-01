@@ -7,6 +7,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+/**
+ * Entry point of the server
+ *
+ * @author Carlo Dell'Acqua
+ */
 public class Main {
 
     private static final String SERVER_CONFIG_JSON_PATH = "./config/serverConfig.json";

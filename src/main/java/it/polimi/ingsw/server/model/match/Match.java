@@ -407,9 +407,9 @@ public class Match implements PlayerListener {
     }
 
     /**
-     * This method closes the match when it ends naturally following the rules
+     * This method closes the match
      */
-    private void close() {
+    public void close() {
         ended = true;
         //Scoring player boards that still have damage
         List<Player> playersWithDamage = players.stream().filter(p -> !p.getDamageTokens().isEmpty() && p.isAlive()).collect(Collectors.toList());

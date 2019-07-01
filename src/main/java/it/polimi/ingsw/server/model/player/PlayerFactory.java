@@ -13,15 +13,32 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Factory that generates players
+ *
+ * @author Adriana Ferrari
+ */
 public final class PlayerFactory {
+    /**
+     * Paths of the constraints configuration file
+     */
     private static final String CONSTRAINTS_JSON_PATH = "./config/playerConstraints.json";
     private static final String CONSTRAINTS_JSON_PATH_RES = "/config/playerConstraints.json";
+
+    /**
+     * Key value store of constrains
+     */
     private static Map<String, Integer> constraintsMap;
 
-    private PlayerFactory() {
+    private PlayerFactory() { }
 
-    }
-
+    /**
+     * Creates a player given a match and a PlayerInfo object
+     *
+     * @param match the match to associate the player with
+     * @param info the information needed for the player initialization
+     * @return a player object associated with the given match
+     */
     public static Player create(Match match, PlayerInfo info) {
         if (constraintsMap == null) {
             readConstraints();

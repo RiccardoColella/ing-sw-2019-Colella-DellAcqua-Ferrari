@@ -3,6 +3,7 @@ package it.polimi.ingsw.shared.datatransferobjects;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -10,8 +11,7 @@ import java.util.List;
  *
  * @author Carlo Dell'Acqua
  */
-public class BonusTile {
-
+public class BonusTile implements Serializable {
     /**
      * Bonus tile location
      */

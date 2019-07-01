@@ -16,6 +16,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Factory that provides rewards for different type of situations
+ *
+ * @author Adriana Ferrari
+ */
 public final class RewardFactory {
 
     public enum Type {

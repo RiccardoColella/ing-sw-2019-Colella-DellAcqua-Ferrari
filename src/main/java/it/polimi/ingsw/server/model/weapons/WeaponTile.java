@@ -6,6 +6,11 @@ import it.polimi.ingsw.server.model.currency.AmmoCube;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * This class represents a Weapon Tile
+ *
+ * @author Adriana Ferrari
+ */
 public class WeaponTile implements Droppable {
     private boolean loaded = true;
     private final String name;
@@ -34,22 +39,39 @@ public class WeaponTile implements Droppable {
         this(weapon.name, weapon.acquisitionCost, weapon.reloadCost);
     }
 
+    /**
+     * @return true if the weapon is loaded
+     */
     public boolean isLoaded() {
         return loaded;
     }
 
+    /**
+     * @return the weapon name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return the acquisition cost
+     */
     public List<AmmoCube> getAcquisitionCost() {
         return acquisitionCost;
     }
 
+    /**
+     * @return the reload cost
+     */
     public List<AmmoCube> getReloadCost() {
         return reloadCost;
     }
 
+    /**
+     * Changes the load status of this weapon
+     *
+     * @param loaded the new status
+     */
     public void setLoaded(boolean loaded) {
         this.loaded = loaded;
     }

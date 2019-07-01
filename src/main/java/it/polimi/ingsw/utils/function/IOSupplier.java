@@ -7,8 +7,9 @@ import java.util.concurrent.TimeoutException;
 /**
  * A simple supplier interface that might throw an IOException during it's execution
  *
- * @author Carlo Dell'Acqua
  * @param <T> the type of the item to supply
+ *
+ * @author Carlo Dell'Acqua
  */
 public interface IOSupplier<T> {
 

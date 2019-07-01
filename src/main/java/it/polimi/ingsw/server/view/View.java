@@ -621,7 +621,8 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
      */
     @Override
     public void onMatchModeChanged(MatchModeChanged event) {
-        // TODO: Bind Model to ViewModel and enqueue the event
+        it.polimi.ingsw.shared.events.networkevents.MatchModeChanged convertedEvent = new it.polimi.ingsw.shared.events.networkevents.MatchModeChanged(event.getMode());
+        outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_MODE_CHANGED_EVENT, convertedEvent));
     }
 
     /**

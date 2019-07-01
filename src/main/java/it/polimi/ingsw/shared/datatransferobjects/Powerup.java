@@ -2,12 +2,14 @@ package it.polimi.ingsw.shared.datatransferobjects;
 
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 
+import java.io.Serializable;
+
 /**
  * Represents a Powerup for the Client View
  *
  * @author Carlo Dell'Acqua
  */
-public class Powerup {
+public class Powerup implements Serializable {
 
     /**
      * Powerup name
@@ -45,11 +47,21 @@ public class Powerup {
     }
 
 
+    /**
+     * Overrides the default hashCode method
+     *
+     * @return the hash code of this object
+     */
     @Override
     public int hashCode() {
         return (name + color.toString()).hashCode();
     }
 
+    /**
+     * Overrides the default equals method
+     *
+     * @return true if this object is equal to the one passed as a parameter
+     */
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof Powerup)) {
@@ -59,6 +71,12 @@ public class Powerup {
         }
     }
 
+
+    /**
+     * Overrides the default toString method
+     *
+     * @return a string representing this powerup
+     */
     @Override
     public String toString() {
         return this.name + " (Color: " + this.color.toString() + ")";
