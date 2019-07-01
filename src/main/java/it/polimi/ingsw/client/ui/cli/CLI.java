@@ -274,7 +274,7 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
                 answer = scanner.nextLine();
                 chosenIndex = Integer.parseInt(answer);
             } catch (Exception ex) {
-                if (isMatchOnGoing()) {
+                if (matchOnGoing) {
                     manageRepresentationAsks(answer);
                 } else printStream.println(w + "Insert a valid number!");
             }
@@ -821,14 +821,14 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
         new Thread(() -> {
             try {
                 connector.close();
+
+                printStream.println("Enter another nickname");
+                this.nickname = scanner.nextLine();
+
+                setConnector();
             } catch (Exception ex) {
                 printStream.println("Could not close the connector");
             }
         }).start();
-
-        printStream.println("Enter another nickname");
-        this.nickname = scanner.nextLine();
-
-        setConnector();
     }
 }
