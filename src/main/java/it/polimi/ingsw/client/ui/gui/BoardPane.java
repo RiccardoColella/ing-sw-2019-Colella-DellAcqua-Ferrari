@@ -8,15 +8,28 @@ import javafx.geometry.Side;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 
+/**
+ * This class extends the GridPane element in order to represent the game field
+ */
 public class BoardPane extends GridPane {
 
+    /**
+     * The left side of the board
+     */
     @FXML
     private FlowPane boardLeft;
 
+    /**
+     * The right side of the board
+     */
     @FXML
     private FlowPane boardRight;
 
-
+    /**
+     * Constructor that takes a preset to load the actual board
+     *
+     * @param preset the preset used for the board
+     */
     public BoardPane(@NamedArg("preset") BoardFactory.Preset preset) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/board.fxml"));

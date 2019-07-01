@@ -56,9 +56,24 @@ import java.util.stream.Collectors;
  */
 public abstract class View implements Interviewer, AutoCloseable, MatchListener, PlayerListener, BoardListener, ViewListener {
 
+    /**
+     * The view waits for this amount of milliseconds, with the purpose of emptying the queue, after a shutdown requests
+     */
     private static final int CLOSE_TIMEOUT_MILLISECONDS = 10000;
+
+    /**
+     * Timeout used in the waiting loop (when the view is waiting for the queue to get empty)
+     */
     private static final int CLOSE_CHECK_DELAY = CLOSE_TIMEOUT_MILLISECONDS / 10;
+
+    /**
+     * Timeout used when dequeueing an event
+     */
     private static final int DEQUEUE_TIMEOUT_MILLISECONDS = 1000;
+
+    /**
+     * Timeout used to check the heartbeat
+     */
     private static final int HEARTBEAT_TIMEOUT = 10000;
 
 
@@ -111,8 +126,19 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
      */
     private final Set<ViewListener> listeners = Collections.synchronizedSet(new HashSet<>());
 
+    /**
+     * Thread pool used to check the heartbeat of the client
+     */
     private final ExecutorService heartbeatThreadPool = Executors.newSingleThreadExecutor();
+
+    /**
+     * Thread pool used to transmit events
+     */
     private final ExecutorService eventThreadPool = Executors.newSingleThreadExecutor();
+
+    /**
+     * The instant of the last heartbeat that was received
+     */
     private Instant lastHeartbeat;
 
     /**
@@ -153,6 +179,9 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         }
     }
 
+    /**
+     * This method makes the view start receiving events
+     */
     private void startReceivingEvents() {
         eventThreadPool.execute(() -> {
             while (!eventThreadPool.isShutdown() && isConnected()) {
@@ -178,6 +207,9 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         });
     }
 
+    /**
+     * This method makes the view start listening for heartbeats
+     */
     private void startHeartbeat() {
         heartbeatThreadPool.execute(() -> {
             while (!heartbeatThreadPool.isShutdown() && isConnected()) {
@@ -346,6 +378,12 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         }
     }
 
+    /**
+     * Maps the wallet of a Player of the Model to the appropriate data transfer object
+     *
+     * @param player the Player Model object
+     * @return the Wallet data transfer object
+     */
     private Wallet mapWallets(Player player) {
         List<CurrencyColor> ammoCubes = player.getAmmoCubes().stream().map(AmmoCube::getColor).collect(Collectors.toList());
 
@@ -365,6 +403,12 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         return new Wallet(loadedWeapons, unloadedWeapons, ammoCubes, powerups);
     }
 
+    /**
+     * Maps a Player into the relative data transfer object
+     *
+     * @param player the Player Model object
+     * @return the Player data transfer object
+     */
     private it.polimi.ingsw.shared.datatransferobjects.Player mapPlayer(Player player) {
         return new it.polimi.ingsw.shared.datatransferobjects.Player(
                 player.getPlayerInfo().getNickname(),
@@ -376,6 +420,12 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         );
     }
 
+    /**
+     * Maps the health of a Player of the Model to the appropriate data transfer object
+     *
+     * @param player the Player Model object
+     * @return the PlayerHealth data transfer object
+     */
     private PlayerHealth mapPlayerHealth(Player player) {
 
         return new PlayerHealth(
@@ -385,6 +435,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         );
     }
 
+    /**
+     * Closes this object and stops the background threads execution
+     *
+     * @throws Exception if the closing process is forced to stop or the remote resources are unable to correctly close or the socket cannot be closed
+     */
     @Override
     public void close() throws Exception {
 
@@ -413,16 +468,32 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         }
     }
 
+    /**
+     * Enqueues a last message, then closes this object and stops the background threads execution
+     *
+     * @param lastMessage the last message to send
+     * @throws Exception if the closing process is forced to stop or the remote resources are unable to correctly close or the socket cannot be closed
+     */
     public void close(Message lastMessage) throws Exception {
         outputMessageQueue.add(lastMessage);
         this.close();
     }
 
+    /**
+     * Notifies the client that the match has started
+     * @param event the event corresponding to the beginning of the match
+     */
     @Override
     public void onMatchStarted(MatchEvent event) {
         enqueueMatchInitializationEvent(event.getMatch(), false);
     }
 
+    /**
+     * Enqueues a generic match initialization event
+     *
+     * @param match the match that was initialized
+     * @param resumed whether the match was resumed
+     */
     private void enqueueMatchInitializationEvent(Match match, boolean resumed) {
         List<Player> allPlayers = new LinkedList<>(match.getPlayers());
         List<it.polimi.ingsw.shared.datatransferobjects.Player> opponentsVM = allPlayers
@@ -504,6 +575,12 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         }
     }
 
+    /**
+     * Maps the content of the turrets of the model into the appropriate data transfer objects
+     *
+     * @param board the board containing the turrets
+     * @return a set with the data transfer object bonus tiles
+     */
     private Set<BonusTile> mapTurretBonusTiles(Board board) {
         return board.getTurretBlocks()
                 .stream()
@@ -521,6 +598,10 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Notifies the client that the match has ended
+     * @param event the event corresponding to the end of the match
+     */
     @Override
     public void onMatchEnded(MatchEnded event) {
         it.polimi.ingsw.shared.events.networkevents.MatchEnded convertedEvent;
@@ -533,12 +614,21 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_ENDED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that the match mode has changed
+     *
+     * @param event the event corresponding to the match mode change
+     */
     @Override
     public void onMatchModeChanged(MatchModeChanged event) {
         // TODO: Bind Model to ViewModel and enqueue the event
     }
 
-
+    /**
+     * Notifies the client that the killshot track changed
+     *
+     * @param e the event corresponding to the killshot track change
+     */
     @Override
     public void onKillshotTrackChanged(KillshotTrackChanged e) {
         List<Tuple<PlayerColor, Boolean>> killshots = e.getKillshots().stream().map(k -> new Tuple<>(k.getDamageToken().getAttacker().getPlayerInfo().getColor(), k.isOverkill())).collect(Collectors.toList());
@@ -546,6 +636,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         outputMessageQueue.add(Message.createEvent(ClientApi.MATCH_KILLSHOT_TRACK_CHANGED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that a player died
+     *
+     * @param e the event corresponding to the player's death
+     */
     @Override
     public void onPlayerDied(PlayerDied e) {
         it.polimi.ingsw.shared.datatransferobjects.Player playerVM = mapPlayer(e.getVictim());
@@ -553,11 +648,21 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_DIED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that a player was damaged
+     *
+     * @param e this parameter contains info about the attacker and the damaged player
+     */
     @Override
     public void onPlayerDamaged(PlayerDamaged e) {
         //View only cares about onPlayerHealthChanged
     }
 
+    /**
+     * Notifies the client that a player was overkilled
+     *
+     * @param e the event corresponding to the player's death
+     */
     @Override
     public void onPlayerOverkilled(PlayerOverkilled e) {
         it.polimi.ingsw.shared.datatransferobjects.Player playerVM = mapPlayer(e.getVictim());
@@ -565,22 +670,42 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_OVERKILLED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that a player was brought back to life
+     *
+     * @param e the event corresponding to the player's rebirth
+     */
     @Override
     public void onPlayerReborn(PlayerEvent e) {
         onBasicPlayerEvent(e, ClientApi.PLAYER_REBORN_EVENT);
     }
 
+    /**
+     * Notifies the client that a player's board flipped
+     *
+     * @param e the event corresponding to the player's board flipping
+     */
     @Override
     public void onPlayerBoardFlipped(PlayerEvent e) {
         onBasicPlayerEvent(e, ClientApi.PLAYER_BOARD_FLIPPED_EVENT);
     }
 
 
+    /**
+     * Notifies the client that a player's tile flipped
+     *
+     * @param e the event corresponding to the player's tile flipping
+     */
     @Override
     public void onPlayerTileFlipped(PlayerEvent e) {
         onBasicPlayerEvent(e, ClientApi.PLAYER_TILE_FLIPPED_EVENT);
     }
 
+    /**
+     * Notifies the client that a weapon was reloaded
+     *
+     * @param e the event corresponding to the player reloading a weapon
+     */
     @Override
     public void onWeaponReloaded(PlayerWeaponEvent e) {
         it.polimi.ingsw.shared.events.networkevents.PlayerWeaponEvent convertedEvent;
@@ -589,6 +714,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         outputMessageQueue.add(Message.createEvent(ClientApi.WEAPON_RELOADED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that a weapon was unloaded
+     *
+     * @param e the event corresponding to the player unloading a weapon
+     */
     @Override
     public void onWeaponUnloaded(PlayerWeaponEvent e) {
         it.polimi.ingsw.shared.events.networkevents.PlayerWeaponEvent convertedEvent;
@@ -598,6 +728,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     }
 
+    /**
+     * Notifies the client that a weapon was picked
+     *
+     * @param e the event corresponding to the player picking up a weapon
+     */
     @Override
     public void onWeaponPicked(WeaponExchanged e) {
         PlayerWeaponExchanged convertedEvent;
@@ -606,6 +741,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     }
 
+    /**
+     * Notifies the client that a weapon was dropped
+     *
+     * @param e the event corresponding to the player dropping a weapon
+     */
     @Override
     public void onWeaponDropped(WeaponExchanged e) {
         PlayerWeaponExchanged convertedEvent;
@@ -613,6 +753,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         outputMessageQueue.add(Message.createEvent(ClientApi.WEAPON_DROPPED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that a player's wallet has changed
+     *
+     * @param e the event corresponding to the player's wallet changing
+     */
     @Override
     public void onWalletChanged(PlayerWalletChanged e) {
         it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged convertedEvent;
@@ -622,6 +767,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     }
 
+    /**
+     * Notifies the client that a player's health has changed
+     *
+     * @param e the event corresponding to the player's health changing
+     */
     @Override
     public void onHealthChanged(PlayerEvent e) {
         it.polimi.ingsw.shared.datatransferobjects.Player playerVM = mapPlayer(e.getPlayer());
@@ -629,6 +779,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_HEALTH_CHANGED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that a player teleported
+     *
+     * @param e the event corresponding to the player teleporting
+     */
     @Override
     public void onPlayerTeleported(PlayerMoved e) {
         it.polimi.ingsw.shared.events.networkevents.PlayerMoved convertedEvent;
@@ -636,6 +791,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_TELEPORTED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that a player moved
+     *
+     * @param e the event corresponding to the player moving
+     */
     @Override
     public void onPlayerMoved(PlayerMoved e) {
         it.polimi.ingsw.shared.events.networkevents.PlayerMoved convertedEvent;
@@ -643,6 +803,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_MOVED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that a new weapon is available
+     *
+     * @param e the event corresponding to a new weapon being available
+     */
     @Override
     public void onNewWeaponAvailable(NewWeaponAvailable e) {
         WeaponEvent convertedEvent = new WeaponEvent(
@@ -653,6 +818,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         outputMessageQueue.add(Message.createEvent(ClientApi.NEW_WEAPON_AVAILABLE_EVENT, convertedEvent));
     }
 
+    /**
+     * Maps a BonusTile Model event to the appropriate network event
+     * @param e the model bonus tile event
+     * @return the converted event
+     */
     private it.polimi.ingsw.shared.events.networkevents.BonusTileEvent mapBonusTileEvent(BonusTileBoardEvent e) {
         return new it.polimi.ingsw.shared.events.networkevents.BonusTileEvent(
                 new BonusTile(
@@ -668,18 +838,33 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         );
     }
 
+    /**
+     * Notifies the client that a bonus tile was grabbed
+     *
+     * @param e the event corresponding to a bonus tile being grabbed
+     */
     @Override
     public void onBonusTileGrabbed(BonusTileBoardEvent e) {
         it.polimi.ingsw.shared.events.networkevents.BonusTileEvent convertedEvent = mapBonusTileEvent(e);
         outputMessageQueue.add(Message.createEvent(ClientApi.BONUS_TILE_GRABBED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that a bonus tile was dropped
+     *
+     * @param e the event corresponding to a bonus tile being dropped
+     */
     @Override
     public void onBonusTileDropped(BonusTileBoardEvent e) {
         it.polimi.ingsw.shared.events.networkevents.BonusTileEvent convertedEvent = mapBonusTileEvent(e);
         outputMessageQueue.add(Message.createEvent(ClientApi.BONUS_TILE_DROPPED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that a powerup was discarded
+     *
+     * @param e the event corresponding to the player discarding a powerup
+     */
     @Override
     public void onPowerupDiscarded(PowerupExchange e){
         it.polimi.ingsw.shared.datatransferobjects.Player playerVM = mapPlayer(e.getPlayer());
@@ -688,6 +873,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_WALLET_CHANGED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that a powerup was grabbed
+     *
+     * @param e the event corresponding to the player grabbing a powerup
+     */
     @Override
     public void onPowerupGrabbed(PowerupExchange e){
         it.polimi.ingsw.shared.events.networkevents.PlayerWalletChanged convertedEvent;
@@ -696,6 +886,11 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_WALLET_CHANGED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that a spawnpoint was chosen by a player
+     *
+     * @param e the event corresponding to the player choosing a spawnpoint
+     */
     @Override
     public void onSpawnpointChosen(SpawnpointChoiceEvent e){
         it.polimi.ingsw.shared.events.networkevents.PlayerSpawned convertedEvent;
@@ -703,11 +898,22 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         outputMessageQueue.add(Message.createEvent(ClientApi.PLAYER_SPAWNED_EVENT, convertedEvent));
     }
 
+    /**
+     * Notifies the client that the active player changed
+     *
+     * @param e the event corresponding to the changing of the turn
+     */
     @Override
     public void onActivePlayerChanged(PlayerEvent e) {
         onBasicPlayerEvent(e, ClientApi.ACTIVE_PLAYER_CHANGED_EVENT);
     }
 
+    /**
+     * Generic method to convert PlayerEvents from the model into the appropriate network events
+     *
+     * @param e the model event
+     * @param type the type of event
+     */
     private void onBasicPlayerEvent(PlayerEvent e, ClientApi type) {
         it.polimi.ingsw.shared.datatransferobjects.Player playerVM = mapPlayer(e.getPlayer());
         it.polimi.ingsw.shared.events.networkevents.PlayerEvent convertedEvent = new it.polimi.ingsw.shared.events.networkevents.PlayerEvent(playerVM);
@@ -756,10 +962,18 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         }
     }
 
+    /**
+     * Sets ready status to null
+     */
     public void setReady() {
         setReady(null);
     }
 
+    /**
+     * Sets the ready status to the given value
+     *
+     * @param resumedMatch the new ready status value
+     */
     public void setReady(@Nullable Match resumedMatch) {
         notifyViewReady();
         onViewReady(new ViewEvent(this));
@@ -768,6 +982,10 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         }
     }
 
+    /**
+     * Notifies the client that a view disconnected
+     * @param e the event corresponding to the view disconnection
+     */
     @Override
     public void onViewDisconnected(ViewEvent e) {
         synchronized (listeners) {
@@ -781,6 +999,10 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
         );
     }
 
+    /**
+     * Notifies the client that a new view is ready
+     * @param e the event corresponding to the view being ready
+     */
     @Override
     public void onViewReady(ViewEvent e) {
         outputMessageQueue.add(Message.createEvent(ClientApi.LOGIN_SUCCESS_EVENT, new ClientEvent(e.getView().getNickname())));
