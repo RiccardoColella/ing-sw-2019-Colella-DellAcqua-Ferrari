@@ -4,6 +4,9 @@ import it.polimi.ingsw.server.model.events.*;
 
 import java.util.EventListener;
 
+/**
+ * Interface of a class that will react to the status changes of a player
+ */
 public interface PlayerListener extends EventListener {
 
     /**
