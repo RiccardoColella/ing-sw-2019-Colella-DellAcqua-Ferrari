@@ -13,23 +13,32 @@ import java.util.Optional;
  */
 public class GUI extends Application {
 
+    /**
+     * Empty constructor
+     */
     public GUI() {
     }
 
+    /**
+     * This method is automatically called when launching a new GUI.
+     * It creates the LoginController and then shows the GameController window
+     *
+     * @param stage a Stage
+     */
     @Override
     public void start(Stage stage) {
 
         Platform.setImplicitExit(true);
 
-        //debug();
         LoginController loginController = new LoginController();
         loginController.showAsModal();
         Optional<GameController> gameController = loginController.getGameController();
-        if (gameController.isPresent()) {
-            gameController.get().showAsModal();
-        }
+        gameController.ifPresent(WindowController::showAsModal);
     }
 
+    /**
+     * This method launches a new GUI
+     */
     public void start() {
         launch();
     }

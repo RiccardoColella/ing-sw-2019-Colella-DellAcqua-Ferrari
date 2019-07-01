@@ -207,6 +207,8 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
 
     /**
      * Gets the player associated with this view
+     *
+     * @return the player associated with this view
      */
     public Player getPlayer() {
         return player;

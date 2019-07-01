@@ -14,33 +14,21 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Factory class that provides callback functions for different ButtonTypes, each with the expected return value
+ * @author Adriana Ferrari
+ */
 public final class CallbackFactory {
 
+    /**
+     * Empty private constructor
+     */
     private CallbackFactory() {}
 
-    public static Callback<ButtonType, Point> skippablePoint() {
-        return button -> {
-            if (!button.getButtonData().isCancelButton()) {
-                Matcher m = Pattern.compile("(\\d+)\\s(\\d+)").matcher(button.getText());
-                if (!m.find()) {
-                    throw new IllegalStateException("Invalid spawnpoint response");
-                }
-                return new Point(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
-            }
-            return null;
-        };
-    }
-
-    public static Callback<ButtonType, Point> unskippablePoint() {
-        return button -> {
-            Matcher m = Pattern.compile("(\\d+)\\s(\\d+)").matcher(button.getText());
-            if (!m.find()) {
-                throw new IllegalStateException("Invalid spawnpoint response");
-            }
-            return new Point(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
-        };
-    }
-
+    /**
+     * Builds an unskippable Powerup callback function
+     * @return a Callback that returns a Powerup
+     */
     public static Callback<ButtonType, Powerup> unskippablePowerup() {
         return button -> {
             Matcher m = Pattern.compile("([^\\s]+)(\\s)(.*)").matcher(button.getText());
@@ -51,6 +39,10 @@ public final class CallbackFactory {
         };
     }
 
+    /**
+     * Builds a skippable Powerup callback function
+     * @return a Callback that returns a Powerup or null
+     */
     public static Callback<ButtonType, Powerup> skippablePowerup() {
         return button -> {
             if (!button.getButtonData().isCancelButton()) {
@@ -64,6 +56,10 @@ public final class CallbackFactory {
         };
     }
 
+    /**
+     * Builds a skippable String callback function
+     * @return a Callback that returns a String or null
+     */
     public static Callback<ButtonType, String> skippableString() {
         return button -> {
             if (!button.getButtonData().isCancelButton()) {
@@ -73,45 +69,34 @@ public final class CallbackFactory {
         };
     }
 
+    /**
+     * Builds an unskippable String callback function
+     * @return a Callback that returns a String
+     */
     public static Callback<ButtonType, String> unskippableString() {
         return ButtonType::getText;
     }
 
+    /**
+     * Builds a skippable Weapon (in the form of a String) callback function
+     * @return a Callback that returns a String or null
+     */
     public static Callback<ButtonType, String> skippableWeapon() {
         return skippableString();
     }
 
+    /**
+     * Builds an unskippable Weapon (in the form of a String) callback function
+     * @return a Callback that returns a String
+     */
     public static Callback<ButtonType, String> unskippableWeapon() {
         return unskippableString();
     }
 
-
-    public static Callback<ButtonType, BasicAction> skippableBasicAction() {
-        return button -> {
-            if (!button.getButtonData().isCancelButton()) {
-                return EnumValueByString.findByString(button.getText().toUpperCase(), BasicAction.class);
-            }
-            return null;
-        };
-    }
-
-    public static Callback<ButtonType, BasicAction> unskippableBasicAction() {
-        return button -> EnumValueByString.findByString(button.getText().toUpperCase(), BasicAction.class);
-    }
-
-    public static Callback<ButtonType, Direction> skippableDirection() {
-        return button -> {
-            if (!button.getButtonData().isCancelButton()) {
-                return EnumValueByString.findByString(button.getText().toUpperCase(), Direction.class);
-            }
-            return null;
-        };
-    }
-
-    public static Callback<ButtonType, Direction> unskippableDirection() {
-        return button -> EnumValueByString.findByString(button.getText().toUpperCase(), Direction.class);
-    }
-
+    /**
+     * Builds a skippable {@code Set<String>} callback function
+     * @return a Callback that returns a {@code Set<String>} or null
+     */
     public static Callback<ButtonType, Set<String>> skippableStringSet() {
         return button -> {
             if (!button.getButtonData().isCancelButton()) {
@@ -130,6 +115,10 @@ public final class CallbackFactory {
         };
     }
 
+    /**
+     * Builds an unskippable {@code Set<String>} callback function
+     * @return a Callback that returns a {@code Set<String>}
+     */
     public static Callback<ButtonType, Set<String>> unskippableStringSet() {
         return button -> {
             Matcher m = Pattern.compile("^\\s-\\s(.*)$").matcher(button.getText());
@@ -145,6 +134,10 @@ public final class CallbackFactory {
         };
     }
 
+    /**
+     * Builds a skippable CurrencyColor callback function
+     * @return a Callback that returns a CurrencyColor or null
+     */
     public static Callback<ButtonType, CurrencyColor> skippableCurrencyColor() {
         return button -> {
             if (!button.getButtonData().isCancelButton()) {
@@ -154,6 +147,10 @@ public final class CallbackFactory {
         };
     }
 
+    /**
+     * Builds an unskippable CurrencyColor callback function
+     * @return a Callback that returns a CurrencyColor
+     */
     public static Callback<ButtonType, CurrencyColor> unskippableCurrencyColor() {
         return button -> EnumValueByString.findByString(button.getText().toUpperCase(), CurrencyColor.class);
     }

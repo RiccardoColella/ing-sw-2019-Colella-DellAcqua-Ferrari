@@ -368,7 +368,7 @@ public class BoardContentPane extends GridPane {
 
     /**
      * Handles an image pane being clicked
-     * @param img
+     * @param img the image pane
      */
     private void mouseClickHandler(ImagePane img) {
         Stage popup = new Stage();

@@ -42,53 +42,140 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * Main class controlling the graphical interface during a match
+ *
+ * @author Adriana Ferrari
+ */
 public class GameController extends WindowController implements AutoCloseable, QuestionMessageReceivedListener, PlayerListener, BoardListener, MatchListener, NotificationListener, ClientListener {
 
+    /**
+     * A utility logger
+     */
     private Logger logger = Logger.getLogger(this.getClass().getName());
 
+    /**
+     * The main window
+     */
     @FXML
     private GridPane window;
+
+    /**
+     * The container of the board
+     */
     @FXML
     private StackPane boardContainer;
+
+    /**
+     * The container of the opponents' boards
+     */
     @FXML
     private GridPane opponentsContainer;
+
+    /**
+     * The board of the player
+     */
     @FXML
     private PlayerBoardPane playerBoardImg;
+
+    /**
+     * The tile of the player
+     */
     @FXML
     private ImagePane playerTileImg;
+
+    /**
+     * The container of the player's ammo cubes
+     */
     @FXML
     private GridPane ammoContainer;
+
+    /**
+     * The container of the player's powerups
+     */
     @FXML
     private GridPane powerupContainer;
+
+    /**
+     * The container of the player's weapons
+     */
     @FXML
     private GridPane weaponContainer;
+
+    /**
+     * Description message
+     */
     @FXML
     private Label tileMsg;
+
+    /**
+     * The container that includes all items on the right of the game window
+     */
     @FXML
     private GridPane right;
+
+    /**
+     * The message under the board that contains instructions
+     */
     @FXML
     private Text message;
 
+    /**
+     * The preset used for the board
+     */
     private BoardFactory.Preset preset;
 
+    /**
+     * List of opponents
+     */
     private List<Player> opponents;
 
+    /**
+     * The player
+     */
     private Player self;
 
+    /**
+     * The connector used to connect to the server
+     */
     private Connector connector;
 
+    /**
+     * The representation of the content of the board
+     */
     private final BoardContentPane boardContent;
 
+    /**
+     * The queue of notification waiting to be shown
+     */
     private Queue<NotificationController> notifications;
 
+    /**
+     * The notification that is currently being shown
+     */
     private NotificationController currentNotification = null;
 
+    /**
+     * Event handler that takes care of direction selection via arrow keys
+     */
     private EventHandler<KeyEvent> directionHandler;
 
+    /**
+     * Event handler that takes care of action selection via keyboard input
+     */
     private EventHandler<KeyEvent> basicActionHandler;
 
+    /**
+     * Event handler that takes care of skipping an action
+     */
     private EventHandler<KeyEvent> skipHandler;
 
+    /**
+     * Constructor to start a new match
+     *
+     * @param connector the connector used to establish the connection with the server
+     * @param e the MatchStarted event
+     */
     public GameController(Connector connector, MatchStarted e) {
         super("Adrenalina", "/fxml/game.fxml", "/css/game.css");
         this.notifications = new LinkedList<>();
@@ -129,6 +216,12 @@ public class GameController extends WindowController implements AutoCloseable, Q
         stage.setOnCloseRequest(ignored -> this.close());
     }
 
+    /**
+     * Constructor to resume an existing match
+     *
+     * @param connector the connector used to establish the connection with the server
+     * @param e the MatchResumed event
+     */
     public GameController(Connector connector, MatchResumed e) {
         this(connector, (MatchStarted) e);
         for (Player opponent : e.getOpponents()) {
@@ -162,12 +255,18 @@ public class GameController extends WindowController implements AutoCloseable, Q
         e.getPlayerLocations().forEach((p, l) -> boardContent.addPlayer(p, l.y, l.x));
     }
 
+    /**
+     * Initializes the player board, loading the images
+     */
     private void initPlayerBoard() {
         playerBoardImg.setImg(UrlFinder.findPlayerBoard(self.getColor(), self.isBoardFlipped()), ImagePane.LEFT);
         updatePlayerBoard(self, playerBoardImg);
         playerTileImg.setImg(UrlFinder.findPlayerTile(self.getColor(), self.isTileFlipped()), ImagePane.RIGHT);
     }
 
+    /**
+     * Initializes the opponents' boards, loading the images and arranging them
+     */
     private void initOpponentsBoards() {
         int rows = opponents.size() / 2 + opponents.size() % 2;
         double rowHeight = 100.0 / rows;
@@ -206,6 +305,12 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
+    /**
+     * Updates the status of the player's board
+     *
+     * @param owner the owner of the board
+     * @param pane the PlayerBoardPane belonging to the owner of the board
+     */
     private void updatePlayerBoard(Player owner, PlayerBoardPane pane) {
         for (PlayerColor token : owner.getDamage()) {
             pane.addToken(token);
@@ -218,6 +323,11 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
+    /**
+     * Initializes the ammo cubes belonging to the player
+     *
+     * @param ammoCubes the ammo cubes that shall be put in the player's wallet
+     */
     private void initAmmo(List<CurrencyColor> ammoCubes) {
         for (int i = 0; i < ammoCubes.size(); i++) {
             CurrencyColor ammoColor = ammoCubes.get(i);
@@ -226,6 +336,11 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
+    /**
+     * Initializes the powerups belonging to the player
+     *
+     * @param powerups the powerups that shall be put in the player's wallet
+     */
     private void initPowerups(List<Powerup> powerups) {
         for (int i = 0; i < powerups.size(); i++) {
             Powerup powerup = powerups.get(i);
@@ -235,6 +350,9 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
+    /**
+     * Initializes the weapons belonging to the player
+     */
     private void initWeapons() {
         weaponContainer.getChildren().remove(2, weaponContainer.getChildren().size());
         for (int i = 0; i < self.getWallet().getLoadedWeapons().size(); i++) {
@@ -251,6 +369,11 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
+    /**
+     * Shows a bigger equivalent image pane to the one that has been clicked
+     *
+     * @param e The mouse event corresponding to the click
+     */
     private void showFullSize(MouseEvent e) {
         ImagePane img = (ImagePane) e.getSource();
         Stage popup = new Stage();
@@ -262,6 +385,11 @@ public class GameController extends WindowController implements AutoCloseable, Q
         popup.show();
     }
 
+    /**
+     * Shows an opponent's board in a higher resolution after it has been clicked
+     *
+     * @param e The mouse event corresponding to the click
+     */
     private void showOpponentFullSize(MouseEvent e) {
         PlayerBoardPane src = (PlayerBoardPane) e.getSource();
         Stage popup = new Stage();
@@ -289,6 +417,9 @@ public class GameController extends WindowController implements AutoCloseable, Q
         popup.show();
     }
 
+    /**
+     * Initialization of the main window
+     */
     @FXML
     public void initialize() {
         window.setMinWidth(1000);
@@ -296,7 +427,9 @@ public class GameController extends WindowController implements AutoCloseable, Q
         setupViewport(window);
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void close() {
         super.close();
@@ -311,6 +444,13 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }).start();
     }
 
+    /**
+     * Sets up the selection of a text only answer
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer to call when an answer is found
+     * @param title the title of the question
+     */
     private void stringSelectionQuestion(Question<String> question, Consumer<String> answerCallback, String title) {
         Platform.runLater(() -> {
             Dialog<String> dialog = new Dialog<>();
@@ -326,6 +466,13 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Sets up the selection of a weapon
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer to call when an answer is found
+     * @param title the title of the question
+     */
     private void weaponSelectionQuestion(Question<String> question, Consumer<String> answerCallback, String title) {
         Platform.runLater( () -> {
                     Dialog<String> dialog = new Dialog<>();
@@ -348,6 +495,13 @@ public class GameController extends WindowController implements AutoCloseable, Q
         );
     }
 
+    /**
+     * Sets up the selection of a powerup
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer to call when an answer is found
+     * @param title the title of the question
+     */
     private void powerupSelectionQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback, String title) {
         Platform.runLater( () -> {
                     Dialog<Powerup> dialog = new Dialog<>();
@@ -370,6 +524,12 @@ public class GameController extends WindowController implements AutoCloseable, Q
         );
     }
 
+    /**
+     * Asks the user the given direction question and sends back the answer
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer that will be called once the answer is found
+     */
     @Override
     public void onDirectionQuestion(Question<Direction> question, Consumer<Direction> answerCallback) {
         Platform.runLater(() -> {
@@ -380,6 +540,14 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Reacts to a key being pressed after a direction question has been asked
+     *
+     * @param e the event of the key being pressed
+     * @param directions the available directions
+     * @param answerCallback the consumer that will be given the answer
+     * @param isSkippable whether the question was skippable
+     */
     private void arrowKeyListener(KeyEvent e, Collection<Direction> directions, Consumer<Direction> answerCallback, boolean isSkippable) {
         switch (e.getCode()) {
             case UP:
@@ -406,6 +574,14 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
+    /**
+     * Reacts to a key being pressed after a basic action question has been asked
+     *
+     * @param e the event of the key being pressed
+     * @param actions the available actions
+     * @param answerCallback the consumer that will be given the answer
+     * @param isSkippable whether the question was skippable
+     */
     private void actionTypeKeyListener(KeyEvent e, Collection<BasicAction> actions, Consumer<BasicAction> answerCallback, boolean isSkippable) {
         switch (e.getCode()) {
             case S:
@@ -432,6 +608,13 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
+    /**
+     * Reacts to the spacebar being pressed as a way to skip a question that does not interact with the keyboard for the
+     * selection of the other options
+     *
+     * @param e the event of a key being pressed
+     * @param consumer the consumer that will change the instruction message shown to the user
+     */
     private void skipListener(KeyEvent e, Consumer<Text> consumer) {
         if (e.getCode().equals(KeyCode.SPACE)) {
             stage.removeEventHandler(KeyEvent.KEY_PRESSED, skipHandler);
@@ -439,6 +622,13 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
+    /**
+     * Checks if the selected direction was an actual option and if so, passes the answer on to the consumer
+     *
+     * @param directions the possible directions
+     * @param selected the selected direction
+     * @param answerCallback the consumer waiting for an answer
+     */
     private void checkDirection(Collection<Direction> directions, Direction selected, Consumer<Direction> answerCallback) {
         if (directions.contains(selected)) {
             stage.removeEventHandler(KeyEvent.KEY_PRESSED, directionHandler);
@@ -448,6 +638,13 @@ public class GameController extends WindowController implements AutoCloseable, Q
     }
 
 
+    /**
+     * Checks if the selected basic action was an actual option and if so, passes the answer on to the consumer
+     *
+     * @param basicActions the possible basic actions
+     * @param selected the selected action
+     * @param answerCallback the consumer waiting for an answer
+     */
     private void checkBasicAction(Collection<BasicAction> basicActions, BasicAction selected, Consumer<BasicAction> answerCallback) {
         if (basicActions.contains(selected)) {
             stage.removeEventHandler(KeyEvent.KEY_PRESSED, basicActionHandler);
@@ -456,11 +653,23 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
+    /**
+     * Asks the user the given attack question and sends back the answer
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer that will be called once the answer is found
+     */
     @Override
     public void onAttackQuestion(Question<String> question, Consumer<String> answerCallback) {
         stringSelectionQuestion(question, answerCallback, "Attack question");
     }
 
+    /**
+     * Asks the user the given basic action question and sends back the answer
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer that will be called once the answer is found
+     */
     @Override
     public void onBasicActionQuestion(Question<BasicAction> question, Consumer<BasicAction> answerCallback) {
         Platform.runLater(() -> {
@@ -476,6 +685,12 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Asks the user the given block question and sends back the answer
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer that will be called once the answer is found
+     */
     @Override
     public void onBlockQuestion(Question<Point> question, Consumer<Point> answerCallback) {
         Platform.runLater(() -> {
@@ -492,36 +707,78 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Asks the user the given payment method question and sends back the answer
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer that will be called once the answer is found
+     */
     @Override
     public void onPaymentMethodQuestion(Question<String> question, Consumer<String> answerCallback) {
         stringSelectionQuestion(question, answerCallback, "Payment method question");
     }
 
+    /**
+     * Asks the user the given powerup question and sends back the answer
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer that will be called once the answer is found
+     */
     @Override
     public void onPowerupQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback) {
         powerupSelectionQuestion(question, answerCallback, "Powerup usage question");
     }
 
+    /**
+     * Asks the user the given weapon question and sends back the answer
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer that will be called once the answer is found
+     */
     @Override
     public void onWeaponQuestion(Question<String> question, Consumer<String> answerCallback) {
         weaponSelectionQuestion(question, answerCallback, "Weapon selection question");
     }
 
+    /**
+     * Asks the user the given reload question and sends back the answer
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer that will be called once the answer is found
+     */
     @Override
     public void onReloadQuestion(Question<String> question, Consumer<String> answerCallback) {
         weaponSelectionQuestion(question, answerCallback, "Weapon reload question");
     }
 
+    /**
+     * Asks the user the given spawnpoint question and sends back the answer
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer that will be called once the answer is found
+     */
     @Override
     public void onSpawnpointQuestion(Question<Powerup> question, Consumer<Powerup> answerCallback) {
         powerupSelectionQuestion(question, answerCallback, "Spawnpoint question");
     }
 
+    /**
+     * Asks the user the given target question and sends back the answer
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer that will be called once the answer is found
+     */
     @Override
     public void onTargetQuestion(Question<String> question, Consumer<String> answerCallback) {
         stringSelectionQuestion(question, answerCallback, "Target question");
     }
 
+    /**
+     * Asks the user the given target set question and sends back the answer
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer that will be called once the answer is found
+     */
     @Override
     public void onTargetSetQuestion(Question<Set<String>> question, Consumer<Set<String>> answerCallback) {
         Platform.runLater(() -> {
@@ -547,6 +804,12 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Asks the user the given payment color question and sends back the answer
+     *
+     * @param question the question that is being asked
+     * @param answerCallback the consumer that will be called once the answer is found
+     */
     @Override
     public void onPaymentColorQuestion(Question<CurrencyColor> question, Consumer<CurrencyColor> answerCallback) {
         Platform.runLater(() -> {
@@ -565,11 +828,19 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that a player died
+     * @param e the event corresponding to the player's death
+     */
     @Override
     public void onPlayerDied(PlayerEvent e) {
         sendNotification("Death",e.getPlayer().getNickname() + " just died");
     }
 
+    /**
+     * Notifies the user that a player is reborn
+     * @param e the event corresponding to the player's rebirth
+     */
     @Override
     public void onPlayerReborn(PlayerEvent e) {
         Platform.runLater(() -> {
@@ -579,6 +850,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that a player's wallet changed
+     * @param e the event corresponding to the player's wallet changing
+     */
     @Override
     public void onPlayerWalletChanged(PlayerWalletChanged e) {
         Platform.runLater(() -> {
@@ -593,6 +868,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
 
     }
 
+    /**
+     * Notifies the user that a player's board was flipped
+     * @param e the event corresponding to the player's board flipping
+     */
     @Override
     public void onPlayerBoardFlipped(PlayerEvent e) {
         Platform.runLater(() -> {
@@ -611,6 +890,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that a player's tile was flipped
+     * @param e the event corresponding to the player's tile flipping
+     */
     @Override
     public void onPlayerTileFlipped(PlayerEvent e) {
         Platform.runLater(() -> {
@@ -621,6 +904,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that a player's health changed
+     * @param e the event corresponding to the player's health changing
+     */
     @Override
     public void onPlayerHealthChanged(PlayerHealthChanged e) {
         Platform.runLater(() -> {
@@ -643,6 +930,12 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Finds the board of the given player
+     *
+     * @param player the player
+     * @return the board of the player
+     */
     private PlayerBoardPane findPlayerBoard(Player player) {
         if (player.getNickname().equals(self.getNickname())) {
             self = player;
@@ -658,6 +951,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         throw new IllegalStateException("Player " + player.getNickname() + " does not exist");
     }
 
+    /**
+     * Notifies the user that a player reloaded a weapon
+     * @param e the event corresponding to the player reloading a weapon
+     */
     @Override
     public void onWeaponReloaded(PlayerWeaponEvent e) {
         Platform.runLater(() -> {
@@ -669,6 +966,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that a player unloaded a weapon
+     * @param e the event corresponding to the player unloading a weapon
+     */
     @Override
     public void onWeaponUnloaded(PlayerWeaponEvent e) {
         Platform.runLater(() -> {
@@ -680,6 +981,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that a player picked a weapon
+     * @param e the event corresponding to the player picking up a weapon
+     */
     @Override
     public void onWeaponPicked(PlayerWeaponExchanged e) {
         Platform.runLater(() -> {
@@ -705,6 +1010,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that a player dropped a weapon
+     * @param e the event corresponding to the player dropping a weapon
+     */
     @Override
     public void onWeaponDropped(PlayerWeaponExchanged e) {
         Platform.runLater(() -> {
@@ -731,22 +1040,37 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * The event of login success is ignored by the GameController
+     * @param e the event
+     */
     @Override
     public void onLoginSuccess(ClientEvent e) {
-        // TODO: implement
-
+        // Nothing to do here
     }
 
+    /**
+     * Notifies the user that a player disconnected
+     * @param e the client event
+     */
     @Override
     public void onClientDisconnected(ClientEvent e) {
         sendNotification("Disconnection", e.getNickname() + " just disconnected from the match");
     }
 
+    /**
+     * Notifies the user that a player reconnected
+     * @param e the event corresponding to the player's reconnection
+     */
     @Override
     public void onPlayerReconnected(PlayerEvent e) {
         sendNotification("Reconnection", e.getPlayer().getNickname() + " is back!");
     }
 
+    /**
+     * Notifies the user that a player moved
+     * @param e the event corresponding to a player moving
+     */
     @Override
     public void onPlayerMoved(PlayerMoved e) {
         Platform.runLater( () -> {
@@ -755,6 +1079,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that a player teleported
+     * @param e the event corresponding to a player teleporting
+     */
     @Override
     public void onPlayerTeleported(PlayerMoved e) {
         Platform.runLater( () -> {
@@ -763,6 +1091,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that a new weapon is available
+     * @param e the event corresponding to a new weapon being available
+     */
     @Override
     public void onNewWeaponAvailable(WeaponEvent e) {
         Platform.runLater(() -> {
@@ -777,6 +1109,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that a bonus tile was grabbed
+     * @param e the event corresponding to a bonus tile being grabbed
+     */
     @Override
     public void onBonusTileGrabbed(BonusTileEvent e) {
         Platform.runLater(() -> {
@@ -784,6 +1120,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that a bonus tile was dropped
+     * @param e the event corresponding to a bonus tile being dropped
+     */
     @Override
     public void onBonusTileDropped(BonusTileEvent e) {
         Platform.runLater(() -> {
@@ -791,6 +1131,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that a player spawned
+     * @param e the event corresponding to the player spawning
+     */
     @Override
     public void onPlayerSpawned(PlayerSpawned e) {
         Platform.runLater( () -> {
@@ -799,26 +1143,46 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that a player was overkilled
+     * @param e the event corresponding to the player being overkilled
+     */
     @Override
     public void onPlayerOverkilled(PlayerEvent e) {
         sendNotification("Health", e.getPlayer().getNickname() + " was overkilled!");
     }
 
+    /**
+     * Notifies the user that the turn changed
+     * @param e the event corresponding to the change of turn
+     */
     @Override
     public void onActivePlayerChanged(PlayerEvent e) {
         sendNotification("Logistics", "It's " + e.getPlayer().getNickname() + "'s turn");
     }
 
+    /**
+     * The GameController ignores this event because it never happens when a GameController is active
+     * @param e the event corresponding to the match starting
+     */
     @Override
     public void onMatchStarted(MatchStarted e) {
-
+        // Nothing to do here
     }
 
+    /**
+     * Notifies the user that the match mode changed
+     * @param e the event corresponding to the change of the match mode
+     */
     @Override
     public void onMatchModeChanged(MatchModeChanged e) {
         sendNotification("Logistics", "New match mode was triggered: " + e.getMode().toString().toLowerCase());
     }
 
+    /**
+     * Notifies the user that the killshot track changed
+     * @param e the event corresponding to the change of the killshot track
+     */
     @Override
     public void onKillshotTrackChanged(KillshotTrackChanged e) {
         Platform.runLater(() -> {
@@ -835,6 +1199,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Notifies the user that the match ended
+     * @param e the event corresponding to the end of the match
+     */
     @Override
     public void onMatchEnded(MatchEnded e) {
         String youLost = "The match is over, YOU LOSE\n";
@@ -853,11 +1221,21 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * The GameController ignores this event because it never happens when a GameController is active
+     * @param e the event corresponding to the match being resumed
+     */
     @Override
     public void onMatchResumed(MatchResumed e) {
         // TODO: implement
     }
 
+    /**
+     * Sends a textual notification to the user
+     *
+     * @param title the title of the notification
+     * @param message the main message of the notification
+     */
     private void sendNotification(String title, String message) {
         Platform.runLater(() -> {
             NotificationController nc = new NotificationController(title, message);
@@ -866,11 +1244,19 @@ public class GameController extends WindowController implements AutoCloseable, Q
         });
     }
 
+    /**
+     * Enqueues a new notification
+     *
+     * @param nc the controller of the notification
+     */
     private void addNotification(NotificationController nc) {
         notifications.add(nc);
         showNewNotification();
     }
 
+    /**
+     * Shows a notification
+     */
     private void showNewNotification() {
         if (currentNotification == null) {
             currentNotification = notifications.poll();
@@ -881,6 +1267,10 @@ public class GameController extends WindowController implements AutoCloseable, Q
         }
     }
 
+    /**
+     * Resets the current notification and show the next, if present
+     * @param e the NotificationClosed event
+     */
     @Override
     public void onNotificationClosed(NotificationClosed e) {
         currentNotification = null;

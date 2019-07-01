@@ -25,26 +25,43 @@ public class BonusTile {
     /**
      * Constructs a BonusTile view model
      *
-     * @param ammoCubes the currency color of the powerup
+     * @param ammoCubes the colors of the ammos
+     * @param location the location of the tile
      */
     public BonusTile(List<CurrencyColor> ammoCubes, Point location) {
         this.ammoCubes = ammoCubes;
         this.location = location;
     }
 
+    /**
+     * Gets the list of currency colors representing the ammo cubes
+     *
+     * @return a list of currency colors representing the ammo cubes
+     */
     public List<CurrencyColor> getAmmoCubes() {
         return ammoCubes;
     }
 
+    /**
+     * Gets the location of the tile
+     *
+     * @return the location of the tile
+     */
     public Point getLocation() {
         return location;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         return ammoCubes.hashCode() + location.hashCode();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof BonusTile)) {
