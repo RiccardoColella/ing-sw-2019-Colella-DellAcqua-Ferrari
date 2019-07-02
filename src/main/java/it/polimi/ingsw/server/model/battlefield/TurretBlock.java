@@ -18,8 +18,14 @@ import java.util.Set;
  */
 public class TurretBlock extends Block {
 
+    /**
+     * The bonus tile contained in this turret
+     */
     private BonusTile bonusTile;
 
+    /**
+     * The listeners of this turret
+     */
     private Set<TurretBlockListener> listeners = new HashSet<>();
 
     /**
@@ -90,16 +96,39 @@ public class TurretBlock extends Block {
         );
     }
 
+    /**
+     * Adds a new listener
+     *
+     * @param l the new listener
+     */
     public void addTurretBlockListener(TurretBlockListener l) {
         listeners.add(l);
     }
+
+    /**
+     * Removes the given listener
+     *
+     * @param l the listener to remove
+     */
     public void removeTurretBlockListener(TurretBlockListener l) {
         listeners.remove(l);
     }
+
+    /**
+     * Notifies the listeners that a bonus tile has been dropped here
+     *
+     * @param bonusTile the bonus tile that was dropped
+     */
     public void notifyBonusTileDropped(BonusTile bonusTile) {
         BonusTileEvent e = new BonusTileEvent(this, bonusTile);
         listeners.forEach(l -> l.onBonusTileDropped(e));
     }
+
+    /**
+     * Notifies the listeners that a bonus tile was grabbed from here
+     *
+     * @param bonusTile the bonus tile that was grabbed
+     */
     public void notifyBonusTileGrabbed(BonusTile bonusTile) {
         BonusTileEvent e = new BonusTileEvent(this, bonusTile);
         listeners.forEach(l -> l.onBonusTileGrabbed(e));

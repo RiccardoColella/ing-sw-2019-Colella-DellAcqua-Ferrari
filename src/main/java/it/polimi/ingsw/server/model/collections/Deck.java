@@ -66,6 +66,9 @@ public class Deck<T> implements Collection<T> {
         }
     }
 
+    /**
+     * Shuffles the discarded cards and uses them as the new deck if it is specified so
+     */
     private void recycleIfNeeded() {
         if (cards.isEmpty() && recycleDiscarded) {
             cards.addAll(discarded);
@@ -75,7 +78,7 @@ public class Deck<T> implements Collection<T> {
     }
 
     /**
-     * Shuffle the Deck
+     * Shuffles the Deck
      */
     public void shuffle() {
         Collections.shuffle(cards);
@@ -91,44 +94,68 @@ public class Deck<T> implements Collection<T> {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int size() {
         return this.cards.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isEmpty() {
         return size() == 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean contains(Object o) {
         return this.cards.contains(o);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @NotNull
     @Override
     public Iterator<T> iterator() {
         return this.cards.iterator();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @NotNull
     @Override
     public Object[] toArray() {
         return this.cards.toArray();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @NotNull
     @Override
     public <T1> T1[] toArray(@NotNull T1[] a) {
         return this.cards.toArray(a);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean add(T t) {
         return this.cards.add(t);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean remove(Object o) {
         try {
@@ -138,16 +165,25 @@ public class Deck<T> implements Collection<T> {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean containsAll(@NotNull Collection<?> c) {
         return this.cards.containsAll(c);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean addAll(@NotNull Collection<? extends T> c) {
         return this.cards.addAll(c);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean removeAll(@NotNull Collection<?> c) {
         try {
@@ -157,6 +193,9 @@ public class Deck<T> implements Collection<T> {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean retainAll(@NotNull Collection<?> c) {
         boolean changed = this.cards.retainAll(c);
@@ -167,6 +206,9 @@ public class Deck<T> implements Collection<T> {
         return changed;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void clear() {
         this.cards.clear();

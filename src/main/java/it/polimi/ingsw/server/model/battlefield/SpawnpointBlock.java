@@ -19,6 +19,9 @@ import java.util.Set;
  */
 public class SpawnpointBlock extends Block {
 
+    /**
+     * The max number of weapons that the spawnpoint can contain
+     */
     private final int maxWeapons;
     /**
      * This property represents the CurrencyColor associated to the spawnpoint
@@ -112,16 +115,38 @@ public class SpawnpointBlock extends Block {
         );
     }
 
+    /**
+     * Gets the constraint regarding the max number of weapons that can be stored in this spawnpoint
+     *
+     * @return the max number of weapons that can be stored in this spawnpoint
+     */
     public int getMaxWeapons() {
         return maxWeapons;
     }
 
+    /**
+     * Adds a new listener
+     *
+     * @param l the new listener
+     */
     public void addSpawnpointListener(SpawnpointListener l) {
         listeners.add(l);
     }
+
+    /**
+     * Removes the given listener
+     *
+     * @param l the listener to remove
+     */
     public void removeSpawnpointListener(SpawnpointListener l) {
         listeners.remove(l);
     }
+
+    /**
+     * Notifies the listeners that a weapon was dropped on this spawnpoint
+     *
+     * @param weapon the weapon that was dropped here
+     */
     private void notifyWeaponDropped(WeaponTile weapon) {
         WeaponEvent e = new WeaponEvent(this, weapon);
         listeners.forEach(l -> l.onWeaponDropped(e));

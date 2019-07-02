@@ -15,6 +15,12 @@ public enum CurrencyColor {
     @SerializedName("YELLOW")
     YELLOW;
 
+    /**
+     * States whether there is an enum value matching the given string
+     *
+     * @param string the string version of the enum
+     * @return true if there is an enum value matching the given string
+     */
     public static boolean contains(String string){
         try {
             CurrencyColor.valueOf(string);

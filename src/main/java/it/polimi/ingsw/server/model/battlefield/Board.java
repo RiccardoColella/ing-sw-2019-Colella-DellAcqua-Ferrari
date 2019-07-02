@@ -18,13 +18,24 @@ import static it.polimi.ingsw.server.model.battlefield.Block.BorderType.*;
 
 /**
  * This class implements the game board
+ *
+ * @author Riccardo Colella
  */
 public class Board implements SpawnpointListener, TurretBlockListener {
 
+    /**
+     * 2D matrix used to store the blocks in their location
+     */
     private final Block[][] field;
+
+    /**
+     * Listeners that will be notified when the board's status changes
+     */
     private final Set<BoardListener> listeners = new HashSet<>();
 
     /**
+     * Constructor given the blocks arranged in a matrix
+     *
      * @param field the matrix containing all the blocks arranged according to the 2D representation of the board
      */
     public Board(Block[][] field) {
@@ -38,10 +49,20 @@ public class Board implements SpawnpointListener, TurretBlockListener {
         }
     }
 
+    /**
+     * Gets the horizontal length of the board
+     *
+     * @return the horizontal length of the board
+     */
     int getRowLength(){
         return field.length;
     }
 
+    /**
+     * Gets the vertical length of the board
+     *
+     * @return the vertical length of the board
+     */
     int getColumnLength(){
         return field[0].length;
     }
@@ -113,6 +134,13 @@ public class Board implements SpawnpointListener, TurretBlockListener {
         return borderType == Block.BorderType.NONE;
     }
 
+    /**
+     * Returns true if it is possible to move from the given block following the given direction
+     *
+     * @param direction the direction of the potential move
+     * @param block the starting position
+     * @return whether the move is possible
+     */
     private boolean canMove(Direction direction, Block block){
         return sameRoom(direction, block) || otherRoom(direction, block);
     }
@@ -212,6 +240,12 @@ public class Board implements SpawnpointListener, TurretBlockListener {
         }
     }
 
+    /**
+     * Notifies the listeners that a player moved
+     *
+     * @param player the player that moved
+     * @param destination the destination of the move
+     */
     private void notifyPlayerMoved(Player player, Block destination) {
         PlayerMoved e = new PlayerMoved(this, player, destination);
         listeners.forEach(l -> l.onPlayerMoved(e));
@@ -251,16 +285,34 @@ public class Board implements SpawnpointListener, TurretBlockListener {
         notifyPlayerTeleported(player, block);
     }
 
+    /**
+     * Notifies the listeners that a player teleported
+     *
+     * @param player the player that teleported
+     * @param block the destination of the move
+     */
     private void notifyPlayerTeleported(Player player, Block block) {
         PlayerMoved e = new PlayerMoved(this, player, block);
         listeners.forEach(l -> l.onPlayerTeleported(e));
     }
 
+    /**
+     * Notifies the listeners that a new weapon is available
+     *
+     * @param tile the weapon that is now available
+     * @param block the block on which the weapon can be found
+     */
     private void notifyNewWeaponAvailable(WeaponTile tile, Block block) {
         NewWeaponAvailable e = new NewWeaponAvailable(this, tile, block);
         listeners.forEach(l -> l.onNewWeaponAvailable(e));
     }
 
+    /**
+     * Finds the spawnpoint of the given color
+     *
+     * @param color the color of the spawnpoint
+     * @return the spawnpoint
+     */
     public SpawnpointBlock getSpawnpoint(CurrencyColor color){
         for (Block[] blocks : field){
             for (Block block : blocks){
@@ -289,6 +341,11 @@ public class Board implements SpawnpointListener, TurretBlockListener {
         return new Board(fieldCopy);
     }
 
+    /**
+     * Gets the blocks of the board in a set
+     *
+     * @return a set containing all the blocks of this board
+     */
     public Set<Block> getBlocks() {
         Set<Block> blocks = new HashSet<>();
         for (Block[] row : field) {
@@ -301,6 +358,11 @@ public class Board implements SpawnpointListener, TurretBlockListener {
         return blocks;
     }
 
+    /**
+     * Gets the turret blocks of the board grouped in a set
+     *
+     * @return a set containing all the turret blocks of this board
+     */
     public Set<TurretBlock> getTurretBlocks() {
         return getBlocks()
                 .stream()
@@ -309,6 +371,13 @@ public class Board implements SpawnpointListener, TurretBlockListener {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Finds all the reachable blocks from a given starting point in a given range of moves
+     *
+     * @param startingPoint the starting position
+     * @param range how many moves can be done
+     * @return the blocks reachable in the given range of moves from the starting position
+     */
     public Set<Block> getReachableBlocks(Block startingPoint, Range range) {
         Set<Block> toCheck = new HashSet<>();
         Set<Block> alreadyChecked = new HashSet<>();
@@ -366,37 +435,74 @@ public class Board implements SpawnpointListener, TurretBlockListener {
         return availableDirections;
     }
 
+    /**
+     * States whether the given block is a spawnpoint
+     *
+     * @param block the block that might be a spawnpoint
+     * @return true if the block is a spawnpoint
+     */
     public boolean isOnASpawnpoint(Block block){
         return block instanceof SpawnpointBlock;
     }
 
-
+    /**
+     * Adds a new listener
+     *
+     * @param l the new listener
+     */
     public void addBoardListener(BoardListener l) {
         listeners.add(l);
     }
 
+    /**
+     * Notifies that a new weapon has been dropped on a spawnpoint
+     *
+     * @param e the event corresponding to the weapon being dropped
+     */
     @Override
     public void onWeaponDropped(WeaponEvent e) {
         notifyNewWeaponAvailable(e.getWeaponTile(), (Block) e.getSource());
     }
 
+    /**
+     * Notifies that a bonus tile has been dropped
+     *
+     * @param e the event corresponding to the bonus tile being dropped
+     */
     @Override
     public void onBonusTileDropped(BonusTileEvent e) {
         notifyBonusTileDropped(e.getBonusTile(), (Block) e.getSource());
 
     }
 
+    /**
+     * Notifies that a bonus tile has been grabbed
+     *
+     * @param e the event corresponding to the bonus tile being grabbed
+     */
     @Override
     public void onBonusTileGrabbed(BonusTileEvent e) {
         notifyBonusTileGrabbed(e.getBonusTile(), (Block) e.getSource());
 
     }
 
+    /**
+     * Sends a BonusTileBoardEvent to the listeners
+     *
+     * @param tile the tile that was grabbed
+     * @param block the block from which it was grabbed
+     */
     private void notifyBonusTileGrabbed(BonusTile tile, Block block) {
         BonusTileBoardEvent e = new BonusTileBoardEvent(this, tile, block);
         listeners.forEach(l -> l.onBonusTileGrabbed(e));
     }
 
+    /**
+     * Sends a BonusTileBoardEvent to the listeners
+     *
+     * @param tile the tile that was dropped
+     * @param block the block onto which it was dropped
+     */
     private void notifyBonusTileDropped(BonusTile tile, Block block) {
         BonusTileBoardEvent e = new BonusTileBoardEvent(this, tile, block);
         listeners.forEach(l -> l.onBonusTileDropped(e));

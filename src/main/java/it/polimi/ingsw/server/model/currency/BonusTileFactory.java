@@ -16,11 +16,26 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Factory class for the bonus tiles
+ */
 public final class BonusTileFactory {
 
+    /**
+     * File system path to the configuration file
+     */
     private static final String BONUS_DECK_JSON_PATH = "./config/bonusDeck.json";
+
+    /**
+     * Path to the configuration file in the resources
+     */
     private static final String BONUS_DECK_JSON_PATH_RES = "/config/bonusDeck.json";
+
+    /**
+     * Map pairing a bonus tile with an integer that represents how many copies of it exist
+     */
     private static Map<BonusTile, Integer> tileQuantityMap;
+
     /**
      * Empty private constructor
      */
@@ -28,10 +43,25 @@ public final class BonusTileFactory {
 
     }
 
+    /**
+     * Creates a bonus tile with two ammo cubes and a powerup
+     *
+     * @param firstColor the color of the first ammo
+     * @param secondColor the color of the second ammo
+     * @return the bonus tile
+     */
     public static BonusTile create(CurrencyColor firstColor, CurrencyColor secondColor) {
         return new BonusTile(AmmoCubeFactory.create(firstColor), AmmoCubeFactory.create(secondColor));
     }
 
+    /**
+     * Creates a bonus tile with three ammo cubes
+     *
+     * @param firstColor the color of the first ammo
+     * @param secondColor the color of the second ammo
+     * @param thirdColor the color of the third ammo
+     * @return the bonus tile
+     */
     public static BonusTile create(CurrencyColor firstColor, CurrencyColor secondColor, CurrencyColor thirdColor) {
         return new BonusTile(AmmoCubeFactory.create(firstColor), AmmoCubeFactory.create(secondColor), AmmoCubeFactory.create(thirdColor));
     }
@@ -70,6 +100,12 @@ public final class BonusTileFactory {
 
         );
     }
+
+    /**
+     * Creates the whole deck of bonus tiles
+     *
+     * @return a full deck of bonus tiles
+     */
     public static Deck<BonusTile> createDeck() {
         if (tileQuantityMap == null) {
             readTiles();

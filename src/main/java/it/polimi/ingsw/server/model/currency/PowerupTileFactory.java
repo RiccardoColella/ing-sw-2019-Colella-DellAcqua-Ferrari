@@ -21,8 +21,19 @@ import java.util.Map;
  */
 public final class PowerupTileFactory {
 
+    /**
+     * File system path to the configuration file
+     */
     private static final String POWERUP_DECK_JSON_PATH = "./config/powerupDeck.json";
+
+    /**
+     * Path to the configuration file in the resources
+     */
     private static final String POWERUP_DECK_JSON_PATH_RES = "/config/powerupDeck.json";
+
+    /**
+     * Map that pairs a powerup tile to how many time it appears in the deck
+     */
     private static Map<PowerupTile, Integer> tileQuantityMap;
 
     /**

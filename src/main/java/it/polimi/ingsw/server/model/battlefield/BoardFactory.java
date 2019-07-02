@@ -15,10 +15,26 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Factory class for the board game
+ *
+ * @author Carlo Dell'Acqua
+ */
 public class BoardFactory {
 
+    /**
+     * File system path to the configuration file
+     */
     private static final String BOARD_JSON_PATH = "./config/boards.json";
+
+    /**
+     * Path to the configuration file in the resources
+     */
     private static final String BOARD_JSON_PATH_RES = "/config/boards.json";
+
+    /**
+     * Map that associates each preset to the relative board
+     */
     private static Map<Preset, Board> boardMap;
 
 
@@ -48,6 +64,9 @@ public class BoardFactory {
         return boardMap.get(preset).copy();
     }
 
+    /**
+     * Reads from the json file the presets configurations and stores them in the map
+     */
     private static void initialize() {
         boardMap = new EnumMap<>(Preset.class);
         JsonElement jsonElement;
@@ -75,6 +94,14 @@ public class BoardFactory {
         }
     }
 
+    /**
+     * Converts a JsonElement representing a block in a Block object
+     *
+     * @param r the row of the block in the board
+     * @param c the column of the block in the board
+     * @param json the json element representing the block
+     * @return the Block corresponding to the json element
+     */
     private static Block blockFromJsonElement(int r, int c, JsonElement json) {
 
         if (json.equals(JsonNull.INSTANCE)) {
