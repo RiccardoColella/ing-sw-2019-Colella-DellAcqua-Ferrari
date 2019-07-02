@@ -2,8 +2,6 @@ package it.polimi.ingsw.server.model.currency;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.security.InvalidParameterException;
-
 /**
  * This enum contains the possible coin colors
  */

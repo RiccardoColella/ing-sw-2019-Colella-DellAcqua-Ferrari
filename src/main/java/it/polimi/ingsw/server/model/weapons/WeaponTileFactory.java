@@ -2,12 +2,8 @@ package it.polimi.ingsw.server.model.weapons;
 
 import com.google.gson.Gson;
 import it.polimi.ingsw.server.model.collections.Deck;
-import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.utils.ConfigFileMaker;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;

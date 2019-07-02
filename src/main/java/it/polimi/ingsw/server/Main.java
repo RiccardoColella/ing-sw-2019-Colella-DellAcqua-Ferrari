@@ -3,8 +3,6 @@ package it.polimi.ingsw.server;
 import com.google.gson.Gson;
 import it.polimi.ingsw.utils.ConfigFileMaker;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 
 /**

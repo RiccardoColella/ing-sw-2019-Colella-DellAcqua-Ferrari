@@ -1,6 +1,7 @@
 package it.polimi.ingsw.client.ui.cli;
 
 import com.google.gson.*;
+import it.polimi.ingsw.client.ClientConfig;
 import it.polimi.ingsw.client.io.Connector;
 import it.polimi.ingsw.client.io.RMIConnector;
 import it.polimi.ingsw.client.io.SocketConnector;
@@ -11,14 +12,16 @@ import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.player.BasicAction;
 import it.polimi.ingsw.shared.Direction;
 import it.polimi.ingsw.shared.bootstrap.ClientInitializationInfo;
+import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 import it.polimi.ingsw.shared.events.networkevents.*;
 import it.polimi.ingsw.shared.messages.templates.Question;
-import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 import it.polimi.ingsw.utils.ConfigFileMaker;
 
 import javax.annotation.Nullable;
 import java.awt.*;
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.*;
@@ -87,6 +90,11 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
      */
     private boolean matchOnGoing = false;
 
+    /**
+     * Client configuration information
+     */
+    private ClientConfig config;
+
 
     /**
      * This variable stores and knows how to represent the game situation
@@ -103,10 +111,14 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
     /**
      * Constructs a UI based on the command line
      *
+     * @param config client configuration information
      * @param inputStream a stream used to retrieve user input data
      * @param outputStream a stream used to write output data
      */
-    public CLI(InputStream inputStream, OutputStream outputStream) {
+    public CLI(ClientConfig config, InputStream inputStream, OutputStream outputStream) {
+
+        this.config = config;
+
         StringBuilder stringBuilder = new StringBuilder();
         JsonElement jsonElement;
 
@@ -191,12 +203,12 @@ public class CLI implements AutoCloseable, QuestionMessageReceivedListener, Boar
                 case "RMI":
                     connector = new RMIConnector();
                     addAllListeners();
-                    ((RMIConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9090));
+                    ((RMIConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, config.getRMIPort()));
                     break;
                 case "Socket":
                     connector = new SocketConnector();
                     addAllListeners();
-                    ((SocketConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, 9001));
+                    ((SocketConnector) connector).initialize(new ClientInitializationInfo(nickname, preset, skulls, mode), new InetSocketAddress(serverAddress, config.getSocketPort()));
                     break;
                 default:
                     throw new IllegalStateException("The user had to choose between Socket or RMI, unrecognized option " + connectionType);

@@ -4,9 +4,7 @@ import it.polimi.ingsw.server.model.battlefield.BoardFactory;
 import it.polimi.ingsw.shared.datatransferobjects.BonusTile;
 import it.polimi.ingsw.shared.datatransferobjects.Player;
 
-import java.awt.*;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**

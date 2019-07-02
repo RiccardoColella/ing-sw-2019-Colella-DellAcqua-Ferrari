@@ -3,15 +3,15 @@ package it.polimi.ingsw.client.ui.cli;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 import it.polimi.ingsw.shared.datatransferobjects.BonusTile;
-import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 import it.polimi.ingsw.shared.datatransferobjects.Player;
+import it.polimi.ingsw.shared.datatransferobjects.Powerup;
 import it.polimi.ingsw.utils.Tuple;
 import org.jetbrains.annotations.Contract;
 
 import java.awt.*;
-import java.io.*;
-import java.util.*;
+import java.io.PrintStream;
 import java.util.List;
+import java.util.*;
 
 class GameRepresentation {
 

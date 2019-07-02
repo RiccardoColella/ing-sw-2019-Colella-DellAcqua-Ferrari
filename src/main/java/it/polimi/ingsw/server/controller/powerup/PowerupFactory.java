@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import it.polimi.ingsw.server.model.battlefield.Block;
 import it.polimi.ingsw.server.model.battlefield.Board;
-import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.server.model.player.DamageToken;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
@@ -15,9 +14,6 @@ import it.polimi.ingsw.utils.EnumValueByString;
 import it.polimi.ingsw.utils.Range;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.*;
 import java.util.stream.Collectors;
 

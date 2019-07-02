@@ -1,7 +1,6 @@
 package it.polimi.ingsw.shared.events.networkevents;
 
 import it.polimi.ingsw.shared.datatransferobjects.Player;
-import it.polimi.ingsw.shared.datatransferobjects.Wallet;
 
 /**
  * Network event carrying information about a player's wallet

@@ -13,12 +13,15 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+/**
+ * Factory that creates matches
+ */
 public class MatchFactory {
 
-
-    private MatchFactory() {
-
-    }
+    /**
+     * Empty private constructor for factory class
+     */
+    private MatchFactory() { }
 
     /**
      *

@@ -3,7 +3,6 @@ package it.polimi.ingsw.shared.datatransferobjects;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.List;
 
 /**

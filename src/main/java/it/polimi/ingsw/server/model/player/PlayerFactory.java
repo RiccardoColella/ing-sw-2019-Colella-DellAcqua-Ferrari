@@ -3,13 +3,9 @@ package it.polimi.ingsw.server.model.player;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.utils.ConfigFileMaker;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -1,6 +1,5 @@
 package it.polimi.ingsw.shared.datatransferobjects;
 
-import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.player.PlayerColor;
 
 import java.io.Serializable;

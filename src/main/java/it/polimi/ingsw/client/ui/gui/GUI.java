@@ -1,5 +1,6 @@
 package it.polimi.ingsw.client.ui.gui;
 
+import it.polimi.ingsw.client.ClientConfig;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -14,9 +15,15 @@ import java.util.Optional;
 public class GUI extends Application {
 
     /**
+     * Client configuration information
+     */
+    private static ClientConfig config;
+
+    /**
      * Empty constructor
      */
     public GUI() {
+
     }
 
     /**
@@ -30,10 +37,19 @@ public class GUI extends Application {
 
         Platform.setImplicitExit(true);
 
-        LoginController loginController = new LoginController();
+        LoginController loginController = new LoginController(config);
         loginController.showAsModal();
         Optional<GameController> gameController = loginController.getGameController();
         gameController.ifPresent(WindowController::showAsModal);
+    }
+
+    /**
+     * Initializes the GUI
+     *
+     * @param config client configuration information
+     */
+    public static void initialize(ClientConfig config) {
+        GUI.config = config;
     }
 
     /**

@@ -10,7 +10,6 @@ import it.polimi.ingsw.server.model.currency.AmmoCubeFactory;
 import it.polimi.ingsw.server.model.currency.Coin;
 import it.polimi.ingsw.server.model.currency.CurrencyColor;
 import it.polimi.ingsw.server.model.exceptions.IncoherentConfigurationException;
-import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.server.model.player.DamageToken;
 import it.polimi.ingsw.server.model.player.Player;
 import it.polimi.ingsw.server.view.Interviewer;
@@ -23,9 +22,6 @@ import it.polimi.ingsw.utils.TriConsumer;
 
 import javax.annotation.Nullable;
 import java.awt.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.List;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -41,7 +37,7 @@ public class WeaponFactory {
     /**
      * The path of the json configuration file
      */
-    private static final String WEAPON_JSON_PATH = "config/attacks.json";
+    private static final String WEAPON_JSON_PATH = "./config/attacks.json";
     private static final String WEAPON_JSON_PATH_RES = "/config/attacks.json";
 
     /**

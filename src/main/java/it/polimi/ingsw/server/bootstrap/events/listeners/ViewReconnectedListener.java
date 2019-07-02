@@ -8,5 +8,10 @@ import it.polimi.ingsw.server.bootstrap.events.ViewReconnected;
  * @author Carlo Dell'Acqua
  */
 public interface ViewReconnectedListener {
+    /**
+     * Method called on view reconnection
+     *
+     * @param e the view reconnected event object
+     */
     void onViewReconnected(ViewReconnected e);
 }

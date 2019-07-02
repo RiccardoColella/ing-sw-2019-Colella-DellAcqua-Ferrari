@@ -1,6 +1,7 @@
 package it.polimi.ingsw.utils;
 
 import java.io.*;
+import java.util.logging.Logger;
 
 /**
  * Configuration file loader and writer
@@ -8,6 +9,12 @@ import java.io.*;
  * @author Carlo Dell'Acqua
  */
 public class ConfigFileMaker {
+
+    /**
+     * Logging utility
+     */
+    protected static Logger logger = Logger.getLogger(ConfigFileMaker.class.getName());
+
     private ConfigFileMaker() { }
 
     /**
@@ -40,12 +47,19 @@ public class ConfigFileMaker {
                 try {
                     byte[] fileData = ConfigFileMaker.class.getResourceAsStream(resPath).readAllBytes();
                     File fsFile = new File(fsPath);
-                    if (fsFile.getParentFile().mkdirs()) {
+                    if (fsFile.getParentFile().exists() || fsFile.getParentFile().mkdirs()) {
                         try (FileOutputStream outputStream = new FileOutputStream(fsFile)) {
                             outputStream.write(fileData);
-                        } catch (IOException ignored) { }
+                            logger.info("Wrote configuration file to " + fsPath);
+                        } catch (IOException ex) {
+                            logger.warning("Unable to write configuration file to " + fsPath + "\n" + ex.toString());
+                        }
+                    } else {
+                        logger.warning("Unable to create directories for configuration file at path: " + fsPath);
                     }
-                } catch (IOException ignored) { }
+                } catch (IOException ex) {
+                    logger.warning("Unable to read configuration file from resources at path: " + resPath + "\n" + ex.toString());
+                }
             }
 
             return new InputStreamReader(ConfigFileMaker.class.getResourceAsStream(resPath));

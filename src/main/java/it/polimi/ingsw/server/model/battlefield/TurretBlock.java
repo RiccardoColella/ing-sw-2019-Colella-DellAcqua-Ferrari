@@ -2,11 +2,7 @@ package it.polimi.ingsw.server.model.battlefield;
 
 import it.polimi.ingsw.server.model.currency.BonusTile;
 import it.polimi.ingsw.server.model.events.BonusTileEvent;
-import it.polimi.ingsw.server.model.events.WeaponEvent;
-import it.polimi.ingsw.server.model.events.listeners.SpawnpointListener;
 import it.polimi.ingsw.server.model.events.listeners.TurretBlockListener;
-import it.polimi.ingsw.server.model.exceptions.UnauthorizedExchangeException;
-import it.polimi.ingsw.server.model.weapons.WeaponTile;
 import it.polimi.ingsw.shared.Direction;
 
 import java.util.HashSet;

@@ -4,8 +4,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * This class represents a player's Action Tile
+ *
+ * @author Carlo Dell'Acqua
+ */
 public class ActionTile {
 
+    /**
+     * The possible types of Action Tile
+     */
     public enum Type {
         STANDARD,
         ADRENALINE_1,
@@ -14,7 +22,13 @@ public class ActionTile {
         FINAL_FRENZY_DOUBLE_MODE
     }
 
+    /**
+     * The compound action associated with this action tile
+     */
     private final List<List<CompoundAction>> compoundActions;
+    /**
+     * The type of this action tile
+     */
     private final Type type;
 
     /**
@@ -38,7 +52,9 @@ public class ActionTile {
         return compoundActions;
     }
 
-
+    /**
+     * @return the type of action tile
+     */
     public Type getType() {
         return this.type;
     }

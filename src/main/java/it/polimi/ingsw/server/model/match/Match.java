@@ -1,6 +1,9 @@
 package it.polimi.ingsw.server.model.match;
 
-import it.polimi.ingsw.server.model.battlefield.*;
+import it.polimi.ingsw.server.model.battlefield.Board;
+import it.polimi.ingsw.server.model.battlefield.BoardFactory;
+import it.polimi.ingsw.server.model.battlefield.SpawnpointBlock;
+import it.polimi.ingsw.server.model.battlefield.TurretBlock;
 import it.polimi.ingsw.server.model.collections.Deck;
 import it.polimi.ingsw.server.model.currency.*;
 import it.polimi.ingsw.server.model.events.*;

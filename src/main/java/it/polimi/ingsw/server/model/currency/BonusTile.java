@@ -2,7 +2,6 @@ package it.polimi.ingsw.server.model.currency;
 
 import it.polimi.ingsw.server.model.battlefield.Droppable;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 

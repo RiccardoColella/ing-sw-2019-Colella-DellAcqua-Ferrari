@@ -1,5 +1,6 @@
 package it.polimi.ingsw.client.ui.gui;
 
+import it.polimi.ingsw.client.ClientConfig;
 import it.polimi.ingsw.client.io.Connector;
 import it.polimi.ingsw.client.io.RMIConnector;
 import it.polimi.ingsw.client.io.SocketConnector;
@@ -17,7 +18,6 @@ import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 
 import java.net.InetSocketAddress;
@@ -173,12 +173,19 @@ public class LoginController extends WindowController implements MatchListener, 
     private boolean closeConnector = true;
 
     /**
+     * Client configuration information
+     */
+    private ClientConfig config;
+
+    /**
      * Constructor which allows to set a custom title
      *
+     * @param config client configuration information
      * @param title the custom title
      */
-    public LoginController(String title) {
+    public LoginController(ClientConfig config, String title) {
         super(title, "/fxml/login.fxml", "/css/login.css");
+        this.config = config;
         modeChoiceMap.put("STANDARD", Match.Mode.STANDARD);
         modeChoiceMap.put("SUDDEN DEATH", Match.Mode.SUDDEN_DEATH);
         stage.setOnCloseRequest(ignored -> this.close());
@@ -186,9 +193,11 @@ public class LoginController extends WindowController implements MatchListener, 
 
     /**
      * Default constructor
+     *
+     * @param config client configuration information
      */
-    public LoginController() {
-        this("Login");
+    public LoginController(ClientConfig config) {
+        this(config, "Login");
     }
 
     /**
@@ -215,6 +224,11 @@ public class LoginController extends WindowController implements MatchListener, 
         boardRadios.add(b2);
         boardRadios.add(b3);
         boardRadios.add(b4);
+
+
+        window.setMinWidth(600);
+        window.setMinHeight(600);
+
         setupViewport(window);
     }
 
@@ -263,19 +277,20 @@ public class LoginController extends WindowController implements MatchListener, 
                     connector.addMatchListener(this);
                     connector.addDuplicatedNicknameListener(this);
                     connector.addClientListener(this);
-                    ((RMIConnector) connector).initialize(info, new InetSocketAddress(serverAddressField.getText(), 9090));
+                    ((RMIConnector) connector).initialize(info, new InetSocketAddress(serverAddressField.getText(), config.getRMIPort()));
                     break;
                 case "socket":
                     connector = new SocketConnector();
                     connector.addMatchListener(this);
                     connector.addDuplicatedNicknameListener(this);
                     connector.addClientListener(this);
-                    ((SocketConnector) connector).initialize(info, new InetSocketAddress(serverAddressField.getText(), 9001));
+                    ((SocketConnector) connector).initialize(info, new InetSocketAddress(serverAddressField.getText(), config.getSocketPort()));
                     break;
                 default:
                     throw new IllegalStateException("The user had to choose between Socket or RMI, unrecognized option " + connection);
             }
         } catch (Exception ex) {
+            logger.warning(ex.toString());
             sendError("Server unavailable");
             sendButton.setDisable(false);
         }

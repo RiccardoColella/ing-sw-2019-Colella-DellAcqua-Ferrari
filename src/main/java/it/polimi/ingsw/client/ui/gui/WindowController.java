@@ -61,10 +61,9 @@ public abstract class WindowController {
             stage.setScene(scene);
             stage.setMinWidth(root.getMinWidth());
             stage.setMinHeight(root.getMinHeight());
-            stage.setWidth(root.getWidth());
-            stage.setHeight(root.getHeight());
             stage.widthProperty().addListener((obs, obj, newVal) -> this.onResize());
             stage.heightProperty().addListener((obs, obj, newVal) -> this.onResize());
+            stage.maximizedProperty().addListener((obs, obj, newVal) -> this.onResize());
             stage.setTitle(title);
         } catch (IOException ex) {
             throw new IllegalStateException("Unable to load resource files " + ex);
@@ -126,7 +125,6 @@ public abstract class WindowController {
     protected void setupViewport(Pane window) {
         this.window = window;
         initializeViewport(window);
-        autoResizeNodes(window.getPrefWidth(), window.getPrefHeight());
     }
 
     /**

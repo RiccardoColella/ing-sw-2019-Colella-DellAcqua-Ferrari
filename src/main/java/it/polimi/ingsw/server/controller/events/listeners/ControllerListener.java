@@ -10,5 +10,10 @@ import java.util.EventListener;
  * @author Carlo Dell'Acqua
  */
 public interface ControllerListener extends EventListener {
+    /**
+     * Method called when a match ends
+     *
+     * @param e the match ended event object
+     */
     void onMatchEnd(MatchEnded e);
 }

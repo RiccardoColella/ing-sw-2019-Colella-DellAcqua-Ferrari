@@ -12,9 +12,7 @@ import it.polimi.ingsw.shared.events.networkevents.MatchResumed;
 import it.polimi.ingsw.shared.events.networkevents.MatchStarted;
 import it.polimi.ingsw.utils.ConfigFileMaker;
 
-import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 public class GameRepresentationFactory {
 

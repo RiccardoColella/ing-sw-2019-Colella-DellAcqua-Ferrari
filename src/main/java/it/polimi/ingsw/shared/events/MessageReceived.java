@@ -27,6 +27,9 @@ public class MessageReceived extends EventObject {
         this.message = message;
     }
 
+    /**
+     * @return the message
+     */
     public Message getMessage() {
         return message;
     }

@@ -2,7 +2,6 @@ package it.polimi.ingsw.client.io.listeners;
 
 import it.polimi.ingsw.shared.events.networkevents.BonusTileEvent;
 import it.polimi.ingsw.shared.events.networkevents.PlayerMoved;
-import it.polimi.ingsw.shared.events.networkevents.PlayerWeaponExchanged;
 import it.polimi.ingsw.shared.events.networkevents.WeaponEvent;
 
 /**

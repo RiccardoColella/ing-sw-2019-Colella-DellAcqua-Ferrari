@@ -11,6 +11,11 @@ import java.util.EventObject;
  */
 public class MatchEnded extends EventObject {
 
+    /**
+     * Constructs a match ended object
+     *
+     * @param source the controller which is notifying the end
+     */
     public MatchEnded(Controller source) {
         super(source);
     }

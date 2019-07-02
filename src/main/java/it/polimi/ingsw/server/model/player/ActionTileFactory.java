@@ -1,19 +1,22 @@
 package it.polimi.ingsw.server.model.player;
 
 import com.google.gson.Gson;
-import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.utils.ConfigFileMaker;
 
-import java.io.*;
-import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
 
+/**
+ * Factory that provides action tiles
+ */
 public class ActionTileFactory {
 
     private static final String ACTION_TILE_JSON_PATH = "config/actionTiles.json";
     private static final String ACTION_TILE_JSON_PATH_RES = "/config/actionTiles.json";
 
+    /**
+     * Action tile map that associate each type to the appropriate value object
+     */
     private static Map<ActionTile.Type, ActionTile> actionTileMap;
 
     /**

@@ -4,13 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import it.polimi.ingsw.server.model.exceptions.MissingConfigurationFileException;
 import it.polimi.ingsw.utils.ConfigFileMaker;
 import it.polimi.ingsw.utils.EnumValueByString;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;

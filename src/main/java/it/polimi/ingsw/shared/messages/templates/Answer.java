@@ -32,10 +32,16 @@ public class Answer<T> {
         this(null);
     }
 
+    /**
+     * @return true if an answer has been given
+     */
     public boolean isPresent() {
         return choice != null;
     }
 
+    /**
+     * @return the answer made by the user
+     */
     @Nullable
     public T getChoice() {
         return choice;
