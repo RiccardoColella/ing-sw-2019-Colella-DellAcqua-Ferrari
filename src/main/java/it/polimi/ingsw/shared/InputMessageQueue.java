@@ -47,9 +47,7 @@ public class InputMessageQueue {
                 eventMessageQueues.add(message);
                 break;
             case ANSWER:
-                if (!answerMessageQueues.containsKey(message.getFlowId())) {
-                    answerMessageQueues.put(message.getFlowId(), new LinkedBlockingQueue<>());
-                }
+                answerMessageQueues.putIfAbsent(message.getFlowId(), new LinkedBlockingQueue<>());
                 answerMessageQueues.get(message.getFlowId()).add(message);
                 break;
         }

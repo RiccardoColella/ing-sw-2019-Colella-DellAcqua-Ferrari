@@ -37,21 +37,57 @@ import java.util.stream.Collectors;
 /**
  * This class has the purpose of managing the game flow
  */
-public class Controller implements Runnable, PlayerListener, ViewReconnectedListener, ViewListener {
+public class Controller implements Runnable, PlayerListener, ViewReconnectedListener, ViewListener, AutoCloseable {
     /**
      * Logging utility
      */
     protected final Logger logger = Logger.getLogger(this.getClass().getName());
 
+    /**
+     * The active match
+     */
     private Match match;
+    /**
+     * The list of views
+     */
     private List<View> views;
-    private List<Player> players;
-    private final Map<String, Weapon> weaponMap;
-    private Deck<PowerupTile> powerupTileDeck;
-    private Map<Player, View> playerViews = new HashMap<>();
-    private int minClients;
-    private Set<ControllerListener> listeners = new HashSet<>();
 
+    /**
+     * The players of this match
+     */
+    private List<Player> players;
+    /**
+     * The weapon map that associates each weapon name with the object
+     */
+    private final Map<String, Weapon> weaponMap;
+    /**
+     * The powerup deck
+     */
+    private Deck<PowerupTile> powerupTileDeck;
+    /**
+     * Associates each player to its view
+     */
+    private Map<Player, View> playerViews = new HashMap<>();
+    /**
+     * The minimum amount of clients
+     */
+    private int minClients;
+    /**
+     * A set of listeners for controller events
+     */
+    private Set<ControllerListener> listeners = new HashSet<>();
+    /**
+     * Whether or not the match should be closed
+     */
+    private boolean closed = false;
+
+    /**
+     * Constructs a new controller
+     *
+     * @param match the match to manage
+     * @param views the players' views
+     * @param minClients the minimum amount of clients for the match
+     */
     public Controller(Match match, List<View> views, int minClients) {
 
         if (views.size() != match.getPlayers().size()) {
@@ -70,6 +106,9 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         match.start();
     }
 
+    /**
+     * Runs a match, handling all the operations
+     */
     @Override
     public void run() {
         for (Player player : players) {
@@ -93,7 +132,7 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
 
         int connectedViews = views.stream().mapToInt(view -> view.isConnected() ? 1 : 0).reduce(0, Integer::sum);
 
-        while (!match.isEnded() && connectedViews >= minClients) {
+        while (!match.isEnded() && connectedViews >= minClients && !closed) {
             activePlayer = match.getActivePlayer();
             manageActivePlayerTurn(activePlayer, playerViews.get(activePlayer));
 
@@ -117,6 +156,9 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         notifyMatchEnded();
     }
 
+    /**
+     * Notifies that the match is ended
+     */
     private void notifyMatchEnded() {
         MatchEnded e = new MatchEnded(this);
         listeners.forEach(l -> l.onMatchEnd(e));
@@ -483,75 +525,143 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         throw new IllegalArgumentException("Action cannot be checked if performable");
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player's death
+     */
     @Override
-    public void onPlayerDied(PlayerDied event) {
+    public void onPlayerDied(PlayerDied e) {
         // Nothing to do here
     }
 
+    /**
+     * Damages can cause player reactions, this listener manage some powerup triggers
+     *
+     * @param e this parameter contains info about the attacker and the damaged player
+     */
     @Override
     public void onPlayerDamaged(PlayerDamaged e) {
         managePowerups(e.getAttacker(), e.getVictim(), Powerup.Trigger.ON_DAMAGE_GIVEN, "Do you want to use a powerup against " + e.getVictim().getPlayerInfo().getNickname() + "?");
         managePowerups(e.getVictim(), e.getAttacker(), Powerup.Trigger.ON_DAMAGE_RECEIVED, "Do you want to use a powerup against " + e.getAttacker().getPlayerInfo().getNickname() + "?");
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player's death
+     */
     @Override
-    public void onPlayerOverkilled(PlayerOverkilled event) {
+    public void onPlayerOverkilled(PlayerOverkilled e) {
         // Nothing to do here
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player's rebirth
+     */
     @Override
-    public void onPlayerReborn(PlayerEvent event) {
+    public void onPlayerReborn(PlayerEvent e) {
         // Nothing to do here
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player's board flipping
+     */
     @Override
     public void onPlayerBoardFlipped(PlayerEvent e) {
         // Nothing to do here
 
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player's tile flipping
+     */
     @Override
     public void onPlayerTileFlipped(PlayerEvent e) {
         // Nothing to do here
 
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player reloading a weapon
+     */
     @Override
     public void onWeaponReloaded(PlayerWeaponEvent e) {
         // Nothing to do here
 
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player unloading a weapon
+     */
     @Override
     public void onWeaponUnloaded(PlayerWeaponEvent e) {
         // Nothing to do here
 
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player picking up a weapon
+     */
     @Override
     public void onWeaponPicked(WeaponExchanged e) {
         // Nothing to do here
 
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player dropping a weapon
+     */
     @Override
     public void onWeaponDropped(WeaponExchanged e) {
         // Nothing to do here
 
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player's wallet changing
+     */
     @Override
     public void onWalletChanged(PlayerWalletChanged e) {
         // Nothing to do here
 
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player's health changing
+     */
     @Override
     public void onHealthChanged(PlayerEvent e) {
         // Nothing to do here
 
     }
 
+    /**
+     * Finds the available powerup given a player and the trigger
+     *
+     * @param ownedPowerupTiles the powerup tile
+     * @param trigger the trigger
+     * @param owner the player who owns the powerup tile
+     * @return a list of available powerups
+     */
     private List<Powerup> findAvailablePowerups(List<PowerupTile> ownedPowerupTiles, Powerup.Trigger trigger, Player owner) {
         List<Powerup> availablePowerups = ownedPowerupTiles
                 .stream()
@@ -566,6 +676,13 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         return availablePowerups;
     }
 
+    /**
+     * Intersect the powerup tiles owned by the player and the available ones by name
+     *
+     * @param ownedPowerupTiles the player's powerups
+     * @param availablePowerups the available powerups
+     * @return the intersection of the two list
+     */
     private List<PowerupTile> filterPowerupTiles(List<PowerupTile> ownedPowerupTiles, List<Powerup> availablePowerups) {
         List<String> availableTypes = availablePowerups
                 .stream()
@@ -577,7 +694,14 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
                 .collect(Collectors.toList());
     }
 
-
+    /**
+     * Manages the powerup related actions
+     *
+     * @param powerupOwner owner of the powerups
+     * @param powerupTarget the target of the powerup effect
+     * @param trigger the trigger of the powerup
+     * @param message the message to send to the player
+     */
     private void managePowerups(Player powerupOwner, @Nullable Player powerupTarget, Powerup.Trigger trigger, String message) {
         Interviewer interviewer = playerViews.get(powerupOwner);
         List<PowerupTile> ownedTiles = new LinkedList<>(powerupOwner.getPowerups());
@@ -660,6 +784,11 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         player.discardPowerup(toBeDiscarded);
     }
 
+    /**
+     * Manages the view reconnection on an active match
+     *
+     * @param e the view reconnected event object
+     */
     @Override
     public void onViewReconnected(ViewReconnected e) {
         Optional<View> oldView = views.stream().filter(view -> !view.isConnected() && view.getNickname().equals(e.getView().getNickname())).findAny();
@@ -687,23 +816,46 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         }
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player discarding a powerup
+     */
     @Override
     public void onPowerupDiscarded(PowerupExchange e){
         // nothing to do here
 
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player grabbing a powerup
+     */
     @Override
     public void onPowerupGrabbed(PowerupExchange e){
         // nothing to do here
 
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the player choosing a spawnpoint
+     */
     @Override
     public void onSpawnpointChosen(SpawnpointChoiceEvent e) {
         // nothing to do here
     }
 
+    /**
+     * Ask the view to select a powerup or none
+     *
+     * @param powerups the list of powerup to choose from
+     * @param view the view to ask
+     * @param message the message to present to the player
+     * @return the player selection
+     */
     private Optional<it.polimi.ingsw.shared.datatransferobjects.Powerup> optionalPowerupSelection(List<PowerupTile> powerups, Interviewer view, String message) {
         List<it.polimi.ingsw.shared.datatransferobjects.Powerup> playerPowerupsVM = powerups.stream()
                 .map(p -> new it.polimi.ingsw.shared.datatransferobjects.Powerup(p.getName(), p.getColor()))
@@ -712,6 +864,14 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         return view.selectOptional(message, playerPowerupsVM, ClientApi.POWERUP_QUESTION);
     }
 
+    /**
+     * Asks the player to select a spawnpoint
+     *
+     * @param powerups the powerups to choose from
+     * @param view the view to ask
+     * @param message the message to show to the player
+     * @return the player selection
+     */
     private it.polimi.ingsw.shared.datatransferobjects.Powerup mandatorySpawnpointSelection(List<PowerupTile> powerups, Interviewer view, String message) {
         List<it.polimi.ingsw.shared.datatransferobjects.Powerup> playerPowerupsVM = powerups.stream()
                 .filter(p -> powerups.stream().anyMatch(powerupController -> powerupController.getName().equals(p.getName())))
@@ -721,6 +881,11 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         return view.select(message, playerPowerupsVM, ClientApi.SPAWNPOINT_QUESTION);
     }
 
+    /**
+     * When a view disconnects this listener handles the controller related operations
+     *
+     * @param e the event corresponding to the view disconnection
+     */
     @Override
     public void onViewDisconnected(ViewEvent e) {
         e.getView().removeViewListener(this);
@@ -733,12 +898,29 @@ public class Controller implements Runnable, PlayerListener, ViewReconnectedList
         }).start();
     }
 
+    /**
+     * The controller does not react to this event
+     *
+     * @param e the event corresponding to the view being ready
+     */
     @Override
     public void onViewReady(ViewEvent e) {
         // Nothing to do here
     }
 
+    /**
+     * Adds a controller listener
+     *
+     * @param l the listener to add
+     */
     public void addListener(ControllerListener l) {
         listeners.add(l);
+    }
+
+    /**
+     * Signals to close the currently active match and controller
+     */
+    public void close() {
+        closed = true;
     }
 }

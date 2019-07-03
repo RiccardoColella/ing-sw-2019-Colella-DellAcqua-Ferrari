@@ -82,7 +82,7 @@ public class WaitingRoom implements AutoCloseable {
     /**
      * The listener for the reconnection event
      */
-    private Set<ViewReconnectedListener> viewReconnectedListeners = new HashSet<>();
+    private Set<ViewReconnectedListener> viewReconnectedListeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
 
     /**

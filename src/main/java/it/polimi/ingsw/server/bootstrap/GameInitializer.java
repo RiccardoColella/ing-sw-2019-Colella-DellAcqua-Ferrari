@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.bootstrap;
 
+import it.polimi.ingsw.server.bootstrap.events.listeners.ViewReconnectedListener;
 import it.polimi.ingsw.server.controller.Controller;
 import it.polimi.ingsw.server.model.match.Match;
 import it.polimi.ingsw.server.model.match.MatchFactory;
@@ -129,6 +130,9 @@ public class GameInitializer {
                 participants,
                 minParticipants
         );
+        controller.addListener((e) -> {
+            participantSource.removeViewReconnectedListener((ViewReconnectedListener)e.getSource());
+        });
         participantSource.addViewReconnectedListener(controller);
         return controller;
     }
