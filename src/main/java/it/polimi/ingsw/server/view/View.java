@@ -582,6 +582,7 @@ public abstract class View implements Interviewer, AutoCloseable, MatchListener,
     private Set<BonusTile> mapTurretBonusTiles(Board board) {
         return board.getTurretBlocks()
                 .stream()
+                .filter(block -> block.getBonusTile().isPresent())
                 .map(block ->
                         new BonusTile(
                                 block.getBonusTile()

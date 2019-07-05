@@ -133,7 +133,7 @@ public class Server implements ControllerListener, AutoCloseable {
     /**
      * Closes the server and all the active matches
      *
-     * @throws Exception
+     * @throws Exception thrown if the closing operations do not succeed
      */
     @Override
     public void close() throws Exception {

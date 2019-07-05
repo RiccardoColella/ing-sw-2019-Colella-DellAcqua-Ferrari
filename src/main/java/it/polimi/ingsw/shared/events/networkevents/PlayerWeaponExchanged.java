@@ -23,6 +23,7 @@ public class PlayerWeaponExchanged extends PlayerWeaponEvent {
      * Constructs a weapon event
      *
      * @param owner the player who owns the weapon
+     * @param weaponName the name of the weapon
      * @param row the row on the board where the event occurred
      * @param column the column on the board where the event occurred
      */

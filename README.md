@@ -51,9 +51,9 @@ The 1. will start a GUI client, while 2. will start a CLI client
 
 We made a bunch of scripts to help ourselves during development. Those scripts can be found
 in the root of the project and contains the same commands reported above.
-We created those scripts for both Windows and Unix-like platforms, the former have a `.bat` extension.
-They are meant to be executed having the project root as the working directory and the `javafx-sdk-12.0.1` folder
-inside the target directory.
+We created those scripts for both Windows and Unix-like platforms, the former have a `.bat` extension.  
+**They are meant to be executed having the project root as the working directory and the `javafx-sdk-12.0.1` folder
+inside the target directory.**
 
 To run the server type:
 - `./run_server` (or `./run_server.bat` on Windows)

@@ -108,6 +108,7 @@ public class GameRepresentationFactory {
      * Board setter. This method simplifies the class's constructor method
      * @param elem name of the element that contains the board in the json file
      * @param jsonObject json object from which extract the board
+     * @return a list of string
      */
     private static List<String> setBoard(String elem, JsonObject jsonObject) {
         List<String> boardUnderConstruction = new LinkedList<>();
