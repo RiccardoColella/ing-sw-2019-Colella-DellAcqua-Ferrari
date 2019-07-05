@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ./run_client_gui & \
 ./run_client_gui & \

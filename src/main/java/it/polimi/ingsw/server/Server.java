@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 
@@ -21,7 +22,7 @@ import java.util.logging.Logger;
  *
  * @author Carlo Dell'Acqua
  */
-public class Server implements ControllerListener {
+public class Server implements ControllerListener, AutoCloseable {
     /**
      * Logging utility
      */
@@ -40,12 +41,12 @@ public class Server implements ControllerListener {
     /**
      * A thread pool used for background task execution
      */
-    private ExecutorService threadPool;
+    private final ExecutorService threadPool;
 
     /**
      * A list of currently active virtual rooms representing the matches that are being played
      */
-    private List<Controller> activeRooms = new LinkedList<>();
+    private final List<Controller> activeRooms = new LinkedList<>();
 
     /**
      * Constructs the server of the game
@@ -119,10 +120,32 @@ public class Server implements ControllerListener {
     public void onMatchEnd(MatchEnded e) {
         logger.info("Room available, waiting for new clients...");
         try {
+            synchronized (activeRooms) {
+                activeRooms.remove(e.getSource());
+            }
             createRoom();
         } catch (InterruptedException ex) {
             logger.warning("Unable to start a new Room, thread interrupted");
             Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Closes the server and all the active matches
+     *
+     * @throws Exception
+     */
+    @Override
+    public void close() throws Exception {
+
+        waitingRoom.close();
+        activeRooms.forEach(Controller::close);
+
+        synchronized (threadPool) {
+            threadPool.shutdown();
+        }
+        while (!threadPool.awaitTermination(5, TimeUnit.SECONDS)) {
+            logger.warning("Thread pool hasn't shut down yet, waiting...");
         }
     }
 }

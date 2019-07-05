@@ -58,6 +58,17 @@ public class Main {
         if (args.length > settingCount++)
             config.setRMIHostname(args[settingCount]);
 
-        new Server(config).start();
+        Server server = new Server(config);
+        server.start();
+
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                server.close();
+            } catch (Exception ex) {
+                System.exit(0);
+                Runtime.getRuntime().halt(0);
+            }
+        }));
     }
 }
