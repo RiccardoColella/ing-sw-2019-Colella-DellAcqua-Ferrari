@@ -69,8 +69,9 @@ All those parameters can be found in the serverConfig.json file, both in the res
 on first start.
 In addition to that, the server can be instantiated with commandline parameters that will have precedence over the ones contained in the JSON file.
 To set these parameters from the terminal you have to pass them following the same order they have been reported
-in the table above. You can pass only some of them using the terminal, but when you pass one parameter
-you must pass all the ones that are positionally before that as  well.
+in the table above. You must pass all of them using the terminal, preceding all the parameters with any symbol that make the
+server know that you will pass settings through the command line. For example:  
+- `java -jar server.jar-jar-with-dependencies.jar - 1 0 1000 2 4 9001 9002 localhost` (note the "-" before all the parameters)
 
 
 #### Client configuration parameters
